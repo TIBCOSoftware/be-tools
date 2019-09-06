@@ -1,0 +1,17 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "beinferenceagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent"
+    spec:
+      containers:
+      - name: "beinferenceagent-container"
+        image: "<aws-registry>/<be-appimage:tag>"
+        env:
+        - name: PU
+          value: "default"        

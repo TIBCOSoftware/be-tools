@@ -1,0 +1,17 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "bediscoverynode"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "bediscoverynode"
+    spec:
+      containers:
+      - name: "bediscoverynode-container"
+        image: <image>
+        env:
+        - name: PU
+          value: "cache"

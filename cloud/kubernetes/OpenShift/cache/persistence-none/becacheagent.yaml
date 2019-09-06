@@ -1,0 +1,21 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "becacheagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "becacheagent"
+    spec:
+      containers:
+      - name: "becacheagent-container"
+        image: <image>
+        env:
+        - name: PU
+          value: "cache"
+        - name: AS_PROXY_NODE
+          value: "true"
+        - name: AS_DISCOVER_URL
+          value: "tcp://bediscovery-service:50000"

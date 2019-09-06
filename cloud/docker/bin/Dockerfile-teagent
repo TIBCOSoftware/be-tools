@@ -1,0 +1,112 @@
+#
+# BusinessEvents Dockerfile
+#
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG JRE_VERSION
+
+FROM ubuntu:latest as intermediate
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG BE_PRODUCT_ADDONS
+ARG BE_PRODUCT_HOTFIX
+ARG DOCKERFILE_NAME
+ARG JRE_VERSION
+ARG TEMP_FOLDER
+
+LABEL be-intermediate-image=true
+
+RUN apt-get update \
+ && apt-get install -y unzip procps findutils hostname
+
+COPY lib/*.pm lib/*.py lib/*.sh installers/* /home/tibco/be/
+
+ENV TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
+
+WORKDIR /home/tibco/be
+RUN chmod +x *.sh *.pm
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','na','na')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./runbe.sh')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
+ && rm -rf as_installers be_installers *.zip \
+ && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
+
+WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+RUN echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+RUN rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
+   && rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
+   && rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+#Discard intermediate image and just copy the installation to a new image.
+FROM ubuntu:latest
+
+RUN apt-get update -y \
+ && apt-get upgrade python-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python python-pip -y \
+ && pip install jsonpickle requests awscli boto boto3 botocore \
+ && curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  apt-key add - \
+ && add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable" \
+ && apt-get update -y  \ 
+ && apt-get install --no-install-recommends docker-ce jq -y \
+ && curl -L git.io/weave -o /usr/local/bin/weave \
+ && chmod a+x /usr/local/bin/weave \
+ && apt-get remove curl -y \
+ && rm -rf /var/lib/apt/lists/* 
+ 
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG JRE_VERSION
+
+COPY --from=intermediate /home/tibco/be /home/tibco/be
+
+COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
+
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/teagent /opt/tibco/be/${BE_SHORT_VERSION}/teagent
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib/*.jar /opt/tibco/be/${BE_SHORT_VERSION}/lib/
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/mm /opt/tibco/be/${BE_SHORT_VERSION}/mm
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+ENV PU=default \
+ ENGINE_NAME=be-engine \
+ LOG_LEVEL=na \
+ TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ COMPONENT=tea \
+ BE_TEA_AGENT_AUTO_REGISTER_ENABLE=false \
+ BE_TEA_AGENT_MONITORING_ONLY=true \
+ TEA_SERVER_URL="http://localhost:8777" \
+ TEA_SERVER_USERNAME=admin \
+ TEA_SERVER_PASSWORD=admin \
+ BE_INSTANCE_DISCOVERY_TYPE=k8s \
+ BE_INSTANCE_POLLAR_INTERVAL=30 
+
+RUN mkdir -p /mnt/tibco/be/logs \
+ && mkdir -p /mnt/tibco/be/data-store
+
+#Logs, data-store and RMS volumes
+VOLUME /mnt/tibco/be/ \
+ /opt/tibco/be/${BE_SHORT_VERSION}/teagent/logs/
+
+# JMX Port
+EXPOSE 5555
+
+WORKDIR /home/tibco/be
+RUN chmod +x *.py
+CMD ["./runbe.sh"]

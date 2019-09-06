@@ -1,0 +1,31 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: "mysql"
+  template:
+    metadata:
+      labels:
+        dep_name: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6        # You can use any image version
+        args:
+        - "--ignore-db-dir=lost+found"
+        - "--lower_case_table_names=1"
+        env:
+        - name: MYSQL_USER
+          value: root
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-vol
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-vol
+        persistentVolumeClaim:
+          claimName: mysql-pvc

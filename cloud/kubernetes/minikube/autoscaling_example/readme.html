@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>     BooksApp
+
+- TIBCO BusinessEvents&reg; Examples
+</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en-us" />
+<link rel="Shortcut Icon" href="../../../../examples/_resources/icon.gif" type="image/gif" />
+<style type="text/css" media="all">@import "../../../../examples/_resources/examples.css";</style>
+<script type="text/javascript" src="../../../../examples/_resources/examples.js" /></script>
+<script type="text/javascript">
+function buildForms() {
+ var form;
+
+ SendEventForm.setServer("http://localhost:8080");
+
+ form = SendEventForm.get("createBooksForm");
+ form.setDestinationPath("/Channels/HTTP/createBooks");
+ form.setEventPath("/Events/CreateBooksEvent");
+ form.addProperty("booksCount", "5");
+ form.build();
+
+ form = SendEventForm.get("wordCountForm");
+ form.setDestinationPath("/Channels/HTTP/wordCount");
+ form.setEventPath("/Events/BookWordCountEvent");
+ form.addProperty("durationSec", "300");
+ form.build();
+ 
+ form = SendEventForm.get("deleteBooksForm");
+ form.setDestinationPath("/Channels/HTTP/deleteBooks");
+ form.setEventPath("/Events/DeleteBooksEvent");
+ form.addProperty("booksCount", "5");
+ form.build();
+
+
+}
+</script>
+</head>
+<body onLoad="buildForms()">
+<h1>BooksApp</h1>
+
+<h2>Purpose of This Example</h2>
+
+<p>This example is to demonstrate autoscaling of BE instances in response to changes in CPU utilisation and memory consumption.</p>
+<p>The example allows users to create/delete Books in bulk, with each Book occupying around 10MB in cache. It also allows users to perform word count operation which increases CPU utilization.<br/>
+Users can login to TEA server to witness new agents being added automatically to the cluster or existing ones being stopped in response to changes in CPU utilization or memory consumpion.<br/>
+The create/delete book operations can be used to increase/decrease memory consumption of Cache agents. Similarly Book word count operation can be used to increase CPU utilization of Inference agents for a defined duration.
+</p>
+
+<h2>Prerequisites</h2>
+- Installed softwares - Docker, Kubectl, Minikube<br/>
+- TEA server 2.3.0 HF7 or later installed.<br/>
+- Installer zip files of BE, AS for linux platform.<br/>
+<br/>
+<h3>Notes:</h3>
+- In this document we'll use Linux style commands but if you are using a Windows machine, you'll find the corresponding scripts with .bat suffix. For example, if the document refers to a script called build_app_image.sh, you'll find the script build_app_image.bat at the same location.<br/>
+- As of TEA 2.3.0 HF7, there is no Windows batch script to create TEA server image. Incase you are using Windows machine, you can create the TEA server image on some Linux machine and import that image into the minikube instance used here.<br/>
+
+<h2>How to Run the Example</h2>
+<ol>
+
+<li>
+<p>Open a command window and start your minikube instance with sufficient cpu and memory.</p>
+<pre class="commands">
+minikube start --cpus 8 --memory 10240 --disk-size 20g
+</pre>
+Enable the minikube metrics-server addon for Horizontal Pod Autoscaler to work.
+<pre class="commands">
+minikube addons enable metrics-server
+</pre>
+</li>
+
+<li>
+<p>Configure your terminal to use docker daemon inside minikube instance, this will allow you to create docker images directly inside minikube instance instead of the host machine.<br/>
+Execute below command that will display the actual configuration commands specific to your platform.</p>
+<pre class="commands">
+minikube docker-env
+</pre>
+<p>Execute the output of the above command on the same terminal.<br/>
+Ensure that you use this terminal in the below steps to create BE app and the other docker images which will be created inside the minikube instance.
+</p>
+</li>
+
+<li>
+<p>Create BE app image for the BooksApp. Before this step ensure that you create a new directory somewhere with BE and AS linux installer zip files, the path to this directory is hence forth referred as <i>INSTALLERS-DIR</i>.
+</p>
+<pre class="commands">
+cd <i>BE_HOME</i>/cloud/docker/bin
+./build_app_image.sh -l <i>INSTALLERS-DIR</i> -a <i>BE_HOME</i>/cloud/kubernetes/minikube/autoscaling_example/app_dir -r booksapp:1.0
+</pre>	
+</li>
+
+<li>
+<p>Create BE teagent image.</p>
+<pre class="commands">
+cd <i>BE_HOME</i>/cloud/docker/bin
+./build_teagent_image.sh -l <i>INSTALLERS-DIR</i> -r beteagent
+</pre>	
+</li>
+
+<li>
+<p>Create TEA server docker image.</p>
+Refer the TEA server README.md file located at <i>TIBCO_HOME</i>/tea/2.3/docker for steps on how to create TEA server docker image.<br/>
+Your command to build this image will be similar to - <code>./build_tea.sh test.registry jdk-8u221-linux-x64.tar.gz 2.3.0 007</code> 
+</li>
+
+<li>
+<p>Now that all the needed docker images are ready inside the minikube instance. Create deployments and services using below command.</p>
+
+<p>Create TEA server deployments and services.<br/>
+Before running below command explore to <code><i>TIBCO_HOME</i>/tea/2.3/docker/sample-kubernetes</code> edit the file <code>sample_deploy_tea_with_mount.yaml</code> and replace <code>&lt;DOCKER_REGISTRY&gt;/tea:&lt;tag&gt;</code> with your TEA server repo name and tag, example-<code>test.registry/tea:2.3.0-HF7</code> . You may also set imagePullPolicy as <code>IfNotPresent</code> and remove volumes and volumeMounts sections for the sake of this tutorial.</p>
+<pre class="commands">
+kubectl create -f <i>TIBCO_HOME</i>/tea/2.3/docker/sample-kubernetes
+</pre>
+
+<p>Create BE TEA agent deployments and services.</p>
+<pre class="commands">
+kubectl create -f <i>BE_HOME</i>/cloud/kubernetes/minikube/tea
+</pre>
+
+<p>Create BE application depoyments and services.</p>
+<pre class="commands">
+kubectl create -f <i>BE_HOME</i>/cloud/kubernetes/minikube/autoscaling_example/configs
+</pre>
+
+</li>
+
+<li>
+<p>Start port forwarding for port 8080 and 8777 so that we can access them directly from this host machine.</p>
+<pre class="commands">
+<i>New command window</i>
+kubectl port-forward service/beapp-httpport-service 8080:8080
+</pre>
+<pre class="commands">
+<i>New command window</i>
+kubectl expose deployment tea-server --type=NodePort --name=tea-service --port=8777
+kubectl port-forward service/tea-service 8777:8777
+</pre>
+</li>
+
+<li>
+<p>Open TEA server in your browser and login - <a href="http://localhost:8777" target="new">http://localhost:8777</a><br/>
+You should see this application with all of its Cache and inference agents. <b>While performing the remaining steps you can at anytime monitor the agents being automatically added/removed under this web console.</b></p>
+</li>
+
+<li>
+<p>Create some Books, with each Book adding around 10MB to Cache agent's memory.</p>
+<form id="createBooksForm"></form>
+<p>Increased memory usage should trigger scale up of Cache agents. Expect to see new Cache agents being started in realtime. You can perform this operation multiple times to create more Books hence utilizing even more memory.<br/>
+Give the cluster sometime (about a minute) for it to autoscale.
+</p>
+</li>
+
+
+<li>
+<p>Delete some Books, hence freeing up memory by 10MB for each Book.</p>
+
+<form id="deleteBooksForm"></form>
+
+<p>Reduced memory usage should trigger scale down of Cache agents. Expect to see one or more Cache agents shutting down. Operation can be executed multiple times.</p>
+</li>
+
+<li>
+<p>Each click of this operation spawns a thread in Inference agent that starts word count operation which runs for the specified duration. This results in higher CPU usage while the test executes.</p>
+<form id="wordCountForm"></form>
+<p>Increased CPU usage should trigger scale up of Inference agents. Expect to see new Inference agents being started. In case you don't see enough CPU usage perform this operation multiple times to run multiple simultaneous executions of word count.</p>
+</li>
+
+<li>
+<p>Leave the application running for some time without performing any operation and notice the number of inference agents going down as there is low CPU utilization.</p>
+</li>
+
+<li>
+Stop the test and cleanup all the deployments and services that we created.
+<pre class="commands">
+<i>Ctrl+C on the terminals that are running port forwarding.</i>
+kubectl delete svc tea-service
+kubectl delete -f <i>BE_HOME</i>/cloud/kubernetes/minikube/autoscaling_example/configs
+kubectl delete -f <i>TIBCO_HOME</i>/tea/2.3/docker/sample-kubernetes
+kubectl delete -f <i>BE_HOME</i>/cloud/kubernetes/minikube/tea
+</pre>
+</li>
+</ol>
+
+<div class="footer">
+<p>TIBCO BusinessEvents&reg; 5.6<br />
+Copyright&copy; 2004-2019 TIBCO Software Inc. All rights reserved.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "bediscoverynode"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "bediscoverynode"
+        jmx: "enabled"
+    spec:
+      containers:
+      - name: "bediscoverynode-container"
+        image: "<aws-registry>/<be-appimage:tag>"
+        imagePullPolicy: Always
+        env:
+        - name: PU
+          value: "cache"

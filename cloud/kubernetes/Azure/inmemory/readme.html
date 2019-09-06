@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>     Fraud Detection
+
+- TIBCO BusinessEvents&reg; Examples
+</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en-us" />
+<link rel="Shortcut Icon" href="../../../../examples/_resources/icon.gif" type="image/gif" />
+<style type="text/css" media="all">@import "../../../../examples/_resources/examples.css";</style>
+<script type="text/javascript" src="../../../../examples/_resources/examples.js" /></script>
+<script type="text/javascript">
+
+SendEventForm.onSubmit = function(form) {
+	var serverUrl = document.getElementById("serverurl").value;
+	form.setAttribute("action", serverUrl + form.getElementsByClassName("sendEventFormDestination")[0].innerHTML);
+  // Prevents caching.
+  var ridName = "_httprequestid_";
+  var ridNode = form.elements[ridName];
+  if (ridNode) {
+  } else {
+    ridNode = document.createElement('input');
+    ridNode.setAttribute("type", "hidden");
+    ridNode.setAttribute("name", ridName);
+    form.appendChild(ridNode);
+  }
+  ridNode.value = new Date().getTime();
+}
+
+function buildForms() {
+ var form;
+ SendEventForm.setServer("");
+
+ form = SendEventForm.get("createAccountForm");
+ form.setDestinationPath("/Channels/HTTP/AllOps");
+ form.setEventPath("/Events/CreateAccount");
+ form.addProperty("AccountId", "Bob");
+ form.addProperty("Balance", "20000");
+ form.addProperty("AvgMonthlyBalance", "11000");
+ form.build();
+
+
+ form = SendEventForm.get("debitAccountForm");
+ form.setDestinationPath("/Channels/HTTP/AllOps");
+ form.setEventPath("/Events/Debit");
+ form.addProperty("AccountId", "Bob");
+ form.addProperty("Amount", "2000");
+ form.build();
+
+}
+</script>
+</head>
+<body onLoad="buildForms()">
+
+<h1>Fraud Detection</h1>
+
+
+<h2>Purpose of This Example</h2>
+
+<p>Fraud Detection is a commonly used scenario for highlighting what's different about CEP because it shows how the CEP engine correlates different events using a time window or other criteria. In this example, fraud is suspected when either of the following occurs:</p>
+<ul>
+<li>The account incurs more than three debit transactions in a two minute period.</li>
+<li>The sum of the debits that occurs in a two minute period totals more than 80% of the average monthly balance of the account. </li>
+</ul>
+
+<p>This example is used to demonstrate the <i>TIBCO BusinessEvents&reg; </i> in-memory applications.
+</p>
+<p>NOTE: Use Google Chrome or Mozilla Firefox browsers to view the Send Button in the readme.html. The Send button can be used to provide test data to the example application.
+</p>
+<h2>Prerequisite</h2>
+<ul>
+<li>
+	Kubectl,Azure cli needs to be installed and configured
+</li>
+<li>
+	FraudDetection docker image in Azure container registry
+</li>
+<li>
+	Kubernetes cluster needs to be created in Azure 
+</li>
+</ul>
+
+<h2>How to Deploy the Application</h2>
+
+<ol>
+<li>
+	Update the image url in <i>beinferenceagent.yaml</i>
+</li>
+ <li>
+	Update the application http channel port(if it is changed) in <i>befdservice.yaml</i>
+</li>	
+<li>
+<p>Open a command window and at the command prompt and execute following commands</p>
+
+<pre class="commands">
+kubectl create -f beinferenceagent.yaml
+</pre>
+
+<pre class="commands">
+kubectl create -f befdservice.yaml
+</pre>
+</li>
+</ol>
+<h2>How to Run the Example</h2>
+<ol>
+<li>
+ 	 Get External IP and port for befdservice from Kubernetes and set server url.<br/>
+  <b>Server URL:</b> <input type="text" id="serverurl" value="http://localhost:8109" style="height:30px;width:100%">
+</li>
+<li>
+ Submit the forms by clicking the given buttons
+</li>
+	
+<li>
+<p>Create an account and give it a balance and an average monthly balance. Enter a name in the Account ID field. Enter, for example, 10000 in the Balance, and 20000 in the AvgMonthlyBalance fields. Repeat this step to create multiple accounts, as desired.</p>
+Host:
+
+<form id="createAccountForm"></form>
+
+<p>In the command window you see a message like this:
+<span class="logs">#### Created account Bob.</span></p>
+</li>
+
+
+<li>
+<p>Now debit the account. In the AccountId field, enter one of the account names you specified above. Enter the amount of the debit in the Amount field. Then click Send.</p>
+
+<form id="debitAccountForm"></form>
+
+<p>In the command window you see messages like this
+(the actual message depends on the account balance, the average monthly balance, and other events that happened in the two minute window):
+<span class="logs">#### Debiting account Bob by $1000.0</span></p>
+</li>
+
+
+<li>
+<p>Rules in the project react to various inputs depending on current facts in the Rete network. You can try the following.</p>
+
+<table>
+<tr>
+<th>Action</th>
+<th>Message</th>
+</tr>
+<tr>
+<td>In the /Events/CreateAccount form, enter the same account name two times.</td>
+<td><pre class="logs">#### Account already exists: Bob</pre></td>
+</tr>
+<tr>
+<td>In the /Events/Debit form, enter a debit amount greater than the account balance.</td>
+<td><pre class="logs">#### Account ID Bob STATUS set to Suspended. <br>Balance -1000.0 is less than zero</pre></td>
+</tr>
+<tr>
+<td>In the Events/Debit form, debit an account that was set to Suspended.</td>
+<td><pre class="logs">#### Cannot debit the suspended account Bob</pre></td>
+</tr>
+<tr>
+<td>In the Events/Debit form, match the fraud detection criteria to meet both of the following conditions:
+<ul>
+<li>Make 3 debits within 2 minutes</li>
+<li>Make debits such that the sum of the debits occurring in a two minute period totals more than 80% of the average monthly balance of the account.</li>
+</ul></td>
+<td><pre class="logs">#### Account ID Bob STATUS set to Suspended. <br>Fraud suspected</pre></td>
+</tr>
+</table>
+</li>
+
+<li>
+<p> To reset the data, restart the engine at the command line.</p>
+</li>
+
+</ol>
+
+
+
+<div class="footer">
+<p>TIBCO BusinessEvents&reg; 5.6<br />
+Copyright&copy; 2004-2019 TIBCO Software Inc. All rights reserved.</p>
+</div>
+</body>
+</html>

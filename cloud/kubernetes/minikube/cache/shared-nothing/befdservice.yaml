@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: befdservice
+spec:
+  selector:
+    name: beinferenceagent # see 'name' of StatefulSet inference defined in beinference-sn.yaml
+  ports:
+    - protocol: TCP
+      port: 8109
+      targetPort: 8109
+  type: NodePort

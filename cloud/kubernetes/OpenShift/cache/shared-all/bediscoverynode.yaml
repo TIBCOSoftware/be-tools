@@ -1,0 +1,47 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: bediscovery
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        dep_name: "bediscovery-label"
+    spec:
+      containers:
+      - name: bediscovery-container
+        image: docker-registry.default.svc:5000/fdcache/fdstoresa:10
+        env:
+        - name: PU
+          value: "cache"
+        - name: BACKINGSTORE_JDBC_DRIVER
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_driver
+        - name: BACKINGSTORE_JDBC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_url
+        - name: BACKINGSTORE_JDBC_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_username
+        - name: BACKINGSTORE_JDBC_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_pwd
+        - name: BACKINGSTORE_JDBC_POOL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_pool_size
+        - name: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: db-provider
+              key: db_login_timeout

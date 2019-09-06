@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-provider
+  labels:
+    name: db-provider
+data:
+  db_driver: com.mysql.jdbc.Driver
+  db_url: jdbc:mysql://bemysql.mysql.database.azure.com:3306/be_database  # add db_url according to your azure DB setup
+  db_username: beadmin@bemysql # add username according to your azure DB setup
+  db_pwd: Becloudadmin1 # add password according to your azure DB setup
+  db_pool_size: "5"
+  db_login_timeout: "0"

@@ -1,0 +1,75 @@
+#
+# TIBCO BusinessEvents Dockerfile-rms_fromtar
+# To be used for creation with the frominstall/build_rms_image script
+#
+FROM ubuntu:latest
+MAINTAINER Tibco Software Inc tsi@tibco.com
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG DOCKERFILE_NAME
+ARG JRE_VERSION
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+RUN apt-get update -y \
+ && apt-get install -y apt-utils perl unzip procps findutils
+
+ADD be.tar /opt/tibco
+COPY app/* /opt/tibco/be/ext/
+COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
+COPY lib/* /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+
+WORKDIR /home/tibco/be
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
+ && chmod +x *.sh
+
+WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
+ && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+ENV PU=default \
+ ENGINE_NAME=be-engine \
+ LOG_LEVEL=na \
+ AS_DISCOVER_URL=self \
+ AS_PROXY_NODE=false \
+ TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ AS_VERSION=${AS_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}  \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ COMPONENT=rms
+
+RUN mkdir -p /mnt/tibco/be/logs \ 
+    mkdir -p /mnt/tibco/be/data-store \
+    mkdir -p /opt/tibco/be/ext \
+    mkdir -p /opt/tibco/be/files 
+
+#Logs, data-store and RMS volumes
+VOLUME /mnt/tibco/be/logs \
+ /mnt/tibco/be/data-store \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/security \
+ /opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/WebStudio \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/notify \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/locale
+
+# These will always be the listen port for AS and AS Remote URL
+EXPOSE 50000 50001
+
+# JMX Port
+EXPOSE 5555
+
+#RMS PORTs
+EXPOSE 8090 5000
+
+WORKDIR /home/tibco/be
+
+CMD ["./runbe.sh"]

@@ -1,0 +1,70 @@
+#
+# TIBCO BusinessEvents Dockerfile_fromtar.rhel
+# To be used for creation with the frominstall/build_app_image script
+#
+ARG BASE_IMAGE=<RHEL_IMAGE>
+
+FROM ${BASE_IMAGE}
+MAINTAINER Tibco Software Inc tsi@tibco.com
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG DOCKERFILE_NAME
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
+ARG JRE_VERSION
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+RUN yum update -y \
+ && yum install -y perl unzip procps findutils hostname
+
+ADD be.tar /opt/tibco
+COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
+COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
+COPY app/* /opt/tibco/be/ext/
+
+WORKDIR /home/tibco/be
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
+ && chmod +x *.sh
+
+WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
+ && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+ENV PU=default \
+ ENGINE_NAME=be-engine \
+ LOG_LEVEL=na \
+ AS_DISCOVER_URL=self \
+ AS_PROXY_NODE=false \
+ TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ AS_VERSION=${AS_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
+ EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
+
+RUN mkdir -p /mnt/tibco/be/logs \ 
+    mkdir -p /mnt/tibco/be/data-store \
+    mkdir -p /opt/tibco/be/ext \
+    mkdir -p /opt/tibco/be/files 
+
+VOLUME /mnt/tibco/be/logs \
+ /mnt/tibco/be/data-store \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared
+
+# These will always be the listen port for AS and AS Remote URL
+EXPOSE 50000 50001
+
+# JMX Port
+EXPOSE 5555
+
+WORKDIR /home/tibco/be
+
+CMD ["./runbe.sh"]

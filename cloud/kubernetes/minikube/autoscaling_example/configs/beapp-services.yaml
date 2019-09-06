@@ -1,0 +1,43 @@
+# Service to expose http port 8080 for booksapp inference agents.
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: beapp-httpport-service
+spec:
+  selector:
+    name: "beinferenceagent"
+  ports:
+    - protocol: "TCP"
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+---
+
+# Service to expose port 50001, used by Inference agents to connect to discoverynode as Remote Clients.
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bediscovery-service-remote
+spec:
+  selector:
+    name: "bediscoverynode"
+  ports:
+    - protocol: "TCP"
+      port: 50001
+---
+
+# Service to expose port 50000, used by other cache agents to connect to discoverynode to form cluster.
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bediscovery-service
+spec:
+  selector:
+    name: "bediscoverynode"
+  ports:
+    - protocol: "TCP"
+      port: 50000
+---

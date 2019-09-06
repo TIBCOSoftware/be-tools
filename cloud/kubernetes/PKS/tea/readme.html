@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<title>TIBCO BusinessEvents&reg; Enterprise Administrator Agent</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en-us" />
+<link rel="Shortcut Icon"
+	href="../../../../examples/_resources/icon.gif" type="image/gif" />
+<style type="text/css" media="all">
+@import "../../../../examples/_resources/examples.css";
+</style>
+</head>
+
+<body>
+
+
+	<h1>TIBCO BusinessEvents&reg;Enterprise Administrator Agent</h1>
+	<h2>Purpose of this Agent</h2>
+
+	<p>This document shows how to deploy the TIBCO
+		BusinessEvents&reg;Enterprise Administrator Agent.The BE TEA Agent is used to discover and monitor the running BE application instances in the PKS.</p>
+	<h2>Prerequisite</h2>
+	<ul>
+		<li>Docker,Kubectl,PKS cli,Google Cloud cli, needs to be installed and configured</li>
+		<li>Setup PKS on GCP</li>
+		
+		<li>TIBCO BusinessEvents&reg;Enterprise Administrator Agent
+			docker image in Google Container registry</li>
+		<li>TIBCO Enterprise Administrator Server docker image in  Google Container registry</li>
+		<li>TIBCO BusinessEvents&reg;application docker image in  Google Container registry</li>
+		<li>TIBCO Enterprise Administrator Server needs to be running in
+			 Google Container registry</li>
+		<li>TIBCO BusinessEvents&reg;application needs to be running in
+			 Google Container registry</li>
+			 <li>Kubernetes Cluster</li>
+	</ul>
+	<h2>How to Deploy the Application</h2>
+	<ul>
+		<li>Update the image
+			url,teaserver-service-name,teaserver-port,tea-server-username,tea-server-password
+			in <i>beteagentdeploymemt.yaml</i>
+		</li>
+
+		<li>
+			<p>Open a command window and at the command prompt and execute
+				following commands</p> 
+			<pre class="commands">kubectl create -f k8s-authorization.yaml</pre>
+			<pre class="commands">kubectl create -f beteagentdeploymemt.yaml</pre>
+			<pre class="commands">kubectl create -f beteagentinternalservice.yaml</pre>
+		</li>
+		<li><p>
+				Using External IP and port for TEA Server service from Kubernetes and
+				Launch the URL
+				<code>http://External IP:Port</code>
+				using your web browser.
+			</p></li>
+
+		<li><p>Login to the tea server using its credentials.</p></li>
+		<li><p>Click on TIBCO BusinessEvents&reg; product panel.</p></li>
+	</ul>
+
+	<div class="footer">
+		<p>
+			TIBCO BusinessEvents&reg; 5.6<br /> Copyright&copy; 2004-2019 TIBCO
+			Software Inc. All rights reserved.
+		</p>
+	</div>
+
+</body>
+</html>

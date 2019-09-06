@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<title>CreditCard Application - TIBCO BusinessEvents&reg;
+	WebStudio Examples</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en-us" />
+<link rel="Shortcut Icon"
+	href="../../../../examples/_resources/icon.gif" type="image/gif" />
+<style type="text/css" media="all">
+@import "../../../../examples/_resources/examples.css";
+</style>
+<script type="text/javascript"
+	src="../../../../examples/_resources/examples.js" />
+</script>
+
+<script type="text/javascript">
+	SendEventForm.onSubmit = function(form) {
+		var serverUrl = document.getElementById("serverurl").value;
+		form.setAttribute("action", serverUrl + form.getElementsByClassName("sendEventFormDestination")[0].innerHTML);
+		// Prevents caching.
+		var ridName = "_httprequestid_";
+		var ridNode = form.elements[ridName];
+		if (ridNode) {
+		} else {
+			ridNode = document.createElement('input');
+			ridNode.setAttribute("type", "hidden");
+			ridNode.setAttribute("name", ridName);
+			form.appendChild(ridNode);
+		}
+		ridNode.value = new Date().getTime();
+	}
+
+	function buildForms() {
+		var form;
+
+		SendEventForm.setServer("");
+
+		form = SendEventForm.get("sendCreditCardApplicationForm");
+		form.setDestinationPath("/cc/invoke");
+		form.setEventPath("/cc/invoke");
+		form.build();
+	}
+</script>
+</head>
+
+<body onLoad="buildForms()">
+
+
+	<h1>CreditCard Application</h1>
+
+
+	<h2>Purpose of This Example</h2>
+
+	<p>This example shows how to use WebStudio to develop, commit,
+		approve, and deploy business rules. It also shows the execution of
+		deployed business rules and decision tables. In this example, we will
+		create business rules to:</p>
+	<p>Specifically, this example demonstrates how a basic credit card
+		application approval system might utilize Virtual Rule Functions,
+		Decision Tables and rule templates to determine an applicant's credit
+		worthiness, approved credit level, and interest rate.</p>
+	<ul>
+		<li>set credit card status</li>
+		<li>whether applicable for special interest rates</li>
+	</ul>
+
+	<h2>Prerequisite</h2>
+	<ul>
+		<li>
+		<p>
+				For Hot deployment settings - Update <i>BE_HOME</i>/rms/bin/RMS.cdd
+				to set appropriate hot deployment parameters. Refer to property
+				group namely - HotDeploy (go through the documentation for more
+				details).
+			</p></li>
+		<li>Additionally update the cdd for CreditCardApplication,
+			located at <i>BE_HOME</i>/examples/standard/WebStudio/CreditCardApplication/Deployments
+			to add properties indicating where to look for classes/artifacts to
+			hot deploy. Typically this points to the shared location in RMS, i.e.
+			"be.engine.cluster.externalClasses.path" (for DT) points to "<i>BE_HOME</i>/rms/shared/CreditCardApplication/Decision_Tables
+			and "be.cluster.ruletemplateinstances.deploy.dir" (for RTI) points to
+			<i>BE_HOME</i>/rms/shared/CreditCardApplication".
+		</li>
+		<li>Kubectl,Azure cli needs to be installed and configured</li>
+		<li>RMS and CreditCardApplication docker image in Azure container registry</li>
+		<li>Kubernetes cluster needs to be created.</li>
+	</ul>
+	<h2>How to Deploy the Application</h2>
+	<ul>
+		<li>Update the RMS image url in <i>berms.yaml</i></li>
+		<li>Update the CreditCardAplication image url in <i>bediscoverynode.yaml</i>,
+			<i>becache.yaml</i>, <i>beinferenceagent.yaml</i></li>
+		<li>Update the application http channel port(if it is changed) in
+			<i>beinference-service.yaml</i>
+		</li>
+		<li>
+			<p>Open a command window and at the command prompt and execute
+				following commands</p> 
+			<pre class="commands">kubectl create -f bejmx-service.yaml</pre>
+			<pre class="commands">kubectl create -f manifest.yaml</pre>
+			<pre class="commands">kubectl create -f berms-efs-persistent-volume-claims.yaml</pre>
+			<pre class="commands">kubectl create -f berms.yaml</pre> 
+			<pre class="commands">kubectl create -f berms-service.yaml</pre>
+			<pre class="commands">kubectl create -f bediscoverynode.yaml</pre>
+			<pre class="commands">kubectl create -f bediscovery-service.yaml</pre> 
+			<pre class="commands">kubectl create -f becache.yaml</pre>
+			<pre class="commands">kubectl create -f beinferenceagent.yaml</pre> 
+			<pre class="commands">kubectl create -f beinference-service.yaml</pre>
+		</li>
+		<li>
+		Copy the masked persistent volume folders to the same path in the container (When you mount the PVC to the RMS project folder, it will mask the other existing projects that exist at the same path in the container).
+Use below commands for copying required folders in RMS pods.
+kubectl cp \"<b>host_folder_path berms_pod_name:berms_pod_folder_path</b>\"
+<p>
+For ex : 
+
+           <p>kubectl cp security berms-65f89dff4-cwg6z:/opt/tibco/be/5.6/rms/config/</p>
+
+          <p> kubectl cp notify berms-65f89dff4-cwg6z:/opt/tibco/be/5.6/rms/config/</p>
+
+          <p> kubectl cp shared berms-65f89dff4-cwg6z:/opt/tibco/be/5.6/rms/</p>
+
+           <p>kubectl cp WebStudio berms-65f89dff4-cwg6z:/opt/tibco/be/5.6/examples/standard/</p>
+		</p>
+		</li>
+		
+	</ul>
+
+
+	<h2>How to Run the Example</h2>
+
+	<ol>
+	<li>Get External IP and port for befdservice from Kubernetes and
+			set server url.<br />  
+		<b>Server URL:</b> <input type="text" id="serverurl" value="http://localhost:8090" style="height:30px;width:100%">
+		</li>
+		<li>Submit the forms by clcking the given buttons</li>
+		
+		<li><p>
+			Using  External IP and port for RMS service from Kubernetes and
+				Launch the URL
+				<code>http://External IP:Port</code>
+				using your web browser.
+			</p></li>
+
+		<li><p>
+				Login to the dashboard using
+				<code>admin</code>
+				as Username and
+				<code>admin</code>
+				as Password.
+			</p></li>
+
+		<li><p>
+				Checkout the
+				<code>CreditCardApplication</code>
+				project.
+			</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_Checkout.png" />
+			</p></li>
+
+		<li><p>
+				Create a business rule named
+				<code>SpecialOffersRTI</code>
+				based on the rule template named
+				<code>SpecialOffers</code>
+				. Set the values in the business rule as shown and save it.
+			</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_RTIBuilder.png" />
+			</p></li>
+
+		<li><p>
+				Create a business rule named
+				<code>PreScreenRTI</code>
+				based on the rule template named
+				<code>Applicant_PreScreen</code>
+				. Set the values in the business rule as shown and save it.
+			</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_RTIView.png" />
+			</p></li>
+
+		<li><p>Commit the changes.</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_Commit.png" />
+			</p></li>
+
+		<li><p>Approve the changes.</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_Approve.png" />
+			</p></li>
+
+
+
+		<li><p>Build and deploy the changes.</p>
+			<p align="center">
+				<image src="../../../../examples/standard/WebStudio/images/newUI/CCA_BuildAndDeploy.png" />
+			</p></li>
+
+		<li><p>
+				You will now find PreScreenRTI.ruletemplateinstance &
+					SpecialOffersRTI.ruletemplateinstance in mounted location
+					shared/CreditCardApplication/BusinessRules
+			</p></li>
+
+		<li><p>Send an application for getting a CreditCard. Figure
+				out the credit card type applicable and whether you apply for
+				special rates.</p>
+
+			<form id="sendCreditCardApplicationForm"></form>
+
+			<p>
+				In the command window you see messages like this:
+
+				<pre class="logs">
+Application Request successfully Received !!
+Applicant Name >>> John Doe
+Status[VISA Granted], Eligible[false] & CreditLimit[2500.0]
+Min Income[1000], Min Age[20] Credit Type [Installment]
+Applicant qualifies for a special interest rate
+New rates - Default Rate [11.75] & Interest Rate [12.5]
+</pre></li>
+	</ol>
+
+	<div class="footer">
+		<p>
+			TIBCO BusinessEvents&reg; 5.6<br /> Copyright&copy; 2004-2019 TIBCO
+			Software Inc. All rights reserved.
+		</p>
+	</div>
+
+</body>
+</html>

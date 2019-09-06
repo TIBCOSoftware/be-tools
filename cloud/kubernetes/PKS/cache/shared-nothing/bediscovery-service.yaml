@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bediscovery
+  labels:
+    svc: bediscovery
+spec:
+  selector:
+    name: becacheagent # see 'name' of StatefulSet in becache-sn.yaml
+  ports:
+    - protocol: TCP
+      port: 50000
+  clusterIP: None

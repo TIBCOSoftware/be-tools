@@ -1,0 +1,78 @@
+#Storage class
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: befilesc
+provisioner: kubernetes.io/azure-file
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1000
+  - gid=1000
+parameters:
+  skuName: Standard_LRS
+---
+
+#Persistent volume claim for shared
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: azurefile-shared
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "befilesc"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+
+#Persistent volume claim for security
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: azurefile-security
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "befilesc"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+#Persistent volume claim for webstudio
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: azurefile-webstudio
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "befilesc"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+
+#Persistent volume claim for notify
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: azurefile-notify
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "befilesc"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---

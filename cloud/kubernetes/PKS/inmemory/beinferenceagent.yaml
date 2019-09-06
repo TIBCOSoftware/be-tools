@@ -1,0 +1,23 @@
+# Deployment of inference
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "beinferenceagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent"
+    spec:
+      containers:
+      - name: "beinferenceagent-container"
+        image: "com.tibco.be.fd:v68"
+        env:
+        - name: PU
+          value: "default"       
+        resources:
+          requests:
+            memory: 700Mi
+---

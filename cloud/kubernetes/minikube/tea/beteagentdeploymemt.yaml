@@ -1,0 +1,31 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: beteagent
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        dep_name: "be-teagent-label"
+    spec:
+      containers:
+      - name: be-teagent-container
+        #The BE teagent image repo name. Change this to your teagent image name.
+        image: "beteagent:latest"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TEA_SERVER_URL
+          #Change this to your TEA Server service-name.
+          value: "http://tea-service:8777"
+        - name: TEA_SERVER_USERNAME
+          #TEA server authentication. Change these if required.
+          value: "admin"
+        - name: TEA_SERVER_PASSWORD
+          value: "admin"
+        - name: BE_TEA_AGENT_URL
+          #Internal service of BE TEA Agent to connect to TEA server
+          value: "http://beteagent-service:9777"
+        resources:
+          requests:
+            memory: 700Mi
