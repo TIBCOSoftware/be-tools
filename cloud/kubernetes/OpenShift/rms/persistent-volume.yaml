@@ -1,0 +1,65 @@
+#Persistent volume for security
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: security-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: <nfs_server>
+    path: <volume_path>
+---
+
+#Persistent volume for shared
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: <nfs_server>
+    path: <volume_path>
+---
+#Persistent volume for webstudio
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: webstudio-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: <nfs_server>
+    path: <volume_path>
+---
+#Persistent volume for notify
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: notify-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: <nfs_server>
+    path: <volume_path>
+---

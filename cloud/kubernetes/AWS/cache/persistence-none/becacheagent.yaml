@@ -1,0 +1,19 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "becacheagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "becacheagent"
+    spec:
+      containers:
+      - name: "becacheagent-container"
+        image: "<aws-registry>/<be-appimage:tag>"
+        env:
+        - name: PU
+          value: "cache"
+        - name: AS_DISCOVER_URL
+          value: "tcp://bediscovery-service:50000"

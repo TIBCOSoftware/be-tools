@@ -1,0 +1,24 @@
+#storage classes
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: pkssa
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+---
+#Peristent volume claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: pkssa
+---

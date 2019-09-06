@@ -1,0 +1,14 @@
+#External service  for FraudDetection application
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: "befdservice"
+spec:
+  selector:
+    name: "beinferenceagent"
+  ports:
+    - protocol: "TCP"
+      port: 8108
+  type: NodePort
+---

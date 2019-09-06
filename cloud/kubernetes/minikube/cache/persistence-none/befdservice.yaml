@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "befdservice"
+spec:
+  selector:
+    name: "beinferenceagent"
+  ports:
+    - protocol: "TCP"
+      port: 8109
+  type: NodePort

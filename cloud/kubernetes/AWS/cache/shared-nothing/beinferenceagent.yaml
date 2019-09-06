@@ -1,0 +1,39 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: beinferenceagent
+spec:
+  serviceName: "bediscovery" #Should match the headless service name i nbediscovery-service.yaml
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent" # used as selector in the external load balanced service 'inference' defined in bediscovery-service.yaml
+    spec:
+      containers:
+      - name: beinferenceagent-container
+        image: "<aws-registry>/<be-appimage:tag>"
+        env:
+        - name: PU
+          value: "default"
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: AS_DISCOVER_URL
+          value: tcp://becacheagent-0.bediscovery.default.svc.cluster.local:50000
+        volumeMounts:
+          - mountPath: "/mnt/tibco/be/data-store"
+            name: snstore
+      terminationGracePeriodSeconds: 20
+  volumeClaimTemplates:
+    - metadata:
+        name: snstore
+        annotations:
+          volume.beta.kubernetes.io/storage-class: aws-efs
+      spec:
+        storageClassName: aws-efs
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 0.5Gi

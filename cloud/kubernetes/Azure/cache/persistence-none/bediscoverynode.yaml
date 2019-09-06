@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "bediscoverynode"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "bediscoverynode"
+        jmx: "enabled"
+    spec:
+      containers:
+      - name: "bediscoverynode-container"
+        image: <image>
+        imagePullPolicy: Always
+        env:
+        - name: PU
+          value: "cache"
+        - name: AS_PROXY_NODE
+          value: "true"
+      imagePullSecrets:             # Add imagePullSecrets if required
+      - name: <secret-name>

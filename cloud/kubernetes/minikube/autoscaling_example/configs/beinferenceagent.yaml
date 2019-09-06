@@ -1,0 +1,31 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: beinferenceagent
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent"
+    spec:
+      terminationGracePeriodSeconds: 180
+      containers:
+      - name: "beinferenceagent-container"
+        image: "booksapp:1.0"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PU
+          value: "default"
+        - name: AS_DISCOVER_URL
+          value: "tcp://bediscovery-service-remote:50001?remote=true"
+        - name: tra.java.heap.size.initial
+          value: 512m
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 1
+          limits:
+            memory: 1536Mi
+            cpu: 1
+

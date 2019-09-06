@@ -1,0 +1,30 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: becacheagent
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "becacheagent"
+    spec:
+      terminationGracePeriodSeconds: 180
+      containers:
+      - name: "becacheagent-container"
+        image: "booksapp:1.0"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PU
+          value: "cache"
+        - name: AS_DISCOVER_URL
+          value: "tcp://bediscovery-service:50000"
+        - name: tra.java.heap.size.initial
+          value: 512m
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 1
+          limits:
+            memory: 1536Mi
+            cpu: 1

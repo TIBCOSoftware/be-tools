@@ -1,0 +1,21 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "beinferenceagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent"
+    spec:
+      containers:
+      - name: "beinferenceagent-container"
+        image: <image>
+        env:
+        - name: PU
+          value: "default"
+        - name: AS_DISCOVER_URL
+          value: "tcp://bediscovery-service:50000"
+      imagePullSecrets:             # Add imagePullSecrets if required
+      - name: <secret-name>
