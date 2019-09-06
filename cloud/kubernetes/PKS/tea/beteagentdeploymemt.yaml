@@ -1,0 +1,24 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: beteagent
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        dep_name: "be-teagent-label"
+    spec:
+      containers:
+      - name: be-teagent-container
+        image: "<aws-registry>/<be-image:tag>"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TEA_SERVER_URL
+          value: "http://<teaserver-service-name>:<teaserver-port>"       
+        - name: TEA_SERVER_USERNAME
+          value: "<tea-server-username>"
+        - name: TEA_SERVER_PASSWORD
+          value: "<tea-server-password>"
+        - name: BE_TEA_AGENT_URL
+          value: "http://beteagent-service:9777"

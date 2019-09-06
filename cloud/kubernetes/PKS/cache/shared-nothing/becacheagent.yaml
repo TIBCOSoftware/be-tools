@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: becacheagent
+spec:
+  serviceName: "bediscovery" #Should match the headless service 'bediscovery' defined in bediscovery-service-sn.yaml
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "becacheagent" #used as selector in the headless service 'bediscovery' defined in bediscovery-service-sn.yaml
+    spec:
+      containers:
+      - name: becacheagent-container
+        image: <image>
+        env:
+        - name: PU
+          value: "cache"
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: AS_DISCOVER_URL
+          value: tcp://becacheagent-0.bediscovery.default.svc.cluster.local:50000
+        volumeMounts:
+          - mountPath: "/mnt/tibco/be/data-store"
+            name: snstore
+      imagePullSecrets:
+      - name: <secret_name>
+      terminationGracePeriodSeconds: 20
+  volumeClaimTemplates:
+    - metadata:
+        name: snstore
+        annotations:
+          volume.beta.kubernetes.io/storage-class: pksgcp
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 0.5Gi

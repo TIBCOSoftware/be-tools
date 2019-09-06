@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: bejmx-service
+spec:
+  selector:
+    dep_name: beinference-label
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555

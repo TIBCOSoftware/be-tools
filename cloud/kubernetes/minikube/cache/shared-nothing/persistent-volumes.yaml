@@ -1,0 +1,30 @@
+#Peristent volume for cache
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cache-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  hostPath:
+    path: /data/cache/
+---
+#Persistent volume for infernece
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: inference-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  hostPath:
+    path: /data/inference/
+---

@@ -1,0 +1,67 @@
+#Create persistent volume for security
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-security
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  storageClassName: aws-efs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+
+#Create persistent volume for notify
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-notify
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  storageClassName: aws-efs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+
+#Create persistent volume for WebStudio project
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-webstudio
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  storageClassName: aws-efs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+
+#Create persistent volume for shared data
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-shared
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  storageClassName: aws-efs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---

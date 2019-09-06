@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: beinference-service
+spec:
+  selector:
+    dep_name: beinference-label
+  ports:
+    - name: port1
+      protocol: TCP
+      port: 8010
+    - name: port2
+      protocol: TCP
+      port: 9890
+  externalIPs:
+  - 192.168.99.100

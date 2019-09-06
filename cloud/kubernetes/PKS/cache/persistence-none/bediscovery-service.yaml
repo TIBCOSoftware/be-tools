@@ -1,0 +1,10 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "bediscovery-service"
+spec:
+  selector:
+    name: "bediscoverynode"
+  ports:
+    - protocol: "TCP"
+      port: 50000

@@ -1,0 +1,62 @@
+#
+# TIBCO BusinessEvents Dockerfile-teagent_fromtar
+# To be used for creation with the frominstall/build_teagent_image script
+#
+FROM ubuntu:latest
+MAINTAINER Tibco Software Inc tsi@tibco.com
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG DOCKERFILE_NAME
+ARG JRE_VERSION
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+RUN apt-get update \
+ && apt-get install -y unzip procps findutils hostname
+
+ADD be.tar /opt/tibco
+COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
+
+WORKDIR /home/tibco/be
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
+ && chmod +x *.sh
+
+WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+RUN echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+ENV PU=default \
+ ENGINE_NAME=be-engine \
+ LOG_LEVEL=na \
+ DOCKER_HOST=localhost \
+ TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ COMPONENT=tea \
+ BE_TEA_AGENT_AUTO_REGISTER_ENABLE=false \
+ BE_TEA_AGENT_MONITORING_ONLY=true \
+ TEA_SERVER_URL="http://localhost:8777" \
+ TEA_SERVER_USERNAME=admin \
+ TEA_SERVER_PASSWORD=admin \
+ BE_INSTANCE_DISCOVERY_TYPE=k8s \
+ BE_INSTANCE_POLLAR_INTERVAL=30 
+
+RUN mkdir -p /mnt/tibco/be/logs \
+ && mkdir -p /mnt/tibco/be/data-store
+
+#Logs
+VOLUME /mnt/tibco/be/ \
+ /opt/tibco/be/${BE_SHORT_VERSION}/teagent/logs/
+
+# JMX Port
+EXPOSE 5555
+
+WORKDIR /home/tibco/be
+RUN chmod +x *.py
+CMD ["./runbe.sh"]
+

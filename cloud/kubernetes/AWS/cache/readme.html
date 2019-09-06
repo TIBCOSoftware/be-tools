@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Fraud Detection Cache - TIBCO BusinessEvents&reg;
+	Examples</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en-us" />
+<link rel="Shortcut Icon"
+	href="../../../../examples/_resources/icon.gif" type="image/gif" />
+<style type="text/css" media="all">
+@import "../../../../examples/_resources/examples.css";
+</style>
+<script type="text/javascript"
+	src="../../../../examples/_resources/examples.js" />
+</script>
+<script type="text/javascript">
+	SendEventForm.onSubmit = function(form) {
+		 var serverUrl = document.getElementById("serverurl").value;
+   		 form.setAttribute("action", serverUrl + form.getElementsByClassName("sendEventFormDestination")[0].innerHTML);
+		// Prevents caching.
+		var ridName = "_httprequestid_";
+		var ridNode = form.elements[ridName];
+		if (ridNode) {
+		} else {
+			ridNode = document.createElement('input');
+			ridNode.setAttribute("type", "hidden");
+			ridNode.setAttribute("name", ridName);
+			form.appendChild(ridNode);
+		}
+		ridNode.value = new Date().getTime();
+	}
+
+	function buildForms() {
+		var form;
+		SendEventForm.setServer("");
+
+		form = SendEventForm.get("createAccountForm");
+		form.setDestinationPath("/Channels/HTTP/AllOps");
+		form.setEventPath("/Events/CreateAccount");
+		form.addProperty("AccountId", "Bob");
+		form.addProperty("Balance", "20000");
+		form.addProperty("AvgMonthlyBalance", "11000");
+		form.build();
+
+		form = SendEventForm.get("debitAccountForm");
+		form.setDestinationPath("/Channels/HTTP/AllOps");
+		form.setEventPath("/Events/Debit");
+		form.addProperty("AccountId", "Bob");
+		form.addProperty("Amount", "2000");
+		form.build();
+
+	}
+</script>
+</head>
+<body onLoad="buildForms()">
+
+
+	<h1>Fraud Detection Cache</h1>
+
+	<h2>Purpose of This Example</h2>
+
+	<p>This example builds on the Fraud Detection example with Cache and Store functionality.
+		Fraud Detection is a commonly used scenario for highlighting what's
+		different about CEP because it shows how the CEP engine correlates
+		different events using a time window or other criteria. In this
+		example, fraud is suspected when either of the following occurs:</p>
+	<ul>
+		<li>The account incurs more than three debit transactions in a
+			two minute period.</li>
+		<li>The sum of the debits that occurs in a two minute period
+			totals more than 80% of the average monthly balance of the account.</li>
+	</ul>
+
+	<p>
+		This example is used to demonstrate the <i>TIBCO
+			BusinessEvents&reg; </i> persistence-none,shared-nothing and shared-all
+		application.
+	</p>
+	<p>NOTE: Use Google Chrome or Mozilla Firefox browsers to view the
+		Send Button in the readme.html. The Send button can be used to provide
+		test data to the example application.</p>
+
+	
+	<p>This readme.html has given steps to create the kubernetes cluster using kops tool and AWS eksctl utility </p>
+
+	<!-- Start of Persistence None -->
+	<h2>Pesistence-None</h2>
+	<ul>
+		<li>
+			<h3>Prerequisite</h3>
+				<h4>Using kops tool</h4>
+				<ul>
+					<li>FraudDetectionCache docker image in ECR</li>
+					<li>Kubectl,AWS cli,kops tool needs to be installed and configured	</li>
+					<li>Kubernetes cluster needs to be created.</li>
+				</ul>
+				
+				<h4>Using eksctl utility</h4>
+				<ul>
+					<li>FraudDetectionCache docker image in ECR</li>
+					<li>Kubectl,AWS cli,eksctl needs to be installed and configured	</li>
+					<li>EKS cluster needs to be created.Refer AWS documentation to create the EKS  cluster</li>
+				</ul>
+		</li>
+
+		<li>
+			<h3>How to Deploy the Application</h3>
+			<ul>
+				<li>Update the image url in <i>bediscoverynode.yaml</i>, <i>becacheagent.yaml</i>,
+					<i>beinferenceagent.yaml</i>
+				</li>
+				<li>Update the application http channel port(if it is changed)
+					in <i>befdservice.yaml</i>
+				</li>
+				<li>
+					<p>Open a command window and at the command prompt and execute
+						following commands</p> 
+					<pre class="commands">kubectl create -f bediscoverynode.yaml</pre> 
+					<pre class="commands">kubectl create -f bediscovery-service.yaml</pre> 
+					<pre class="commands">kubectl create -f becacheagent.yaml</pre> 
+					<pre class="commands">kubectl create -f beinferenceagent.yaml</pre>
+					<pre class="commands">kubectl create -f befdservice.yaml</pre>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<!-- End of Persistence None -->
+	
+	<!-- Start of Shared None -->
+
+	<h2>Shared-Nothing</h2>
+	<p>Deployment of shared nothing application needs file system to be mounted. </p>
+	<ul>
+		<li>
+			<h3>Prerequisite</h3>
+			<h4>Using kops tool</h4>
+				<ul>
+					<li>FraudDetectionStore (Shared-none persistence option) docker image in ECR</li>
+					<li>Kubectl,AWS cli,kops tool needs to be installed and configured	</li>
+					<li>Kubernetes cluster needs to be created.</li>
+					<li>EFS Needs to be created in same vpc of kubernetes cluster.Open NFS port in worker node security group.Source is id of same security group.</li>
+				</ul>
+				
+				<h4>Using eksctl utility</h4>
+				<ul>
+					<li>FraudDetectionStore (Shared-none persistence option) docker image in ECR</li>
+					<li>Kubectl,AWS cli,eksctl needs to be installed and configured	</li>
+					<li>EKS cluster needs to be created.Refer AWS documentation to create the EKS  cluster</li>
+					<li>EFS Needs to be created in same vpc of eks cluster.Open NFS port in worker node security group.Source is id of same security group.</li>
+				</ul>
+				
+		</li>
+
+		<li>
+			<h3>How to Deploy the Application</h3>
+			<ul>
+				<li>Replace 'aws-region' token by your AWS region in manifest.yaml</li>
+				<li>Update the image url in <i>bediscoverynode.yaml</i>, <i>becacheagent.yaml</i>,
+					<i>beinferenceagent.yaml</i>
+				</li>
+				<li>Update the application http channel port(if it is changed)
+					in <i>befdservice.yaml</i>
+				</li>
+				<li>
+					<p>Open a command window and at the command prompt and execute
+						following commands</p>
+					<p><b>Note:</b>manifest.yaml file is required to run if you are using kops tool. If you are using EKS then update <i> volume.beta.kubernetes.io/storage-class</i> value to gp2 in 
+					becacheagent.yaml,beinferenceagent.yaml </p>
+					<pre class="commands">kubectl create -f manifest.yaml</pre> 
+					<pre class="commands">kubectl create -f becacheagent.yaml</pre> 
+					<pre class="commands">kubectl create -f bediscovery-service.yaml</pre> 
+					<pre class="commands">kubectl create -f beinferenceagent.yaml</pre>
+					<pre class="commands">kubectl create -f befdservice.yaml</pre>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<!-- End of Shared-None -->
+
+	<!-- Start of Shared All -->
+
+	<h2>Shared-All</h2>
+	<p>Deployment of shared all application needs database to be configured. </p>
+	<ul>
+		<li>
+			<h3>Prerequisite</h3>
+			<h4>Using kops tool</h4>
+				<ul>	
+					<li>Create GV for DB configuration and use it in shared resource</li>
+					<li>FraudDetectionStore (Shared-All persistence option) docker image in ECR</li>
+					<li>Kubectl,AWS cli,kops tool needs to be installed and configured	</li>
+					<li>Kubernetes cluster needs to be created.</li>
+					<li>Database needs to be setup on AWS.Add inbound rule for used database port</li>
+				</ul>
+				
+				<h4>Using eksctl utility</h4>
+				<ul>
+					<li>FraudDetectionStore (Shared-All persistence option) docker image in ECR</li>
+					<li>Kubectl,AWS cli,eksctl needs to be installed and configured	</li>
+					<li>EKS cluster needs to be created.Refer AWS documentation to create the EKS  cluster</li>
+					<li>Database needs to be setup on AWS. Add inbound rule for used database port</li>
+				</ul>
+		</li>
+
+		<li>
+			<h3>How to Deploy the Application</h3>
+			<ul>
+				<li>Update the database configuration in <i>db-configmap.yaml</i>
+				</li>
+				<li>Update the image url in <i>bediscoverynode.yaml</i>, <i>becacheagent.yaml</i>,
+					<i>beinferenceagent.yaml</i></li>
+					<li>Update database related GV's used in project in <i>bediscoverynode.yaml</i>, <i>becacheagent.yaml</i>,
+					<i>beinferenceagent.yaml</i>
+				</li>
+				<li>Update the application http channel port(if it is changed)
+					in <i>befdservice.yaml</i>
+				</li>
+				<li>Run the database specific script from <i>BE_HOM/bin in configured database in AWS </i></li>
+				<li>Run the database specific script generated in project in configured database in AWS</li>
+				<li>
+					<p>Open a command window and at the command prompt and execute
+						following commands</p> 
+					<pre class="commands">kubectl create -f db-configmap.yaml</pre> 
+					<pre class="commands">kubectl create -f bediscoverynode.yaml</pre> 
+					<pre class="commands">kubectl create -f bediscovery-service.yaml</pre> 
+					<pre class="commands">kubectl create -f becacheagent.yaml</pre> 
+					<pre class="commands">kubectl create -f beinferenceagent.yaml</pre>
+					<pre class="commands">kubectl create -f befdservice.yaml</pre>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<!-- End of Shared-all -->
+
+
+	<h2>How to Run the Example</h2>
+	<ol>
+		<li>Get External IP and port for befdservice from Kubernetes and
+			set server url.<br />  <b>Server URL:</b> <input type="text" id="serverurl" value="http://localhost:8209" style="height: 30px;width:100%">
+				
+		</li>
+		<li>Submit the forms by clicking the given buttons</li>
+
+		<li>
+			<p>Create an account and give it a balance and an average monthly
+				balance. Enter a name in the Account ID field. Enter, for example,
+				10000 in the Balance, and 20000 in the AvgMonthlyBalance fields.
+				Repeat this step to create multiple accounts, as desired.</p> Host:
+
+			<form id="createAccountForm"></form>
+
+			<p>
+				In the command window you see a message like this: <span
+					class="logs">#### Created account Bob.</span>
+			</p>
+		</li>
+
+
+		<li>
+			<p>Now debit the account. In the AccountId field, enter one of
+				the account names you specified above. Enter the amount of the debit
+				in the Amount field. Then click Send.</p>
+
+			<form id="debitAccountForm"></form>
+
+			<p>
+				In the command window you see messages like this (the actual message
+				depends on the account balance, the average monthly balance, and
+				other events that happened in the two minute window): <span
+					class="logs">#### Debiting account Bob by $1000.0</span>
+			</p>
+		</li>
+
+
+		<li>
+			<p>Rules in the project react to various inputs depending on
+				current facts in the Rete network. You can try the following.</p>
+
+			<table>
+				<tr>
+					<th>Action</th>
+					<th>Message</th>
+				</tr>
+				<tr>
+					<td>In the /Events/CreateAccount form, enter the same account
+						name two times.</td>
+					<td><pre class="logs">#### Account already exists: Bob</pre></td>
+				</tr>
+				<tr>
+					<td>In the /Events/Debit form, enter a debit amount greater
+						than the account balance.</td>
+					<td><pre class="logs">#### Account ID Bob STATUS set to Suspended. <br>Balance -1000.0 is less than zero
+								
+						</pre></td>
+				</tr>
+				<tr>
+					<td>In the Events/Debit form, debit an account that was set to
+						Suspended.</td>
+					<td><pre class="logs">#### Cannot debit the suspended account Bob</pre></td>
+				</tr>
+				<tr>
+					<td>In the Events/Debit form, match the fraud detection
+						criteria to meet both of the following conditions:
+						<ul>
+							<li>Make 3 debits within 2 minutes</li>
+							<li>Make debits such that the sum of the debits occurring in
+								a two minute period totals more than 80% of the average monthly
+								balance of the account.</li>
+						</ul>
+					</td>
+					<td><pre class="logs">#### Account ID Bob STATUS set to Suspended. <br>Fraud suspected
+								
+						</pre></td>
+				</tr>
+			</table>
+		</li>
+
+		<li>
+			<p>To reset the data, restart the engine at the command line.</p>
+		</li>
+
+	</ol>
+
+
+
+	<div class="footer">
+		<p>
+			TIBCO BusinessEvents&reg; 5.6<br /> Copyright&copy; 2004-2019 TIBCO
+			Software Inc. All rights reserved.
+		</p>
+	</div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+#Persistent volume claim for shared folder
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: shared-pvc
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: shared-pv
+  storageClassName: standard
+
+---
+
+#Persistent volume claim for security folder
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: security-pvc
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: security-pv
+  storageClassName: standard
+---
+
+#Persistent volume claim for webstudio folder
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: webstudio-pvc
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: webstudio-pv
+  storageClassName: standard
+---
+#Persistent volume claim for notify folder
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: notify-pvc
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: notify-pv
+  storageClassName: standard
+---
+
+
+
+

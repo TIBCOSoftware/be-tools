@@ -1,0 +1,43 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: berms
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        dep_name: "berms-label"
+    spec:
+      containers:
+      - name: berms-container
+        image: <RMS Image>
+        imagePullPolicy: Always
+        env:
+        - name: PU
+          value: "default"
+        - name: COMPONENT
+          value: "rms"
+        volumeMounts:
+        - mountPath: "/opt/tibco/be/5.6/rms/shared/"
+          name: shared
+        - mountPath: "/opt/tibco/be/5.6/rms/config/security/"
+          name: security
+        - mountPath: "/opt/tibco/be/5.6/examples/standard/WebStudio/"
+          name: webstudio
+        - mountPath: "/opt/tibco/be/5.6/rms/config/notify/"
+          name: notify
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: efs-shared
+        - name: security
+          persistentVolumeClaim:
+            claimName: efs-security
+        - name: webstudio
+          persistentVolumeClaim:
+            claimName: efs-webstudio
+        - name: notify
+          persistentVolumeClaim:
+            claimName: efs-notify
+

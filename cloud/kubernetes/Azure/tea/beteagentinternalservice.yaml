@@ -1,0 +1,10 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: beteagent-service
+spec:
+  selector:
+    dep_name: "be-teagent-label"
+  ports:
+    - protocol: TCP
+      port: 9777

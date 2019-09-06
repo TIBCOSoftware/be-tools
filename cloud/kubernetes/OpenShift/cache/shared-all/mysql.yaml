@@ -1,0 +1,32 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: "mysql"
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: <Openshift CentOS based image>
+        env:
+        - name: MYSQL_USER
+          value: BE_USER
+        - name: MYSQL_PASSWORD
+          value: BE_USER
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        - name: MYSQL_DATABASE
+          value: BE_DATABASE
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-vol
+          mountPath: /var/lib/mysql/data
+      volumes:
+      - name: mysql-vol
+        persistentVolumeClaim:
+          claimName: mysql-pvc

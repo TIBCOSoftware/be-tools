@@ -1,0 +1,62 @@
+#Persistent volume claim for security
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: security-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "pksrmsgcp"
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+#Persistent volume claim for shared
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: shared-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "pksrmsgcp"
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+---
+#Persistent volume claim for webstudio
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: webstudio-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "pksrmsgcp"
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+
+#Persistent volume claim for notify
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: notify-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "pksrmsgcp"
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+

@@ -1,0 +1,32 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: bediscoverynode
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "bediscoverynode"
+        jmx: "enabled"
+    spec:
+      terminationGracePeriodSeconds: 180
+      containers:
+      - name: "bediscoverynode-container"
+        image: "booksapp:1.0"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PU
+          value: "cache"
+        - name: AS_PROXY_NODE
+          value: "true"
+        - name: tra.java.heap.size.initial
+          value: 512m
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 1
+          limits:
+            memory: 1536Mi
+            cpu: 1
+

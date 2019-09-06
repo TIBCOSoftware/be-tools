@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "bediscoverynode"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "bediscoverynode"
+        jmx: "enabled"
+    spec:
+      containers:
+      - name: "bediscoverynode-container"
+        image: "fdcache:latest"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PU
+          value: "cache"
+        resources:
+          requests:
+            memory: 700Mi

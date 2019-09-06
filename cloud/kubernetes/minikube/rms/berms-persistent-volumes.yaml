@@ -1,0 +1,68 @@
+# Persistent volumes used in shared
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: standard
+  hostPath:
+    path: /data/shared/
+---
+
+# Persistent volumes used in security
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: security-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: standard
+  hostPath:
+    path: /data/security/
+
+---
+
+# Persistent volumes used in webstudio
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: webstudio-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: standard
+  hostPath:
+    path: /data/webstudio/
+---
+
+# Persistent volumes used in notify
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: notify-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: standard
+  hostPath:
+    path: /data/notify/
+---
