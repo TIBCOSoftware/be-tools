@@ -1,7 +1,3 @@
-# be-tools
-
-## Introduction
---------------------------------------
-<This is a place-holder README for be-tools repository, to be updated soon.>
-
-The main purpose of this reposiotry is to provide tooling around TIBCO Business Events product.
+# TIBCO BusinessEvents Tools
+The `be-tools` repository provide different tools to work on TIBCO BusinessEvents applications.
+The `cloud` folder provide tools that enables you deploy and monitor your TIBCO BusinessEvents applications on different cloud platforms by using Docker and Kubernetes.
