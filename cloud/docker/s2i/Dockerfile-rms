@@ -1,0 +1,122 @@
+#
+# BusinessEvents Dockerfile
+#
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG AS_VERSION
+ARG JRE_VERSION
+ARG AS_SHORT_VERSION
+
+FROM ubuntu:latest as intermediate
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG BE_PRODUCT_ADDONS
+ARG BE_PRODUCT_HOTFIX
+ARG AS_PRODUCT_HOTFIX
+ARG AS_VERSION
+ARG DOCKERFILE_NAME
+ARG JRE_VERSION
+ARG TEMP_FOLDER
+
+LABEL be-intermediate-image=true
+
+RUN apt-get update \
+ && apt-get install -y unzip procps findutils
+
+COPY lib/*.pm lib/*.py lib/*.sh installers/* /home/tibco/be/
+
+ENV TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ AS_VERSION=${AS_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
+
+WORKDIR /home/tibco/be
+RUN chmod +x *.sh *.pm
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./runbe.sh')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
+ && rm -rf as_installers be_installers *.zip \
+ && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
+
+WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
+RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
+ && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
+ && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+# Cleanup.
+RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws \
+  && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+
+#Discard intermediate image and just copy the installation to a new image.
+FROM ubuntu:latest
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG AS_VERSION
+ARG AS_SHORT_VERSION
+ARG JRE_VERSION
+
+COPY --from=intermediate /home/tibco/be /home/tibco/be
+
+COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
+
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/mm /opt/tibco/be/${BE_SHORT_VERSION}/mm
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/rms /opt/tibco/be/${BE_SHORT_VERSION}/rms
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/WebStudio /opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/WebStudio
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/studio /opt/tibco/be/${BE_SHORT_VERSION}/studio
+
+COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
+COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+ENV PU=default \
+ ENGINE_NAME=be-engine \
+ LOG_LEVEL=na \
+ DOCKER_HOST=localhost \
+ AS_DISCOVER_URL=self \
+ AS_PROXY_NODE=false \
+ TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ AS_VERSION=${AS_VERSION} \
+ AS_HOME=/opt/tibco/as/${AS_SHORT_VERSION} \
+ JRE_VERSION=${JRE_VERSION} \
+ JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ COMPONENT=rms
+
+RUN mkdir -p /mnt/tibco/be/logs \
+ && mkdir -p /mnt/tibco/be/data-store
+
+#Logs, data-store and RMS volumes
+VOLUME /mnt/tibco/be/logs \
+ /mnt/tibco/be/data-store \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/security \
+ /opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/WebStudio \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/notify \
+ /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared
+
+# These will always be the listen port for AS and AS Remote URL
+EXPOSE 50000 50001
+
+# JMX Port
+EXPOSE 5555
+
+#RMS PORTs
+EXPOSE 8090 5000
+
+WORKDIR /home/tibco/be
+CMD ["./runbe.sh"]

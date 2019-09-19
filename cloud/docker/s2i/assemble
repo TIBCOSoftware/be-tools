@@ -1,0 +1,11 @@
+#!/bin/bash
+#Copyright © 2019. TIBCO Software Inc.
+
+
+cp -R /tmp/src/*.cdd /opt/tibco/be/application
+cp -R /tmp/src/* /opt/tibco/be/application
+cp -R /tmp/src/*.jar /opt/tibco/be/ext
+mkdir -p /opt/tibco/be/application/ear
+
+cp -R /tmp/src/*.ear /opt/tibco/be/application/ear
+rm /opt/tibco/be/application/*.ear
