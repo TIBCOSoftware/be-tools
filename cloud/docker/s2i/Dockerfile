@@ -2,7 +2,12 @@
 # Dockerfile for s2i builder image
 #
 
-FROM com.tibco.be:5.6.0-v01
+ARG BE_TAG
+ARG ARG_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+
+#FROM com.tibco.be:5.6.0-v01
+FROM "$BE_TAG":"$ARG_VERSION"-"$BE_PRODUCT_IMAGE_VERSION"
 
 # Defines the location of the S2I
 LABEL io.openshift.s2i.scripts-url=image:///usr/local/s2i

@@ -243,7 +243,7 @@ echo "Deleting temporary intermediate image.."
 docker rmi $(docker images -q -f "label=be-intermediate-image=true")
 
 
-docker build -f $S2I_DOCKER_FILE -t s2ibuilder:01 .
+docker build -f $S2I_DOCKER_FILE --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$BE_PRODUCT_IMAGE_VERSION" -t s2ibuilder:01 .
 
 docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$BE_PRODUCT_IMAGE_VERSION"
 
