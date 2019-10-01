@@ -34,7 +34,7 @@ RUN apt-get update \
  && apt-get install -y unzip procps findutils
 
 
-COPY lib/*.pm lib/*.py lib/*.sh installers/* /home/tibco/be/
+COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
@@ -46,7 +46,7 @@ ENV TIBCO_HOME=/opt/tibco \
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./runbe.sh')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
  && rm -rf as_installers be_installers *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
@@ -124,4 +124,4 @@ EXPOSE 50000 50001
 EXPOSE 5555
 
 WORKDIR /home/tibco/be
-CMD ["./runbe.sh"]
+CMD ["./run"]
