@@ -1,17 +1,17 @@
 #!/bin/bash
 #Copyright © 2019. TIBCO Software Inc.
 cat <<EOF
-Openshift's source to image for TIBCO BE is a toolkit for creating reproducible Docker images from application EAR and CDD files.
+Openshift's Source-to-Image (S2I) is a framework for building reproducible container images making it super easy for developers to provide application source code as an input and produce a new image that runs the assembled application as output.
+
+TIBCO Business Events's S2I support allows users to create a reusable builder image while the developer can provide end application source code (via ear & cdd) to create and run the assembled image.
 
 Follow the given steps to use S2I for deploying applications:
 
 Clone https://github.com/TIBCOSoftware/be-tools.git using git clone command on your local machine.
-Go to the folder cloud/docker/s2i which will be your S2I_HOME.
-Add application files such as the EAR and CDD of the application to the folder $S2I_HOME/appsrc/ .
-Open terminal and go to folder $S2I_HOME
+Open terminal and go to folder cloud/docker/s2i
 
 
-To create builder image:
+Lets start off with creating a reusable builder image:
 ./create_builder_image.sh -l <installers-location> -v <BE-version> -i <image-version>
 
 where
@@ -25,20 +25,16 @@ where
 
 
 For example:
-./create_builder_image.sh -l /Users/TIBCO_HOME56/be/5.6/cloud/docker/lib/ -v 5.6.0 -i v01
+./create_builder_image.sh -l /Users/test/BE_Installers -v 5.6.0 -i v01
 
-To create application image:
-s2i build <appsrc-location> <builder-image> <app-image>
+Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
-where
-<appsrc-location>         :        Location where application related files are located [required]"
-<builder-image>           :        Name of builder image created in previous step [required]
-<app-image>               :        Name to be given to the application image [required]
+s2i build <location of the source code> <name of the builder image> <name of the application image>
 
-For example:
-s2i build /Users/TIBCOHOME56/be/5.6/examples/standard/FraudDetection/cddearbackup/source com.tibco.be:5.6.0-v01 fdopenshifts2i:01
+Using FraudDetection application for this example,
+s2i build /Users/test/Applications/FraudDetection/source com.tibco.be:5.6.0-v01 fdopenshifts2i:01
 
-To run FraudDetection application:
-docker run -p 8108:8108 -e CDD_FILE="/opt/tibco/be/application/fd.cdd" -e EAR_FILE="/opt/tibco/be/application/ear/fd.ear" <app-image>
+Finally run the application,
+docker run -p 8108:8108 <app-image>
 
 EOF
