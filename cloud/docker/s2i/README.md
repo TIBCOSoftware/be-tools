@@ -22,26 +22,21 @@ Clone https://github.com/TIBCOSoftware/be-tools.git using git clone command on y
 
 Should be fairly straightforward. Lets start off with creating a reusable builder image.
     
-    ./create_builder_image.sh -l -v -i
+    ./create_builder_image.sh -l
     
     where,
     [-l|--installers-location] : Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required] 
-    [-v|--version] : TIBCO BusinessEvents product version (3 part number) [required] 
-    [-i|--image-version] : Version|tag to be given to the image ('v01' for example) [required] 
-    [-a|--addons] : Comma separated values for required addons : process|views [optional] 
-    [--hf] : Additional TIBCO BusinessEvents hotfix version ('1' for example) [optional] 
-    [--as-hf] : Additional TIBCO ActiveSpaces hotfix version ('1' for example) [optional] 
     [-d|--docker-file] : Dockerfile to be used for generating image.(default Dockerfile) [optional]
     
     Using Business Events v5.6.0 for this example,
-    ./create_builder_image.sh -l /Users/test/BE_Installers -v 5.6.0 -i v01
+    ./create_builder_image.sh -l /Users/test/BE_Installers
 
 Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
     s2i build <location of the source code> <name of the builder image> <name of the application image>
 
     Using FraudDetection application for this example,
-    s2i build /Users/test/Applications/FraudDetection/source com.tibco.be:5.6.0-v01 fdopenshifts2i:01
+    s2i build /Users/test/Applications/FraudDetection/source s2ibuilder:01 fdopenshifts2i:01
 
 Finally run the application,
 
