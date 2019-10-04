@@ -45,7 +45,7 @@ Next we provide application source to s2i to create an assembled image off the p
 
 Finally run the application,
 
-    docker run -p 8108:8108 -e fdopenshifts2i:01
+    docker run -p 8108:8108 fdopenshifts2i:01
 
 At any point to check how to use this, simply run the `usage` command
 
