@@ -16,16 +16,11 @@ Lets start off with creating a reusable builder image:
 
 where
 [-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
-[-v|--version]              :       TIBCO BusinessEvents product version (3 part number) [required]
-[-i|--image-version]        :       Version|tag to be given to the image ('v01' for example) [required]
-[-a|--addons]               :       Comma separated values for required addons : process|views [optional]
-[--hf]                      :       Additional TIBCO BusinessEvents hotfix version ('1' for example) [optional]"
-[--as-hf]                   :       Additional TIBCO ActiveSpaces hotfix version ('1' for example) [optional]"
 [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
 
 
 For example:
-./create_builder_image.sh -l /Users/test/BE_Installers -v 5.6.0 -i v01
+./create_builder_image.sh -l /Users/test/BE_Installers
 
 Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
