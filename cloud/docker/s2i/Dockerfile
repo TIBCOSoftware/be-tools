@@ -13,8 +13,8 @@ FROM "$BE_TAG":"$ARG_VERSION"-"$BE_PRODUCT_IMAGE_VERSION"
 LABEL io.openshift.s2i.scripts-url=image:///usr/local/s2i
 
 # Copy the S2I scripts from ./.s2i/bin/ to /usr/local/s2i when making the builder image
-COPY s2i/assemble /usr/local/s2i/assemble
-COPY s2i/usage /usr/local/s2i/usage
+COPY assemble /usr/local/s2i/assemble
+COPY usage /usr/local/s2i/usage
 
 RUN cp /home/tibco/be/run /usr/local/s2i/run
 RUN chmod 777 /usr/local/s2i/assemble
