@@ -1,5 +1,6 @@
 #!/bin/bash
 
+USAGE="\nUsage: build_app_image.sh"
 source ../s2i/create_builder_image.sh $@ --nos2i
 
 

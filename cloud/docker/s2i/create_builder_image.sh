@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ "$*" == *nos2i* ]]; then
-  USAGE="\nUsage: build_app_image.sh"
-else
-  USAGE="\nUsage: create_builder_image.sh"
+if [ -z "${USAGE}" ]; then
+ USAGE="\nUsage: create_builder_image.sh"
 fi
 USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
