@@ -7,8 +7,8 @@ USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEv
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
 if [[ "$*" == *nos2i* ]]; then
 USAGE+="\n\n [-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]"
-USAGE+="\n\n [-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]"
 fi
+USAGE+="\n\n [-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]"
 USAGE+="\n\n [-h|--help]           	     :       Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -109,7 +109,7 @@ then
 fi
 fi
 
-if  [ "$IS_S2I" != "true" ] ; then
+#if  [ "$IS_S2I" != "true" ] ; then
 if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ]
 then
   if [ $FIRST = 1 ]
@@ -120,7 +120,7 @@ then
     MISSING_ARGS="$MISSING_ARGS , Image version[-r|--repo]"
   fi
 fi
-fi
+#fi
 
 
 if [ "$MISSING_ARGS" != "-" ]
@@ -355,7 +355,7 @@ cd $TEMP_FOLDER/app
 touch dummy.txt
 cd ../..
 
-docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt -t "$BE_TAG":"$ARG_VERSION"-"$ARG_IMAGE_VERSION" $TEMP_FOLDER
+docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
 
 
 if [ "$?" != 0 ]; then
@@ -371,9 +371,9 @@ fi
  echo "Deleting $TEMP_FOLDER folder"
  rm -rf $TEMP_FOLDER
 
-docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t s2ibuilder:01 .
+docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
 
-docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_IMAGE_VERSION"
+docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
 
 rm -rf app
 
