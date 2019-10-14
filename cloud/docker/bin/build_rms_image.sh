@@ -4,7 +4,7 @@ USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
 USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
-USAGE+="\n\n [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]" 
+USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]" 
 USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 

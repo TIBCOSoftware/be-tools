@@ -10,6 +10,7 @@ set "ARG_APP_LOCATION=na"
 set "ARG_VERSION=5.6.0"
 set "ARG_IMAGE_VERSION=na"
 set "ARG_DOCKERFILE=Dockerfile_fromtar.win"
+set "ARG_GVPROVIDERS=na"
 
 set "TEMP_FOLDER=tmp_%RANDOM%"
 set GLOBAL_BE_TAG="com.tibco.be"
@@ -59,10 +60,15 @@ for /l %%x in (1, 1, %argCount%) do (
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
   )
-  if !currentArg! EQU --dockerfile (
+  if !currentArg! EQU --docker-file (
     set /a inCounter=!counter!+1
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
+  )
+  if !currentArg! EQU --gv-providers (
+    set /a inCounter=!counter!+1
+    call set "ARG_GVPROVIDERS=%%!inCounter!" 
+	set "ARG_GVPROVIDERS=!ARG_GVPROVIDERS:"=!"
   )
   if !currentArg! EQU -h (
      call :printUsage
@@ -138,7 +144,7 @@ if !EAR_FILE_NAME! EQU na (
   GOTO END-withError
 )
 
-mkdir !TEMP_FOLDER!\lib !TEMP_FOLDER!\app
+mkdir !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app
 
 echo ----------------------------------------------
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
@@ -149,6 +155,7 @@ echo ----------------------------------------------
 echo INFO: Copying packages...
 
 xcopy /Q /C /R /Y ..\lib !TEMP_FOLDER!\lib
+xcopy /Q /C /R /Y /E ..\gvproviders !TEMP_FOLDER!\gvproviders
 xcopy /Q /C /R /Y !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app
 
 powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome' -ErrorAction Ignore | out-null"
@@ -187,7 +194,7 @@ cd ..
 
 echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg USER_TIBCO_HOME="!ARG_BE_HOME!\..\.." --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg USER_TIBCO_HOME="!ARG_BE_HOME!\..\.." --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
@@ -218,7 +225,8 @@ EXIT /B 1
   echo  [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]
   echo  [-r/--repo]                 :       The app image Repository (example - fdc:latest) [required]
   echo  [-l/--be-home]              :       be-home [optional, default: "../../.." i.e; as run from its default location BE_HOME/cloud/docker/frominstall] [optional]
-  echo  [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile_fromtar.win for windows container, Dockerfile for others) [optional] 
+  echo  [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile_fromtar.win for windows container, Dockerfile for others) [optional] 
+  echo  [--gv-providers]            :       Names of GV providers to be included in the image. Supported value - consul [optional]
   echo  [-h/--help]                 :       Print the usage of script [optional]
   echo  NOTE: Encapsulate all the arguments between double quotes
 EXIT /B 0

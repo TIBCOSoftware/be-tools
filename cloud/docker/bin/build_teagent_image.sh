@@ -3,7 +3,7 @@
 USAGE="\nUsage: build_teagent_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-r/--repo]                 :       The teagent image Repository (example - repo:tag) [optional]"
-USAGE+="\n\n [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile.teagent) [optional]"
+USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile.teagent) [optional]"
 USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 

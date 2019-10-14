@@ -1,10 +1,11 @@
 #!/bin/bash
 
 USAGE="\nUsage: build_app_image.sh\n"
-USAGE+="[-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]\n" 
+USAGE+="[-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]\n"
 USAGE+="[-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]\n"
 USAGE+="[-l|--be-home]              :       be-home [optional, default: "../../.." i.e; as run from its default location BE_HOME/cloud/docker/frominstall] [optional]\n"
-USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating image (default: Dockerfile_fromtar) [optional]\n" 
+USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating image (default: Dockerfile_fromtar) [optional]\n"
+USAGE+="[--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]\n"
 USAGE+="[-h|--help]                 :       Print the usage of script [optional]\n";
 
 ARG_DOCKER_FILE="Dockerfile_fromtar"
@@ -13,6 +14,7 @@ ARG_VERSION="5.6.0"
 ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
 TEMP_FOLDER="tmp_$RANDOM"
+ARG_GVPROVIDERS="na"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -23,6 +25,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d=*|--docker-file=*)
         ARG_DOCKER_FILE="${key#*=}"
+        ;;
+	--gv-providers)
+        shift # past the key and to the value
+        ARG_GVPROVIDERS="$1"
+        ;;
+        --gv-providers=*)
+        ARG_GVPROVIDERS="${key#*=}"
         ;;
 	-r|--repo) 
         shift # past the key and to the value
@@ -132,6 +141,7 @@ DOCKER_FROM_INSTALL="$BE_HOME"/cloud/docker/frominstall
 
 mkdir -p $TEMP_FOLDER/app
 cp -a "../lib" $TEMP_FOLDER/
+cp -a "../gvproviders" $TEMP_FOLDER/
 cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
@@ -159,7 +169,7 @@ else
 fi
 
 echo "INFO: Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Repo:$ARG_IMAGE_VERSION and Dockerfile:$ARG_DOCKER_FILE"
-docker build -f "$DOCKER_FROM_INSTALL"/"$ARG_DOCKER_FILE" --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+docker build -f "$DOCKER_FROM_INSTALL"/"$ARG_DOCKER_FILE" --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
 
 if [ "$?" != 0 ]; then
   echo "Docker build failed."
