@@ -30,6 +30,7 @@ set "ARG_IMAGE_VERSION=na"
 set "ARG_HF=na"
 set "ARG_AS_HF=na"
 set "ARG_DOCKERFILE=na"
+set "ARG_GVPROVIDERS=na"
 set "TEMP_FOLDER=tmp_%RANDOM%"
 
 REM shift count to handle arg count>10
@@ -80,10 +81,15 @@ for /l %%x in (1, 1, %argCount%) do (
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
   )
-  if !currentArg! EQU --dockerfile (
+  if !currentArg! EQU --docker-file (
     set /a inCounter=!counter!+1
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
+  )
+  if !currentArg! EQU --gv-providers (
+    set /a inCounter=!counter!+1
+    call set "ARG_GVPROVIDERS=%%!inCounter!" 
+	set "ARG_GVPROVIDERS=!ARG_GVPROVIDERS:"=!"
   )
   if !currentArg! EQU -h (
      call :printUsage
@@ -179,7 +185,7 @@ set /A RESULT=0
 set ARG_JRE_VERSION=1.8.0
 set ARG_AS_VERSION=na
 
-mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\app
+mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app
 
 REM Performing validation
 call ..\lib\be_validate_installers.bat !ARG_VERSION! !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF
@@ -200,7 +206,7 @@ echo INFO: EAR file name - !EAR_FILE_NAME!
 echo ----------------------------------------------
 
 echo INFO: Copying packages...
-for /F "tokens=*" %%f in  (!TEMP_FOLDER!/package_files.txt) do (
+for /F "tokens=*" %%f in (!TEMP_FOLDER!/package_files.txt) do (
   set FILE=%%f
   SET FILE_PATH=!FILE:*#=!
   xcopy /Q /C /R /Y !FILE_PATH! !TEMP_FOLDER!\installers
@@ -208,13 +214,14 @@ for /F "tokens=*" %%f in  (!TEMP_FOLDER!/package_files.txt) do (
 
 set SHORT_VERSION=!ARG_VERSION:~0,3!
 set AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
-xcopy /Q /C /R /Y ..\lib !TEMP_FOLDER!\lib
-xcopy /Q /C /R /Y !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app
+xcopy /Q /C /R /Y /E ..\lib !TEMP_FOLDER!\lib
+xcopy /Q /C /R /Y /E ..\gvproviders !TEMP_FOLDER!\gvproviders
+xcopy /Q /C /R /Y /E !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app
 
 echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
 for %%f in (!ARG_DOCKERFILE!) do set ARG_DOCKERFILE=%%~nxf
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_TARGET_DIR="!ARG_INSTALLER_LOCATION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_TARGET_DIR="!ARG_INSTALLER_LOCATION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
@@ -242,13 +249,10 @@ EXIT /B 1
 :printUsage 
   echo Usage: build_app_image.bat
   echo  [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
-  echo.
   echo  [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]
-  echo.
   echo  [-r/--repo]                 :       The app image Repository (example - fdc:latest) [required]
-  echo.
-  echo  [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile.win for windows container, Dockerfile for others) [optional] 
-  echo.
+  echo  [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile.win for windows container, Dockerfile for others) [optional]
+  echo  [--gv-providers]            :       Names of GV providers to be included in the image. Supported value - consul [optional]
   echo  [-h/--help]                 :       Print the usage of script [optional]
   echo.
   echo  NOTE: Encapsulate all the arguments between double quotes

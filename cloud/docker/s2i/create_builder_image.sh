@@ -5,6 +5,7 @@ if [ -z "${USAGE}" ]; then
 fi
 USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
+USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
 if [[ "$*" == *nos2i* ]]; then
 USAGE+="\n\n [-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]"
 USAGE+="\n\n [-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]"
@@ -29,6 +30,7 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 AS_VERSION="na"
+ARG_GVPROVIDERS="na"
 
 #Parse the arguments
 
@@ -41,6 +43,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d=*|--docker-file=*)
         ARG_DOCKER_FILE="${key#*=}"
+        ;;
+		--gv-providers)
+        shift # past the key and to the value
+        ARG_GVPROVIDERS="$1"
+        ;;
+        --gv-providers=*)
+        ARG_GVPROVIDERS="${key#*=}"
         ;;
         -l|--installers-location)
         shift # past the key and to the value
@@ -279,6 +288,7 @@ echo "----------------------------------------------"
 mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/installers
 cp -a "../lib" $TEMP_FOLDER/
+cp -a "../gvproviders" $TEMP_FOLDER/
 
  export PERL5LIB="../lib"
 
@@ -355,7 +365,7 @@ cd $TEMP_FOLDER/app
 touch dummy.txt
 cd ../..
 
-docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt -t "$BE_TAG":"$ARG_VERSION"-"$ARG_IMAGE_VERSION" $TEMP_FOLDER
+docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_IMAGE_VERSION" $TEMP_FOLDER
 
 
 if [ "$?" != 0 ]; then

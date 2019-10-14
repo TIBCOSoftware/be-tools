@@ -15,6 +15,7 @@ ARG DOCKERFILE_NAME
 ARG USER_TIBCO_HOME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+ARG GVPROVIDERS
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -42,12 +43,16 @@ COPY tibcoHome "c:\tibco/"
 COPY app/* "c:\tibco\be\ext/"
 COPY app/${CDD_FILE_NAME} "c:\tibco\be\application/"
 COPY app/${EAR_FILE_NAME} "c:\tibco\be\application\ear/"
+COPY gvproviders "c:\tibco\be\gvproviders"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
     "c:\\mnt\\tibco\\be\\logs" \
     "c:\\mnt\\tibco\\be\\data-store" \
     "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\shared"
+
+# Setup gv providers
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
 
 # The following is the list of communication ports that need to be open-n-available
 # # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port

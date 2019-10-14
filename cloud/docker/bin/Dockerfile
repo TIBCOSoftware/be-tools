@@ -27,14 +27,15 @@ ARG TEMP_FOLDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
+ARG GVPROVIDERS
 
 LABEL be-intermediate-image=true
 
 RUN apt-get update \
  && apt-get install -y unzip procps findutils
 
-
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
+COPY gvproviders /home/tibco/be/gvproviders
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
@@ -56,6 +57,9 @@ RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> 
  && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+# Setup gv providers
+RUN /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
 
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
