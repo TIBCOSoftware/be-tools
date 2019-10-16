@@ -68,7 +68,7 @@ for /l %%x in (1, 1, %argCount%) do (
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
   )
-  if !currentArg! EQU --dockerfile (
+  if !currentArg! EQU --docker-file (
     set /a inCounter=!counter!+1
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
@@ -193,7 +193,7 @@ EXIT /B 1
   echo.
   echo  [-r/--repo]                 :       The teagent image Repository (default - teagent:!ARG_VERSION!) [optional]
   echo.
-  echo  [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile-teagent) [optional] 
+  echo  [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-teagent) [optional] 
   echo.
   echo  [-h/--help]           	    :       Print the usage of script [optional]
   echo.

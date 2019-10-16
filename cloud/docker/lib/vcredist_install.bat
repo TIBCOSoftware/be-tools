@@ -1,6 +1,6 @@
 @echo off
 
-echo Insatlling Chocolatey Package Manager for Windows
+echo Installing Chocolatey Package Manager for Windows
 powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) | out-null"
 
 REM Upgrade Chocolatey Package Manager, if needed
