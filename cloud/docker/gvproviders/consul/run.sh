@@ -31,3 +31,4 @@ do
   echo tibco.clientVar.${prop:prefix_len}=$(/home/tibco/be/gvproviders/consul/consul kv get -http-addr=$CONSUL_SERVER_URL $prop)>>$BE_PROPS_FILE
 done
 echo ""
+ 
