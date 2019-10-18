@@ -21,7 +21,7 @@ ADD be.tar /opt/tibco
 COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
-RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
  && chmod +x *.sh
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
@@ -58,5 +58,5 @@ EXPOSE 5555
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.py
-CMD ["./runbe.sh"]
+CMD ["./run"]
 

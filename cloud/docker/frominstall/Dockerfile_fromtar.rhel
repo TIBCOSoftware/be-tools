@@ -27,7 +27,7 @@ COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
 COPY app/* /opt/tibco/be/ext/
 
 WORKDIR /home/tibco/be
-RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
  && chmod +x *.sh
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
@@ -67,4 +67,4 @@ EXPOSE 5555
 
 WORKDIR /home/tibco/be
 
-CMD ["./runbe.sh"]
+CMD ["./run"]
