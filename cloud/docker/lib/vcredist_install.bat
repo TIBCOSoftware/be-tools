@@ -1,5 +1,12 @@
 @echo off
 
+ping chocolatey.org -n 1 -w 20000
+if errorlevel 1 (
+	echo WARN: Cannot connect to https://chocolatey.org, check your internet/firewall settings.
+	echo WARN: Some features might not work.
+	EXIT /B 0
+)
+
 echo Installing Chocolatey Package Manager for Windows
 powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) | out-null"
 
