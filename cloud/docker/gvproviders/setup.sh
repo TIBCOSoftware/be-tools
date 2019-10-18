@@ -4,3 +4,4 @@
 if [[ $1 == *"consul"* ]]; then
   /home/tibco/be/gvproviders/consul/setup.sh
 fi
+ 
