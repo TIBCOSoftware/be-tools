@@ -85,6 +85,7 @@ COPY --from=intermediate /home/tibco/be /home/tibco/be
 COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
 
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/*.idx /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker
 

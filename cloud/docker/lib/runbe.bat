@@ -11,14 +11,8 @@ if "%AS_PROXY_NODE%" == "" set AS_PROXY_NODE=false
 set TRA_FILE=%BE_HOME%\bin\be-engine.tra
 
 :: set be-rms.tra
-:: Workaround for - https://github.com/moby/moby/issues/20127
 if "%COMPONENT%" == "rms" (
 	set "TRA_FILE=%BE_HOME%\rms\bin\be-rms.tra"
-	powershell -Command "if ((Get-ChildItem '%BE_HOME%\rms\config\security' | Measure-Object ).Count -eq 0) { Copy-Item '%BE_HOME%\rms\config\_security\*' -Destination '%BE_HOME%\rms\config\security' -Recurse }; rm -Recurse -Force '%BE_HOME%\rms\config\_security' -ErrorAction Ignore"
-	powershell -Command "if ((Get-ChildItem '%BE_HOME%\rms\config\notify' | Measure-Object ).Count -eq 0) { Copy-Item '%BE_HOME%\rms\config\_notify\*' -Destination '%BE_HOME%\rms\config\notify' -Recurse }; rm -Recurse -Force '%BE_HOME%\rms\config\_notify' -ErrorAction Ignore"
-	powershell -Command "if ((Get-ChildItem '%BE_HOME%\rms\lib\locales' | Measure-Object ).Count -eq 0) { Copy-Item '%BE_HOME%\rms\lib\_locales\*' -Destination '%BE_HOME%\rms\lib\locales' -Recurse }; rm -Recurse -Force '%BE_HOME%\rms\lib\_locales' -ErrorAction Ignore"
-	powershell -Command "if ((Get-ChildItem '%BE_HOME%\rms\shared' | Measure-Object ).Count -eq 0) { Copy-Item '%BE_HOME%\rms\_shared\*' -Destination '%BE_HOME%\rms\shared' -Recurse }; rm -Recurse -Force '%BE_HOME%\rms\_shared' -ErrorAction Ignore"
-	powershell -Command "if ((Get-ChildItem '%BE_HOME%\examples\standard\WebStudio' | Measure-Object ).Count -eq 0) { Copy-Item '%BE_HOME%\examples\standard\_WebStudio\*' -Destination '%BE_HOME%\examples\standard\WebStudio' -Recurse }; rm -Recurse -Force '%BE_HOME%\examples\standard\_WebStudio' -ErrorAction Ignore"
 )
 
 ::TODO component tea

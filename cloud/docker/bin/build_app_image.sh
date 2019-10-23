@@ -51,6 +51,6 @@ else
 fi
 
 echo "Deleting temporary intermediate image.."
- docker rmi $(docker images -q -f "label=be-intermediate-image=true")
- echo "Deleting $TEMP_FOLDER folder"
+docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+echo "Deleting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER

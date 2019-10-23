@@ -63,13 +63,6 @@ if exist c:/working/installer/TIBCOUniversalInstaller.silent (
 cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"
 
-:: Rename mount points, workaround for - https://github.com/moby/moby/issues/20127
-powershell -Command "Move-Item '%BE_HOME%\rms\config\security' '%BE_HOME%\rms\config\_security' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '%BE_HOME%\rms\config\notify' '%BE_HOME%\rms\config\_notify' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '%BE_HOME%\rms\lib\locales' '%BE_HOME%\rms\lib\_locales' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '%BE_HOME%\rms\shared' '%BE_HOME%\rms\_shared' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '%BE_HOME%\examples\standard\WebStudio' '%BE_HOME%\examples\standard\_WebStudio' -ErrorAction Ignore | out-null"
-
 :: If AS is available append relevent properties to tra.
 if %AS_VERSION% NEQ na (
 	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%\bin\be-engine.tra
