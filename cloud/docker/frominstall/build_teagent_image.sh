@@ -72,7 +72,7 @@ fi
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"
-  rm -rf "$DOCKER_FROM_INSTALL"/$TEMP_FOLDER
+  rm -rf $TEMP_FOLDER
   exit $?
 fi
 
@@ -86,14 +86,15 @@ else
 fi
 
 echo "INFO: Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Repo:$ARG_IMAGE_VERSION and Dockerfile:$ARG_DOCKER_FILE"
-docker build -f "$DOCKER_FROM_INSTALL"/"$ARG_DOCKER_FILE" --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+cp $ARG_DOCKER_FILE $TEMP_FOLDER/
+docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
 
 if [ "$?" != 0 ]; then
   echo "Docker build failed."
-  rm -rf "$DOCKER_FROM_INSTALL"/$TEMP_FOLDER
+  rm -rf $TEMP_FOLDER
   exit $?
 else
   echo "DONE: Docker build successful."
-  rm -rf "$DOCKER_FROM_INSTALL"/$TEMP_FOLDER
+  rm -rf $TEMP_FOLDER
   exit 0
 fi
