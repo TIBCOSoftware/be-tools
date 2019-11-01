@@ -25,10 +25,12 @@ ADD be.tar /opt/tibco
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
 COPY app/* /opt/tibco/be/ext/
+COPY gvproviders /home/tibco/be/gvproviders
+COPY lib/*.pm lib/*.pl lib/*.sh lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
 
 WORKDIR /home/tibco/be
-RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
- && chmod +x *.sh
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
+ && chmod +x run
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
@@ -59,6 +61,9 @@ VOLUME /mnt/tibco/be/logs \
  /mnt/tibco/be/data-store \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared
 
+# Setup gv providers
+RUN /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+
 # These will always be the listen port for AS and AS Remote URL
 EXPOSE 50000 50001
 
@@ -67,4 +72,4 @@ EXPOSE 5555
 
 WORKDIR /home/tibco/be
 
-CMD ["./runbe.sh"]
+CMD ["./run"]

@@ -78,7 +78,7 @@ if ($AS_FOUND==1) {
 
 my $DOCKER_BIN_DIR = "$TEMP_FOLDER";
 #Create a TAR file of relevant folders
-my $TARCMD = "tar -C $baseDir -cf $DOCKER_BIN_DIR/be.tar tibcojre64 $beDir/lib $beDir/bin $beDir/cloud/docker/lib $beDir/teagent $beDir/mm";
+my $TARCMD = "tar -C $baseDir -cf $DOCKER_BIN_DIR/be.tar tibcojre64 $beDir/lib $beDir/bin $beDir/teagent $beDir/mm";
 if ($AS_FOUND==1) {
   $TARCMD = "$TARCMD $beDir/rms $beDir/studio $beDir/eclipse-platform $beDir/examples/standard/WebStudio $asDir/lib $asDir/bin ";
   if (-e "$asDir/hotfix" and -d "$asDir/hotfix") {

@@ -19,10 +19,11 @@ RUN apt-get update \
 
 ADD be.tar /opt/tibco
 COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
+COPY lib/*.pm lib/*.py lib/*.sh lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
 
 WORKDIR /home/tibco/be
-RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/runbe.sh > ./runbe.sh \
- && chmod +x *.sh
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
+ && chmod +x run
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
@@ -58,5 +59,5 @@ EXPOSE 5555
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.py
-CMD ["./runbe.sh"]
+CMD ["./run"]
 
