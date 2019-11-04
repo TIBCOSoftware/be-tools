@@ -27,9 +27,12 @@ Should be fairly straightforward. Lets start off with creating a reusable builde
     where,
     [-l|--installers-location] : Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required] 
     [-d|--docker-file] : Dockerfile to be used for generating image.(default Dockerfile) [optional]
+    [--gv-providers] : Names of GV providers to be included in the image. Supported value(s) - consul [optional]"
+    [-r|--repo] : The builder image Repository (example - s2ibuilder:latest) [required]"
+    [-h|--help] : Print the usage of script [optional]"
     
     Using Business Events v5.6.0 for this example,
-    ./create_builder_image.sh -l /Users/test/BE_Installers
+    ./create_builder_image.sh -l /Users/test/BE_Installers -r s2ibuilder:01
 
 Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
