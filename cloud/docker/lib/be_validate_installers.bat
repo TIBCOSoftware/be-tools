@@ -118,7 +118,12 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_REG!"') do (
 )
 
 REM Identify AS HF
-for %%i in (!ARG_INSTALLER_LOCATION!\TIB_activespaces_*_HF*.zip) do (
+SET AS_HF_REG="^.*activespaces.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_linux.*\.zip$"
+if !ARG_INSTALLERS_PLATFORM! EQU win (
+  SET AS_HF_REG=^.*activespaces.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_win.*\.zip$
+)
+
+for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do (
   if !ARG_AS_HF! NEQ na (
     echo ERROR: Multiple ActiveSpaces HF found at the specified location.
     GOTO END-withError
@@ -129,8 +134,9 @@ for %%i in (!ARG_INSTALLER_LOCATION!\TIB_activespaces_*_HF*.zip) do (
   for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
 	if !ind3! equ 3 (
 	  set temp2=%%j
-	  set /a ind4 = 0
+	  set /a ind4 = 0   
 	  set TEMP_PKG_SPLIT_HYPHEN=!temp2:-= !
+	  
 	  for %%k in (!TEMP_PKG_SPLIT_HYPHEN!) do (
 	    if !ind4! equ 1 (
 	      set ARG_AS_HF=%%k
@@ -141,6 +147,7 @@ for %%i in (!ARG_INSTALLER_LOCATION!\TIB_activespaces_*_HF*.zip) do (
 	set /a ind3 += 1
   )
 )
+
 
 set /A RESULT=0
 set ARG_JRE_VERSION=1.8.0
@@ -250,6 +257,7 @@ EXIT /B %LOCAL_RESULT%
 EXIT /B %LOCAL_RESULT%
 
 :validateHf 
+
   SETLOCAL
   set LOCAL_VERSION=%~1 
   set LOCAL_HF=%~2
@@ -257,7 +265,6 @@ EXIT /B %LOCAL_RESULT%
   set /A LOCAL_RESULT=0
   
   set LOCAL_BASE_HF=!LOCAL_HF: =!
-  
   if "!LOCAL_BASE_HF!" EQU "na" GOTO END-validateHf
   
   set LOCAL_VERSION=!LOCAL_VERSION: =!
@@ -450,7 +457,7 @@ EXIT /B %LOCAL_RESULT%
     )
     
     for /f %%i in ('dir !LOCAL_TARGET_DIR! /b ^| findstr /I "^.*activespaces.*!LOCAL_AS_VERSION!_HF-!LOCAL_AS_HF!.*\.zip$"') DO SET /A AS_HF_COUNT+=1
-	
+		
 	if !AS_HF_COUNT! EQU 0 (
       echo ERROR: No package found for Activespaces HF-!LOCAL_AS_HF! in the installer location.
 	  set /A LOCAL_RESULT=1
