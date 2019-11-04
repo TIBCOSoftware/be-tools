@@ -133,10 +133,10 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
   set TEMP_PKG_SPLIT_UNDERSCORE=!temp:_= !
   for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
 	if !ind3! equ 3 (
+	  
 	  set temp2=%%j
 	  set /a ind4 = 0   
 	  set TEMP_PKG_SPLIT_HYPHEN=!temp2:-= !
-	  
 	  for %%k in (!TEMP_PKG_SPLIT_HYPHEN!) do (
 	    if !ind4! equ 1 (
 	      set ARG_AS_HF=%%k
@@ -147,7 +147,6 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
 	set /a ind3 += 1
   )
 )
-
 
 set /A RESULT=0
 set ARG_JRE_VERSION=1.8.0
@@ -257,7 +256,6 @@ EXIT /B %LOCAL_RESULT%
 EXIT /B %LOCAL_RESULT%
 
 :validateHf 
-
   SETLOCAL
   set LOCAL_VERSION=%~1 
   set LOCAL_HF=%~2
@@ -265,6 +263,7 @@ EXIT /B %LOCAL_RESULT%
   set /A LOCAL_RESULT=0
   
   set LOCAL_BASE_HF=!LOCAL_HF: =!
+  
   if "!LOCAL_BASE_HF!" EQU "na" GOTO END-validateHf
   
   set LOCAL_VERSION=!LOCAL_VERSION: =!
