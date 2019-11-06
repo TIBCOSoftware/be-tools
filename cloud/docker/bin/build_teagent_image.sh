@@ -150,7 +150,7 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 		if [ $ARG_VERSION == $hfbeversion];then
 			ARG_BE_HOTFIX=$(echo "${beversion}"| cut -d'_' -f 5)
 		else
-			printf "\nERROR: TIBCO BusinessEvents version in HF installer TIBCO BusinessEvents Base version is matching.\n"
+			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
 		fi 
 		
