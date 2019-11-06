@@ -12,7 +12,6 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG DOCKERFILE_NAME
-ARG USER_TIBCO_HOME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG GVPROVIDERS
@@ -40,16 +39,22 @@ RUN mkdir "c:\tibco\be"
 
 #'/' at the end is required while copying multiple files to a destination.
 COPY tibcoHome "c:\tibco/"
+COPY lib/vcredist_install.bat "c:\working/"
 COPY app/* "c:\tibco\be\ext/"
 COPY app/${CDD_FILE_NAME} "c:\tibco\be\application/"
 COPY app/${EAR_FILE_NAME} "c:\tibco\be\application\ear/"
 COPY gvproviders "c:\tibco\be\gvproviders"
 
+RUN c:\working\vcredist_install.bat
+
+# Remove unnecessary files and folders after successful installation and configuration
+RUN rmdir /S /Q "c:\working"
+
 # The following is the list of data, log and RMS Volumes
 VOLUME \
-    "c:\\mnt\\tibco\\be\\logs" \
-    "c:\\mnt\\tibco\\be\\data-store" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\shared"
+    "c:\mnt\tibco\be\logs" \
+    "c:\mnt\tibco\be\data-store" \
+    "c:\tibco\be\${BE_SHORT_VERSION}\rms\shared"
 
 # Setup gv providers
 RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%

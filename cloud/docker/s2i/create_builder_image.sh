@@ -13,8 +13,10 @@ USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for gener
 USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
 if [[ "$*" == *nos2i* ]]; then
 USAGE+="\n\n [-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]"
-fi
 USAGE+="\n\n [-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]"
+else
+USAGE+="\n\n [-r|--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]"
+fi
 USAGE+="\n\n [-h|--help]           	     :       Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 

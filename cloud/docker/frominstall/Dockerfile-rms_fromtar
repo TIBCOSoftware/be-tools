@@ -24,7 +24,7 @@ COPY lib/* /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
- && chmod +x *.sh
+ && chmod +x run
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \

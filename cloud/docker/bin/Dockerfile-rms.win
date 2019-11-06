@@ -9,9 +9,9 @@ MAINTAINER Tibco BusinessEvents Engineering Team
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
-ARG BE_PRODUCT_TARGET_DIR
 ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
+ARG AS_PRODUCT_HOTFIX
 ARG AS_VERSION
 ARG AS_SHORT_VERSION
 ARG DOCKERFILE_NAME
@@ -54,13 +54,12 @@ RUN rmdir /S /Q "c:\working"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
-    "c:\\mnt\\tibco\\be\\logs" \
-    "c:\\mnt\\tibco\\be\\data-store" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\config\\notify" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\config\\security" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\lib\\locales" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\rms\\shared" \
-    "c:\\tibco\\be\\${BE_SHORT_VERSION}\\examples\\standard\\WebStudio" 
+    "c:\mnt\tibco\be\logs" \
+    "c:\mnt\tibco\be\data-store" \
+    "c:\tibco\be\${BE_SHORT_VERSION}\rms\config\notify" \
+    "c:\tibco\be\${BE_SHORT_VERSION}\rms\config\security" \
+    "c:\tibco\be\${BE_SHORT_VERSION}\rms\shared" \
+    "c:\tibco\be\${BE_SHORT_VERSION}\examples\standard\WebStudio"
 
 # The following is the list of communication ports that need to be open-n-available
 # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port

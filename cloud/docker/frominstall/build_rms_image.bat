@@ -140,13 +140,6 @@ powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\eclipse-p
 powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\studio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!' -Recurse -ErrorAction Ignore | out-null"
 powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!' -Recurse -ErrorAction Ignore | out-null"
 
-:: Rename mount points, workaround for - https://github.com/moby/moby/issues/20127
-powershell -Command "Move-Item '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\config\security' '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\config\_security' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\config\notify' '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\config\_notify' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\lib\locales' '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\lib\_locales' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\shared' '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\_shared' -ErrorAction Ignore | out-null"
-powershell -Command "Move-Item '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\examples\standard\WebStudio' '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\examples\standard\_WebStudio' -ErrorAction Ignore | out-null"
-
 :: Replace user TIBCO_HOME path with container's tra files
 powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
 powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\studio\bin\studio-tools.tra'"
@@ -167,7 +160,7 @@ cd ..
 
 echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg USER_TIBCO_HOME="!ARG_BE_HOME!\..\.." --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."

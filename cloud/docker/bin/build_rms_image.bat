@@ -150,7 +150,12 @@ break>"!TEMP_FOLDER!\app\rms_files"
 REM Performing validation
 call ..\lib\be_validate_installers.bat !ARG_VERSION! !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! false true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF
 if %ERRORLEVEL% NEQ 0 (
-  echo "Docker build failed."
+  echo Docker build failed.
+  GOTO END-withError
+)
+
+if "!ARG_AS_VERSION!" EQU "na" (
+  echo ERROR: TIBCO Activespaces is required for RMS
   GOTO END-withError
 )
 
@@ -180,10 +185,10 @@ if !ARG_APP_LOCATION! NEQ na (
 echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
 for %%f in (!ARG_DOCKERFILE!) do set ARG_DOCKERFILE=%%~nxf
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_TARGET_DIR="!ARG_INSTALLER_LOCATION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
-  echo "Docker build failed."
+  echo Docker build failed.
   GOTO END-withError
 )
 
