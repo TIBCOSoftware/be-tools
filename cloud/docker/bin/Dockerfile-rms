@@ -43,7 +43,6 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf as_installers be_installers *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
-
 WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
 RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
  && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
