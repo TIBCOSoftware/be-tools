@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#Map used to store the BE and it's comapatible JRE version
+declare -A BE_VERSION_AND_JRE_MAP
+BE_VERSION_AND_JRE_MAP=( ["5.6.0"]="1.8.0" ["5.6.1"]="11")
+
 USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
@@ -10,7 +14,7 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
 ARG_APP_LOCATION="na"
-ARG_VERSION="5.6.0"
+ARG_VERSION="5.6.1"
 ARG_ADDONS="na"
 ARG_APP_LOCATION="na"
 ARG_BE_HOTFIX="na"
@@ -140,7 +144,8 @@ fi
 BLANK=""
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
-BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}${INSTALLER_PLATFORM}"
+
+BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
 BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}_HF"
 BE_PROCESS_ADDON_REGEX="${BE_PRODUCT}-process_${ARG_VERSION}${INSTALLER_PLATFORM}"
 BE_VIEWS_ADDON_REGEX="${BE_PRODUCT}-views_${ARG_VERSION}${INSTALLER_PLATFORM}"
@@ -148,18 +153,18 @@ AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
 AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
 
 
-#Check for 5.6.0 Installer  --------------------------------------
+#Check for BE Installer  --------------------------------------
 result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX" | wc -l)
+len=$(echo ${result} | wc -l)
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR :TIBCO BusinessEvents (${ARG_VERSION}) is not present in the target directory.There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
 	exit 1;
 fi
 
-# Get all packages(base and hf) for 5.6.0 --------------------------------------
-bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}*$INSTALLER_PLATFORM")
-bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}*$INSTALLER_PLATFORM" | wc -l)
+# Get all packages(base and hf)  --------------------------------------
+bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$INSTALLER_PLATFORM")
+bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$INSTALLER_PLATFORM" | wc -l)
 
 
 #Get All HF for BE --------------------------------------
@@ -180,14 +185,24 @@ elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not 
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
 	exit 1;	
 elif [ $beBasePckgsCnt -eq 1 ]; then
+	#Find BE Version from installer
+	ARG_VERSION=$(echo "${bePckgs[0]}" |rev | cut -d'/' -f 1 | rev | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
+	#Find JER Version for given BE Version
+	ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[$ARG_VERSION]}
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-		beversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-	    ARG_BE_HOTFIX=$(echo $beversion| cut -d'_' -f 5)
+		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+		if [ $ARG_VERSION == $hfbeversion];then
+			ARG_BE_HOTFIX=$(echo "${beversion}"| cut -d'_' -f 5)
+		else
+			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
+			exit 1;
+		fi 
+		
 	elif [ $beHfCnt -eq 0 ]; then
 		ARG_BE_HOTFIX="na"
-	fi	
-else 
-	ARG_BE_HOTFIX="na"	
+	fi
+else
+	ARG_BE_HOTFIX="na"
 fi
 
 addons="na"
