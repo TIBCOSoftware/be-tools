@@ -19,8 +19,11 @@ RUN apt-get update -y \
 
 ADD be.tar /opt/tibco
 COPY app/* /opt/tibco/be/ext/
+
 COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
-COPY lib/* /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+
+COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+COPY lib/*.pm lib/*.pl lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \

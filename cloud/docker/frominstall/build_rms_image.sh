@@ -1,5 +1,4 @@
 #!/bin/bash
-
 USAGE="\nUsage: build_rms_image.sh\n"
 USAGE+="[-a|--app-location]         :       Location where the RMS ear, cdd are located [optional]\n"
 USAGE+="[-r|--repo]                 :       The app image Repository (example - repo:tag) [optional]\n"
@@ -9,8 +8,8 @@ USAGE+="[-h|--help]                 :       Print the usage of script [optional]
 
 ARG_DOCKER_FILE="Dockerfile-rms_fromtar"
 ARG_APP_LOCATION="na"
-ARG_VERSION="5.6.0"
-ARG_IMAGE_VERSION="rms:$ARG_VERSION"
+ARG_VERSION="na"
+ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
 TEMP_FOLDER="tmp_$RANDOM"
 
@@ -60,7 +59,11 @@ while [[ $# -gt 0 ]]; do
     # Shift after checking all the cases to get the next option
     shift
 done
-
+ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
+ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ];then
+	ARG_IMAGE_VERSION="rms:$ARG_VERSION"
+fi
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"

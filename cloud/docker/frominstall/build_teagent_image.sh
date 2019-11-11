@@ -7,8 +7,8 @@ USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating
 USAGE+="[-h|--help]                 :       Print the usage of script [optional]\n";
 
 ARG_DOCKER_FILE="Dockerfile-teagent_fromtar"
-ARG_VERSION="5.6.0"
-ARG_IMAGE_VERSION="teagent:$ARG_VERSION"
+ARG_VERSION="na"
+ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
 TEMP_FOLDER="tmp_$RANDOM"
 
@@ -51,7 +51,11 @@ while [[ $# -gt 0 ]]; do
     # Shift after checking all the cases to get the next option
     shift
 done
-
+ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
+ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ];then
+	ARG_IMAGE_VERSION="teagent:$ARG_VERSION"
+fi
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: DOCKERFILE : $ARG_DOCKER_FILE"

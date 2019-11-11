@@ -10,7 +10,7 @@ USAGE+="[-h|--help]                 :       Print the usage of script [optional]
 
 ARG_DOCKER_FILE="Dockerfile_fromtar"
 ARG_APP_LOCATION="na"
-ARG_VERSION="5.6.0"
+ARG_VERSION="na"
 ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
 TEMP_FOLDER="tmp_$RANDOM"
@@ -126,7 +126,8 @@ fi
 
 EAR_FILE_NAME="$(basename -- ${ears[0]})"
 CDD_FILE_NAME="$(basename -- ${cdds[0]})"
-
+ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
+ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"

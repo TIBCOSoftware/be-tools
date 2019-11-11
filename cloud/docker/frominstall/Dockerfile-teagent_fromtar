@@ -18,8 +18,9 @@ RUN apt-get update \
  && apt-get install -y unzip procps findutils hostname
 
 ADD be.tar /opt/tibco
-COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
-COPY lib/*.pm lib/*.py lib/*.sh lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+
+COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+COPY lib/*.pm lib/*.pl lib/*.py lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
