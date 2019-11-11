@@ -7,6 +7,7 @@ set ARG_JRE_VERSION=1.8.0
 
 set "ARG_BE_HOME=..\..\.."
 set "ARG_APP_LOCATION=na"
+set "ARG_VERSION=na"
 set "ARG_IMAGE_VERSION=na"
 set "ARG_DOCKERFILE=Dockerfile-rms_fromtar.win"
 
@@ -82,9 +83,12 @@ if NOT EXIST !ARG_BE_HOME! (
 )
 
 REM Identify BE version
-call :absolutePath !ARG_BE_HOME! ARG_BE_HOME
-for %%f in (!ARG_BE_HOME!) do (
-    set SHORT_VERSION=%%~nxf
+if NOT EXIST !ARG_BE_HOME!\uninstaller_scripts\post-install.properties (
+  echo ERROR: The directory - !ARG_BE_HOME! is not a valid BE_HOME directory.
+  EXIT /B 1
+)
+for /F "tokens=2,2 delims==" %%i in ('findstr /i "beVersion=" !ARG_BE_HOME!\uninstaller_scripts\post-install.properties') do (
+    set ARG_VERSION=%%i
 )
 
 REM Identify JRE version
@@ -94,13 +98,20 @@ for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" !ARG_
     )
 )
 
+set SHORT_VERSION=!ARG_VERSION:~0,3!
+
+if NOT EXIST !ARG_BE_HOME!/../!SHORT_VERSION! (
+  echo ERROR: Specified BE_HOME is not a !SHORT_VERSION! installation.
+  EXIT /B 1
+)
+
 if "!ARG_IMAGE_VERSION!" EQU "na" (
-  set "ARG_IMAGE_VERSION=rms:!SHORT_VERSION!"
+  set "ARG_IMAGE_VERSION=rms:!ARG_VERSION!"
 )
 
 echo ----------------------------------------------
 echo INFO: BE_HOME directory - !ARG_BE_HOME!
-echo INFO: BusinessEvents version - !SHORT_VERSION!
+echo INFO: BusinessEvents version - !ARG_VERSION!
 echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
@@ -155,9 +166,9 @@ tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be
 powershell -Command "(Get-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx'"
 cd ..
 
-echo INFO: Building docker image for TIBCO BusinessEvents Version: !SHORT_VERSION! and Image Repository: !ARG_IMAGE_VERSION! and Docker file: !ARG_DOCKERFILE!
+echo INFO: Building docker image for TIBCO BusinessEvents Version: !ARG_VERSION! and Image Repository: !ARG_IMAGE_VERSION! and Docker file: !ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
@@ -181,13 +192,6 @@ if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
 ENDLOCAL
 if %ERRORLEVEL% NEQ 0 ( EXIT /B %ERRORLEVEL% )
 EXIT /B 1
-
-:absolutePath
-  SET REL_PATH=%~dpfn1
-  if !REL_PATH:~-1!==\ set REL_PATH=!REL_PATH:~0,-1!
-  if !REL_PATH:~-1!==/ set REL_PATH=!REL_PATH:~0,-1!
-  SET %~2=%REL_PATH%
-EXIT /B 0
 
 :printUsage 
   echo Usage: build_rms_image.bat
