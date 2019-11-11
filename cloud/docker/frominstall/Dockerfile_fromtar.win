@@ -7,7 +7,6 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
-ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
@@ -17,7 +16,7 @@ ARG EAR_FILE_NAME
 ARG GVPROVIDERS
 
 LABEL \
-    TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
+    TIBCO BusinessEvents Version ${BE_SHORT_VERSION} \
     TIBCO BusinessEvents Docker Image Version ${BE_PRODUCT_IMAGE_VERSION}
 
 ENV \

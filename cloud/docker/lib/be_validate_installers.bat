@@ -10,8 +10,14 @@ set GLOBAL_VALID_ADDONS[views]=businessevents-views
 set GLOBAL_VALID_ADDON_EDITION[enterprise]=process views
 
 ::Valid AS Version Mapping
-set GLOBAL_VALID_AS_MAP[5.6.0]=2.2.0
+set GLOBAL_VALID_AS_MAP[5.6.0]=2.3.0
 set GLOBAL_VALID_AS_MAP_MAX[5.6.0]=2.4.0
+set GLOBAL_VALID_AS_MAP[5.6.1]=2.3.0
+set GLOBAL_VALID_AS_MAP_MAX[5.6.1]=2.4.1
+
+::JRE version
+set GLOBAL_JRE_VERSION_MAP[5.6.0]=1.8.0
+set GLOBAL_JRE_VERSION_MAP[5.6.1]=11
 
 ::REGEX
 set GLOBAL_AS_PKG_REGEX=*activespaces*
@@ -20,7 +26,7 @@ set GLOBAL_BE_TAG="com.tibco.be"
 ::----------------------------------------------------------
 
 REM Initializing variables
-set ARG_VERSION=%~1
+set ARG_VERSION=na
 set ARG_INSTALLER_LOCATION=%~2
 set ARG_TEMP_FOLDER=%~3
 set VALIDATE_ADDONS=%~4
@@ -42,6 +48,27 @@ for %%f in (!ARG_INSTALLER_LOCATION!\*win*.zip) do (
     GOTO END-withError
   )
   set ARG_INSTALLERS_PLATFORM=win
+)
+
+REM Identify BE version
+SET BE_REG="^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_linux.*\.zip$"
+if !ARG_INSTALLERS_PLATFORM! EQU win (
+  SET BE_REG=^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_win.*\.zip$
+)
+for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!BE_REG!"') do (
+  if !ARG_VERSION! NEQ na (
+    echo ERROR: Multiple BusinessEvents Enterprise installers found at the specified location.
+    GOTO END-withError
+  )
+  set temp=%%i
+  set /a ind2 = 0
+  set TEMP_PKG_SPLIT_UNDERSCORE=!temp:_= !
+  for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
+	if !ind2! equ 2 (
+	  set ARG_VERSION=%%j
+	)
+	set /a ind2 += 1
+  )
 )
 
 REM Identify Addons
@@ -122,7 +149,6 @@ SET AS_HF_REG="^.*activespaces.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_linux.*\.zip$"
 if !ARG_INSTALLERS_PLATFORM! EQU win (
   SET AS_HF_REG=^.*activespaces.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_win.*\.zip$
 )
-
 for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do (
   if !ARG_AS_HF! NEQ na (
     echo ERROR: Multiple ActiveSpaces HF found at the specified location.
@@ -149,7 +175,7 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
 )
 
 set /A RESULT=0
-set ARG_JRE_VERSION=1.8.0
+set ARG_JRE_VERSION=!GLOBAL_JRE_VERSION_MAP[%ARG_VERSION%]!
 
 if !VALIDATE_ADDONS! NEQ true ( set "ARG_ADDONS=")
 if !VALIDATE_AS! NEQ true (
@@ -166,7 +192,7 @@ if "!RESULT: =!" NEQ "0" (
 )
 
 :END
-ENDLOCAL & SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%
+ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%
 EXIT /B 0
 
 :END-withError
@@ -529,7 +555,7 @@ EXIT /B 0
   )
   
   if !LOCAL_RESULT! NEQ 0 (
-    echo ERROR: Invalid value for be version: !LOCAL_VERSION!. Make sure you provide the fully qualified version. Example - 5.6.0
+    echo ERROR: Cannot find a valid BE installer at the specified location.
   )
   
   (ENDLOCAL & REM -- RETURNING RESULT

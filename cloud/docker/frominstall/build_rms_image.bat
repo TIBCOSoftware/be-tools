@@ -7,8 +7,7 @@ set ARG_JRE_VERSION=1.8.0
 
 set "ARG_BE_HOME=..\..\.."
 set "ARG_APP_LOCATION=na"
-set "ARG_VERSION=5.6.0"
-set "ARG_IMAGE_VERSION=rms:!ARG_VERSION!"
+set "ARG_IMAGE_VERSION=na"
 set "ARG_DOCKERFILE=Dockerfile-rms_fromtar.win"
 
 set "TEMP_FOLDER=tmp_%RANDOM%"
@@ -59,7 +58,7 @@ for /l %%x in (1, 1, %argCount%) do (
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
   )
-  if !currentArg! EQU --dockerfile (
+  if !currentArg! EQU --docker-file (
     set /a inCounter=!counter!+1
     call set "ARG_DOCKERFILE=%%!inCounter!" 
 	set "ARG_DOCKERFILE=!ARG_DOCKERFILE:"=!"
@@ -74,27 +73,7 @@ for /l %%x in (1, 1, %argCount%) do (
   )
 )
 
-echo INFO:Supplied Arguments :
-echo ----------------------------------------------
-echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
-echo INFO: BE_HOME directory : !ARG_BE_HOME!
-echo INFO: Dockerfile : !ARG_DOCKERFILE!
-echo INFO: Image Repo - !ARG_IMAGE_VERSION!
-echo ----------------------------------------------
-
 if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile 
-
-set "MISSING_ARG=-"
-REM Validating mandatory arguments
-if !ARG_IMAGE_VERSION! EQU na (
-  set "MISSING_ARG=!MISSING_ARG! Image repo [-r/--repo] "
-)
-
-if !MISSING_ARG! NEQ - (
-  echo ERROR: Missing mandatory arguments : !MISSING_ARG!
-  call :printUsage
-  EXIT /B 0
-)
 
 REM Checking if the Target directory exists or not
 if NOT EXIST !ARG_BE_HOME! (
@@ -102,12 +81,30 @@ if NOT EXIST !ARG_BE_HOME! (
   EXIT /B 1
 )
 
-set SHORT_VERSION=!ARG_VERSION:~0,3!
-
-if NOT EXIST !ARG_BE_HOME!/../!SHORT_VERSION! (
-  echo ERROR: Specified BE_HOME is not a !SHORT_VERSION! installation.
-  EXIT /B 1
+REM Identify BE version
+call :absolutePath !ARG_BE_HOME! ARG_BE_HOME
+for %%f in (!ARG_BE_HOME!) do (
+    set SHORT_VERSION=%%~nxf
 )
+
+REM Identify JRE version
+for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" !ARG_BE_HOME!\bin\be-engine.tra') do (
+    for %%f in (%%i) do (
+        set ARG_JRE_VERSION=%%~nxf
+    )
+)
+
+if "!ARG_IMAGE_VERSION!" EQU "na" (
+  set "ARG_IMAGE_VERSION=rms:!SHORT_VERSION!"
+)
+
+echo ----------------------------------------------
+echo INFO: BE_HOME directory - !ARG_BE_HOME!
+echo INFO: BusinessEvents version - !SHORT_VERSION!
+echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
+echo INFO: Image Repo - !ARG_IMAGE_VERSION!
+echo INFO: Dockerfile - !ARG_DOCKERFILE!
+echo ----------------------------------------------
 
 mkdir !TEMP_FOLDER!\lib !TEMP_FOLDER!\app
 break>"!TEMP_FOLDER!\app\rms_files"
@@ -158,9 +155,9 @@ tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be
 powershell -Command "(Get-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx'"
 cd ..
 
-echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
+echo INFO: Building docker image for TIBCO BusinessEvents Version: !SHORT_VERSION! and Image Repository: !ARG_IMAGE_VERSION! and Docker file: !ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
@@ -185,13 +182,20 @@ ENDLOCAL
 if %ERRORLEVEL% NEQ 0 ( EXIT /B %ERRORLEVEL% )
 EXIT /B 1
 
+:absolutePath
+  SET REL_PATH=%~dpfn1
+  if !REL_PATH:~-1!==\ set REL_PATH=!REL_PATH:~0,-1!
+  if !REL_PATH:~-1!==/ set REL_PATH=!REL_PATH:~0,-1!
+  SET %~2=%REL_PATH%
+EXIT /B 0
+
 :printUsage 
   echo Usage: build_rms_image.bat
   echo.
   echo  [-a/--app-location]         :       Location where the RMS customized ear and cdd files are located [optional]
-  echo  [-r/--repo]                 :       The RMS image Repository (default - rms:!ARG_VERSION!) [optional]
+  echo  [-r/--repo]                 :       The RMS image Repository (default - rms:tag) [optional]
   echo  [-l/--be-home]              :       be-home [optional, default: "../../.." i.e; as run from its default location BE_HOME/cloud/docker/frominstall] [optional]
-  echo  [-d/--dockerfile]           :       Dockerfile to be used for generating image (default - Dockerfile-rms_fromtar.win) [optional] 
+  echo  [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms_fromtar.win) [optional] 
   echo  [-h/--help]                 :       Print the usage of script [optional]
   echo  NOTE: Encapsulate all the arguments between double quotes
 EXIT /B 0
