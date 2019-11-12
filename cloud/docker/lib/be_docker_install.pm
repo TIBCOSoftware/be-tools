@@ -127,8 +127,21 @@ sub install_be {
 
 		#-------------------------------------------------------------------
 	}else{
+		my $shortVersion=getShortVersion($arg_beVersion);
+		my $token=$shortVersion.".";
+		my $blank="";
+		my $spversion=$arg_beVersion;
+		$spversion=~s/$token/$blank/g;	
+		
+		#Handle base and service pack 
+		print "\nINFO:BusinessEvents Version $arg_beVersion ...DONE\n\n";
+		
 		#Disable datagrid
-		$REGEX_SLNT_FILE_TOKENS{'(<entry key="feature_TIBCO BusinessEvents DataGrid_businessevents-enterprise">)([\s\S]*?)(<\/entry>)'} = "false";
+		if($spversion eq "0"){
+			$REGEX_SLNT_FILE_TOKENS{'(<entry key="feature_TIBCO BusinessEvents DataGrid businessevents-enterprise">)([\s\S]*?)(<\/entry>)'} = "false";
+		}else{	
+			$REGEX_SLNT_FILE_TOKENS{'(<entry key="feature_TIBCO BusinessEvents DataGrid SP '.$spversion.'_businessevents-enterprise">)([\s\S]*?)(<\/entry>)'} = "false";
+		}
 	}
   
   

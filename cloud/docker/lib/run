@@ -20,7 +20,7 @@ APP_HOME=/opt/tibco/be/application
 TRA_FILE=$BE_HOME/bin/be-engine.tra
 
 
-export PERL5LIB="/opt/tibco/be/$SHORT_VERSION/cloud/docker/lib"
+export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
 if [ ! -z "$CONSUL_SERVER_URL" ]; then
@@ -75,7 +75,7 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
 
   BE_INSTANCE_POLLAR_INTERVAL_PARSED="${BE_INSTANCE_POLLAR_INTERVAL%}"
   BE_INSTANCE_POLLAR_INTERVAL_PARSED="${BE_INSTANCE_POLLAR_INTERVAL_PARSED#\"}"
-  STACK_NAME_PARSED ="beappstack"
+  STACK_NAME_PARSED="beappstack"
   #If discovery is for aws
   if [[ "$BE_INSTANCE_DISCOVERY_TYPE_PARSED" == "aws" ]]; then
 	STACK_NAME_PARSED="${STACK_NAME%}"

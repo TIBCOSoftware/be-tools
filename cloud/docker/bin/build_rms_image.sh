@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #Map used to store the BE and it's comapatible JRE version
-declare -A BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=( ["5.6.0"]="1.8.0" ["5.6.1"]="11")
+declare -a BE_VERSION_AND_JRE_MAP
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
 
 USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
@@ -14,13 +14,13 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
 ARG_APP_LOCATION="na"
-ARG_VERSION="5.6.1"
+ARG_VERSION="na"
 ARG_ADDONS="na"
 ARG_APP_LOCATION="na"
 ARG_BE_HOTFIX="na"
 ARG_AS_HOTFIX="na"
-ARG_IMAGE_VERSION="rms:$ARG_VERSION"
-ARG_JRE_VERSION="1.8.0"
+ARG_IMAGE_VERSION="na"
+ARG_JRE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile-rms"
 ARG_EDITION="enterprise"
 TEMP_FOLDER="tmp_$RANDOM"
@@ -87,17 +87,6 @@ then
   fi
 fi
 
-#if [ "$ARG_APP_LOCATION" = "na" -o "$ARG_APP_LOCATION" = "nax" -o -z "${ARG_APP_LOCATION// }" ]
-#then
- # if [ $FIRST = 1 ]
-  #then 
-  #	MISSING_ARGS="$MISSING_ARGS Application Location[-a|--app-location]"
-#	FIRST=0
- # else
-  #  MISSING_ARGS="$MISSING_ARGS , Application Location[-a|--app-location]"
-  #fi
-#fi
-
 if [ "$MISSING_ARGS" != "-" ]
 then
   printf "\nERROR:Missing mandatory argument(s) : $MISSING_ARGS\n"
@@ -110,14 +99,6 @@ then
   printf "ERROR:The directory - $ARG_INSTALLER_LOCATION is not a valid directory.Enter a valid directory and try again.\n"
   exit 1;
 fi
-
-
-#if [ ! -d "$ARG_APP_LOCATION" ]
-#then
- # printf "ERROR:The directory - $ARG_APP_LOCATION is not a valid directory.Enter a valid directory and try again.\n"
-  #exit 1;
-#fi
-
 
 #Check App location have ear or not
 if [[ "$ARG_APP_LOCATION" != "na" ]]
@@ -188,7 +169,14 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	ARG_VERSION=$(echo "${bePckgs[0]}" |rev | cut -d'/' -f 1 | rev | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
 	#Find JER Version for given BE Version
-	ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[$ARG_VERSION]}
+	length=${#BE_VERSION_AND_JRE_MAP[@]}
+	for (( i = 0; i < length; i++ )); do
+		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
+			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
+			break;	
+		fi
+	done
+	
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
 		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
 		if [ $ARG_VERSION == $hfbeversion];then
@@ -267,24 +255,9 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
-
-
-if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ]
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ] 
 then
-  if [ $FIRST = 1 ]
-  then
-    MISSING_ARGS="$MISSING_ARGS Image version[-r|--repo]"image-version
-	FIRST=0
-  else
-    MISSING_ARGS="$MISSING_ARGS , Image version[-r|--repo]"
-  fi
-fi
-
-if [ "$MISSING_ARGS" != "-" ]
-then
-  printf "\nERROR:Missing mandatory argument(s) : $MISSING_ARGS\n"
-  printf "$USAGE"
-  exit 1;
+	ARG_IMAGE_VERSION="rms:$ARG_VERSION";
 fi
 
 if [ "$ARG_BE_HOTFIX" = "nax" -o -z "${ARG_BE_HOTFIX// }" ]
@@ -312,20 +285,8 @@ echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
 echo "INFO:AS-HF : $ARG_AS_HOTFIX"
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
-
+echo "INFO:JRE VERSION : $ARG_JRE_VERSION"
 echo "----------------------------------------------"
-
-
-
-
-#if [ ! -d "$ARG_APP_LOCATION" ]
-#then
- # printf "ERROR:The directory - $ARG_APP_LOCATION is not a valid directory.Enter a valid directory and try again.\n"
-  #exit 1;
-#fi
-
-
-
 
 mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/{installers,app}
@@ -349,20 +310,11 @@ echo "INFO:Copying Packages.."
 
 CURRENT_DIR=$( cd $(dirname $0) ; pwd -P )
 
-#cd $ARG_INSTALLER_LOCATION
-#find . -name '*.zip' | cpio -pdm $CURRENT_DIR
-#cd $CURRENT_DIR
-
-
 while read -r line
 do
     name="$line"
     cp $name $TEMP_FOLDER/installers
 done < "$TEMP_FOLDER/package_files.txt"
-
-
-
-#AS_PKG=$(perl -nle 'print $& if m{.*activespaces.*([\d].[\d].[\d])_linux}' $ARG_INSTALLER_LOCATION/package_files.txt)
 
 AS_VERSION=$(perl -nle 'print $1 if m{.*activespaces.*([\d].[\d].[\d])_linux}' $TEMP_FOLDER/package_files.txt)
 if [ "$AS_VERSION" = "" ]; then
