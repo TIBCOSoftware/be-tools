@@ -14,7 +14,7 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
 ARG_APP_LOCATION="na"
-ARG_VERSION="n"
+ARG_VERSION="na"
 ARG_ADDONS="na"
 ARG_APP_LOCATION="na"
 ARG_BE_HOTFIX="na"
