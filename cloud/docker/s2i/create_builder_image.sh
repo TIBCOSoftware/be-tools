@@ -2,8 +2,9 @@
 
 
 #Map used to store the BE and it's comapatible JRE version
-declare -A BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=( ["5.6.0"]="1.8.0" ["5.6.1"]="11")
+declare -a BE_VERSION_AND_JRE_MAP
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+
 
 if [ -z "${USAGE}" ]; then
  USAGE="\nUsage: create_builder_image.sh"
@@ -25,12 +26,12 @@ S2I_DOCKER_FILE_BASE="bin/Dockerfile"
 S2I_DOCKER_FILE_APP="Dockerfile"
 ARG_DOCKERFILE_NAME="Dockerfile"
 ARG_EDITION="enterprise"
-ARG_VERSION="5.6.1"
+ARG_VERSION="na"
 ARG_ADDONS="na"
 ARG_INSTALLER_LOCATION="na"
 ARG_BE_HOTFIX="na"
 ARG_AS_HOTFIX="na"
-ARG_JRE_VERSION="11"
+ARG_JRE_VERSION="na"
 IS_S2I="true"
 ARG_APP_LOCATION="na"
 ARG_IMAGE_VERSION="na"
@@ -210,7 +211,13 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	ARG_VERSION=$(echo "${bePckgs[0]##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
 	#Find JER Version for given BE Version
-	ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[$ARG_VERSION]}
+	length=${#BE_VERSION_AND_JRE_MAP[@]}
+	for (( i = 0; i < length; i++ )); do
+		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
+			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
+			break;	
+		fi
+	done
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
 		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
 		if [ $ARG_VERSION == $hfbeversion];then

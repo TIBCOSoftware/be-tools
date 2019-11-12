@@ -1,8 +1,9 @@
 #!/bin/bash
 
 #Map used to store the BE and it's comapatible JRE version
-declare -A BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=( ["5.6.0"]="1.8.0" ["5.6.1"]="11")
+declare -a BE_VERSION_AND_JRE_MAP
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+
 
 USAGE="\nUsage: build_teagent_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
@@ -12,11 +13,11 @@ USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [opti
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
-ARG_VERSION="5.6.1"
+ARG_VERSION="na"
 ARG_ADDONS="na"
 ARG_BE_HOTFIX="na"
-ARG_IMAGE_VERSION="teagent:$ARG_VERSION"
-ARG_JRE_VERSION="11"
+ARG_IMAGE_VERSION="na"
+ARG_JRE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile-teagent"
 ARG_EDITION="enterprise"
 TEMP_FOLDER="tmp_$RANDOM"
@@ -65,6 +66,8 @@ done
 MISSING_ARGS="-"
 FIRST=1
 
+
+
 if [ "$ARG_INSTALLER_LOCATION" = "na" -o "$ARG_INSTALLER_LOCATION" = "nax" -o -z "${ARG_INSTALLER_LOCATION// }" ]
 then
   if [ $FIRST = 1 ]
@@ -73,16 +76,6 @@ then
 	FIRST=0
   else
     MISSING_ARGS="$MISSING_ARGS , Installers Location[-l|--installers-location]"
-  fi
-fi
-if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ]
-then
-  if [ $FIRST = 1 ]
-  then
-    MISSING_ARGS="$MISSING_ARGS Image version[-r|--repo]"
-	FIRST=0
-  else
-    MISSING_ARGS="$MISSING_ARGS , Image version[-r|--repo]"
   fi
 fi
 
@@ -144,7 +137,13 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	ARG_VERSION=$(echo "${bePckgs[0]}" |rev | cut -d'/' -f 1 | rev | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
 	#Find JER Version for given BE Version
-	ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[$ARG_VERSION]}
+	length=${#BE_VERSION_AND_JRE_MAP[@]}
+	for (( i = 0; i < length; i++ )); do
+		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
+			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
+			break;	
+		fi
+	done
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
 		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
 		if [ $ARG_VERSION == $hfbeversion];then
@@ -161,6 +160,11 @@ else
 	ARG_BE_HOTFIX="na"
 fi
 
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ] 
+then
+	ARG_IMAGE_VERSION="teagent:$ARG_VERSION";
+fi
+
 ARG_AS_HOTFIX="na"
 
 echo "INFO:Supplied Arguments :"
@@ -171,7 +175,7 @@ echo "INFO:INSTALLER DIRECTORY : $ARG_INSTALLER_LOCATION"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
-
+echo "INFO:JRE VERSION : $ARG_JRE_VERSION"
 echo "----------------------------------------------"
 
 
