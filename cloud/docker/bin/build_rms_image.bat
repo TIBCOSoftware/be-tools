@@ -2,30 +2,11 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-REM Declaring global constants/varibales
-::----------------------------------------------------------
-::Valid addons
-set GLOBAL_VALID_ADDONS[process]=businessevents-process
-set GLOBAL_VALID_ADDONS[views]=businessevents-views
-
-::Valid Addon For EDITION
-set GLOBAL_VALID_ADDON_EDITION[enterprise]=process views
-
-::Valid AS Version Mapping
-set GLOBAL_VALID_AS_MAP[5.6.0]=2.2.0
-set GLOBAL_VALID_AS_MAP_MAX[5.6.0]=2.4.0
-
-::REGEX
-set GLOBAL_AS_PKG_REGEX=*activespaces*
-set GLOBAL_HF_PKG_REGEX=*businessevents-hf*
-set GLOBAL_BE_TAG="com.tibco.be"
-::----------------------------------------------------------
-
 REM Initializing variables
 set "ARG_INSTALLER_LOCATION=na"
 set "ARG_APP_LOCATION=na"
-set "ARG_VERSION=5.6.0"
-set "ARG_IMAGE_VERSION=rms:!ARG_VERSION!"
+set "ARG_VERSION=na"
+set "ARG_IMAGE_VERSION=na"
 set "ARG_HF=na"
 set "ARG_AS_HF=na"
 set "ARG_DOCKERFILE=na"
@@ -94,20 +75,10 @@ for /l %%x in (1, 1, %argCount%) do (
   )
 )
 
-echo INFO: Supplied Arguments
-echo ----------------------------------------------
-echo INFO: Installers Location - !ARG_INSTALLER_LOCATION!
-echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
-echo INFO: Image Repo - !ARG_IMAGE_VERSION!
-echo ----------------------------------------------
-
 set "MISSING_ARG=-"
 REM Validating mandatory arguments
 if !ARG_INSTALLER_LOCATION! EQU na (
   set "MISSING_ARG=!MISSING_ARG! Installer Location[-l/--installers-location] "
-)
-if !ARG_IMAGE_VERSION! EQU na (
-  set "MISSING_ARG=!MISSING_ARG! Image repo [-r/--repo] "
 )
 
 if !MISSING_ARG! NEQ - (
@@ -141,14 +112,14 @@ if "!ARG_DOCKERFILE!" EQU "na" if "!ARG_INSTALLERS_PLATFORM!" EQU "win" set ARG_
 if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile-rms
 
 set /A RESULT=0
-set ARG_JRE_VERSION=1.8.0
+set ARG_JRE_VERSION=na
 set ARG_AS_VERSION=na
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\app
 break>"!TEMP_FOLDER!\app\rms_files"
 
 REM Performing validation
-call ..\lib\be_validate_installers.bat !ARG_VERSION! !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! false true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF
+call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! false true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION
 if %ERRORLEVEL% NEQ 0 (
   echo Docker build failed.
   GOTO END-withError
@@ -159,12 +130,20 @@ if "!ARG_AS_VERSION!" EQU "na" (
   GOTO END-withError
 )
 
+if "!ARG_IMAGE_VERSION!" EQU "na" (
+  set "ARG_IMAGE_VERSION=rms:!ARG_VERSION!"
+)
+
 echo ----------------------------------------------
-echo INFO: Dockerfile - !ARG_DOCKERFILE!
+echo INFO: Installers Location - !ARG_INSTALLER_LOCATION!
 echo INFO: Installers Platform - !ARG_INSTALLERS_PLATFORM!
-echo INFO: BusinessEvents Hf - !ARG_HF!
+echo INGO: BusinessEvents version - !ARG_VERSION!
+echo INFO: BusinessEvents HF - !ARG_HF!
 echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
 echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
+echo INFO: Image Repo - !ARG_IMAGE_VERSION!
+echo INFO: Dockerfile - !ARG_DOCKERFILE!
+echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
 echo ----------------------------------------------
 
 echo INFO: Copying packages...
@@ -216,7 +195,7 @@ EXIT /B 1
   echo.
   echo  [-a/--app-location]         :       Location where the RMS ear and cdd files are located [optional]
   echo.
-  echo  [-r/--repo]                 :       The RMS image Repository (default - rms:!ARG_VERSION!) [optional]
+  echo  [-r/--repo]                 :       The RMS image Repository (example - rms:tag) [optional]
   echo.
   echo  [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms.win for windows container, Dockerfile-rms for others) [optional] 
   echo.

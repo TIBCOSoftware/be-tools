@@ -36,7 +36,7 @@ powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_busin
 cd /d c:/working/installer
 :: If AS is not available disable DataGrid.
 if %AS_VERSION% EQU na (
-	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent') -replace '<entry key=\"feature_TIBCO BusinessEvents DataGrid_businessevents-enterprise\">true</entry>', '<entry key=\"feature_TIBCO BusinessEvents DataGrid_businessevents-enterprise\">false</entry>' | Set-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent'"
+	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent') -replace '(.*)TIBCO BusinessEvents DataGrid(.*)true(.*)', '$1TIBCO BusinessEvents DataGrid$2false$3' | Set-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent'"
 )
 echo Installing BusinessEvents..
 TIBCOUniversalInstaller-x86-64.exe -silent
