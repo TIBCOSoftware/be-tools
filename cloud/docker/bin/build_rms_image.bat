@@ -93,6 +93,15 @@ if NOT EXIST !ARG_INSTALLER_LOCATION! (
   GOTO END-withError
 )
 
+REM If the specified location is a BE_HOME, build image using frominstall scripts.
+set "IS_BE_HOME=false"
+call :isBEHome !ARG_INSTALLER_LOCATION! IS_BE_HOME
+if !IS_BE_HOME! EQU true (
+  echo INFO: Specified location - '!ARG_INSTALLER_LOCATION!' is a BE_HOME, building image frominstall.
+  call ..\frominstall\build_rms_image.bat %*
+  EXIT /B 0
+)
+
 REM Identify Installers platform (linux, win)
 set ARG_INSTALLERS_PLATFORM=na
 for %%f in (!ARG_INSTALLER_LOCATION!\*linux*.zip) do (
@@ -188,6 +197,15 @@ if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
 ENDLOCAL
 if %ERRORLEVEL% NEQ 0 ( EXIT /B %ERRORLEVEL% )
 EXIT /B 1
+
+:isBEHome
+SET LOCATION=%~dpfn1
+SET "IS_BE_HOME=true"
+if NOT EXIST !LOCATION!\uninstaller_scripts\post-install.properties (
+  SET "IS_BE_HOME=false"
+)
+SET %~2=!IS_BE_HOME!
+EXIT /B 0
 
 :printUsage 
   echo Usage: build_rms_image.bat

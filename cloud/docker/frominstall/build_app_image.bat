@@ -1,6 +1,7 @@
 @echo off
 
 setlocal EnableExtensions EnableDelayedExpansion
+pushd "%~dp0"
 
 REM Initializing variables
 set "ARG_JRE_VERSION=na"
@@ -79,8 +80,6 @@ for /l %%x in (1, 1, %argCount%) do (
      EXIT /B 1
   )
 )
-
-if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile 
 
 set "MISSING_ARG=-"
 REM Validating mandatory arguments

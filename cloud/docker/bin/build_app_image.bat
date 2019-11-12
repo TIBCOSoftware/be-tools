@@ -80,7 +80,6 @@ for /l %%x in (1, 1, %argCount%) do (
      call :printUsage
      EXIT /B 1
   )
-
 )
 
 set "MISSING_ARG=-"
@@ -109,6 +108,15 @@ if NOT EXIST !ARG_INSTALLER_LOCATION! (
 if NOT EXIST !ARG_APP_LOCATION! (
   echo ERROR: The directory - !ARG_APP_LOCATION! is not a valid directory. Enter a valid directory and try again.
   GOTO END-withError
+)
+
+REM If the specified location is a BE_HOME, build image using frominstall scripts.
+set "IS_BE_HOME=false"
+call :isBEHome !ARG_INSTALLER_LOCATION! IS_BE_HOME
+if !IS_BE_HOME! EQU true (
+  echo INFO: Specified location - '!ARG_INSTALLER_LOCATION!' is a BE_HOME, building image frominstall.
+  call ..\frominstall\build_app_image.bat %*
+  EXIT /B 0
 )
 
 REM Identify Installers platform (linux, win)
@@ -222,6 +230,15 @@ if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
 ENDLOCAL
 if %ERRORLEVEL% NEQ 0 ( EXIT /B %ERRORLEVEL% )
 EXIT /B 1
+
+:isBEHome
+SET LOCATION=%~dpfn1
+SET "IS_BE_HOME=true"
+if NOT EXIST !LOCATION!\uninstaller_scripts\post-install.properties (
+  SET "IS_BE_HOME=false"
+)
+SET %~2=!IS_BE_HOME!
+EXIT /B 0
 
 :printUsage 
   echo Usage: build_app_image.bat

@@ -1,6 +1,7 @@
 @echo off
 
 setlocal EnableExtensions EnableDelayedExpansion
+pushd "%~dp0"
 
 REM Initializing variables
 set ARG_JRE_VERSION=1.8.0
@@ -73,8 +74,6 @@ for /l %%x in (1, 1, %argCount%) do (
      EXIT /B 1
   )
 )
-
-if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile 
 
 REM Checking if the Target directory exists or not
 if NOT EXIST !ARG_BE_HOME! (
