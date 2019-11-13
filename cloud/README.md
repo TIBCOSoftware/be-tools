@@ -27,3 +27,5 @@ The  `kubernetes` folder provides sample YAML files and `readme.html` files for 
 - Running TIBCO BusinessEvents Enterprise Administrator Agent to monitor applications on the Kubernetes cluster
 
 
+
+To use these tools and scripts for your TIBCO BusinessEvents applications, clone or download this "cloud" folder to BE_HOME. For more information on how to use those scripts after copying them to BE_HOME, see [TIBCO BusinessEvents Cloud Deployment Guide](https://docs.tibco.com/dyno/businessevents-enterprise/5.6.1/doc/html/GUID-EB00D602-12FD-4C4D-835D-2ECBBB32D235.html).
