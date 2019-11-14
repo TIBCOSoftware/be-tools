@@ -41,9 +41,9 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 RUN echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
 
-RUN rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
-   && rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
-   && rm -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
+   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
+   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:latest
 
