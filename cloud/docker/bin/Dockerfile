@@ -59,7 +59,7 @@ RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> 
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
 
 # Setup gv providers
-RUN /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
 
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
