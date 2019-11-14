@@ -138,7 +138,6 @@ sub install_be {
 		
 		#Disable datagrid
 		if($spversion eq "0"){
-			print "\nINFO:BusinessEvents ServicePack Version $spversion ...DONE\n\n";		
 			$REGEX_SLNT_FILE_TOKENS{'(<entry key="feature_TIBCO BusinessEvents DataGrid_businessevents-enterprise">)([\s\S]*?)(<\/entry>)'} = "false";
 		}else{	
 			$REGEX_SLNT_FILE_TOKENS{'(<entry key="feature_TIBCO BusinessEvents DataGrid SP '.$spversion.'_businessevents-enterprise">)([\s\S]*?)(<\/entry>)'} = "false";
