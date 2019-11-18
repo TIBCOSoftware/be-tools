@@ -122,10 +122,11 @@ if(-e "$DOCKER_BIN_DIR/app"){
 	$FINDRPLCMD = "find $DOCKER_BIN_DIR/app -name '*.cdd' -print0 | xargs -0 sed -i.bak  's/$srch/$repl/g'";
 	execCmd ($FINDRPLCMD);
 }
-if(-e "$DOCKER_BIN_DIR/$tempLocation/be/$beVer/rms"){
-	$FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.cdd' -print0 | xargs -0 sed -i.bak  's/$srch/$repl/g'";
+if(-e "$DOCKER_BIN_DIR/$tempLocation/be/$beVer/rms/bin"){
+	$FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation/be/$beVer/rms/bin -name '*.cdd' -print0 | xargs -0 sed -i.bak  's/$srch/$repl/g'";
 	execCmd ($FINDRPLCMD);
 }
+
 # Replace in TRA files using find, xargs, sed -i
 my $FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$REGEX_CUSTOM_CP/$VALUE_CUSTOM_CP/g'";
 execCmd ($FINDRPLCMD);
