@@ -1,2 +1,3 @@
 # Ensure correct EOL
-* text=auto
+*.sh text=auto eol=lf
+*.bat text=auto eol=crlf
