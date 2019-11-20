@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
 BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
@@ -135,7 +140,8 @@ elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not 
 	exit 1;	
 elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
-	ARG_VERSION=$(echo "${bePckgs[0]}" |rev | cut -d'/' -f 1 | rev | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
+	BASE_PACKAGE="${bePckgs[0]}"
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
@@ -220,7 +226,7 @@ then
 else
 	echo "ERROR:Improper version.Aborting."
 	echo "Deleting temporary intermediate image.."
- 	docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 	docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  	echo "Deleteting $TEMP_FOLDER folder"
 	rm -rf $TEMP_FOLDER
 	exit 1
@@ -237,6 +243,6 @@ else
 fi
 
  echo "Deleting temporary intermediate image.."
- docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  echo "Deleteting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER

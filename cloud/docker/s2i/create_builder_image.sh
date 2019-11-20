@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
@@ -169,9 +174,8 @@ BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 
 BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}_HF"
-BE_PROCESS_ADDON_REGEX="${BE_PRODUCT}-process_${ARG_VERSION}${INSTALLER_PLATFORM}"
-BE_VIEWS_ADDON_REGEX="${BE_PRODUCT}-views_${ARG_VERSION}${INSTALLER_PLATFORM}"
+BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
+
 
 #AS_REGEX="TIB_activespaces_*_linux_x86_64.zip";
 #AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
@@ -209,7 +213,8 @@ elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not 
 	exit 1;
 elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
-	ARG_VERSION=$(echo "${bePckgs[0]##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
+	BASE_PACKAGE="${bePckgs[0]}"
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
@@ -235,6 +240,8 @@ else
 fi
 
 addons="na"
+BE_PROCESS_ADDON_REGEX="${BE_PRODUCT}-process_${ARG_VERSION}${INSTALLER_PLATFORM}"
+BE_VIEWS_ADDON_REGEX="${BE_PRODUCT}-views_${ARG_VERSION}${INSTALLER_PLATFORM}"
 
 #Add process addon if present --------------------------------------
 processAddon=$(find $ARG_INSTALLER_LOCATION -name "$BE_PROCESS_ADDON_REGEX")
@@ -357,7 +364,7 @@ then
 else
 	echo "ERROR:Improper version.Aborting."
 	echo "Deleting temporary intermediate image.."
- 	docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 	docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  	echo "Deleteting $TEMP_FOLDER folder"
 	rm -rf $TEMP_FOLDER
 	exit 1
@@ -370,7 +377,7 @@ if [[ "$AS_VERSION" != "na" ]]
 	else
 		echo "ERROR:Improper As version.Aborting."
 		echo "Deleting temporary intermediate image.."
- 		docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 		docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  		echo "Deleteting $TEMP_FOLDER folder"
 		rm -rf $TEMP_FOLDER
 		exit 1
@@ -403,7 +410,7 @@ else
 fi
 
  echo "Deleting temporary intermediate image.."
- docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
  echo "Deleting $TEMP_FOLDER folder"
  rm -rf $TEMP_FOLDER
 

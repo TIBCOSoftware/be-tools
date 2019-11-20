@@ -1,4 +1,6 @@
 @echo off
+@rem Copyright (c) 2019. TIBCO Software Inc.
+@rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 ping chocolatey.org -n 1 -w 20000
 if errorlevel 1 (

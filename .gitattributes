@@ -1,0 +1,4 @@
+# Ensure correct EOL
+*.sh text=auto eol=lf
+*.bat text=auto eol=crlf
+* binary

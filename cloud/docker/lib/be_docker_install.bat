@@ -1,4 +1,6 @@
 @echo off
+@rem Copyright (c) 2019. TIBCO Software Inc.
+@rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 powershell -Command "mkdir c:\tibco -ErrorAction Ignore | out-null; mkdir c:\tibco\be\application -ErrorAction Ignore | out-null"
 :: if AS is available extract and install it.
