@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
 BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
@@ -127,9 +132,7 @@ BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 
 BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}_HF"
-BE_PROCESS_ADDON_REGEX="${BE_PRODUCT}-process_${ARG_VERSION}${INSTALLER_PLATFORM}"
-BE_VIEWS_ADDON_REGEX="${BE_PRODUCT}-views_${ARG_VERSION}${INSTALLER_PLATFORM}"
+BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
 AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
 AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
 
@@ -167,7 +170,8 @@ elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not 
 	exit 1;	
 elif [ $beBasePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
-	ARG_VERSION=$(echo "${bePckgs[0]}" |rev | cut -d'/' -f 1 | rev | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
+	BASE_PACKAGE="${bePckgs[0]}"
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
@@ -192,39 +196,6 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 else
 	ARG_BE_HOTFIX="na"
 fi
-
-addons="na"
-
-#Add process addon if present --------------------------------------
-processAddon=$(find $ARG_INSTALLER_LOCATION -name "$BE_PROCESS_ADDON_REGEX")
-processAddonCnt=$(find $ARG_INSTALLER_LOCATION -name "$BE_PROCESS_ADDON_REGEX" | wc -l)
-
-if [ $processAddonCnt -eq 1 ]; then 
-	addons="process,"
-elif [ $processAddonCnt -gt 1 ]; then
-	printf "\nERROR :More than one TIBCO BusinessEvents process addon are present in the target directory.There should be none or only one.\n"
-	exit 1;
-fi
-
-
-#Add view addon if present  --------------------------------------
-viewsAddon=$(find $ARG_INSTALLER_LOCATION -name "$BE_VIEWS_ADDON_REGEX")
-viewsAddonCnt=$(find $ARG_INSTALLER_LOCATION -name "$BE_VIEWS_ADDON_REGEX" | wc -l)
-
-if [ $viewsAddonCnt -eq 1 ]; then 
-	view="views"
-	addons="$addons$view"
-elif [ $viewsAddonCnt -gt 1 ]; then
-	printf "\nERROR :More than one TIBCO BusinessEvents views addon are present in the target directory.There should be none or only one.\n"
-	exit 1;
-fi
-	
-if [ addons = "na" ]; then
-	ARG_ADDONS="na"
-else
-	ARG_ADDONS=$addons
-fi
-
 
 # Validate and get TIBCO Activespaces base and hf versions
 asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip")
@@ -320,7 +291,7 @@ AS_VERSION=$(perl -nle 'print $1 if m{.*activespaces.*([\d].[\d].[\d])_linux}' $
 if [ "$AS_VERSION" = "" ]; then
 	echo "ERROR:TIBCO Activespaces required for RMS"
  	echo "Deleting temporary intermediate image.."
- 	docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 	docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  	echo "Deleteting $TEMP_FOLDER folder"
 	rm -rf $TEMP_FOLDER
 	exit 1
@@ -339,7 +310,7 @@ then
 else
 	echo "ERROR:Improper version.Aborting."
 	echo "Deleting temporary intermediate image.."
- 	docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 	docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  	echo "Deleteting $TEMP_FOLDER folder"
 	rm -rf $TEMP_FOLDER
 	exit 1
@@ -352,7 +323,7 @@ if [[ "$AS_VERSION" != "na" ]]
 	else
 		echo "ERROR:Improper As version.Aborting."
 		echo "Deleting temporary intermediate image.."
- 		docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ 		docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  		echo "Deleteting $TEMP_FOLDER folder"
 		rm -rf $TEMP_FOLDER
 		exit 1
@@ -370,7 +341,7 @@ else
 fi
 
  echo "Deleting temporary intermediate image.."
- docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+ docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  echo "Deleteting $TEMP_FOLDER folder"
  
 rm -rf $TEMP_FOLDER

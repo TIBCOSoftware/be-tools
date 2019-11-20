@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 USAGE="\nUsage: build_app_image.sh"
 source ../s2i/create_builder_image.sh $@ --nos2i
 
@@ -51,6 +56,6 @@ else
 fi
 
 echo "Deleting temporary intermediate image.."
-docker rmi $(docker images -q -f "label=be-intermediate-image=true")
+docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
 echo "Deleting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER
