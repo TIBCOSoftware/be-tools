@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 # NOTE: The service account `default:default` already exists in k8s cluster.
 # You can create a new account following like this:
 #---

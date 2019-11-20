@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 USAGE="\nUsage: build_teagent_image.sh\n"
 USAGE+="[-r|--repo]                 :       The teagent image Repository (example - repo:tag) [optional]\n"
 USAGE+="[-l|--be-home]              :       be-home [optional, default: "../../.." i.e; as run from its default location BE_HOME/cloud/docker/frominstall] [optional]\n"

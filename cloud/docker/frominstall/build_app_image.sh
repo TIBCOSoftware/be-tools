@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 USAGE="\nUsage: build_app_image.sh\n"
 USAGE+="[-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]\n"
 USAGE+="[-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]\n"

@@ -1,5 +1,10 @@
 #!/bin/bash
-#Copyright © 2019. TIBCO Software Inc.
+
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 cat <<EOF
 Openshift's Source-to-Image (S2I) is a framework for building reproducible container images making it super easy for developers to provide application source code as an input and produce a new image that runs the assembled application as output.
 

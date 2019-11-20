@@ -1,4 +1,10 @@
 #!/bin/bash
+
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 USAGE="\nUsage: build_rms_image.sh\n"
 USAGE+="[-a|--app-location]         :       Location where the RMS ear, cdd are located [optional]\n"
 USAGE+="[-r|--repo]                 :       The app image Repository (example - repo:tag) [optional]\n"
