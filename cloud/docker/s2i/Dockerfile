@@ -5,7 +5,6 @@
 ARG BE_TAG
 ARG ARG_VERSION
 
-#FROM com.tibco.be:5.6.0-v01
 FROM "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
 
 # Defines the location of the S2I
