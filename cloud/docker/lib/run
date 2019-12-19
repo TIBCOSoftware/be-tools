@@ -17,7 +17,14 @@ else
 fi
 
 BE_HOME=/opt/tibco/be/$SHORT_VERSION
-TRA_FILE=$BE_HOME/bin/be-engine.tra
+
+if [[ -f "$BE_HOME/bin/be-engine.tra.original" ]]; then
+	rm -f $BE_HOME/bin/be-engine.tra
+	cp $BE_HOME/bin/be-engine.tra.original $BE_HOME/bin/be-engine.tra
+else
+	cp $BE_HOME/bin/be-engine.tra $BE_HOME/bin/be-engine.tra.original
+fi
+
 CURRENT_DIR=$(pwd)
 BE_PROPS_FILE=beprops_all.props
 APP_HOME=/opt/tibco/be/application
