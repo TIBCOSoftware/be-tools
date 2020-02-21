@@ -226,7 +226,7 @@ persistentvolumes:
       metadata:
         name1: pv0003
         name2: pv0004
-        name2: pv0005
+        name3: pv0005
       spec:
         capacity:
           storage: 1Gi
@@ -236,4 +236,4 @@ persistentvolumes:
           server: qa27.lab.streambase.com
           path1: /home/data/pv0003          #Update path1 and path2 for sharedNothing
           path2: /home/data/pv0004
-          path3: /home/data/pv0005          #Update path3 for sharedNothing
+          path3: /home/data/pv0005          #Update path3 for sharedAll
