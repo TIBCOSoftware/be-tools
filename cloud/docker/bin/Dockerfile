@@ -1,77 +1,18 @@
 #
 # BusinessEvents Dockerfile
-#
-ARG BE_PRODUCT_VERSION
-ARG BE_SHORT_VERSION
-ARG BE_PRODUCT_IMAGE_VERSION
-ARG AS_VERSION
-ARG JRE_VERSION
-ARG CDD_FILE_NAME
-ARG EAR_FILE_NAME
-ARG AS_SHORT_VERSION
-
-FROM ubuntu:latest as intermediate
 
 ARG BE_PRODUCT_VERSION
+
+FROM com.tibco.be:${BE_PRODUCT_VERSION} as bebase
+
+ARG KINESIS_CHANNEL_FLAG
 ARG BE_SHORT_VERSION
-ARG BE_PRODUCT_IMAGE_VERSION
-ARG BE_PRODUCT_EDITION
-ARG BE_PRODUCT_TARGET_DIR
-ARG BE_PRODUCT_ADDONS
-ARG BE_PRODUCT_HOTFIX
-ARG AS_PRODUCT_HOTFIX
-ARG AS_VERSION
-ARG DOCKERFILE_NAME
-ARG JRE_VERSION
-ARG TEMP_FOLDER
-ARG CDD_FILE_NAME
-ARG EAR_FILE_NAME
-ARG AS_SHORT_VERSION
-ARG GVPROVIDERS
 
-LABEL be-intermediate-image=true
-
-RUN apt-get update \
- && apt-get install -y unzip procps findutils
-
-COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
-COPY gvproviders /home/tibco/be/gvproviders
-
-ENV TIBCO_HOME=/opt/tibco \
- BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
- JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
- AS_VERSION=${AS_VERSION} \
- BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
-
-WORKDIR /home/tibco/be
-RUN chmod +x *.sh *.pm
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip \
- && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
-
-WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
-RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
- && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
-
-# Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
-
-# Cleanup.
-RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
- && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
- && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
- && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
- && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+RUN if [ "$KINESIS_CHANNEL_FLAG" = "1" ]; then rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws; fi
 
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:latest
 
-ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG AS_VERSION
@@ -79,21 +20,24 @@ ARG AS_SHORT_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
 COPY app/* /opt/tibco/be/ext/
 
-COPY --from=intermediate /home/tibco/be /home/tibco/be
 
-COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
+COPY --from=bebase /home/tibco/be /home/tibco/be
 
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/*.idx /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
+COPY --from=bebase /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
 
-COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
-COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
+COPY --from=bebase /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
+#COPY --from=bebase /opt/tibco/be/${BE_SHORT_VERSION}/bin/_annotations* /opt/tibco/be/${BE_SHORT_VERSION}/bin
+RUN rm -f /opt/tibco/be/${BE_SHORT_VERSION}/bin/*.sql
+COPY --from=bebase /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
+
+COPY --from=bebase /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
+COPY --from=bebase /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
