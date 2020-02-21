@@ -1,0 +1,30 @@
+{{- if or (eq .Values.isType "cache" ) (eq .Values.isType "sharedNothing" ) (eq .Values.isType "sharedAll" ) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "becacheagent.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      name: {{ include "becacheagent.fullname" . }}
+  serviceName: {{ include "discoveryservice.fullname" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "becacheagent.fullname" . }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.cachenode.spec.template.spec.imagePullSecrets.name }}    #if required
+      containers:
+      - name: {{ .Values.cachenode.spec.template.spec.containers.name }}
+        image: {{ .Values.cachenode.spec.template.spec.containers.image }}
+        env:
+        - name: {{ .Values.cachenode.spec.template.spec.containers.env.name1 }}
+          value: {{ .Values.cachenode.spec.template.spec.containers.env.value1 }}
+        - name: {{ .Values.cachenode.spec.template.spec.containers.env.name2 }}
+          value: {{ .Values.cachenode.spec.template.spec.containers.env.value2 }}
+{{ include "sharedAll.first" . | indent 8 }}
+{{ include "sharedNothing.first" . | indent 8 }}
+{{ include "sharedNothing.cachesecond" . }}
+{{- end }}

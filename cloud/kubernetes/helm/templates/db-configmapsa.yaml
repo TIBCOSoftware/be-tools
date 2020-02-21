@@ -1,0 +1,9 @@
+{{- if eq .Values.isType "sharedAll" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "commonconfigmap.fullname" . }}
+  labels:
+    name: {{ include "commonconfigmap.fullname" . }}
+{{ include "commonconfigmap.data" . }}
+{{- end }}

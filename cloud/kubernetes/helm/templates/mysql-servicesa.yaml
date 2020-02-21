@@ -1,0 +1,13 @@
+{{- if eq .Values.isType "sharedAll" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mysqlservice.fullname" . }}
+spec:
+  clusterIP: {{ .Values.mysqlservice.spec.clusterIP }}
+  ports:
+    - port: {{ .Values.mysqlservice.spec.ports.port }}
+      protocol: {{ .Values.mysqlservice.spec.ports.protocol }}
+  selector:
+    name: {{ include "mysql.fullname" . }}
+{{- end }}

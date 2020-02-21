@@ -1,0 +1,25 @@
+{{- if or (eq .Values.isType "cache" ) (eq .Values.isType "sharedNothing" ) (eq .Values.isType "sharedAll" ) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "bediscoverynode.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      name: {{ include "bediscoverynode.fullname" . }}
+  serviceName: {{ include "discoveryservice.fullname" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "bediscoverynode.fullname" . }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.discoverynode.spec.template.spec.imagePullSecrets.name }}    #if required
+      containers:
+      - name: {{ .Values.discoverynode.spec.template.spec.containers.name }}
+        image: {{ .Values.discoverynode.spec.template.spec.containers.image }}
+        env:
+        - name: {{ .Values.discoverynode.spec.template.spec.containers.env.name1 }}
+          value: {{ .Values.discoverynode.spec.template.spec.containers.env.value1 }}
+{{- end }}

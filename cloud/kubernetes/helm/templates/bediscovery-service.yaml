@@ -1,0 +1,12 @@
+{{- if or (eq .Values.isType "cache" ) (eq .Values.isType "sharedNothing" ) (eq .Values.isType "sharedAll" ) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "discoveryservice.fullname" . }}
+spec:
+  ports:
+    - port: {{ .Values.discoveryservice.spec.ports.port }}
+      protocol: TCP
+  selector:
+    name: {{ include "bediscoverynode.fullname" . }}
+{{- end }}
