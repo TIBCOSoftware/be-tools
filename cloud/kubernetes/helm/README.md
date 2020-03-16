@@ -30,7 +30,7 @@ Following command will run application:
 For example:
 To run FraudDetectionCache application in Azure:
 
-       helm install helm ./helm --set isType=cache,cloudProvider=azure
+       helm install helm ./helm --set omType=cache,cloudProvider=azure
 
 
 At any point to check how to use helm, simply run the `help` command

@@ -14,15 +14,15 @@ spec:
         name: {{ include "beinferenceagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.inferencenode.spec.template.spec.imagePullSecrets.name }}    #if required
+        - name: {{ .Values.inferencenode.imagePullSecrets }}    #if required
       containers:
-      - name: {{ .Values.inferencenode.spec.template.spec.containers.name }}
-        image: {{ .Values.inferencenode.spec.template.spec.containers.image }}
+      - name: {{ .Values.inferencenode.containers.name }}
+        image: {{ .Values.inferencenode.containers.image }}
         env:
-        - name: {{ .Values.inferencenode.spec.template.spec.containers.env.name1 }}
-          value: {{ .Values.inferencenode.spec.template.spec.containers.env.value1 }}
-        - name: {{ .Values.inferencenode.spec.template.spec.containers.env.name2 }}
-          value: {{ .Values.inferencenode.spec.template.spec.containers.env.value2 }}
-{{ include "sharedAll.first" . | indent 8 }}
-{{ include "sharedNothing.first" . | indent 8 }}
-{{ include "sharedNothing.inferencesecond" . }}
+        - name: {{ .Values.inferencenode.containers.env.PU1name }}
+          value: {{ .Values.inferencenode.containers.env.PU1value }}
+        - name: {{ .Values.inferencenode.containers.env.PU2name }}
+          value: {{ .Values.inferencenode.containers.env.PU2value }}
+{{ include "sharedAll.configMap" . | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | indent 8 }}
+{{ include "sharedNothing.volumeClaim" . }}

@@ -1,5 +1,5 @@
-{{- if or (eq .Values.isType "cache" ) (eq .Values.isType "sharedNothing" ) (eq .Values.isType "sharedAll" ) }}
-  {{- if eq .Values.cloudProvider "aws" }}
+{{- if and (eq .Values.cloudProvider "aws" ) (eq .Values.omType "cache" ) }}
+  {{- if or (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -24,21 +24,21 @@ spec:
         - name: {{ .Values.persistentvolumes.eks.deployment.containername }}
           image: {{ .Values.persistentvolumes.eks.deployment.image }}
           env:
-            - name: {{ .Values.persistentvolumes.eks.deployment.env1 }}
+            - name: {{ .Values.persistentvolumes.eks.deployment.filesystemidname }}
               valueFrom:
                 configMapKeyRef:
                   name: {{ .Values.persistentvolumes.eks.deployment.configmapname }}
-                  key: {{ .Values.persistentvolumes.eks.deployment.val1 }}
-            - name: {{ .Values.persistentvolumes.eks.deployment.env2 }}
+                  key: {{ .Values.persistentvolumes.eks.deployment.filesystemidval }}
+            - name: {{ .Values.persistentvolumes.eks.deployment.regionname }}
               valueFrom:
                 configMapKeyRef:
                   name: {{ .Values.persistentvolumes.eks.deployment.configmapname }}
-                  key: {{ .Values.persistentvolumes.eks.deployment.val2 }}
-            - name: {{ .Values.persistentvolumes.eks.deployment.env3 }}
+                  key: {{ .Values.persistentvolumes.eks.deployment.regionval }}
+            - name: {{ .Values.persistentvolumes.eks.deployment.provname }}
               valueFrom:
                 configMapKeyRef:
                   name: {{ .Values.persistentvolumes.eks.deployment.configmapname }}
-                  key: {{ .Values.persistentvolumes.eks.deployment.val3 }}
+                  key: {{ .Values.persistentvolumes.eks.deployment.provval }}
           volumeMounts:
             - name: {{ .Values.persistentvolumes.eks.deployment.volumename }}
               mountPath: {{ .Values.persistentvolumes.eks.deployment.mountPath }}

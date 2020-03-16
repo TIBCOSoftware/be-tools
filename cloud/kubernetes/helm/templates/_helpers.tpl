@@ -3,45 +3,45 @@
 Expand the name of the chart.
 */}}
 
-{{- define "helmm.name" -}}
+{{- define "helm.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified app name.
+Create a default fully qualified name for deployment, services, configMap, volumes, etc.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "beinferenceagent.fullname" -}}
-{{- .Values.inferencenode.metadata.name -}}
+{{- .Values.inferencenode.name -}}
 {{- end -}}
 
 {{- define "becacheagent.fullname" -}}
-{{- .Values.cachenode.metadata.name -}}
+{{- .Values.cachenode.name -}}
 {{- end -}}
 
 {{- define "bediscoverynode.fullname" -}}
-{{- .Values.discoverynode.metadata.name -}}
+{{- .Values.discoverynode.name -}}
 {{- end -}}
 
 {{- define "mysql.fullname" -}}
-{{- .Values.mysql.metadata.name -}}
+{{- .Values.mysql.name -}}
 {{- end -}}
 
 {{- define "beservice.fullname" -}}
-{{ .Values.beservice.metadata.name }}
+{{ .Values.beservice.name }}
 {{- end -}}
 
 {{- define "discoveryservice.fullname" -}}
-{{ .Values.discoveryservice.metadata.name }}
+{{ .Values.discoveryservice.name }}
 {{- end -}}
 
 {{- define "jmxservice.fullname" -}}
-{{ .Values.jmxservice.metadata.name }}
+{{ .Values.jmxservice.name }}
 {{- end -}}
 
 {{- define "mysqlservice.fullname" -}}
-{{ .Values.mysqlservice.metadata.name }}
+{{ .Values.mysqlservice.name }}
 {{- end -}}
 
 {{- define "commonconfigmap.fullname" -}}
@@ -65,22 +65,25 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "openshiftPV.fullname" -}}
-{{ .Values.persistentvolumes.openshift.volume.metadata.name }}
+{{ .Values.persistentvolumes.openshift.volume.name }}
 {{- end -}}
 
-{{- define "sharedNothing.first" -}}
-{{- if eq .Values.isType "sharedNothing" }}
+{{/*
+Create a volume mount and volume claim template for sharedNothing
+*/}}
+{{- define "sharedNothing.volumeMount" -}}
+{{- if eq .Values.persistentType "sharedNothing" }}
 volumeMounts:
-  - mountPath: {{ .Values.volumes.mountPath }}
-    name: {{ .Values.volumes.name }}
+  - mountPath: {{ .Values.volumes.snmountPath }}
+    name: {{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedNothing.cachesecond" -}}
-{{- if eq .Values.isType "sharedNothing" }}
+{{- define "sharedNothing.volumeClaim" -}}
+{{- if eq .Values.persistentType "sharedNothing" }}
   volumeClaimTemplates:
     - metadata:
-        name: {{ .Values.volumes.name }}
+        name: {{ .Values.volumes.snmountVolume }}
         {{- if ne .Values.cloudProvider "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
@@ -89,7 +92,7 @@ volumeMounts:
         {{- else }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.snVolume1 }}
+        volumeName: {{ .Values.volumes.snclaimVolume }}
         {{- end }}
         resources:
           requests:
@@ -97,91 +100,81 @@ volumeMounts:
 {{- end }}
 {{- end -}}
 
-{{- define "sharedNothing.inferencesecond" -}}
-{{- if eq .Values.isType "sharedNothing" }}
-  volumeClaimTemplates:
-    - metadata:
-        name: {{ .Values.volumes.name }}
-        {{- if ne .Values.cloudProvider "openshift" }}
-        annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        {{- else }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.snVolume2 }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.volumes.storage }}
+
+{{/*
+Create a DB configMap environment details for sharedAll
+*/}}
+{{- define "sharedAll.configMap" -}}
+{{- if eq .Values.persistentType "sharedAll" }}
+- name: {{ .Values.database.drivername }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.driverval }}
+- name: {{ .Values.database.urlname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.urlval }}
+- name: {{ .Values.database.username }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.userval }}
+- name: {{ .Values.database.pwdname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.pwdval }}
+- name: {{ .Values.database.poolsizename }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.poolsizeval }}
+- name: {{ .Values.database.logintimeoutname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ .Values.database.name }}
+      key: {{ .Values.database.logintimeoutval }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedAll.first" -}}
-{{- if eq .Values.isType "sharedAll" }}
-- name: {{ .Values.database.envname1 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value1 }}
-- name: {{ .Values.database.envname2 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value2 }}
-- name: {{ .Values.database.envname3 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value3 }}
-- name: {{ .Values.database.envname4 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value4 }}
-- name: {{ .Values.database.envname5 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value5 }}
-- name: {{ .Values.database.envname6 }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.value6 }}
-{{- end }}
-{{- end -}}
 
-{{- define "sharedAll.second" -}}
-{{- if eq .Values.isType "sharedAll" }}
+{{/*
+Create a volume mount and volume claim template for sharedAll
+*/}}
+{{- define "sharedAll.volumeMount" -}}
+{{- if eq .Values.persistentType "sharedAll" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.samountPath }}
-    name: {{ .Values.volumes.saname }}
+    name: {{ .Values.volumes.samountVolume }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedAll.third" -}}
-{{- if eq .Values.isType "sharedAll" }}
+{{- define "sharedAll.volumeClaim" -}}
+{{- if eq .Values.persistentType "sharedAll" }}
   volumeClaimTemplates:
     - metadata:
-        name: {{ .Values.volumes.saname }}
+        name: {{ .Values.volumes.samountVolume }}
         {{- if ne .Values.cloudProvider "openshift" }}
         annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.sastorageClass }}
+          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
         {{- else }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.saVolume }}
+        volumeName: {{ .Values.volumes.saclaimVolume }}
         {{- end }}
         resources:
           requests:
-            storage: {{ .Values.volumes.sastorage }}
+            storage: {{ .Values.volumes.storage }}
 {{- end }}
 {{- end -}}
 
+{{/*
+Create a common DB configMap data details for sharedAll
+*/}}
 {{- define "commonconfigmap.data" -}}
 data:
   db_driver: "{{ .Values.configmap.dbdriver }}"
@@ -192,6 +185,9 @@ data:
   db_login_timeout: "{{ .Values.configmap.dblogintimeout }}"
 {{- end -}}
 
+{{/*
+Create a EKS DB configMap data details
+*/}}
 {{- define "eksconfigmap.data" -}}
 data:
   file.system.id: {{ .Values.persistentvolumes.eks.configmap.filesystemid }}
@@ -199,28 +195,28 @@ data:
   provisioner.name: {{ .Values.persistentvolumes.eks.configmap.provisionername }}
 {{- end -}}
 
+{{/*
+Create a openshift persistent volume details
+*/}}
 {{- define "openshiftPV.details" -}}
   capacity:
-    storage: {{ .Values.persistentvolumes.openshift.volume.spec.capacity.storage }}
+    storage: {{ .Values.persistentvolumes.openshift.volume.storage }}
   accessModes:
-    - {{ .Values.persistentvolumes.openshift.volume.spec.accessModes }}
-  persistentVolumeReclaimPolicy: {{ .Values.persistentvolumes.openshift.volume.spec.persistentVolumeReclaimPolicy }}
+    - {{ .Values.persistentvolumes.openshift.volume.accessModes }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistentvolumes.openshift.volume.persistentVolumeReclaimPolicy }}
 {{- end -}}
 
-{{- define "openshiftNFSsharedNothing.first" -}}
+{{/*
+Create a openshift NFS path details for sharedNothing and sharedAll
+*/}}
+{{- define "openshiftNFSsharedNothing.path" -}}
   nfs:
-    server: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.server }}
-    path: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.path1 }}
+    server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
+    path: {{ .Values.persistentvolumes.openshift.volume.nfs.snpath }}
 {{- end -}}
 
-{{- define "openshiftNFSsharedNothing.second" -}}
+{{- define "openshiftNFSsharedAll.path" -}}
   nfs:
-    server: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.server }}
-    path: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.path2 }}
-{{- end -}}
-
-{{- define "openshiftNFSsharedAll.first" -}}
-  nfs:
-    server: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.server }}
-    path: {{ .Values.persistentvolumes.openshift.volume.spec.nfs.path3 }}
+    server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
+    path: {{ .Values.persistentvolumes.openshift.volume.nfs.sapath }}
 {{- end -}}

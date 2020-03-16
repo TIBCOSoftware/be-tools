@@ -8,147 +8,123 @@
 cloudProvider: minikube
 
 #Required parameter to be passed for cache, sharedNothing, sharedAll
-isType: None
+omType: inmemory
+
+#Required parameter to be passed for sharedNothing, sharedAll
+persistentType: None
 
 #*************************Agents Part****************************************************
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
 cachenode:
-  metadata:
-    name: becacheagent
-  spec:
-    template:
-      spec:
-        imagePullSecrets:
-          name:    #if required for azure
-        containers:
-          name: cachenode
-          image: 246229741278.dkr.ecr.us-east-2.amazonaws.com/fdstoresn:17
-          env:
-            name1: PU
-            value1: cache
-            name2: AS_DISCOVER_URL
-            value2: "tcp://bediscovery-service:50000"
+  name: becacheagent
+  imagePullSecrets:  #if required for azure
+  containers:
+    name: cachenode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: cache
+      PU2name: AS_DISCOVER_URL
+      PU2value: "tcp://bediscovery-service:50000"
 
 #Required for all applications in  all cloud providers
 inferencenode:
-  metadata:
-    name: beinferenceagent
-  spec:
-    template:
-      spec:
-        imagePullSecrets:
-          name:   #if required
-        containers:
-          name: inferencenode
-          image: 246229741278.dkr.ecr.us-east-2.amazonaws.com/fdstoresn:17
-          env:
-            name1: PU
-            value1: default
-            name2: AS_DISCOVER_URL
-            value2: "tcp://bediscovery-service:50000"
+  name: beinferenceagent
+  imagePullSecrets:   #if required
+  containers:
+    name: inferencenode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: default
+      PU2name: AS_DISCOVER_URL
+      PU2value: "tcp://bediscovery-service:50000"
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
 discoverynode:
-  metadata:
-    name: bediscoverynode
-  spec:
-    template:
-      spec:
-        imagePullSecrets:
-          name:   #if required
-        containers:
-          name: discoverynode
-          image: 246229741278.dkr.ecr.us-east-2.amazonaws.com/fdstoresn:17
-          env:
-            name1: PU
-            value1: default
+  name: bediscoverynode
+  imagePullSecrets:  #if required
+  containers:
+    name: discoverynode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: default
 
 #Required for sharedAll in  all cloud providers
 mysql:
-  metadata:
+  name: mysql
+  containers:
     name: mysql
-  spec:
-    template:
-      spec:
-        containers:
-          name: mysql
-          image: mysql:5.6
-          env:
-            mysqlenv1: MYSQL_USER
-            mysqlval1: root
-            mysqlenv2: MYSQL_PASSWORD
-            mysqlval2: root
-            mysqlenv3: MYSQL_ROOT_PASSWORD
-            mysqlval3: password
-            mysqlenv4: MYSQL_DATABASE
-            mysqlval4: BE_DATABASE
-          ports:
-            containerPort: 3306
+    image: mysql:5.6
+    env:
+      mysqlusername: MYSQL_USER
+      mysqluserval: root
+      mysqlpwdname: MYSQL_PASSWORD
+      mysqlpwdval: root
+      mysqlrootpwdname: MYSQL_ROOT_PASSWORD
+      mysqlrootpwdval: password
+      mysqldbname: MYSQL_DATABASE
+      mysqldbval: BE_DATABASE
+    ports:
+      containerPort: 3306
 
 #Required for sharedAll in all cloud providers
 database:
   name: db-provider
-  envname1: BACKINGSTORE_JDBC_DRIVER
-  value1: db_driver
-  envname2: BACKINGSTORE_JDBC_URL
-  value2: db_url
-  envname3: BACKINGSTORE_JDBC_USERNAME
-  value3: db_username
-  envname4: BACKINGSTORE_JDBC_PASSWORD
-  value4: db_pwd
-  envname5: BACKINGSTORE_JDBC_POOL_SIZE
-  value5: "db_pool_size"
-  envname6: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
-  value6: db_login_timeout
+  drivername: BACKINGSTORE_JDBC_DRIVER
+  driverval: db_driver
+  urlname: BACKINGSTORE_JDBC_URL
+  urlval: db_url
+  username: BACKINGSTORE_JDBC_USERNAME
+  userval: db_username
+  pwdname: BACKINGSTORE_JDBC_PASSWORD
+  pwdval: db_pwd
+  poolsizename: BACKINGSTORE_JDBC_POOL_SIZE
+  poolsizeval: "db_pool_size"
+  logintimeoutname: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
+  logintimeoutval: db_login_timeout
 
 #*************************Service Part****************************************************
 #Required for cache, sharedNothing, sharedAll in all cloud providers
 discoveryservice:
-  metadata:
-    name: bediscovery-service
-  spec:
-    ports:
-      port: 50000
-      protocol: TCP
-    selector:
-      name: bediscoverynode
+  name: bediscovery-service
+  ports:
+    port: 50000
+    protocol: TCP
+  selector:
+    name: bediscoverynode
 
 #Required for all applications in all cloud providers
 jmxservice:
-  metadata:
-    name: jmx-service
-  spec:
-    selector:
-      name: beinferenceagent
-    ports:
-      protocol: TCP
-      port: 5555
-      targetPort: 5555
-    type: LoadBalancer
+  name: jmx-service
+  selector:
+    name: beinferenceagent
+  ports:
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
+  type: LoadBalancer
 
 #Required for all applications in all cloud providers
 beservice:
-  metadata:
-    name: beservice
-  spec:
-    type: LoadBalancer
-    ports:
-      name: port1
-      protocol: TCP
-      port: 8209
+  name: beservice
+  type: NodePort
+  ports:
+    name: port1
+    protocol: TCP
+    port: 8209
 
 #Required for sharedAll in all cloud providers
 mysqlservice:
-  metadata:
+  name: mysql
+  clusterIP: None
+  ports:
+    port: 3306
+    protocol: TCP
+  selector:
     name: mysql
-  spec:
-    clusterIP: None
-    ports:
-      port: 3306
-      protocol: TCP
-    selector:
-      name: mysql
 
 
 #*************************ConfigMap****************************************************
@@ -167,24 +143,18 @@ configmap:
 
 volumes:
   #Required for sharedNothing and sharedAll in all cloud providers
-  mountPath: "/mnt/tibco/be/data-store"
-  name: store
+  snmountPath: "/mnt/tibco/be/data-store"
+  snmountVolume: store
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
-  storageClass: gp2                    #Use default storage class in case of minikube and PKS persistent volumes
-  snVolume1: pv0003                         #Update it for sharedNothing in Openshift
-  snVolume2: pv0004
-  saVolume: pv0002                          #Update it for sharedAll in Openshift
+  storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
+  snclaimVolume: pv0003                         #Update it for sharedNothing in Openshift
+  saclaimVolume: pv0004                          #Update it for sharedAll in Openshift
   samountPath: "/var/lib/mysql"
-  saname: sastore
-  saaccessModes: ["ReadWriteMany"]
-  sastorage: 0.5Gi
-  sastorageClass: standard
+  samountVolume: sastore
   #Required for sharedNothing and sharedAll in Azure
   azure:
-    accessModes: ["ReadWriteOnce"]
-    storage: 0.5Gi
-    storageClassName: standard
+    storageClassName: azurestorageclass
     skuName: Standard_LRS
     provisioner: kubernetes.io/azure-file
     dir_mode: 0777
@@ -207,12 +177,12 @@ persistentvolumes:
       containername: efs-provisioner
       image: quay.io/external_storage/efs-provisioner:latest
       configmapname: efs-provisioner
-      env1: FILE_SYSTEM_ID
-      val1: file.system.id
-      env2: AWS_REGION
-      val2: aws.region
-      env3: PROVISIONER_NAME
-      val3: provisioner.name
+      filesystemidname: FILE_SYSTEM_ID
+      filesystemidval: file.system.id
+      regionname: AWS_REGION
+      regionval: aws.region
+      provname: PROVISIONER_NAME
+      provval: provisioner.name
       volumename: pv-volume
       mountPath: /persistentvolumes
       nfsserver: fs-6bfb4ac2.efs.us-west-2.amazonaws.com
@@ -223,17 +193,12 @@ persistentvolumes:
 #Required for sharedNothing, sharedAll in Openshift.
   openshift:
     volume:
-      metadata:
-        name1: pv0003
-        name2: pv0004
-        name3: pv0005
-      spec:
-        capacity:
-          storage: 1Gi
-        accessModes: ReadWriteOnce
-        persistentVolumeReclaimPolicy: Recycle
-        nfs:
-          server: qa27.lab.streambase.com
-          path1: /home/data/pv0003          #Update path1 and path2 for sharedNothing
-          path2: /home/data/pv0004
-          path3: /home/data/pv0005          #Update path3 for sharedAll
+      snvolname: pv0003
+      savolname: pv0004
+      storage: 1Gi
+      accessModes: ReadWriteOnce
+      persistentVolumeReclaimPolicy: Recycle
+      nfs:
+        server: qa27.lab.streambase.com
+        snpath: /home/data/pv0003          #Update path for sharedNothing
+        sapath: /home/data/pv0004          #Update path for sharedAll

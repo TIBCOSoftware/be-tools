@@ -1,4 +1,5 @@
-{{- if or (eq .Values.isType "cache" ) (eq .Values.isType "sharedNothing" ) (eq .Values.isType "sharedAll" ) }}
+{{- if eq .Values.omType "cache" }}
+  {{- if or (eq .Values.persistentType "None" ) (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -15,16 +16,17 @@ spec:
         name: {{ include "becacheagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.cachenode.spec.template.spec.imagePullSecrets.name }}    #if required
+        - name: {{ .Values.cachenode.imagePullSecrets }}    #if required
       containers:
-      - name: {{ .Values.cachenode.spec.template.spec.containers.name }}
-        image: {{ .Values.cachenode.spec.template.spec.containers.image }}
+      - name: {{ .Values.cachenode.containers.name }}
+        image: {{ .Values.cachenode.containers.image }}
         env:
-        - name: {{ .Values.cachenode.spec.template.spec.containers.env.name1 }}
-          value: {{ .Values.cachenode.spec.template.spec.containers.env.value1 }}
-        - name: {{ .Values.cachenode.spec.template.spec.containers.env.name2 }}
-          value: {{ .Values.cachenode.spec.template.spec.containers.env.value2 }}
-{{ include "sharedAll.first" . | indent 8 }}
-{{ include "sharedNothing.first" . | indent 8 }}
-{{ include "sharedNothing.cachesecond" . }}
+        - name: {{ .Values.cachenode.containers.env.PU1name }}
+          value: {{ .Values.cachenode.containers.env.PU1value }}
+        - name: {{ .Values.cachenode.containers.env.PU2name }}
+          value: {{ .Values.cachenode.containers.env.PU2value }}
+{{ include "sharedAll.configMap" . | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | indent 8 }}
+{{ include "sharedNothing.volumeClaim" . }}
+  {{- end }}
 {{- end }}

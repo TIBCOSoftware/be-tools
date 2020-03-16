@@ -4,8 +4,8 @@ metadata:
   name: {{ include "beservice.fullname" . }}
 spec:
   ports:
-    - port: {{ .Values.beservice.spec.ports.port }}
+    - port: {{ .Values.beservice.ports.port }}
       protocol: TCP
   selector:
     name: {{ include "beinferenceagent.fullname" . }}
-  type: {{ .Values.beservice.spec.type }}
+  type: {{ .Values.beservice.type }}

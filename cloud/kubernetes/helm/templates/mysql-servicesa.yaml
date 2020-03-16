@@ -1,13 +1,13 @@
-{{- if eq .Values.isType "sharedAll" }}
+{{- if and (eq .Values.persistentType "sharedAll" ) (eq .Values.omType "cache" ) }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "mysqlservice.fullname" . }}
 spec:
-  clusterIP: {{ .Values.mysqlservice.spec.clusterIP }}
+  clusterIP: {{ .Values.mysqlservice.clusterIP }}
   ports:
-    - port: {{ .Values.mysqlservice.spec.ports.port }}
-      protocol: {{ .Values.mysqlservice.spec.ports.protocol }}
+    - port: {{ .Values.mysqlservice.ports.port }}
+      protocol: {{ .Values.mysqlservice.ports.protocol }}
   selector:
     name: {{ include "mysql.fullname" . }}
 {{- end }}

@@ -1,4 +1,4 @@
-{{- if eq .Values.isType "sharedAll" }}
+{{- if and (eq .Values.persistentType "sharedAll" ) (eq .Values.omType "cache" ) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
