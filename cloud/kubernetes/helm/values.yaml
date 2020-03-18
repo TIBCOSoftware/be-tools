@@ -1,0 +1,204 @@
+# Default values.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#Cloud Providers: minikube, PKS, Azure, AWS-EKS, Openshift
+
+#Required parameter to be passed for all cloud providers
+cloudProvider: minikube
+
+#Required parameter to be passed for cache, sharedNothing, sharedAll
+omType: inmemory
+
+#Required parameter to be passed for sharedNothing, sharedAll
+persistentType: None
+
+#*************************Agents Part****************************************************
+
+#Required for cache, sharedNothing, sharedAll in  all cloud providers
+cachenode:
+  name: becacheagent
+  imagePullSecrets:  #if required for azure
+  containers:
+    name: cachenode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: cache
+      PU2name: AS_DISCOVER_URL
+      PU2value: "tcp://bediscovery-service:50000"
+
+#Required for all applications in  all cloud providers
+inferencenode:
+  name: beinferenceagent
+  imagePullSecrets:   #if required
+  containers:
+    name: inferencenode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: default
+      PU2name: AS_DISCOVER_URL
+      PU2value: "tcp://bediscovery-service:50000"
+
+#Required for cache, sharedNothing, sharedAll in  all cloud providers
+discoverynode:
+  name: bediscoverynode
+  imagePullSecrets:  #if required
+  containers:
+    name: discoverynode
+    image: fdstoresn:v01
+    env:
+      PU1name: PU
+      PU1value: default
+
+#Required for sharedAll in  all cloud providers
+mysql:
+  name: mysql
+  containers:
+    name: mysql
+    image: mysql:5.6
+    env:
+      mysqlusername: MYSQL_USER
+      mysqluserval: root
+      mysqlpwdname: MYSQL_PASSWORD
+      mysqlpwdval: root
+      mysqlrootpwdname: MYSQL_ROOT_PASSWORD
+      mysqlrootpwdval: password
+      mysqldbname: MYSQL_DATABASE
+      mysqldbval: BE_DATABASE
+    ports:
+      containerPort: 3306
+
+#Required for sharedAll in all cloud providers
+database:
+  name: db-provider
+  drivername: BACKINGSTORE_JDBC_DRIVER
+  driverval: db_driver
+  urlname: BACKINGSTORE_JDBC_URL
+  urlval: db_url
+  username: BACKINGSTORE_JDBC_USERNAME
+  userval: db_username
+  pwdname: BACKINGSTORE_JDBC_PASSWORD
+  pwdval: db_pwd
+  poolsizename: BACKINGSTORE_JDBC_POOL_SIZE
+  poolsizeval: "db_pool_size"
+  logintimeoutname: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
+  logintimeoutval: db_login_timeout
+
+#*************************Service Part****************************************************
+#Required for cache, sharedNothing, sharedAll in all cloud providers
+discoveryservice:
+  name: bediscovery-service
+  ports:
+    port: 50000
+    protocol: TCP
+  selector:
+    name: bediscoverynode
+
+#Required for all applications in all cloud providers
+jmxservice:
+  name: jmx-service
+  selector:
+    name: beinferenceagent
+  ports:
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
+  type: LoadBalancer
+
+#Required for all applications in all cloud providers
+beservice:
+  name: beservice
+  type: NodePort
+  ports:
+    name: port1
+    protocol: TCP
+    port: 8209
+
+#Required for sharedAll in all cloud providers
+mysqlservice:
+  name: mysql
+  clusterIP: None
+  ports:
+    port: 3306
+    protocol: TCP
+  selector:
+    name: mysql
+
+
+#*************************ConfigMap****************************************************
+
+#Required for sharedAll in all cloud providers
+configmap:
+  name: db-provider
+  dbdriver: com.mysql.jdbc.Driver
+  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  dbusername: BE_USER
+  dbpwd: BE_USER
+  dbpoolsize: 5
+  dblogintimeout: 0
+
+#*************************Volumes Part****************************************************
+
+volumes:
+  #Required for sharedNothing and sharedAll in all cloud providers
+  snmountPath: "/mnt/tibco/be/data-store"
+  snmountVolume: store
+  accessModes: ["ReadWriteOnce"]
+  storage: 0.5Gi
+  storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
+  snclaimVolume: pv0003                         #Update it for sharedNothing in Openshift
+  saclaimVolume: pv0004                          #Update it for sharedAll in Openshift
+  samountPath: "/var/lib/mysql"
+  samountVolume: sastore
+  #Required for sharedNothing and sharedAll in Azure
+  azure:
+    storageClassName: azurestorageclass
+    skuName: Standard_LRS
+    provisioner: kubernetes.io/azure-file
+    dir_mode: 0777
+    file_mode: 0777
+    uid: 1000
+    gid: 1000
+
+#Required for sharedNothing, sharedAll in AWS-EKS
+persistentvolumes:
+  eks:
+    configmap:
+      name: efs-provisioner
+      filesystemid: <efs-filesystem-id>
+      awsregion: <aws-region>
+      provisionername: example.com/aws-efs
+    deployment:
+      name: efs-provisioner
+      replicas: 1
+      type: Recreate
+      containername: efs-provisioner
+      image: quay.io/external_storage/efs-provisioner:latest
+      configmapname: efs-provisioner
+      filesystemidname: FILE_SYSTEM_ID
+      filesystemidval: file.system.id
+      regionname: AWS_REGION
+      regionval: aws.region
+      provname: PROVISIONER_NAME
+      provval: provisioner.name
+      volumename: pv-volume
+      mountPath: /persistentvolumes
+      nfsserver: fs-6bfb4ac2.efs.us-west-2.amazonaws.com
+      nfspath: /
+    storageclass:
+      name: aws-efs
+      provisioner: example.com/aws-efs
+#Required for sharedNothing, sharedAll in Openshift.
+  openshift:
+    volume:
+      snvolname: pv0003
+      savolname: pv0004
+      storage: 1Gi
+      accessModes: ReadWriteOnce
+      persistentVolumeReclaimPolicy: Recycle
+      nfs:
+        server: qa27.lab.streambase.com
+        snpath: /home/data/pv0003          #Update path for sharedNothing
+        sapath: /home/data/pv0004          #Update path for sharedAll

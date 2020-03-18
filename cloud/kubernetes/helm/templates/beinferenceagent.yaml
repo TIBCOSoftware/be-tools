@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "beinferenceagent.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      name: {{ include "beinferenceagent.fullname" . }}
+  serviceName: {{ include "beservice.fullname" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "beinferenceagent.fullname" . }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.inferencenode.imagePullSecrets }}    #if required
+      containers:
+      - name: {{ .Values.inferencenode.containers.name }}
+        image: {{ .Values.inferencenode.containers.image }}
+        env:
+        - name: {{ .Values.inferencenode.containers.env.PU1name }}
+          value: {{ .Values.inferencenode.containers.env.PU1value }}
+        - name: {{ .Values.inferencenode.containers.env.PU2name }}
+          value: {{ .Values.inferencenode.containers.env.PU2value }}
+{{ include "sharedAll.configMap" . | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | indent 8 }}
+{{ include "sharedNothing.volumeClaim" . }}

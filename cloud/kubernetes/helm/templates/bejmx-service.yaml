@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "jmxservice.fullname" . }}
+spec:
+  ports:
+    - port: {{ .Values.jmxservice.ports.port }}
+      protocol: TCP
+  selector:
+    name: {{ include "bediscoverynode.fullname" . }}
+  type: {{ .Values.jmxservice.type }}

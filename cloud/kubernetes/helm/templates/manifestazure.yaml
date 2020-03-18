@@ -1,0 +1,16 @@
+{{- if and (eq .Values.cloudProvider "azure" ) (eq .Values.omType "cache" ) }}
+  {{- if or (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ include "azurestorageclass.fullname" . }}
+provisioner: {{ .Values.volumes.azure.provisioner }}
+mountOptions:
+  - dir_mode={{ .Values.volumes.azure.dir_mode }}
+  - file_mode={{ .Values.volumes.azure.file_mode }}
+  - uid={{ .Values.volumes.azure.uid }}
+  - gid={{ .Values.volumes.azure.gid }}
+parameters:
+  skuName: {{ .Values.volumes.azure.skuName }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "beservice.fullname" . }}
+spec:
+  ports:
+    - port: {{ .Values.beservice.ports.port }}
+      protocol: TCP
+  selector:
+    name: {{ include "beinferenceagent.fullname" . }}
+  type: {{ .Values.beservice.type }}

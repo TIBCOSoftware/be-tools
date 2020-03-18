@@ -1,0 +1,24 @@
+#Persistent volume used in mysql
+{{- if and (eq .Values.cloudProvider "openshift" ) (eq .Values.omType "cache" ) }}
+{{- if eq .Values.persistentType "sharedAll" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistentvolumes.openshift.volume.savolname }}
+spec:
+  {{ include "openshiftPV.details" . }}
+  {{ include "openshiftNFSsharedAll.path" . }}
+---
+{{- else if eq .Values.persistentType "sharedNothing" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistentvolumes.openshift.volume.snvolname }}
+spec:
+  {{ include "openshiftPV.details" . }}
+  {{ include "openshiftNFSsharedNothing.path" . }}
+----
+{{- end }}
+{{- end }}
