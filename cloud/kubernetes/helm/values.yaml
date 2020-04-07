@@ -13,15 +13,19 @@ omType: inmemory
 #Required parameter to be passed for sharedNothing, sharedAll
 persistentType: None
 
+# Image name and pull policy required for be app
+image: fdstoresn:v01
+imagePullPolicy: IfNotPresent
+
 #*************************Agents Part****************************************************
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
 cachenode:
   name: becacheagent
   imagePullSecrets:  #if required for azure
+  replicaCount: 1
   containers:
-    name: cachenode
-    image: fdstoresn:v01
+    name: cachenode    
     env:
       PU1name: PU
       PU1value: cache
@@ -32,9 +36,9 @@ cachenode:
 inferencenode:
   name: beinferenceagent
   imagePullSecrets:   #if required
+  replicaCount: 1
   containers:
     name: inferencenode
-    image: fdstoresn:v01
     env:
       PU1name: PU
       PU1value: default
@@ -45,9 +49,9 @@ inferencenode:
 discoverynode:
   name: bediscoverynode
   imagePullSecrets:  #if required
+  replicaCount: 1
   containers:
     name: discoverynode
-    image: fdstoresn:v01
     env:
       PU1name: PU
       PU1value: default
@@ -57,7 +61,7 @@ mysql:
   name: mysql
   containers:
     name: mysql
-    image: mysql:5.6
+    image: mysql:5.7
     env:
       mysqlusername: MYSQL_USER
       mysqluserval: root

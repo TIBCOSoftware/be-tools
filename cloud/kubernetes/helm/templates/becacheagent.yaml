@@ -5,7 +5,7 @@ kind: StatefulSet
 metadata:
   name: {{ include "becacheagent.fullname" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.cachenode.replicaCount }}
   selector:
     matchLabels:
       name: {{ include "becacheagent.fullname" . }}
@@ -19,7 +19,8 @@ spec:
         - name: {{ .Values.cachenode.imagePullSecrets }}    #if required
       containers:
       - name: {{ .Values.cachenode.containers.name }}
-        image: {{ .Values.cachenode.containers.image }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: {{ .Values.cachenode.containers.env.PU1name }}
           value: {{ .Values.cachenode.containers.env.PU1value }}

@@ -8,11 +8,14 @@ metadata:
 {{ include "eksconfigmap.data" . }}
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: {{ include "eksdeployment.fullname" . }}
 spec:
   replicas: {{ .Values.persistentvolumes.eks.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "eksdeployment.fullname" . }}
   strategy:
     type: {{ .Values.persistentvolumes.eks.deployment.type }}
   template:

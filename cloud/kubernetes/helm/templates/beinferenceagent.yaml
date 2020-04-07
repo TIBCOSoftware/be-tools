@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: {{ include "beinferenceagent.fullname" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.inferencenode.replicaCount }}
   selector:
     matchLabels:
       name: {{ include "beinferenceagent.fullname" . }}
@@ -17,12 +17,15 @@ spec:
         - name: {{ .Values.inferencenode.imagePullSecrets }}    #if required
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
-        image: {{ .Values.inferencenode.containers.image }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: {{ .Values.inferencenode.containers.env.PU1name }}
           value: {{ .Values.inferencenode.containers.env.PU1value }}
+         {{- if eq .Values.omType "cache" }}  
         - name: {{ .Values.inferencenode.containers.env.PU2name }}
           value: {{ .Values.inferencenode.containers.env.PU2value }}
+         {{- end }}
 {{ include "sharedAll.configMap" . | indent 8 }}
 {{ include "sharedNothing.volumeMount" . | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
