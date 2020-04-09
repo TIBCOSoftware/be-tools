@@ -1,5 +1,5 @@
 {{- if eq .Values.omType "cache" }}
-  {{- if or (eq .Values.persistentType "None" ) (eq .Values.persistentType "sharedAll" ) }}
+  {{- if or (eq .Values.persistentType "None" ) (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
