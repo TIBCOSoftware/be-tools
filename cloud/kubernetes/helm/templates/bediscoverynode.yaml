@@ -5,7 +5,7 @@ kind: StatefulSet
 metadata:
   name: {{ include "bediscoverynode.fullname" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.discoverynode.replicaCount }}
   selector:
     matchLabels:
       name: {{ include "bediscoverynode.fullname" . }}
@@ -19,7 +19,8 @@ spec:
         - name: {{ .Values.discoverynode.imagePullSecrets }}    #if required
       containers:
       - name: {{ .Values.discoverynode.containers.name }}
-        image: {{ .Values.discoverynode.containers.image }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: {{ .Values.discoverynode.containers.env.PU1name }}
           value: {{ .Values.discoverynode.containers.env.PU1value }}
