@@ -17,6 +17,28 @@ persistentType: None
 image: fdstoresn:v01
 imagePullPolicy: IfNotPresent
 imagePullSecrets:  #if required for azure
+
+#Required for sharedAll in  all cloud providers
+mysql:
+  enabled: false #use true for sharedAll
+  image: "mysql"
+  imageTag: "5.7"
+  args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
+  mysqlUser: root
+  mysqlPassword: root
+  mysqlRootPassword: password
+  mysqlDatabase: BE_DATABASE #datbase name
+  # persistence: 
+  #   storageClass: "-" #Type of persistent volume claim
+
+# Required for sharedNothing and sharedAll in AWS
+aws-efs:
+  enabled: false #use true for aws 
+  replicaCount: 1
+  efsProvisioner:
+    efsFileSystemId: fs-e8f5fa68
+    awsRegion: us-east-1
+
 #*************************Agents Part****************************************************
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
@@ -52,24 +74,6 @@ discoverynode:
     env:
       PU1name: PU
       PU1value: cache
-
-#Required for sharedAll in  all cloud providers
-mysql:
-  name: mysql
-  containers:
-    name: mysql
-    image: mysql:5.7
-    env:
-      mysqlusername: MYSQL_USER
-      mysqluserval: root
-      mysqlpwdname: MYSQL_PASSWORD
-      mysqlpwdval: root
-      mysqlrootpwdname: MYSQL_ROOT_PASSWORD
-      mysqlrootpwdval: password
-      mysqldbname: MYSQL_DATABASE
-      mysqldbval: BE_DATABASE
-    ports:
-      containerPort: 3306
 
 #Required for sharedAll in all cloud providers
 database:
@@ -163,34 +167,7 @@ volumes:
     uid: 1000
     gid: 1000
 
-#Required for sharedNothing, sharedAll in AWS-EKS
 persistentvolumes:
-  eks:
-    configmap:
-      name: efs-provisioner
-      filesystemid: <efs-filesystem-id>
-      awsregion: <aws-region>
-      provisionername: example.com/aws-efs
-    deployment:
-      name: efs-provisioner
-      replicas: 1
-      type: Recreate
-      containername: efs-provisioner
-      image: quay.io/external_storage/efs-provisioner:latest
-      configmapname: efs-provisioner
-      filesystemidname: FILE_SYSTEM_ID
-      filesystemidval: file.system.id
-      regionname: AWS_REGION
-      regionval: aws.region
-      provname: PROVISIONER_NAME
-      provval: provisioner.name
-      volumename: pv-volume
-      mountPath: /persistentvolumes
-      nfsserver: fs-6bfb4ac2.efs.us-west-2.amazonaws.com
-      nfspath: /
-    storageclass:
-      name: aws-efs
-      provisioner: example.com/aws-efs
 #Required for sharedNothing, sharedAll in Openshift.
   openshift:
     volume:
@@ -200,6 +177,6 @@ persistentvolumes:
       accessModes: ReadWriteOnce
       persistentVolumeReclaimPolicy: Recycle
       nfs:
-        server: qa27.lab.streambase.com
+        server: qa.lab.openshift.com       #update the servername
         snpath: /home/data/pv0003          #Update path for sharedNothing
         sapath: /home/data/pv0004          #Update path for sharedAll

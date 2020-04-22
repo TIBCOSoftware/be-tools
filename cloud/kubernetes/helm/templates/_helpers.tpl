@@ -24,10 +24,6 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.discoverynode.name -}}
 {{- end -}}
 
-{{- define "mysql.fullname" -}}
-{{- .Values.mysql.name -}}
-{{- end -}}
-
 {{- define "beservice.fullname" -}}
 {{ .Values.beservice.name }}
 {{- end -}}
@@ -178,7 +174,11 @@ Create a common DB configMap data details for sharedAll
 {{- define "commonconfigmap.data" -}}
 data:
   db_driver: "{{ .Values.configmap.dbdriver }}"
+  {{- if eq .Values.mysql.enabled true }}
+  db_url: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
+  {{- else }}
   db_url: "{{ .Values.configmap.dburl }}"
+  {{- end }}
   db_username: "{{ .Values.configmap.dbusername }}"
   db_pwd: "{{ .Values.configmap.dbpwd }}"
   db_pool_size: "{{ .Values.configmap.dbpoolsize }}"

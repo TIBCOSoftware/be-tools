@@ -1,38 +1,90 @@
+# BE Helm Chart
+
 ## Introduction
 
-Helm helps you manage Kubernetes applications — Helm Charts help you define, install, and upgrade even the most complex Kubernetes application.
+This chart install a Business Events application deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
+## Dependencies:
 
-## Installation
+1. [MySQL chart](https://github.com/kubernetes/charts/tree/master/stable/mysql): It install a MySQL deployment for the database requirements of the backingstore BE applications. 
+2. [efs-provisioner chart](https://github.com/helm/charts/tree/master/stable/efs-provisioner): Used to fulfill PersistentVolumeClaims with EFS PersistentVolumes for the BE applications.
 
-### Prerequisites
+The persisent volumes are created as folders with in an AWS EFS filesystem.
 
-The following prerequisites are required for a successful and properly secured use of Helm.
+https://aws.amazon.com/efs/
 
-A Kubernetes cluster: You must have Kubernetes installed. For the latest release of Helm, we recommend the latest stable release of Kubernetes, which in most cases is the second-latest minor release.
-You should also have a local configured copy of kubectl.
+## Prerequisites Details
 
+* Kubernetes 1.15 or 1.17+
+* Helm stable version 3.1.0
+* PV provisioner support in the underlying infrastructure
+* A Kubernetes cluster: You must have Kubernetes installed. For the latest release of Helm, we recommend the latest stable release of Kubernetes, which in most cases is the second-latest minor release. 
 
-### Install
-Clone https://github.com/TIBCOSoftware/be-tools.git using git clone command on your local machine. Open terminal and go to folder `cloud/docker/kubernetes`
-Refer https://helm.sh/docs/intro/install/ to install Helm.
+## StatefulSet and persistent volumes Details
 
+* http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/
+* https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
-## Getting Started
+## Installing the Chart
 
-Following command will run application:
+Clone be-tools repo and navigate to cloud/kubernetes folder
 
-        helm install <release_name> <chart_name>
+```
+git clone https://github.com/TIBCOSoftware/be-tools.git
+cd cloud/kubernetes
+helm dep update ./helm
+```
 
-              where release_name release name that you pick
-              chart_name is the name of the chart you want to install
+Update the required values for deployment in helm/values.yaml file(ex:image, imagePullPolicy etc.,)
 
-For example:
-To run FraudDetectionCache application in Azure:
+To install the chart with the release name `my-release` in minikube
 
-       helm install helm ./helm --set omType=cache,cloudProvider=azure
+* omType: inmemory 
+
+```
+helm install my-release ./helm
+```
+
+For cache modes that includes persistentNone, sharedNothing and sharedAll
+* persistentType=None
+```
+helm install my-release ./helm --set omType:cache,persistentType=None
+```
+
+* persistentType=sharedNothing
+```
+helm install my-release ./helm --set omType:cache,persistentType=sharedNothing
+```
+
+* persistentType=sharedAll with mysql dependency
+```
+helm install my-release ./helm --set omType:cache,persistentType=sharedAll,mysql.enabled=true
+```
+
+Note: minikube is the default provider
+
+To install the chart with the release name `my-release` in azure
+
+```
+helm install my-release ./helm --set cloudProvider=azure
+```
+
+Note:<br> 
+1.minikube is the default provider.<br> 
+2.Update the values of mysql and efs-provisioner dependency in mysql section of helm/values.yaml.<br>
 
 
 At any point to check how to use helm, simply run the `help` command
+```
+helm --help
+```
 
-      helm --help
+## Uninstalling the Chart
+
+To uninstall/delete the my-release deployment:
+
+```
+$ helm delete my-release
+```
+
+The command removes all the Kubernetes components associated with the chart
