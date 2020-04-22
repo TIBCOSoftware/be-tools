@@ -51,7 +51,7 @@ discoverynode:
     name: discoverynode
     env:
       PU1name: PU
-      PU1value: default
+      PU1value: cache
 
 #Required for sharedAll in  all cloud providers
 mysql:
