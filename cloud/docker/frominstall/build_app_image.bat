@@ -81,9 +81,17 @@ for /l %%x in (1, 1, %argCount%) do (
      EXIT /B 1
   )
   
-REM shiting param
+REM shifting param
 shift
 )
+
+
+
+echo ARG_INSTALLER_LOCATION=%ARG_INSTALLER_LOCATION%
+echo ARG_APP_LOCATION=%ARG_APP_LOCATION%
+echo ARG_IMAGE_VERSION=%ARG_IMAGE_VERSION%
+echo ARG_DOCKERFILE=%ARG_DOCKERFILE%
+echo ARG_GVPROVIDERS=%ARG_GVPROVIDERS%
 
 if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile 
 
