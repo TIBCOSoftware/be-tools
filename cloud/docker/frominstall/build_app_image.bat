@@ -80,6 +80,9 @@ for /l %%x in (1, 1, %argCount%) do (
      call :printUsage
      EXIT /B 1
   )
+  
+REM shiting param
+shift
 )
 
 if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile 

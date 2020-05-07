@@ -100,6 +100,8 @@ for /l %%x in (1, 1, %argCount%) do (
      EXIT /B 1
   )
 
+REM shiting param
+shift
 )
 
 set "MISSING_ARG=-"
