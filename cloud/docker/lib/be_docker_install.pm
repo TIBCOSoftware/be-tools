@@ -36,6 +36,7 @@ my $REGEX_LD_LIB_PATH = "tibco.env.LD_LIBRARY_PATH(.*)[\s]*";
 
 my $REGEX_AS_INSTALLER  = "*activespaces";
 my $REGEX_BE_INSTALLER  = "*businessevents";
+my $REGEX_FTL_INSTALLER  = "*ftl";
 
 my %REGEX_SLNT_FILE_TOKENS = (
   '(<entry key="installationRoot">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_LOC,
@@ -63,12 +64,22 @@ my %CONSTANTS_MAP = (
   
 my %AS_VERSION_MAP  = (
  '5.6.0' => '2.3.0',
- '5.6.1' => '2.3.0'
+ '5.6.1' => '2.3.0',
+ '6.0.0' => '2.3.0'
 );
 
 my %AS_VERSION_MAP_MAX  = (
  '5.6.0' => '2.4.0',
- '5.6.1' => '2.4.1'
+ '5.6.1' => '2.4.1',
+ '6.0.0' => '2.4.1'
+);
+
+my %FTL_VERSION_MAP  = (
+ '6.0.0' => '6.4.0'
+);
+
+my %FTL_VERSION_MAP_MAX  = (
+ '6.0.0' => '6.4.0'
 );
 
 
@@ -120,7 +131,7 @@ sub install_be {
 
 		#-------------------------------------------------------------------
 		print "\nINFO:Installing ActiveSpaces $asVersion...\n";
-		my $asInstallResult =
+    my $asInstallResult =
 		  extractAndInstall( $ROOT_FOLDER, $asVersion, $asProd[0], 0,
 			$asHfPkgVal, $FOLDER_AS_INSTALLER, 'as', 0, $arg_asHotfix );
 
@@ -225,6 +236,33 @@ sub install_be {
   print "----------------------------------------------\n\n";
 
 }
+
+sub install_ftl {
+  my $arg_ftlVersion = shift;
+
+  if($arg_ftlVersion == "na"){
+    return 1;
+  }
+
+  print "\nINFO:Installing FTL $arg_ftlVersion...\n";
+  
+  my $baseProdRegex="*ftl_$arg_ftlVersion*zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+
+  my $result=extractPackages($ROOT_FOLDER,$arg_ftlVersion,$baseProd[0],'ftl_installers');
+  if($result == 0){
+    print "\nERROR : Error occurred while extracting FTL installer package - $baseProd[0]. Aborting\n";
+    return 0;
+  }
+
+  my $result=installFTLPackages($arg_ftlVersion,'ftl_installers');
+  if($result == 0){
+    print "\nERROR : Error occurred while installing FTL. Aborting\n";
+    return 0;
+  }
+  print "\nINFO:Installing FTL $arg_ftlVersion...DONE\n\n";
+}
+
 #----------------------------------------------------------------------------------------
 
 sub extractAndInstall{
@@ -328,6 +366,22 @@ sub installPackages{
     $DEBUG_ENABLE==1?print "\nDEBUG:$Command_3_install\n":"";
     last;
   }
+  return 1;
+}
+
+sub installFTLPackages{
+  
+  my $version = shift;
+  my $pkgSourceRoot= shift;
+
+  my $pkgSourceFolder = "$pkgSourceRoot/" . "TIB_ftl_" . "$version";
+  
+  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with dpkg using the folder: $pkgSourceFolder\n":"";
+  my $installCmd = `cd $pkgSourceFolder;dpkg -i deb/*.deb`;
+  # TODO: installCmd works for Debian & Ubuntu. Need to handle for other varients.
+  my $installResult = "$installCmd";
+  $DEBUG_ENABLE==1?print "\nDEBUG: $installResult":"";
+
   return 1;
 }
 
@@ -604,6 +658,12 @@ sub validate{
   if($result == 0){
     exit 0;
   }
+
+  $result=validateFTL($version,$targetDir);
+
+  if($result == 0){
+    exit 0;
+  }
   
   writeToFile(\@FILES_LIST,"$tempdir/$FILE_PCKG_LIST");
   print "\n";
@@ -841,6 +901,39 @@ print "argver: $arg_version, asver: $AS_VERSION_MAP{$arg_version}, asver:$asVers
   }
   else{
     print "\nERROR :More than one Activespace Packages are present in the target directory.There should be only one.\n";
+    return 0;
+  }
+  return 1;
+}
+
+sub validateFTL{
+  
+  my $arg_version    =shift;  
+  my $arg_targetDir  =shift;
+  
+  my @ftlPckg=glob "$arg_targetDir/$REGEX_FTL_INSTALLER*.zip";
+  my $ftlCount = @ftlPckg;
+  
+  if($ftlCount == 1){
+    my @ftlPckgFiltered = grep(/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g, @ftlPckg);
+	
+    if($ftlPckgFiltered[0] =~ m/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g){
+      my ($ftlVersion) = $1;
+      my $isLess=isLessThan($ftlVersion, $FTL_VERSION_MAP{$arg_version});
+      my $isGreater=isGreaterThan($ftlVersion, $FTL_VERSION_MAP_MAX{$arg_version});
+      if($isLess > 0 or $isGreater > 0 ){
+        print "argver: $arg_version, ftlver: $FTL_VERSION_MAP{$arg_version}, ftlver:$ftlVersion \n";
+        print "\nERROR :BE Version :$arg_version is not compatible with FTL version $ftlVersion.\n";
+        return 0;
+      }
+      else{
+        $DEBUG_ENABLE==1?print "\nDEBUG: FTL VERSION : $ftlPckgFiltered[0]\n":"";
+        push @FILES_LIST, "$ftlPckgFiltered[0]\n";
+      }
+    }
+  }
+  else{
+    print "\nERROR :More than one FTL Packages are present in the target directory. There should be only one.\n";
     return 0;
   }
   return 1;

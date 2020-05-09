@@ -9,6 +9,8 @@ ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
 
 FROM ubuntu:latest as intermediate
 
@@ -21,6 +23,8 @@ ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
 ARG AS_PRODUCT_HOTFIX
 ARG AS_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
@@ -46,13 +50,15 @@ ENV TIBCO_HOME=/opt/tibco \
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_ftl('$FTL_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip \
+ && rm -rf as_installers be_installers ftl_installers *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
+RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
 RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
  && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
@@ -65,6 +71,7 @@ RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
  && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
  && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
+ && mkdir -p /opt/tibco/as/${FTL_SHORT_VERSION}/lib \
  && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
  && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 
@@ -79,6 +86,8 @@ ARG AS_SHORT_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
@@ -94,6 +103,8 @@ COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${B
 
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
+
+COPY --from=intermediate /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION

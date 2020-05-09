@@ -8,7 +8,7 @@
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
 
 if [ -z "${USAGE}" ]; then
@@ -43,6 +43,7 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 AS_VERSION="na"
+FTL_VERSION="na"
 ARG_GVPROVIDERS="na"
 
 #Parse the arguments
@@ -304,6 +305,17 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
+# Validate and get FTL versions
+ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
+ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
+# TODO: Handle FTL HF versions
+FTL_BASE_PACKAGE="${ftlPckgs[0]}"
+ARG_FTL_VERSION=$(echo "${FTL_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_ftl_/${BLANK}/g") 
+if [ "$ARG_FTL_VERSION" = "" ]
+then
+  ARG_FTL_VERSION="na"
+fi
+
 echo "INFO:Supplied Arguments :"
 echo "----------------------------------------------"
 echo "INFO:VERSION : $ARG_VERSION"
@@ -314,6 +326,7 @@ echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
 echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "----------------------------------------------"
 
@@ -341,7 +354,7 @@ CURRENT_DIR=$( cd $(dirname $0) ; pwd -P )
 while read -r line
 do
     name="$line"
-    cp $name $TEMP_FOLDER/installers
+	cp $name $TEMP_FOLDER/installers
     done < "$TEMP_FOLDER/package_files.txt"
 
   AS_VERSION=$(perl -nle 'print $1 if m{.*activespaces.*([\d].[\d].[\d])_linux}' $TEMP_FOLDER/package_files.txt)
@@ -384,6 +397,20 @@ if [[ "$AS_VERSION" != "na" ]]
 	fi
 fi
 
+# Evaluate FTL version & short version
+FTL_VERSION=$ARG_FTL_VERSION
+if [[ "$FTL_VERSION" != "na" ]]
+	then
+	if [[ $FTL_VERSION =~ $VERSION_REGEX ]]
+	then
+		FTL_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		echo "ERROR:Improper FTL version.Aborting."
+		echo "Deleteting $TEMP_FOLDER folder"
+		rm -rf $TEMP_FOLDER
+		exit 1
+	fi
+fi
 
 if [ "$IS_S2I" = "true" ]; then
 cd ../bin
