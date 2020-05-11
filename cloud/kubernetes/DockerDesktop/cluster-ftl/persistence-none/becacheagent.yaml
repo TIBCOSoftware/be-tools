@@ -1,0 +1,47 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "becacheagent"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "becacheagent"
+    spec:
+      containers:
+      - name: "becacheagent-container"
+        image: "s2ifdftl:01"
+        imagePullPolicy: "Never"
+        env:
+          - name: PU
+            value: "cache"
+          - name: FTL_gv_REALM_SERVER
+            value: "http://192.168.2.3:8585"
+          - name: FTL_gv_REALM_NAME
+            value: "cepFTLRealm"
+          - name: FTL_gv_APP_NAME
+            value: "cepFTLApp"
+          - name: FTL_gv_CLUSTER_NAME
+            value: "cepFTLCluster"
+          - name: FTL_gv_PUBSUB_ENDPOINT
+            value: "cepFTLDefaultEndpoint"
+          - name: FTL_gv_MAP_ENDPOINT
+            value: "cepFTLMapEndpoint"
+          - name: FTL_gv_PERSISTENT_ENDPOINT
+            value: "cepFTLPersistenceEndpoint"
+          - name: FTL_gv_SHARED_ENDPOINT
+            value: "cepFTLSharedEndpoint"
+          - name: FTL_gv_USER_NAME
+            value: "guest"
+          - name: FTL_gv_USER_NAME
+            value: "guest"
+          - name: FTL_gv_USER_PWD
+            value: "guest-pw"
+          - name: IGNITE_DISCOVER_URL
+            value: "bediscovery-service"

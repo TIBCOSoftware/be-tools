@@ -1,0 +1,43 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: "bediscovery-service"
+spec:
+  selector:
+    name: "bediscoverynode"
+  ports:
+    - name: "dis0"
+      protocol: "TCP"
+      port: 47500
+    - name: "dis1"
+      protocol: "TCP"
+      port: 47501
+    - name: "dis2"
+      protocol: "TCP"
+      port: 47502
+    - name: "dis3"
+      protocol: "TCP"
+      port: 47503
+    - name: "dis4"
+      protocol: "TCP"
+      port: 47504
+    - name: "dis5"
+      protocol: "TCP"
+      port: 47505
+    - name: "dis6"
+      protocol: "TCP"
+      port: 47506
+    - name: "dis7"
+      protocol: "TCP"
+      port: 47507
+    - name: "dis8"
+      protocol: "TCP"
+      port: 47508
+    - name: "dis9"
+      protocol: "TCP"
+      port: 47509
