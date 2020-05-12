@@ -12,14 +12,17 @@ USAGE+="[-l|--be-home]              :       be-home [optional, default: "../../.
 USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating image (default: Dockerfile_fromtar) [optional]\n"
 USAGE+="[--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]\n"
 USAGE+="[-h|--help]                 :       Print the usage of script [optional]\n";
+USAGE+="[-c|--cluster-type]          :      Provide the type of cluster as AS2x/FTL\n";
 
 ARG_DOCKER_FILE="Dockerfile_fromtar"
 ARG_APP_LOCATION="na"
 ARG_VERSION="na"
 ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
+FTL_HOME=/opt/tibco/ftl/6.4
 TEMP_FOLDER="tmp_$RANDOM"
 ARG_GVPROVIDERS="na"
+ARG_CLUSTER_TYPE="na"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -59,6 +62,13 @@ while [[ $# -gt 0 ]]; do
         -a=*|--app-location=*)
         ARG_APP_LOCATION="${key#*=}"
         ;;
+  -c|--cluster-type) 
+        shift # past the key and to the value
+        ARG_CLUSTER_TYPE="$1"
+        ;;
+        -a=*|--cluster-type=*)
+        ARG_CLUSTER_TYPE="${key#*=}"
+        ;;      
 	-h|--help) 
         shift
         printf "$USAGE"
@@ -97,6 +107,17 @@ then
 	FIRST=0
   else
     MISSING_ARGS="$MISSING_ARGS , Image repo[-r|--repo]"
+  fi
+fi
+
+if [ "$ARG_CLUSTER_TYPE" = "na" -o "$ARG_CLUSTER_TYPE" = "nax" -o -z "${ARG_CLUSTER_TYPE// }" ]
+then
+  if [ $FIRST = 1 ]
+  then
+    MISSING_ARGS="$MISSING_ARGS clusterType [-c|--cluster-type]"
+	FIRST=0
+  else
+    MISSING_ARGS="$MISSING_ARGS , clusterType [-c|--cluster-type]"
   fi
 fi
 
@@ -140,6 +161,7 @@ echo "INFO: DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO: IMAGE REPO : $ARG_IMAGE_VERSION"
 echo "INFO: CDD FILE NAME : $CDD_FILE_NAME"
 echo "INFO: EAR FILE NAME : $EAR_FILE_NAME"
+echo "INFO: CLUSTER TYPE: $ARG_CLUSTER_TYPE"
 echo "----------------------------------------------"
 
 DOCKER_BIN_DIR="$BE_HOME"/cloud/docker/bin
@@ -152,11 +174,17 @@ cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 
-if [ "$BE_HOME" = "../../.." ]
-then
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
+# if [ "$BE_HOME" = "../../.." ]
+# then
+#   perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
+# else
+#   perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
+# fi
+
+if [ $ARG_CLUSTER_TYPE == "FTL" ]; then
+    perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $ARG_CLUSTER_TYPE $FTL_HOME
 else
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
+    perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $ARG_CLUSTER_TYPE
 fi
 
 if [ "$?" != 0 ]; then
@@ -184,6 +212,6 @@ if [ "$?" != 0 ]; then
   exit $?
 else
   echo "DONE: Docker build successful."
-  rm -rf $TEMP_FOLDER
+  # rm -rf $TEMP_FOLDER
   exit 0
 fi

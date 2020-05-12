@@ -10,11 +10,14 @@
 #
 
 use strict;
+  use File::Basename;
 
 my $TEMP_FOLDER = $ARGV[0];
 my $BE_HOME = $ARGV[1];
+my $ARG_CLUSTER_TYPE = $ARGV[2];
+my $FTL_HOME = $ARGV[3];
 
-my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir);
+my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftl, $ftlbaseDir,$ftlDir, $ftlVer);
 
 # Current directory from where this script is invoked. Check to see if it is a BE/AS installation
 if (! defined $BE_HOME) {
@@ -47,31 +50,63 @@ if ($beDir =~ /be\/(\d\.\d)/) {
   print "BE version not found, exiting. \n";
   exit 1;
 }
+my $AS_FOUND = 0;
+if ( $ARG_CLUSTER_TYPE eq "AS2x") {
+  # AS directory /opt/tibco/as
+  $asDir = $baseDir."/as";
 
-# AS directory /opt/tibco/as
-$asDir = $baseDir."/as";
-
-my $AS_FOUND = 1; #Set it to 0 if AS is not found
-# Check if AS directory exists
-if ( ! (-e $asDir and -d $asDir)) {
-  print "WARN: AS installation not found.\n";
-  $AS_FOUND = 0;
-}
-
-if ($AS_FOUND==1) {
-  # Get AS version
-  $asVer = `ls $asDir`;
-  chop $asVer;
-  
-  # as/X.Y where X.Y is the version as determined above
-  $asDir = "as/".$asVer;
-  
-  if (!($asDir =~ /as\/(\d\.\d)/)) {
+   $AS_FOUND = 1; #Set it to 0 if AS is not found
+  # Check if AS directory exists
+  if ( ! (-e $asDir and -d $asDir)) {
+    print "WARN: AS installation not found.\n";
     $AS_FOUND = 0;
-	print "WARN: AS installation not found.\n";
+  }
+    
+  if ($AS_FOUND==1) {
+    # Get AS version
+    $asVer = `ls $asDir`;
+    chop $asVer;
+    
+    # as/X.Y where X.Y is the version as determined above
+    $asDir = "as/".$asVer;
+    
+    if (!($asDir =~ /as\/(\d\.\d)/)) {
+      $AS_FOUND = 0;
+    print "WARN: AS installation not found.\n";
+    }
+  }
+} 
+
+my $FTL_FOUND = 0;
+if ( $ARG_CLUSTER_TYPE eq "FTL") {
+  $ftl=$FTL_HOME;
+  if ($ftl =~ /(.*?)\/(ftl\/\d\.\d)/) {
+  $ftlbaseDir = $1;
+  $ftlDir = $2;
+  } else {
+    print "FTL folder ftl/<ftl-version> not found in the specified $FTL_HOME $ftlDir, exiting.\n";
+    exit 1;
+  }
+  
+  $FTL_FOUND=1;  #Set it to 0 if FTL is not found
+  # Check if FTL directory exists
+  if ( ! (-e $ftl and -d $ftl)) {
+  print "WARN: FTL installation not found.\n";
+  $FTL_FOUND = 0;
+  }
+
+  if ($FTL_FOUND==1) {
+  # Get FTL version
+   $ftlVer= basename($ftl);
+  # as/X.Y where X.Y is the version as determined above
+  $ftlDir = "ftl/".$ftlVer;
+
+    if (!($ftlDir =~ /ftl\/(\d\.\d)/)) {
+      $FTL_FOUND = 0;
+      print "WARN: FTL installation not found.\n";
+    }
   }
 }
-
 
 print "BASEDIR     : $baseDir\n";
 print "BE_DIR      : $beDir\n";
@@ -79,6 +114,10 @@ print "BE_VERSION  : $beVer\n";
 if ($AS_FOUND==1) {
   print "AS_DIR      : $asDir\n";
   print "AS_VERSION  : $asVer\n";
+}
+if ($FTL_FOUND==1) {
+  print "FTL_DIR      : $ftlDir\n";
+  print "FTL_VERSION  : $ftlVer\n";
 }
 
 my $DOCKER_BIN_DIR = "$TEMP_FOLDER";
@@ -88,6 +127,15 @@ if ($AS_FOUND==1) {
   $TARCMD = "$TARCMD $beDir/rms $beDir/studio $beDir/eclipse-platform $beDir/examples/standard/WebStudio $asDir/lib $asDir/bin ";
   if (-e "$asDir/hotfix" and -d "$asDir/hotfix") {
     $TARCMD = "$TARCMD $asDir/hotfix";
+  }
+}
+execCmd ($TARCMD);
+
+# copy ftl lib
+if ($FTL_FOUND == 1) {
+  $TARCMD = "tar -C $ftlbaseDir -rf $DOCKER_BIN_DIR/be.tar  $ftlDir/lib ";
+  if (-e "$ftl/hotfix" and -d "$ftl/hotfix") {
+    $TARCMD = "$TARCMD $ftl/hotfix";
   }
 }
 execCmd ($TARCMD);
@@ -136,6 +184,15 @@ if(-e "$DOCKER_BIN_DIR/$tempLocation/be/$beVer/rms/bin"){
 my $FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$REGEX_CUSTOM_CP/$VALUE_CUSTOM_CP/g'";
 execCmd ($FINDRPLCMD);
 
+
+# Replace FTL_HOME in TRA files using find, xargs, sed -i
+if ( $FTL_FOUND == 1) {
+  my $USE_FTL_HOME = "tibco.env.FTL_HOME=.*";
+  my $VALUE_FTL_HOME = "tibco.env.FTL_HOME=$repl\\/ftl\\/$ftlVer";
+  my $FINDFTLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$USE_FTL_HOME/$VALUE_FTL_HOME/g'";
+  execCmd ($FINDFTLCMD);
+}
+
 # Replace in be props file files using find, xargs, sed -i
 $FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak 's/$srch/$repl/g'";
 execCmd ($FINDRPLCMD);
@@ -160,6 +217,9 @@ execCmd ($FINDRPLCMD);
 $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar be tibcojre64";
 if ($AS_FOUND==1) {
   $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar as be tibcojre64";
+}
+if ($FTL_FOUND==1) {
+  $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar ftl be tibcojre64";
 }
 execCmd ($TARCMD);
 
