@@ -1,0 +1,57 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ftlserver
+spec:
+  serviceName: "ftlsvc"
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "ftlserver"
+  template:
+    metadata:
+      labels:
+        name: "ftlserver" #used as selector in the headless ftl service 'ftlserver'
+    spec:
+      containers:
+      - name: ftlserver
+        image: <ftlserverimage>
+        imagePullPolicy: IfNotPresent
+        args:
+            - '-c'
+            - '/config/cepftlcluster_persistence.yaml'
+            - '-n'
+            - 'ftlserver1'
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                  fieldPath: metadata.name
+        envFrom:
+        - configMapRef:
+            name: app     
+        volumeMounts:
+          - mountPath: /mnt/tibco/ftl
+            name: ftl-pvc
+          - mountPath: /config
+            name: config-pv  
+      volumes:
+        - name: config-pv
+          configMap:
+            name: app
+      terminationGracePeriodSeconds: 20         
+  volumeClaimTemplates:
+    - metadata:
+        name: ftl-pvc
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "standard" 
+        volumeName: ftl-pv
+        resources:
+          requests:
+            storage: 0.5Gi

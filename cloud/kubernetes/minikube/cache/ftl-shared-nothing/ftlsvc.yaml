@@ -1,0 +1,16 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftlsvc
+spec:
+  selector:
+    name: ftlserver # see 'name' of StatefulSet in ftlserver.yaml
+  ports:
+    - name: http
+      port: 8585
+  type: NodePort

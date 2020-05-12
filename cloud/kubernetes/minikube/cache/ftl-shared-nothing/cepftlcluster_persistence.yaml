@@ -1,0 +1,27 @@
+#/**
+# * Copyright (c) 2020.  TIBCO Software Inc.
+# * All Rights Reserved.
+# *
+# * This software is confidential and proprietary information of TIBCO Software Inc.
+# */
+# CEP FTL Cluster yaml file instantiates additional FTLServer(s) with non-default persistence cluster.
+#
+# How to start this custom FTL Persistence Cluster?*********************************************************************************************************************************************************************************
+# - (1) Please make sure to create/validate persistence and realm data folders/directories are available and execute the following to start FTL server.
+#       'tibftlserver -n ftlserver1 -c cepftlcluster_persistence.yaml'
+# - (2) Wait for all the FTL server(s) to be up-n-running successfully and execute the following to upload the custom FTL configuration to the default FTL server.
+#       'tibftladmin -ur cepftlrealm.json -rs http://localhost:8585'
+#
+globals:
+  core.servers:
+    ftlserver1: ftlserver-0.ftlsvc:8585
+services:
+  persistence:
+    data: /opt/tibco/ftlcluster/persistence/pdata
+  realm:
+    data: /opt/tibco/ftlcluster/persistence/realm
+servers:
+  ftlserver1:
+    - realm: {}
+    - persistence:
+        name: cepFTLCluster_default

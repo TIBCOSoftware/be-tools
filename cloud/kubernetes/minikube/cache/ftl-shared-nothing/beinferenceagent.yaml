@@ -1,0 +1,72 @@
+#
+# Copyright (c) 2019. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: beinferenceagent
+spec:
+  serviceName: "bediscovery" #Should match the headless service 'bediscovery' defined in bediscovery-service-sn.yaml
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "beinferenceagent"
+  template:
+    metadata:
+      labels:
+        name: "beinferenceagent" #used as selector in the headless service 'bediscovery' defined in bediscovery-service-sn.yaml
+    spec:
+      containers:
+      - name: beinferenceagent-container
+        image: <beappimage>
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PU
+          value: "default"
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: FTL_gv_REALM_SERVER
+          value: "ftlsvc:8585"
+        - name: FTL_gv_REALM_NAME
+          value: "cepFTLRealm"
+        - name: FTL_gv_APP_NAME
+          value: "cepFTLApp"
+        - name: FTL_gv_CLUSTER_NAME
+          value: "cepFTLCluster"
+        - name: FTL_gv_PUBSUB_ENDPOINT
+          value: "cepFTLDefaultEndpoint"
+        - name: FTL_gv_MAP_ENDPOINT
+          value: "cepFTLMapEndpoint"
+        - name: FTL_gv_PERSISTENT_ENDPOINT
+          value: "cepFTLPersistenceEndpoint"
+        - name: FTL_gv_SHARED_ENDPOINT
+          value: "cepFTLSharedEndpoint"
+        - name: FTL_gv_USER_NAME
+          value: "guest"
+        - name: FTL_gv_USER_NAME
+          value: "guest"
+        - name: FTL_gv_USER_PWD
+          value: "guest-pw"
+        - name: IGNITE_DISCOVER_URL
+          value: "bediscovery"
+        resources:
+          requests:
+            memory: 700Mi
+        volumeMounts:
+          - mountPath: "/mnt/tibco/be/data-store"
+            name: snstore
+      terminationGracePeriodSeconds: 20     
+  volumeClaimTemplates:
+    - metadata:
+        name: snstore
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        volumeName: inference-pv
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 0.5Gi
