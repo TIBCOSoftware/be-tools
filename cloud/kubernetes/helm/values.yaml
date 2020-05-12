@@ -16,13 +16,12 @@ persistentType: None
 # Image name and pull policy required for be app
 image: fdstoresn:v01
 imagePullPolicy: IfNotPresent
-
+imagePullSecrets:  #if required for azure
 #*************************Agents Part****************************************************
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
 cachenode:
   name: becacheagent
-  imagePullSecrets:  #if required for azure
   replicaCount: 1
   containers:
     name: cachenode    
@@ -35,7 +34,6 @@ cachenode:
 #Required for all applications in  all cloud providers
 inferencenode:
   name: beinferenceagent
-  imagePullSecrets:   #if required
   replicaCount: 1
   containers:
     name: inferencenode
@@ -48,13 +46,12 @@ inferencenode:
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
 discoverynode:
   name: bediscoverynode
-  imagePullSecrets:  #if required
   replicaCount: 1
   containers:
     name: discoverynode
     env:
       PU1name: PU
-      PU1value: default
+      PU1value: cache
 
 #Required for sharedAll in  all cloud providers
 mysql:
