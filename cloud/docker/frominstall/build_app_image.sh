@@ -164,10 +164,8 @@ cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 # fi
 
 if [  ! -z "$FTL_HOME" ]; then
-    echo "123"
     perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME    
 else
-    echo "456"
     perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
 fi
 
