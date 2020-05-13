@@ -14,8 +14,7 @@ use strict;
 
 my $TEMP_FOLDER = $ARGV[0];
 my $BE_HOME = $ARGV[1];
-my $ARG_CLUSTER_TYPE = $ARGV[2];
-my $FTL_HOME = $ARGV[3];
+my $FTL_HOME = $ARGV[2];
 
 my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftl, $ftlbaseDir,$ftlDir, $ftlVer);
 
@@ -50,12 +49,10 @@ if ($beDir =~ /be\/(\d\.\d)/) {
   print "BE version not found, exiting. \n";
   exit 1;
 }
-my $AS_FOUND = 0;
-if ( $ARG_CLUSTER_TYPE eq "AS2x") {
+  
   # AS directory /opt/tibco/as
   $asDir = $baseDir."/as";
-
-   $AS_FOUND = 1; #Set it to 0 if AS is not found
+  my $AS_FOUND = 1; #Set it to 0 if AS is not found
   # Check if AS directory exists
   if ( ! (-e $asDir and -d $asDir)) {
     print "WARN: AS installation not found.\n";
@@ -75,38 +72,29 @@ if ( $ARG_CLUSTER_TYPE eq "AS2x") {
     print "WARN: AS installation not found.\n";
     }
   }
-} 
 
-my $FTL_FOUND = 0;
-if ( $ARG_CLUSTER_TYPE eq "FTL") {
-  $ftl=$FTL_HOME;
+  $ftl = $FTL_HOME;
   if ($ftl =~ /(.*?)\/(ftl\/\d\.\d)/) {
-  $ftlbaseDir = $1;
-  $ftlDir = $2;
+    $ftlbaseDir = $1;
+    $ftlDir = $2;
   } else {
     print "FTL folder ftl/<ftl-version> not found in the specified $FTL_HOME $ftlDir, exiting.\n";
     exit 1;
   }
   
-  $FTL_FOUND=1;  #Set it to 0 if FTL is not found
+  my $FTL_FOUND=1;  #Set it to 0 if FTL is not found
   # Check if FTL directory exists
-  if ( ! (-e $ftl and -d $ftl)) {
-  print "WARN: FTL installation not found.\n";
-  $FTL_FOUND = 0;
-  }
-
+  
   if ($FTL_FOUND==1) {
   # Get FTL version
-   $ftlVer= basename($ftl);
+   $ftlVer= basename($FTL_HOME);
   # as/X.Y where X.Y is the version as determined above
   $ftlDir = "ftl/".$ftlVer;
 
     if (!($ftlDir =~ /ftl\/(\d\.\d)/)) {
       $FTL_FOUND = 0;
-      print "WARN: FTL installation not found.\n";
     }
   }
-}
 
 print "BASEDIR     : $baseDir\n";
 print "BE_DIR      : $beDir\n";
@@ -131,11 +119,10 @@ if ($AS_FOUND==1) {
 }
 execCmd ($TARCMD);
 
-# copy ftl lib
 if ($FTL_FOUND == 1) {
-  $TARCMD = "tar -C $ftlbaseDir -rf $DOCKER_BIN_DIR/be.tar  $ftlDir/lib ";
-  if (-e "$ftl/hotfix" and -d "$ftl/hotfix") {
-    $TARCMD = "$TARCMD $ftl/hotfix";
+  $TARCMD = "tar -C $ftlbaseDir -rf $DOCKER_BIN_DIR/be.tar $ftlDir ";
+  if (-e "$ftlDir/hotfix" and -d "$ftlDir/hotfix") {
+    $TARCMD = "$TARCMD $ftlDir/hotfix";
   }
 }
 execCmd ($TARCMD);
@@ -215,12 +202,14 @@ execCmd ($FINDRPLCMD);
 
 # Re-create TAR file
 $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar be tibcojre64";
-if ($AS_FOUND==1) {
-  $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar as be tibcojre64";
-}
-if ($FTL_FOUND==1) {
-  $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar ftl be tibcojre64";
-}
+# if ($AS_FOUND==1) {
+#   $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar as be tibcojre64";
+# }
+# if ($FTL_FOUND==1) {
+#   $TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar ftl be tibcojre64";
+# }
+
+$TARCMD = "tar -C $DOCKER_BIN_DIR/$tempLocation -cf $DOCKER_BIN_DIR/be.tar as ftl be tibcojre64";
 execCmd ($TARCMD);
 
 # Remove temp dir that we created
