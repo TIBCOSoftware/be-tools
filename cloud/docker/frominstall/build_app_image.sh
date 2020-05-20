@@ -13,10 +13,6 @@ USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating
 USAGE+="[--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]\n"
 USAGE+="[-h|--help]                 :       Print the usage of script [optional]\n";
 
-FTL=$(echo $(cat $BE_HOME/bin/be-engine.tra | grep tibco.env.FTL_HOME))
-FTL_HOME=${FTL#*=}
-echo $FTL_HOME
-
 ARG_DOCKER_FILE="Dockerfile_fromtar"
 ARG_APP_LOCATION="na"
 ARG_VERSION="na"
@@ -137,6 +133,21 @@ EAR_FILE_NAME="$(basename -- ${ears[0]})"
 CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
 ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
+
+# get ftl home
+FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
+FTL_HOME=${FTL_HOME%?}
+if [[ $FTL_HOME == '' ]]; then
+  FTL_HOME="na"
+fi
+
+# get as3x home
+AS3X_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS3x_HOME | cut -d'=' -f 2)
+AS3X_HOME=${AS3X_HOME%?}
+if [[ $AS3X_HOME == '' ]]; then
+  AS3X_HOME="na"
+fi
+
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
@@ -144,6 +155,9 @@ echo "INFO: DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO: IMAGE REPO : $ARG_IMAGE_VERSION"
 echo "INFO: CDD FILE NAME : $CDD_FILE_NAME"
 echo "INFO: EAR FILE NAME : $EAR_FILE_NAME"
+echo "INFO: BE_HOME : $BE_HOME"
+echo "INFO: FTL_HOME : $FTL_HOME"
+echo "INFO: AS3X_HOME : $AS3X_HOME"
 echo "----------------------------------------------"
 
 DOCKER_BIN_DIR="$BE_HOME"/cloud/docker/bin
@@ -156,18 +170,7 @@ cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 
-# if [ "$BE_HOME" = "../../.." ]
-# then
-#   perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
-# else
-#   perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
-# fi
-
-if [  ! -z "$FTL_HOME" ]; then
-    perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME    
-else
-    perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
-fi
+perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $AS3X_HOME
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"
@@ -194,6 +197,6 @@ if [ "$?" != 0 ]; then
   exit $?
 else
   echo "DONE: Docker build successful."
-  # rm -rf $TEMP_FOLDER
+  rm -rf $TEMP_FOLDER
   exit 0
 fi

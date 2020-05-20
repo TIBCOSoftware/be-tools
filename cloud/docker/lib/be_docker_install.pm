@@ -37,6 +37,7 @@ my $REGEX_LD_LIB_PATH = "tibco.env.LD_LIBRARY_PATH(.*)[\s]*";
 my $REGEX_AS_INSTALLER  = "*activespaces";
 my $REGEX_BE_INSTALLER  = "*businessevents";
 my $REGEX_FTL_INSTALLER  = "*ftl";
+my $REGEX_AS3X_INSTALLER  = "*as";
 
 my %REGEX_SLNT_FILE_TOKENS = (
   '(<entry key="installationRoot">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_LOC,
@@ -75,14 +76,20 @@ my %AS_VERSION_MAP_MAX  = (
 );
 
 my %FTL_VERSION_MAP  = (
- '6.0.0' => '6.4.0'
+ '6.0.0' => '6.3.0'
 );
 
 my %FTL_VERSION_MAP_MAX  = (
  '6.0.0' => '6.4.0'
 );
 
+my %AS3X_VERSION_MAP  = (
+ '6.0.0' => '4.2.0'
+);
 
+my %AS3X_VERSION_MAP_MAX  = (
+ '6.0.0' => '4.4.0'
+);
 
 # OTHERS---------------------------------------------------------
 my $VALUE_CUSTOM_CP = "tibco.env.CUSTOM_EXT_PREPEND_CP=".$CUSTOM_CP;
@@ -148,9 +155,6 @@ sub install_be {
 		my $blank="";
 		my $spversion=$arg_beVersion;
 		$spversion=~s/$token/$blank/g;	
-		
-		#Handle base and service pack 
-		print "\nINFO:BusinessEvents Version $arg_beVersion ...DONE\n\n";
 		
 		#Disable datagrid
 		if($spversion eq "0"){
@@ -239,6 +243,7 @@ sub install_be {
 
 sub install_ftl {
   my $arg_ftlVersion = shift;
+  my $arg_ftlHotfix = shift;
 
   if($arg_ftlVersion == "na"){
     return 1;
@@ -255,14 +260,82 @@ sub install_ftl {
     return 0;
   }
 
-  my $result=installFTLPackages($arg_ftlVersion,'ftl_installers');
+  my $result=installFTLORAS3XPackages($arg_ftlVersion,'ftl_installers',"TIB_ftl_");
   if($result == 0){
     print "\nERROR : Error occurred while installing FTL. Aborting\n";
     return 0;
   }
   print "\nINFO:Installing FTL $arg_ftlVersion...DONE\n\n";
+
+  if($arg_ftlHotfix ne "na"){
+    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...\n";
+  
+    my $baseFtlHfRegex="*ftl_$arg_ftlVersion*$arg_ftlHotfix*zip";
+    my (@baseFtlHf) = glob "$ROOT_FOLDER/$baseFtlHfRegex";
+
+    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_ftlVersion,$baseFtlHf[0],'ftl_installers_hf');
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while extracting FTL HF installer package - $baseFtlHf[0]. Aborting\n";
+      return 0;
+    }
+
+    my $hfResult=installFTLORAS3XPackages($arg_ftlVersion,'ftl_installers_hf',"TIB_ftl_");
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while installing FTL HF. Aborting\n";
+      return 0;
+    }
+    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...DONE\n\n";
+  }
+
 }
 
+sub install_as3x {
+  my $arg_as3xVersion = shift;
+  my $arg_as3xHotfix  = shift;
+
+  if($arg_as3xVersion == "na"){
+    return 1;
+  }
+
+  print "\nINFO:Installing AS3X $arg_as3xVersion...\n";
+  
+  my $baseProdRegex="*as_$arg_as3xVersion*zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+
+  my $result=extractPackages($ROOT_FOLDER,$arg_as3xVersion,$baseProd[0],'as3x_installers');
+  if($result == 0){
+    print "\nERROR : Error occurred while extracting AS3X installer package - $baseProd[0]. Aborting\n";
+    return 0;
+  }
+
+  my $result=installFTLORAS3XPackages($arg_as3xVersion,'as3x_installers',"TIB_as_");
+  if($result == 0){
+    print "\nERROR : Error occurred while installing AS3X. Aborting\n";
+    return 0;
+  }
+  print "\nINFO:Installing AS3X $arg_as3xVersion...DONE\n\n";
+
+  if($arg_as3xHotfix ne "na"){
+    print "\nINFO:Installing AS3X $arg_as3xVersion HF $arg_as3xHotfix ...\n";
+    
+    my $baseAs3xHfRegex="*as_$arg_as3xVersion*$arg_as3xHotfix*zip";
+    my (@baseAs3xHf) = glob "$ROOT_FOLDER/$baseAs3xHfRegex";
+
+    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_as3xVersion,$baseAs3xHf[0],'as3x_installers_hf');
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while extracting AS3X HF installer package - $baseAs3xHf[0]. Aborting\n";
+      return 0;
+    }
+
+    my $hfResult=installFTLORAS3XPackages($arg_as3xVersion,'as3x_installers_hf',"TIB_as_");
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while installing AS3X HF. Aborting\n";
+      return 0;
+    }
+    print "\nINFO:Installing AS3X $arg_as3xVersion HF $arg_as3xHotfix ...DONE\n\n";
+  }
+
+}
 #----------------------------------------------------------------------------------------
 
 sub extractAndInstall{
@@ -369,17 +442,30 @@ sub installPackages{
   return 1;
 }
 
-sub installFTLPackages{
+sub installFTLORAS3XPackages{
   
   my $version = shift;
   my $pkgSourceRoot= shift;
+  my $installerType = shift;
 
-  my $pkgSourceFolder = "$pkgSourceRoot/" . "TIB_ftl_" . "$version";
+  my $pkgSourceFolder = "$pkgSourceRoot/" . "$installerType" . "$version";
   
-  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with dpkg using the folder: $pkgSourceFolder\n":"";
-  my $installCmd = `cd $pkgSourceFolder;dpkg -i deb/*.deb`;
-  # TODO: installCmd works for Debian & Ubuntu. Need to handle for other varients.
-  my $installResult = "$installCmd";
+  my $installCmd = "cd $pkgSourceFolder;";
+
+  my $installerdpkg = `which dpkg`;
+  chomp($installerdpkg);
+  my $installeryum = `command -v yum`;
+  chomp($installeryum);
+  if($installerdpkg eq "/usr/bin/dpkg"){
+    $installCmd = "$installCmd"."dpkg -i deb/*.deb";
+  }elsif($installeryum eq "/usr/bin/yum"){
+    $installCmd = "$installCmd"."yum install -y rpm/*.rpm";
+  }else{
+    $installCmd = "$installCmd"."for f in tar/*; do tar -C / -xvf \$f; done";
+  }
+  
+  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with command: $installCmd\n":"";
+  my $installResult = `$installCmd` ;
   $DEBUG_ENABLE==1?print "\nDEBUG: $installResult":"";
 
   return 1;
@@ -609,6 +695,8 @@ sub validate{
   my $addons     =shift;
   my $beHotfix   =shift;
   my $asHotfix   =shift;
+  my $ftlHotfix   =shift;
+  my $as3xHotfix   =shift;
   my $tempdir  = shift;
   
   @FILES_LIST	 = ();
@@ -659,7 +747,13 @@ sub validate{
     exit 0;
   }
 
-  $result=validateFTL($version,$targetDir);
+  $result=validateFTL($version,$ftlHotfix,$targetDir);
+
+  if($result == 0){
+    exit 0;
+  }
+
+  $result=validateAS3X($version,$as3xHotfix,$targetDir);
 
   if($result == 0){
     exit 0;
@@ -908,13 +1002,19 @@ print "argver: $arg_version, asver: $AS_VERSION_MAP{$arg_version}, asver:$asVers
 
 sub validateFTL{
   
-  my $arg_version    =shift;  
+  my $arg_version    =shift;
+  my $arg_ftlHotfix  =shift;
   my $arg_targetDir  =shift;
   
   my @ftlPckg=glob "$arg_targetDir/$REGEX_FTL_INSTALLER*.zip";
+  my @ftlHfPckg=glob "$arg_targetDir/$REGEX_FTL_INSTALLER*_HF*.zip";
+
   my $ftlCount = @ftlPckg;
+  my $ftlHFCount = @ftlHfPckg;
   
-  if($ftlCount == 1){
+  my $countFTL=$ftlCount-$ftlHFCount;
+
+  if($countFTL == 1){
     my @ftlPckgFiltered = grep(/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g, @ftlPckg);
 	
     if($ftlPckgFiltered[0] =~ m/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g){
@@ -925,15 +1025,104 @@ sub validateFTL{
         print "argver: $arg_version, ftlver: $FTL_VERSION_MAP{$arg_version}, ftlver:$ftlVersion \n";
         print "\nERROR :BE Version :$arg_version is not compatible with FTL version $ftlVersion.\n";
         return 0;
-      }
-      else{
+      }else{
         $DEBUG_ENABLE==1?print "\nDEBUG: FTL VERSION : $ftlPckgFiltered[0]\n":"";
         push @FILES_LIST, "$ftlPckgFiltered[0]\n";
+
+        if($arg_ftlHotfix ne "na"){
+          my $arg_ftlHotfix=formatHotfixNumber($arg_ftlHotfix);
+          if($arg_ftlHotfix =~ m/\d{3}/){
+            my $regex="*ftl_".$ftlVersion."_HF-$arg_ftlHotfix*zip";
+            my (@hfPkg) = glob "$arg_targetDir/$regex";
+            if(scalar @hfPkg == 0){
+              print "\nERROR :No package found for HF : $arg_ftlHotfix with version: $ftlVersion in the installer location.\n";
+              return 0;
+            }elsif(scalar @hfPkg==1){
+              if($hfPkg[0] =~ m/.*ftl.*($ftlVersion).*/g){
+                $DEBUG_ENABLE==1?print "\nDEBUG: HF : $hfPkg[0]\n":"";
+				        push @FILES_LIST, "$hfPkg[0]\n";
+              }else{
+                print "\nERROR :ftl version does not match with the hotfix version.
+                Make sure both the packages are of same version. \n";
+              }
+            }else{
+              print "\nERROR :More than one HFs($arg_ftlHotfix) are present in the target directory.There should be only one.\n";
+              return 0;
+            }
+          }else{
+            print "\nERROR :Invalid value for be hotfix: $arg_ftlHotfix.Make sure you provide correct hotfix number as an argument.Ex- 5\n";
+            return 0;
+          }
+        }
+
       }
     }
-  }
-  else{
+  }elsif($ftlCount != 0){
     print "\nERROR :More than one FTL Packages are present in the target directory. There should be only one.\n";
+    return 0;
+  }
+  return 1;
+}
+
+sub validateAS3X{
+  
+  my $arg_version    =shift;
+  my $arg_as3xHotfix  =shift;  
+  my $arg_targetDir  =shift;
+  
+  my @as3xPckg=glob "$arg_targetDir/$REGEX_AS3X_INSTALLER*.zip";
+  my @as3xHfPckg=glob "$arg_targetDir/$REGEX_AS3X_INSTALLER*_HF*.zip";
+
+  my $as3xCount = @as3xPckg;
+  my $as3xHFCount = @as3xHfPckg;
+
+  my $countAS3X=$as3xCount-$as3xHFCount;
+  
+  if($countAS3X == 1){
+    my @as3xPckgFiltered = grep(/.*as.*([\d]\.[\d]\.[\d])_linux.*/g, @as3xPckg);
+	
+    if($as3xPckgFiltered[0] =~ m/.*as.*([\d]\.[\d]\.[\d])_linux.*/g){
+      my ($as3xVersion) = $1;
+      my $isLess=isLessThan($as3xVersion, $AS3X_VERSION_MAP{$arg_version});
+      my $isGreater=isGreaterThan($as3xVersion, $AS3X_VERSION_MAP_MAX{$arg_version});
+      if($isLess > 0 or $isGreater > 0 ){
+        print "argver: $arg_version, as3xver: $AS3X_VERSION_MAP{$arg_version}, as3xver:$as3xVersion \n";
+        print "\nERROR :BE Version :$arg_version is not compatible with AS3X version $as3xVersion.\n";
+        return 0;
+      }else{
+        $DEBUG_ENABLE==1?print "\nDEBUG: AS3X VERSION : $as3xPckgFiltered[0]\n":"";
+        push @FILES_LIST, "$as3xPckgFiltered[0]\n";
+
+        if($arg_as3xHotfix ne "na"){
+          my $arg_as3xHotfix=formatHotfixNumber($arg_as3xHotfix);
+          if($arg_as3xHotfix =~ m/\d{3}/){
+            my $regex="*as_".$as3xVersion."_HF-$arg_as3xHotfix*zip";
+            my (@hfPkg) = glob "$arg_targetDir/$regex";
+            if(scalar @hfPkg == 0){
+              print "\nERROR :No package found for HF : $arg_as3xHotfix with version: $as3xVersion in the installer location.\n";
+              return 0;
+            }elsif(scalar @hfPkg==1){
+              if($hfPkg[0] =~ m/.*as.*($as3xVersion).*/g){
+                $DEBUG_ENABLE==1?print "\nDEBUG: HF : $hfPkg[0]\n":"";
+				        push @FILES_LIST, "$hfPkg[0]\n";
+              }else{
+                print "\nERROR :as3x version does not match with the hotfix version.
+                Make sure both the packages are of same version. \n";
+              }
+            }else{
+              print "\nERROR :More than one HFs($arg_as3xHotfix) are present in the target directory.There should be only one.\n";
+              return 0;
+            }
+          }else{
+            print "\nERROR :Invalid value for be hotfix: $arg_as3xHotfix.Make sure you provide correct hotfix number as an argument.Ex- 5\n";
+            return 0;
+          }
+        }
+
+      }
+    }
+  }elsif($as3xCount != 0){
+    print "\nERROR :More than one AS Packages are present in the target directory. There should be only one.\n";
     return 0;
   }
   return 1;
@@ -1050,6 +1239,5 @@ sub writeToFile{
   close OUT;
 }
 #-------------------------------------------------------------------------------------
-
 
 1;

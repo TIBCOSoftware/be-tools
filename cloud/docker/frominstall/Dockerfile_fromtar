@@ -2,7 +2,7 @@
 # TIBCO BusinessEvents Dockerfile_fromtar
 # To be used for creation with the frominstall/build_app_image script
 #
-FROM ubuntu:latest
+FROM ubuntu:20.10
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION

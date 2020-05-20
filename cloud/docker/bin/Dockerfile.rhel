@@ -9,7 +9,11 @@ ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
-ARG BASE_IMAGE=<RHEL_IMAGE>
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG AS3X_VERSION
+ARG AS3X_SHORT_VERSION
+ARG BASE_IMAGE=centos:8
 
 FROM ${BASE_IMAGE} as intermediate
 
@@ -22,6 +26,12 @@ ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
 ARG AS_PRODUCT_HOTFIX
 ARG AS_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG FTL_PRODUCT_HOTFIX
+ARG AS3X_VERSION
+ARG AS3X_SHORT_VERSION
+ARG AS3X_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
@@ -46,27 +56,38 @@ ENV TIBCO_HOME=/opt/tibco \
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_ftl('$FTL_VERSION','$FTL_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_as3x('$AS3X_VERSION','$AS3X_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip \
+ && rm -rf as_installers be_installers ftl_installers ftl_installers_hf as3x_installers as3x_installers_hf*.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
-RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
+RUN echo \ >> be-engine.tra \
+ && echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
  && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+
+#set ftl home in tra file
+RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
+
+#set as3x home in tra file
+RUN sed -i "s@tibco.env.AS3x_HOME=@tibco.env.AS3x_HOME=/opt/tibco/as/$AS3X_SHORT_VERSION@g" be-engine.tra
 
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
 
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
- && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
- && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
- && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
- && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+    && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
+    && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
+    && mkdir -p /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib \
+    && mkdir -p /opt/tibco/as/${AS3X_SHORT_VERSION}/lib \
+    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
+    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 
 #Discard intermediate image and just copy the installation to a new image.
 
@@ -80,6 +101,10 @@ ARG AS_SHORT_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG AS3X_VERSION
+ARG AS3X_SHORT_VERSION
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
@@ -87,14 +112,19 @@ COPY app/* /opt/tibco/be/ext/
 
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 
+# copy jre
 COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
-
+# copy be related files
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/*.idx /opt/tibco/be/${BE_SHORT_VERSION}/bin/
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
-
+# copy as2 related files
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
+# copy ftl related files
+COPY --from=intermediate /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib
+# copy as3x related files
+COPY --from=intermediate /opt/tibco/as/${AS3X_SHORT_VERSION}/lib /opt/tibco/as/${AS3X_SHORT_VERSION}/lib
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -116,6 +146,10 @@ ENV PU=default \
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store
+
+RUN yum update -y \
+    && yum install -y perl \
+    && dnf install libnsl -y
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
