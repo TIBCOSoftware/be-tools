@@ -14,6 +14,14 @@ set "ARG_IMAGE_VERSION=na"
 set "ARG_DOCKERFILE=Dockerfile_fromtar.win"
 set "ARG_GVPROVIDERS=na"
 
+REM FTL and AS3X related variables
+set "FTL_HOME=na"
+set "FTL_FOUND=0"
+set "FTL_VERSION=na"
+set "AS3X_HOME=na"
+set "AS3X_FOUND=0"
+set "AS3X_VERSION=na"
+
 set "TEMP_FOLDER=tmp_%RANDOM%"
 set GLOBAL_BE_TAG="com.tibco.be"
 
@@ -156,8 +164,48 @@ if !EAR_FILE_NAME! EQU na (
 
 mkdir !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app
 
+REM Check FTL_HOME from tra file
+for /F "tokens=2,2 delims==" %%i in ('findstr /i "^tibco.env.FTL_HOME=" !ARG_BE_HOME!\bin\be-engine.tra') do (
+    for %%f in (%%i) do (
+        set FTL_HOME=%%~f
+        set FTL_VERSION=%%~nxf
+    )
+)
+
+REM Check FTL_HOME exist or not if it present, and assign ftl found flag
+if !FTL_HOME! NEQ na (
+    if NOT EXIST !FTL_HOME! (
+        echo ERROR: The directory - !FTL_HOME! is not a valid directory. Skipping FTL installation.
+    ) else (
+        set FTL_FOUND=1
+    )
+)
+
+REM Check AS3X_HOME from tra file
+for /F "tokens=2,2 delims==" %%i in ('findstr /i "^tibco.env.AS3x_HOME=" !ARG_BE_HOME!\bin\be-engine.tra') do (
+    for %%f in (%%i) do (
+        set AS3X_HOME=%%~f
+        set AS3X_VERSION=%%~nxf
+    )
+)
+
+REM Check AS3X_HOME exist or not if it present, and assign as3x found flag
+if !AS3X_HOME! NEQ na (
+    if NOT EXIST !AS3X_HOME! (
+        echo ERROR: The directory - !AS3X_HOME! is not a valid directory. Skipping AS3x installation.
+    ) else (
+        set AS3X_FOUND=1
+    )
+)
+
 echo ----------------------------------------------
 echo INFO: BE_HOME directory - !ARG_BE_HOME!
+if !FTL_FOUND! EQU 1 (
+    echo INFO: FTL_HOME directory - !FTL_HOME!
+)
+if !AS3X_FOUND! EQU 1 (
+    echo INFO: AS3X_HOME directory - !AS3X_HOME!
+)
 echo INFO: BusinessEvents version - !ARG_VERSION!
 echo INFO: Ear/Application Location - !ARG_APP_LOCATION!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
@@ -186,8 +234,26 @@ powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\hotfix' -
 powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!' -Recurse | out-null"
 powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!' -Recurse | out-null"
 
+:: Copy ftl and as related lib into the temp folder
+if !FTL_FOUND! EQU 1 (
+  powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\ftl\!FTL_VERSION! | out-null"
+  powershell -Command "Copy-Item '!FTL_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!FTL_VERSION!' -Recurse | out-null"
+)
+if !AS3X_FOUND! EQU 1 (
+  powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!AS3X_VERSION! | out-null"
+  powershell -Command "Copy-Item '!AS3X_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!AS3X_VERSION!' -Recurse | out-null"
+)
+
 :: Replace user TIBCO_HOME path with container's tra files
 powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
+
+:: Replace user FTL_HOME and AS3x_HOME with container's in tra file
+if !FTL_FOUND! EQU 1 (
+  powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.FTL_HOME').Line.Substring(19), 'c:/tibco/ftl/!FTL_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
+)
+if !AS3X_FOUND! EQU 1 (
+  powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.AS3x_HOME').Line.Substring(20), 'c:/tibco/as/!AS3X_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
+)
 
 echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra
 echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra
@@ -200,7 +266,7 @@ powershell -Command "Copy-Item '..\lib\runbe.bat' -Destination '!TEMP_FOLDER!\ti
 echo Generating annotation indexes..
 powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx' -ErrorAction Ignore | out-null"
 cd !TEMP_FOLDER!
-set CLASSPATH=tibcoHome\be\!SHORT_VERSION!\lib\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\rms\lib\*;tibcoHome\be\!SHORT_VERSION!\mm\lib\*;tibcoHome\be\!SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\rms\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
+set CLASSPATH=tibcoHome\be\!SHORT_VERSION!\lib\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\rms\lib\*;tibcoHome\be\!SHORT_VERSION!\mm\lib\*;tibcoHome\be\!SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!AS3X_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
 tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!SHORT_VERSION! -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
 powershell -Command "(Get-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!SHORT_VERSION!\bin\_annotations.idx'"
 cd ..
