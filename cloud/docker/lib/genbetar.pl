@@ -141,6 +141,10 @@ if ($AS3X_FOUND eq 1) {
   print "AS3X_VERSION  : $as3xVer\n";
 }
 
+if ( ($AS_FOUND == 1) && ($FTL_FOUND == 1)) {
+  print "WARN:Existing installation contains both FTL and AS2 configuration. Remove unused one to improve the docker image size. \n";
+}
+
 my $DOCKER_BIN_DIR = "$TEMP_FOLDER";
 #Create a TAR file of relevant folders
 my $TARCMD = "tar -C $baseDir -cf $DOCKER_BIN_DIR/be.tar tibcojre64 $beDir/lib $beDir/bin $beDir/teagent $beDir/mm";

@@ -156,8 +156,12 @@ echo "INFO: IMAGE REPO : $ARG_IMAGE_VERSION"
 echo "INFO: CDD FILE NAME : $CDD_FILE_NAME"
 echo "INFO: EAR FILE NAME : $EAR_FILE_NAME"
 echo "INFO: BE_HOME : $BE_HOME"
-echo "INFO: FTL_HOME : $FTL_HOME"
-echo "INFO: AS3X_HOME : $AS3X_HOME"
+if [[ $FTL_HOME != "na" ]]; then
+  echo "INFO: FTL_HOME : $FTL_HOME"
+fi
+if [[ $AS3X_HOME != "na" ]]; then
+  echo "INFO: AS3X_HOME : $AS3X_HOME"
+fi
 echo "----------------------------------------------"
 
 DOCKER_BIN_DIR="$BE_HOME"/cloud/docker/bin

@@ -190,7 +190,7 @@ BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
 
 #Check for BE Installer  --------------------------------------
 result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(echo ${result} | wc -l)
+len=$(echo ${#result})
 
 if [ $len -eq 0 ]; then
 	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
@@ -390,10 +390,18 @@ echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
 echo "INFO:AS-HF : $ARG_AS_HOTFIX"
-echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
-echo "INFO:FTL-HF : $ARG_FTL_HOTFIX"
-echo "INFO:AS3X VERSION : $ARG_AS3X_VERSION"
-echo "INFO:AS3X-HF : $ARG_AS3X_HOTFIX"
+if [[ $ARG_FTL_VERSION != "na" ]]; then
+	echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
+	if [[ $ARG_FTL_HOTFIX != "na" ]]; then
+		echo "INFO:FTL-HF : $ARG_FTL_HOTFIX"	
+	fi
+fi
+if [[ $ARG_AS3X_VERSION != "na" ]]; then
+	echo "INFO:AS3X VERSION : $ARG_AS3X_VERSION"
+	if [[ $ARG_AS3X_HOTFIX != "na" ]]; then
+		echo "INFO:AS3X-HF : $ARG_AS3X_HOTFIX"
+	fi
+fi
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "----------------------------------------------"
 
@@ -433,6 +441,10 @@ if [[ $strname =~ 3(.+)r ]]; then
     strresult=${BASH_REMATCH[1]}
 fi
 
+if [[ ($AS_VERSION != "na") && ($ARG_FTL_VERSION != "na") ]]; then
+	echo "WARN:The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS2 installers. Removing unused installer improves the docker image size."
+fi
+
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
 
 VERSION_REGEX=([0-9]\.[0-9]).*
@@ -464,10 +476,8 @@ fi
 
 # Evaluate FTL version & short version
 FTL_VERSION=$ARG_FTL_VERSION
-if [[ "$FTL_VERSION" != "na" ]]
-	then
-	if [[ $FTL_VERSION =~ $VERSION_REGEX ]]
-	then
+if [[ "$FTL_VERSION" != "na" ]]; then
+	if [[ $FTL_VERSION =~ $VERSION_REGEX ]]; then
 		FTL_SHORT_VERSION=${BASH_REMATCH[1]};
 	else
 		echo "ERROR:Improper FTL version.Aborting."
@@ -479,10 +489,8 @@ fi
 
 # Evaluate AS3X version & short version
 AS3X_VERSION=$ARG_AS3X_VERSION
-if [[ "$AS3X_VERSION" != "na" ]]
-	then
-	if [[ $AS3X_VERSION =~ $VERSION_REGEX ]]
-	then
+if [[ "$AS3X_VERSION" != "na" ]]; then
+	if [[ $AS3X_VERSION =~ $VERSION_REGEX ]]; then
 		AS3X_SHORT_VERSION=${BASH_REMATCH[1]};
 	else
 		echo "ERROR:Improper AS3X version.Aborting."
@@ -493,37 +501,37 @@ if [[ "$AS3X_VERSION" != "na" ]]
 fi
 
 if [ "$IS_S2I" = "true" ]; then
-cd ../bin
-cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
+	cd ../bin
+	cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
 
-cd ../s2i
+	cd ../s2i
 
-ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
+	ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
 
-mkdir -p $TEMP_FOLDER/app
-cd $TEMP_FOLDER/app
-touch dummy.txt
-cd ../..
+	mkdir -p $TEMP_FOLDER/app
+	cd $TEMP_FOLDER/app
+	touch dummy.txt
+	cd ../..
 
-docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg AS3X_VERSION="$AS3X_VERSION" --build-arg AS3X_SHORT_VERSION="$AS3X_SHORT_VERSION" --build-arg AS3X_PRODUCT_HOTFIX="$ARG_AS3X_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
+	docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg AS3X_VERSION="$AS3X_VERSION" --build-arg AS3X_SHORT_VERSION="$AS3X_SHORT_VERSION" --build-arg AS3X_PRODUCT_HOTFIX="$ARG_AS3X_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
 
-if [ "$?" != 0 ]; then
-  echo "Docker build failed."
-else
-    find . -name \*.zip -delete
-    rm "$ARG_INSTALLER_LOCATION/package_files.txt"
-  echo "DONE: Docker build successful."
-fi
+	if [ "$?" != 0 ]; then
+		echo "Docker build failed."
+	else
+		find . -name \*.zip -delete
+		rm "$ARG_INSTALLER_LOCATION/package_files.txt"
+		echo "DONE: Docker build successful."
+	fi
 
- echo "Deleting temporary intermediate image.."
- docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
- echo "Deleting $TEMP_FOLDER folder"
- rm -rf $TEMP_FOLDER
+	echo "Deleting temporary intermediate image.."
+	docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
+	echo "Deleting $TEMP_FOLDER folder"
+	rm -rf $TEMP_FOLDER
 
-docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
+	docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
 
-docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+	docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
 
-rm -rf app
+	rm -rf app
 
 fi
