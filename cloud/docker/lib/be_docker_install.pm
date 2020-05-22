@@ -75,20 +75,22 @@ my %AS_VERSION_MAP_MAX  = (
  '6.0.0' => '2.4.1'
 );
 
+my $VER_IGN_CHAR = 'X';
+
 my %FTL_VERSION_MAP  = (
- '6.0.0' => '6.3.0'
+ '6.0.0' => '6.X.X'
 );
 
 my %FTL_VERSION_MAP_MAX  = (
- '6.0.0' => '6.4.0'
+ '6.0.0' => '6.X.X'
 );
 
 my %AS3X_VERSION_MAP  = (
- '6.0.0' => '4.2.0'
+ '6.0.0' => '4.X.X'
 );
 
 my %AS3X_VERSION_MAP_MAX  = (
- '6.0.0' => '4.4.0'
+ '6.0.0' => '4.X.X'
 );
 
 # OTHERS---------------------------------------------------------
@@ -1151,7 +1153,12 @@ sub isLessThan {
   $arg_asVersion =~ s/\.//g;
   $arg_minVersion =~ s/\.//g;
 
-  
+  while (index($arg_minVersion, $VER_IGN_CHAR) != -1) {
+    my $pos = index($arg_minVersion, $VER_IGN_CHAR);
+    substr($arg_asVersion, $pos, 1) = "";
+    substr($arg_minVersion, $pos, 1) = "";
+  }
+
   if ($arg_asVersion < $arg_minVersion) {
     return 1;
   }
@@ -1166,7 +1173,12 @@ sub isGreaterThan {
   $arg_asVersion =~ s/\.//g;
   $arg_maxVersion =~ s/\.//g;
 
-  
+  while (index($arg_maxVersion, $VER_IGN_CHAR) != -1) {
+    my $pos = index($arg_maxVersion, $VER_IGN_CHAR);
+    substr($arg_asVersion, $pos, 1) = "";
+    substr($arg_maxVersion, $pos, 1) = "";
+  }
+
   if ($arg_asVersion > $arg_maxVersion) {
     return 1;
   }
