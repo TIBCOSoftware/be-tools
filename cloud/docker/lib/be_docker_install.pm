@@ -75,10 +75,8 @@ my %AS_VERSION_MAP_MAX  = (
  '6.0.0' => '2.4.1'
 );
 
-my $VER_IGN_CHAR = 'X';
-
 my %FTL_VERSION_MAP  = (
- '6.0.0' => '6.X.X'
+ '6.0.0' => '6.2.0'
 );
 
 my %FTL_VERSION_MAP_MAX  = (
@@ -86,7 +84,7 @@ my %FTL_VERSION_MAP_MAX  = (
 );
 
 my %AS3X_VERSION_MAP  = (
- '6.0.0' => '4.X.X'
+ '6.0.0' => '4.2.0'
 );
 
 my %AS3X_VERSION_MAP_MAX  = (
@@ -1145,42 +1143,77 @@ sub formatHotfixNumber{
 }
 
 
+## isLessThan()
+## Arguments:
+##    $arg_version: version string. Ex: 4.5.1
+##    $arg_minVersion: minimum version string. Ex: 6.4.1
+##
+## Returns:
+##    1 - if $arg_version lessthan $arg_minVersion OR in case of any error
+##    0 - for all other cases
+##
 sub isLessThan {
+  my $arg_version    = shift;
+  my $arg_minVersion = shift;
 
-  my $arg_asVersion  =shift;
-  my $arg_minVersion =shift;
+  my @version    = $arg_version =~ /(^\d+)\.(\d+)\.(\d+$)/g;
+  my @minVersion = $arg_minVersion =~ /(^\d+)\.(\d+)\.(\d+$)/g;
 
-  $arg_asVersion =~ s/\.//g;
-  $arg_minVersion =~ s/\.//g;
-
-  while (index($arg_minVersion, $VER_IGN_CHAR) != -1) {
-    my $pos = index($arg_minVersion, $VER_IGN_CHAR);
-    substr($arg_asVersion, $pos, 1) = "";
-    substr($arg_minVersion, $pos, 1) = "";
+  if ( $#version != 2 ) {
+    print "\nERROR: isLessThan() arg1 $arg_version is not a valid version string \n";
+    return 1;
+  }
+  if ( $#minVersion != 2 ) {
+    print "\nERROR: isLessThan() arg2 $arg_minVersion is not a valid version string \n";
+    return 1;
   }
 
-  if ($arg_asVersion < $arg_minVersion) {
-    return 1;
+  for ( my $i = 0 ; $i < 3 ; $i++ ) {
+    my $v  = @version[$i];
+    my $mv = @minVersion[$i];
+    if ( $v < $mv ) {
+      return 1;
+    }
   }
   return 0;
 }
 
+## isGreaterThan()
+## Arguments:
+##    $arg_version: version string. Ex: 4.5.1
+##    $arg_maxVersion: maximum version string. Ex: 6.4.1 / 6.X.X / 7.x.x
+##
+## Returns:
+##    1 - if $arg_version greaterthan $arg_maxVersion OR in case of any error
+##    0 - all other cases
+##
 sub isGreaterThan {
+  my $arg_version    = shift;
+  my $arg_maxVersion = shift;
 
-  my $arg_asVersion  =shift;
-  my $arg_maxVersion =shift;
+  my @version = $arg_version =~ /(^\d+)\.(\d+)\.(\d+$)/g;
+  my @maxVersion = $arg_maxVersion =~ /(^\d+|^x?|^X?)\.(\d+|x?|X?)\.(\d+$|x?$|X?$)/g;
 
-  $arg_asVersion =~ s/\.//g;
-  $arg_maxVersion =~ s/\.//g;
-
-  while (index($arg_maxVersion, $VER_IGN_CHAR) != -1) {
-    my $pos = index($arg_maxVersion, $VER_IGN_CHAR);
-    substr($arg_asVersion, $pos, 1) = "";
-    substr($arg_maxVersion, $pos, 1) = "";
+  if ( $#version != 2 ) {
+    print "\nERROR: isGreaterThan() arg1 $arg_version is not a valid version string \n";
+    return 1;
+  }
+  if ( $#maxVersion != 2 ) {
+    print "\nERROR: isGreaterThan() arg2 $arg_maxVersion is not a valid version string \n";
+    return 1;
   }
 
-  if ($arg_asVersion > $arg_maxVersion) {
-    return 1;
+  for ( my $i = 0 ; $i < 3 ; $i++ ) {
+    my $v  = @version[$i];
+    my $mv = @maxVersion[$i];
+
+    if ( ( $mv == "X" ) || ( $mv == "x" ) ) {
+      last;
+    }
+
+    if ( $v > $mv ) {
+      return 1;
+    }
   }
   return 0;
 }
