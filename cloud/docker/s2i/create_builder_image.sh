@@ -442,7 +442,7 @@ if [[ $strname =~ 3(.+)r ]]; then
 fi
 
 if [[ ($AS_VERSION != "na") && ($ARG_FTL_VERSION != "na") ]]; then
-	echo "WARN:The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS2 installers. Removing unused installer improves the docker image size."
+	echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS2 installers. Removing unused installer improves the docker image size."
 fi
 
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"

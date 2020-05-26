@@ -142,7 +142,7 @@ if ($AS3X_FOUND eq 1) {
 }
 
 if ( ($AS_FOUND == 1) && ($FTL_FOUND == 1)) {
-  print "WARN:Existing installation contains both FTL and AS2 configuration. Remove unused one to improve the docker image size. \n";
+  print "WARN: Local machine contains both FTL and AS2 installations. Removing unused installation improves the docker image size. \n";
 }
 
 my $DOCKER_BIN_DIR = "$TEMP_FOLDER";
