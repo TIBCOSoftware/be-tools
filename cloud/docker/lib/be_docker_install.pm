@@ -1173,6 +1173,8 @@ sub isLessThan {
     my $mv = @minVersion[$i];
     if ( $v < $mv ) {
       return 1;
+    } elsif ( $v > $mv ) {
+      return 0;
     }
   }
   return 0;
@@ -1207,12 +1209,14 @@ sub isGreaterThan {
     my $v  = @version[$i];
     my $mv = @maxVersion[$i];
 
-    if ( ( $mv == "X" ) || ( $mv == "x" ) ) {
-      last;
+    if ((index($mv, "X") != -1) ||  (index($mv, "x") != -1)) {
+       return 0;
     }
 
     if ( $v > $mv ) {
       return 1;
+    } elsif ( $v < $mv ) {
+      return 0;
     }
   }
   return 0;
