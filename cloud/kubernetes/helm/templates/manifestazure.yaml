@@ -1,5 +1,6 @@
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
 {{- if and (eq .Values.cloudProvider "azure" ) (eq .Values.omType "cache" ) }}
-  {{- if or (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
+  {{- if or (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "sharedAll" ) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -13,4 +14,5 @@ mountOptions:
 parameters:
   skuName: {{ .Values.volumes.azure.skuName }}
   {{- end }}
+{{- end }}
 {{- end }}

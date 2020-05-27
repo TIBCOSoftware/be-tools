@@ -1,4 +1,4 @@
-{{- if and (eq .Values.persistentType "sharedAll" ) (eq .Values.omType "cache" ) }}
+{{- if and (eq .Values.bsType "sharedAll" ) (eq .Values.omType "cache" ) (eq .Values.storeType "RDBMS" ) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

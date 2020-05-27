@@ -1,3 +1,4 @@
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 kind: Service
 apiVersion: v1
 metadata:
@@ -7,5 +8,6 @@ spec:
     - port: {{ .Values.jmxservice.ports.port }}
       protocol: TCP
   selector:
-    name: {{ include "bediscoverynode.fullname" . }}
+    name: {{ include "becacheagent.fullname" . }}
   type: {{ .Values.jmxservice.type }}
+{{- end }}

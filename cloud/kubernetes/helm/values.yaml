@@ -6,15 +6,14 @@
 
 #Required parameter to be passed for all cloud providers
 cloudProvider: minikube
-
-#Required parameter to be passed for cache, sharedNothing, sharedAll
-omType: inmemory
-
-#Required parameter to be passed for sharedNothing, sharedAll
-persistentType: None
+#-----------------------------------------
+cmType: AS2                     #cmType can be unclustered,AS2,FTL
+omType: cache                   #omType can be inmemory,store,cache
+bsType: sharedNothing1         #BackingStore can be None sharedNothing, sharedAll
+storeType: None                 #storeType can be RDBMS, AS4, Cassandra
 
 # Image name and pull policy required for be app
-image: fdstoresn:v01
+image: ftlsnapp
 imagePullPolicy: IfNotPresent
 imagePullSecrets:  #if required for azure
 
@@ -39,6 +38,20 @@ aws-efs:
     efsFileSystemId: fs-e8f5fa68
     awsRegion: us-east-1
 
+#*************************FTL****************************************************
+
+ftl:
+  FTL_gv_REALM_SERVER: http://localhost:8585
+  FTL_gv_REALM_NAME: cepFTLRealm
+  FTL_gv_APP_NAME: cepFTLApp
+  FTL_gv_CLUSTER_NAME: cepFTLCluster
+  FTL_gv_PUBSUB_ENDPOINT: cepFTLDefaultEndpoint
+  FTL_gv_MAP_ENDPOINT: cepFTLMapEndpoint
+  FTL_gv_PERSISTENT_ENDPOINT: cepFTLPersistenceEndpoint
+  FTL_gv_SHARED_ENDPOINT: cepFTLSharedEndpoint
+  FTL_gv_USER_NAME: guest
+  FTL_gv_USER_PWD: guest-pw
+
 #*************************Agents Part****************************************************
 
 #Required for cache, sharedNothing, sharedAll in  all cloud providers
@@ -51,7 +64,7 @@ cachenode:
       PU1name: PU
       PU1value: cache
       PU2name: AS_DISCOVER_URL
-      PU2value: "tcp://bediscovery-service:50000"
+      PU3name: IGNITE_DISCOVER_URL
 
 #Required for all applications in  all cloud providers
 inferencenode:
@@ -63,17 +76,61 @@ inferencenode:
       PU1name: PU
       PU1value: default
       PU2name: AS_DISCOVER_URL
-      PU2value: "tcp://bediscovery-service:50000"
+      PU3name: IGNITE_DISCOVER_URL
 
-#Required for cache, sharedNothing, sharedAll in  all cloud providers
-discoverynode:
-  name: bediscoverynode
-  replicaCount: 1
-  containers:
-    name: discoverynode
-    env:
-      PU1name: PU
-      PU1value: cache
+#*************************Service Part****************************************************
+#Required for cache, sharedNothing, sharedAll in all cloud providers
+cacheservice:
+  name: becache-service
+  ports:
+    port: 50000
+    protocol: TCP
+  selector:
+    name: becacheagent
+
+#Required for all applications in all cloud providers
+jmxservice:
+  name: jmx-service
+  selector:
+    name: beinferenceagent
+  ports:
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
+  type: LoadBalancer
+
+#Required for all applications in all cloud providers
+beservice:
+  name: beservice
+  type: NodePort              #LoadBalancer for azure, NodePort
+  ports:
+    name: port1
+    protocol: TCP
+    port: 8108
+
+ignite:
+  dis0: 47500
+  dis1: 47501
+  dis2: 47502
+  dis3: 47503
+  dis4: 47504
+  dis5: 47505
+  dis6: 47506
+  dis7: 47507
+  dis8: 47508
+  dis9: 47509  
+
+#*************************ConfigMap****************************************************
+
+#Required for sharedAll in all cloud providers
+configmap:
+  name: db-provider
+  dbdriver: com.mysql.jdbc.Driver
+  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  dbusername: BE_USER
+  dbpwd: BE_USER
+  dbpoolsize: 5
+  dblogintimeout: 0
 
 #Required for sharedAll in all cloud providers
 database:
@@ -91,61 +148,55 @@ database:
   logintimeoutname: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
   logintimeoutval: db_login_timeout
 
-#*************************Service Part****************************************************
-#Required for cache, sharedNothing, sharedAll in all cloud providers
-discoveryservice:
-  name: bediscovery-service
-  ports:
-    port: 50000
-    protocol: TCP
-  selector:
-    name: bediscoverynode
+nosqlconfigmap:
+  name: nosql
 
-#Required for all applications in all cloud providers
-jmxservice:
-  name: jmx-service
-  selector:
-    name: beinferenceagent
-  ports:
-    protocol: TCP
-    port: 5555
-    targetPort: 5555
-  type: LoadBalancer
+cassconfigmap:
+  name: cassandra
+  cass_server_hostname: localhost
+  cass_server_port: 9042
+  cass_keyspace_name: testdb
+  cass_username: cassandra
+  cass_password: cassandra
 
-#Required for all applications in all cloud providers
-beservice:
-  name: beservice
-  type: NodePort
-  ports:
-    name: port1
-    protocol: TCP
-    port: 8209
-
-#Required for sharedAll in all cloud providers
-mysqlservice:
-  name: mysql
-  clusterIP: None
-  ports:
-    port: 3306
-    protocol: TCP
-  selector:
-    name: mysql
-
-
-#*************************ConfigMap****************************************************
-
-#Required for sharedAll in all cloud providers
-configmap:
+cassdatabase:
   name: db-provider
-  dbdriver: com.mysql.jdbc.Driver
-  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
-  dbusername: BE_USER
-  dbpwd: BE_USER
-  dbpoolsize: 5
-  dblogintimeout: 0
+  drivername: CASS_SERVER_HOSTNAME
+  driverval: db_cass_server_hostname
+  portname: CASS_SERVER_PORT
+  portval: db_cass_server_port
+  keyspacename: CASS_KEYSPACE_NAME
+  keyspaceval: db_cass_keyspace_name
+  username: CASS_USERNAME
+  userval: db_cass_username
+  pwdname: CASS_PASSWORD
+  pwdval: db_cass_password
+
+as4configmap:
+  name: as4
+  realm_url: http://192.168.0.110:8585
+  sec_realm_url: http://192.168.0.110:8585
+  grid_name: fd_store
+  store_timeout: 5
+  store_waittime: 0.1
+  store_poolsize: 1
+
+as4database:
+  name: db-provider
+  realmname: REALM_URL
+  realmval: db_realm_url
+  secrealmurlname: SEC_REALM_URL
+  secrealmurlval: db_sec_realm_url
+  gridname: GRID_NAME
+  gridval: db_grid_name
+  storetimeoutname: STORE_TIMEOUT
+  storetimeoutval: db_store_timeout
+  storewaittimename: STORE_WAITTIME
+  storewaittimeval: "db_store_waittime"
+  poolsizename: STORE_POOLSIZE
+  poolsizeval: db_store_poolsize  
 
 #*************************Volumes Part****************************************************
-
 volumes:
   #Required for sharedNothing and sharedAll in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"

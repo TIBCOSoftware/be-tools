@@ -1,5 +1,6 @@
-{{- if eq .Values.omType "cache" }}
-  {{- if or (eq .Values.persistentType "None" ) (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
+  {{- if eq .Values.omType "cache" }}
+    {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "sharedAll" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -9,7 +10,7 @@ spec:
   selector:
     matchLabels:
       name: {{ include "becacheagent.fullname" . }}
-  serviceName: {{ include "discoveryservice.fullname" . }}
+  serviceName: {{ include "cacheservice.fullname" . }}
   template:
     metadata:
       labels:
@@ -24,10 +25,25 @@ spec:
         env:
         - name: {{ .Values.cachenode.containers.env.PU1name }}
           value: {{ .Values.cachenode.containers.env.PU1value }}
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
         - name: {{ .Values.cachenode.containers.env.PU2name }}
-          value: {{ .Values.cachenode.containers.env.PU2value }}
-{{ include "sharedAll.configMap" . | indent 8 }}
-{{ include "sharedNothing.volumeMount" . | indent 8 }}
+          value: tcp://{{ include "cacheservice.fullname" . }}:50000
+         {{- end }}
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
+        - name: {{ .Values.cachenode.containers.env.PU3name }}
+          value: {{ include "cacheservice.fullname" . }}  
+        {{- range $key, $val := $.Values.ftl }}
+        - name: {{ $key }}
+          value: {{ $val }}
+        {{- end }}
+        {{- end }}
+{{ include "sharedAll.configMap" . | trim | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
+    {{- end }}
   {{- end }}
 {{- end }}

@@ -13,35 +13,35 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "beinferenceagent.fullname" -}}
-{{- .Values.inferencenode.name -}}
+{{ .Release.Name }}-{{- .Values.inferencenode.name -}}
 {{- end -}}
 
 {{- define "becacheagent.fullname" -}}
-{{- .Values.cachenode.name -}}
+{{ .Release.Name }}-{{- .Values.cachenode.name -}}
 {{- end -}}
 
 {{- define "bediscoverynode.fullname" -}}
-{{- .Values.discoverynode.name -}}
+{{ .Release.Name }}-{{- .Values.discoverynode.name -}}
 {{- end -}}
 
 {{- define "beservice.fullname" -}}
-{{ .Values.beservice.name }}
+{{ .Release.Name }}-{{ .Values.beservice.name }}
 {{- end -}}
 
-{{- define "discoveryservice.fullname" -}}
-{{ .Values.discoveryservice.name }}
+{{- define "cacheservice.fullname" -}}
+{{ .Release.Name }}-{{ .Values.cacheservice.name }}
 {{- end -}}
 
 {{- define "jmxservice.fullname" -}}
-{{ .Values.jmxservice.name }}
+{{ .Release.Name }}-{{ .Values.jmxservice.name }}
 {{- end -}}
-
-{{- define "mysqlservice.fullname" -}}
-{{ .Values.mysqlservice.name }}
-{{- end -}}
-
+s
 {{- define "commonconfigmap.fullname" -}}
-{{ .Values.configmap.name }}
+{{ .Release.Name }}-{{ .Values.configmap.name }}
+{{- end -}}
+
+{{- define "nosqlconfigmap.fullname" -}}
+{{ .Release.Name }}-{{ .Values.nosqlconfigmap.name }}
 {{- end -}}
 
 {{- define "eksconfigmap.fullname" -}}
@@ -68,7 +68,7 @@ If release name contains chart name it will be used as a full name.
 Create a volume mount and volume claim template for sharedNothing
 */}}
 {{- define "sharedNothing.volumeMount" -}}
-{{- if eq .Values.persistentType "sharedNothing" }}
+{{- if eq .Values.bsType "sharedNothing" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.snmountPath }}
     name: {{ .Values.volumes.snmountVolume }}
@@ -76,7 +76,7 @@ volumeMounts:
 {{- end -}}
 
 {{- define "sharedNothing.volumeClaim" -}}
-{{- if eq .Values.persistentType "sharedNothing" }}
+{{- if eq .Values.bsType "sharedNothing" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
@@ -101,37 +101,98 @@ volumeMounts:
 Create a DB configMap environment details for sharedAll
 */}}
 {{- define "sharedAll.configMap" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- if and (eq .Values.bsType "sharedAll" ) (eq .Values.storeType "RDBMS" ) }}
 - name: {{ .Values.database.drivername }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.driverval }}
 - name: {{ .Values.database.urlname }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.urlval }}
 - name: {{ .Values.database.username }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.userval }}
 - name: {{ .Values.database.pwdname }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.pwdval }}
 - name: {{ .Values.database.poolsizename }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.poolsizeval }}
 - name: {{ .Values.database.logintimeoutname }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
+      name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.logintimeoutval }}
+{{- end }}
+{{- if or (eq .Values.bsType "sharedAll" ) (eq .Values.omType "store" ) }}
+{{- if eq .Values.storeType "Cassandra"  }}
+- name: {{ .Values.cassdatabase.drivername }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.cassdatabase.driverval }}
+- name: {{ .Values.cassdatabase.portname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.cassdatabase.portval }}
+- name: {{ .Values.cassdatabase.keyspacename }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.cassdatabase.keyspaceval }}
+- name: {{ .Values.cassdatabase.username }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.cassdatabase.userval }}
+- name: {{ .Values.cassdatabase.pwdname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.cassdatabase.pwdval }}
+{{- end }}
+{{- if eq .Values.storeType "AS4"  }}
+- name: {{ .Values.as4database.realmname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.realmval }}
+- name: {{ .Values.as4database.secrealmurlname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.secrealmurlval }}
+- name: {{ .Values.as4database.gridname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.gridval }}
+- name: {{ .Values.as4database.storetimeoutname }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.storetimeoutval }}
+- name: {{ .Values.as4database.storewaittimename }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.storewaittimeval }}
+- name: {{ .Values.as4database.poolsizename }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "nosqlconfigmap.fullname" . }}
+      key: {{ .Values.as4database.poolsizeval }}      
+{{- end }}
 {{- end }}
 {{- end -}}
 
@@ -140,7 +201,7 @@ Create a DB configMap environment details for sharedAll
 Create a volume mount and volume claim template for sharedAll
 */}}
 {{- define "sharedAll.volumeMount" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- if eq .Values.bsType "sharedAll" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.samountPath }}
     name: {{ .Values.volumes.samountVolume }}
@@ -148,7 +209,7 @@ volumeMounts:
 {{- end -}}
 
 {{- define "sharedAll.volumeClaim" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- if eq .Values.bsType "sharedAll" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.samountVolume }}
@@ -183,6 +244,31 @@ data:
   db_pwd: "{{ .Values.configmap.dbpwd }}"
   db_pool_size: "{{ .Values.configmap.dbpoolsize }}"
   db_login_timeout: "{{ .Values.configmap.dblogintimeout }}"
+{{- end -}}
+
+
+{{/*
+Create a common DB configMap data details for sharedAll
+*/}}
+{{- define "nosqlconfigmap.data" -}}
+data:
+  {{- if or (eq .Values.bsType "sharedAll" ) (eq .Values.omType "store" ) }}
+  {{- if eq .Values.storeType "Cassandra"  }}
+  db_cass_server_hostname: "{{ .Values.cassconfigmap.cass_server_hostname }}"
+  db_cass_server_port: "{{ .Values.cassconfigmap.cass_server_port }}"
+  db_cass_keyspace_name: "{{ .Values.cassconfigmap.cass_keyspace_name }}"
+  db_cass_username: "{{ .Values.cassconfigmap.cass_username }}"
+  db_cass_password: "{{ .Values.cassconfigmap.cass_password }}"
+  {{- end -}}
+  {{- if eq .Values.storeType "AS4" }}
+  db_realm_url: "{{ .Values.as4configmap.realm_url }}"
+  db_sec_realm_url: "{{ .Values.as4configmap.sec_realm_url }}"
+  db_grid_name: "{{ .Values.as4configmap.grid_name }}"
+  db_store_timeout: "{{ .Values.as4configmap.store_timeout }}"
+  db_store_waittime: "{{ .Values.as4configmap.store_waittime }}"
+  db_store_poolsize: "{{ .Values.as4configmap.store_poolsize }}"
+  {{- end -}}
+  {{- end -}}
 {{- end -}}
 
 {{/*

@@ -1,0 +1,13 @@
+{{- if or (eq .Values.cmType "unclustered" ) (eq .Values.cmType "FTL" ) }}
+{{- if or (eq .Values.omType "store" ) (eq .Values.omType "cache" ) }}
+{{- if or (eq .Values.storeType "AS4" ) (eq .Values.storeType "Cassandra" ) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nosqlconfigmap.fullname" . }}
+  labels:
+    name: {{ include "nosqlconfigmap.fullname" . }}
+{{ include "nosqlconfigmap.data" . }}
+{{- end }}
+{{- end }}
+{{- end }}

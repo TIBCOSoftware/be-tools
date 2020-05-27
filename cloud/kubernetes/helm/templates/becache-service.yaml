@@ -1,0 +1,26 @@
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
+{{- if eq .Values.omType "cache" }}
+  {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "sharedAll" ) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cacheservice.fullname" . }}
+spec:
+  selector:
+    name: {{ include "becacheagent.fullname" . }}
+  clusterIP: None
+  ports:
+  {{ if eq .Values.cmType "AS2" }}
+    - port: {{ .Values.cacheservice.ports.port }}
+      protocol: TCP
+  {{- end }}
+  {{ if eq .Values.cmType "FTL" }}
+  {{- range $key, $port := $.Values.ignite }}
+    - port: {{ $port }}
+      name: {{ $key }}
+      protocol: TCP
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -1,6 +1,7 @@
 #Persistent volume used in mysql
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
 {{- if and (eq .Values.cloudProvider "openshift" ) (eq .Values.omType "cache" ) }}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- if eq .Values.bsType "sharedAll" }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -10,7 +11,7 @@ spec:
   {{ include "openshiftPV.details" . }}
   {{ include "openshiftNFSsharedAll.path" . }}
 ---
-{{- else if eq .Values.persistentType "sharedNothing" }}
+{{- else if eq .Values.bsType "sharedNothing" }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -20,5 +21,6 @@ spec:
   {{ include "openshiftPV.details" . }}
   {{ include "openshiftNFSsharedNothing.path" . }}
 ----
+{{- end }}
 {{- end }}
 {{- end }}

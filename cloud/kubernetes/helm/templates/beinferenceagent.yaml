@@ -1,13 +1,14 @@
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "beinferenceagent.fullname" . }}
+  name: "{{ include "beinferenceagent.fullname" . }}"
 spec:
   replicas: {{ .Values.inferencenode.replicaCount }}
   selector:
     matchLabels:
-      name: {{ include "beinferenceagent.fullname" . }}
-  serviceName: {{ include "beservice.fullname" . }}
+      name: "{{ include "beinferenceagent.fullname" . }}"
+  serviceName: "{{ include "beservice.fullname" . }}"
   template:
     metadata:
       labels:
@@ -22,10 +23,25 @@ spec:
         env:
         - name: {{ .Values.inferencenode.containers.env.PU1name }}
           value: {{ .Values.inferencenode.containers.env.PU1value }}
-         {{- if eq .Values.omType "cache" }}  
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
         - name: {{ .Values.inferencenode.containers.env.PU2name }}
-          value: {{ .Values.inferencenode.containers.env.PU2value }}
+          value: tcp://{{ include "cacheservice.fullname" . }}:50000
          {{- end }}
-{{ include "sharedAll.configMap" . | indent 8 }}
-{{ include "sharedNothing.volumeMount" . | indent 8 }}
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
+        - name: {{ .Values.inferencenode.containers.env.PU3name }}
+          value: {{ include "cacheservice.fullname" . }} 
+         {{- end }}
+         {{- if eq .Values.cmType "FTL" }}   
+        {{- range $key, $val := $.Values.ftl }}
+        - name: {{ $key }}
+          value: {{ $val }}
+        {{- end }}
+        {{- end }} 
+{{ include "sharedAll.configMap" . | trim |  indent 8 }}
+{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
+{{- end }}
