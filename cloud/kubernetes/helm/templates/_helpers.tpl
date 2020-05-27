@@ -80,7 +80,7 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
-        {{- if ne .Values.cloudProvider "openshift" }}
+        {{- if ne .Values.cpType "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
@@ -213,7 +213,7 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.samountVolume }}
-        {{- if ne .Values.cloudProvider "openshift" }}
+        {{- if ne .Values.cpType "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:

@@ -66,7 +66,7 @@ Note: minikube is the default provider
 To install the chart with the release name `my-release` in azure
 
 ```
-helm install my-release ./helm --set cloudProvider=azure
+helm install my-release ./helm --set cpType=azure
 ```
 
 Note:<br> 

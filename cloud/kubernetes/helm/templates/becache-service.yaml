@@ -10,11 +10,11 @@ spec:
     name: {{ include "becacheagent.fullname" . }}
   clusterIP: None
   ports:
-  {{ if eq .Values.cmType "AS2" }}
+  {{- if eq .Values.cmType "AS2" }}
     - port: {{ .Values.cacheservice.ports.port }}
       protocol: TCP
   {{- end }}
-  {{ if eq .Values.cmType "FTL" }}
+  {{- if eq .Values.cmType "FTL" }}
   {{- range $key, $port := $.Values.ignite }}
     - port: {{ $port }}
       name: {{ $key }}

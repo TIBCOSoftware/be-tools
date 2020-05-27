@@ -5,11 +5,11 @@
 #Cloud Providers: minikube, PKS, Azure, AWS-EKS, Openshift
 
 #Required parameter to be passed for all cloud providers
-cloudProvider: minikube
+cpType: minikube
 #-----------------------------------------
 cmType: AS2                     #cmType can be unclustered,AS2,FTL
 omType: cache                   #omType can be inmemory,store,cache
-bsType: sharedNothing1         #BackingStore can be None sharedNothing, store
+bsType: sharedNothing         #BackingStore can be None sharedNothing, store
 storeType: None                 #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                  #cacheType can be AS2, ignite
 
