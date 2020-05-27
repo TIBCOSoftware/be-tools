@@ -9,17 +9,18 @@ cloudProvider: minikube
 #-----------------------------------------
 cmType: AS2                     #cmType can be unclustered,AS2,FTL
 omType: cache                   #omType can be inmemory,store,cache
-bsType: sharedNothing1         #BackingStore can be None sharedNothing, sharedAll
+bsType: sharedNothing1         #BackingStore can be None sharedNothing, store
 storeType: None                 #storeType can be RDBMS, AS4, Cassandra
+cacheType: AS2                  #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
 image: ftlsnapp
 imagePullPolicy: IfNotPresent
 imagePullSecrets:  #if required for azure
 
-#Required for sharedAll in  all cloud providers
+#Required for store in  all cloud providers
 mysql:
-  enabled: false #use true for sharedAll
+  enabled: false #use true for store
   image: "mysql"
   imageTag: "5.7"
   args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
@@ -30,7 +31,7 @@ mysql:
   # persistence: 
   #   storageClass: "-" #Type of persistent volume claim
 
-# Required for sharedNothing and sharedAll in AWS
+# Required for sharedNothing and store in AWS
 aws-efs:
   enabled: false #use true for aws 
   replicaCount: 1
@@ -54,7 +55,7 @@ ftl:
 
 #*************************Agents Part****************************************************
 
-#Required for cache, sharedNothing, sharedAll in  all cloud providers
+#Required for cache, sharedNothing, store in  all cloud providers
 cachenode:
   name: becacheagent
   replicaCount: 1
@@ -79,7 +80,7 @@ inferencenode:
       PU3name: IGNITE_DISCOVER_URL
 
 #*************************Service Part****************************************************
-#Required for cache, sharedNothing, sharedAll in all cloud providers
+#Required for cache, sharedNothing, store in all cloud providers
 cacheservice:
   name: becache-service
   ports:
@@ -122,7 +123,7 @@ ignite:
 
 #*************************ConfigMap****************************************************
 
-#Required for sharedAll in all cloud providers
+#Required for store in all cloud providers
 configmap:
   name: db-provider
   dbdriver: com.mysql.jdbc.Driver
@@ -132,7 +133,7 @@ configmap:
   dbpoolsize: 5
   dblogintimeout: 0
 
-#Required for sharedAll in all cloud providers
+#Required for store in all cloud providers
 database:
   name: db-provider
   drivername: BACKINGSTORE_JDBC_DRIVER
@@ -198,17 +199,17 @@ as4database:
 
 #*************************Volumes Part****************************************************
 volumes:
-  #Required for sharedNothing and sharedAll in all cloud providers
+  #Required for sharedNothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
   storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
   snclaimVolume: pv0003                         #Update it for sharedNothing in Openshift
-  saclaimVolume: pv0004                          #Update it for sharedAll in Openshift
+  saclaimVolume: pv0004                          #Update it for store in Openshift
   samountPath: "/var/lib/mysql"
   samountVolume: sastore
-  #Required for sharedNothing and sharedAll in Azure
+  #Required for sharedNothing and store in Azure
   azure:
     storageClassName: azurestorageclass
     skuName: Standard_LRS
@@ -219,7 +220,7 @@ volumes:
     gid: 1000
 
 persistentvolumes:
-#Required for sharedNothing, sharedAll in Openshift.
+#Required for sharedNothing, store in Openshift.
   openshift:
     volume:
       snvolname: pv0003
@@ -230,4 +231,4 @@ persistentvolumes:
       nfs:
         server: qa.lab.openshift.com       #update the servername
         snpath: /home/data/pv0003          #Update path for sharedNothing
-        sapath: /home/data/pv0004          #Update path for sharedAll
+        sapath: /home/data/pv0004          #Update path for store

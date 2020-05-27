@@ -41,7 +41,7 @@ spec:
           value: {{ $val }}
         {{- end }}
         {{- end }} 
-{{ include "sharedAll.configMap" . | trim |  indent 8 }}
+{{ include "store.configMap" . | trim |  indent 8 }}
 {{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
 {{- end }}

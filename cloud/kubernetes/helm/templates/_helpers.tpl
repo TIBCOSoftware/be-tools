@@ -98,10 +98,10 @@ volumeMounts:
 
 
 {{/*
-Create a DB configMap environment details for sharedAll
+Create a DB configMap environment details for store
 */}}
-{{- define "sharedAll.configMap" -}}
-{{- if and (eq .Values.bsType "sharedAll" ) (eq .Values.storeType "RDBMS" ) }}
+{{- define "store.configMap" -}}
+{{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
 - name: {{ .Values.database.drivername }}
   valueFrom:
     configMapKeyRef:
@@ -133,7 +133,7 @@ Create a DB configMap environment details for sharedAll
       name: {{ include "commonconfigmap.fullname" . }}
       key: {{ .Values.database.logintimeoutval }}
 {{- end }}
-{{- if or (eq .Values.bsType "sharedAll" ) (eq .Values.omType "store" ) }}
+{{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
 {{- if eq .Values.storeType "Cassandra"  }}
 - name: {{ .Values.cassdatabase.drivername }}
   valueFrom:
@@ -198,18 +198,18 @@ Create a DB configMap environment details for sharedAll
 
 
 {{/*
-Create a volume mount and volume claim template for sharedAll
+Create a volume mount and volume claim template for store
 */}}
-{{- define "sharedAll.volumeMount" -}}
-{{- if eq .Values.bsType "sharedAll" }}
+{{- define "store.volumeMount" -}}
+{{- if eq .Values.bsType "store" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.samountPath }}
     name: {{ .Values.volumes.samountVolume }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedAll.volumeClaim" -}}
-{{- if eq .Values.bsType "sharedAll" }}
+{{- define "store.volumeClaim" -}}
+{{- if eq .Values.bsType "store" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.samountVolume }}
@@ -230,7 +230,7 @@ volumeMounts:
 {{- end -}}
 
 {{/*
-Create a common DB configMap data details for sharedAll
+Create a common DB configMap data details for store
 */}}
 {{- define "commonconfigmap.data" -}}
 data:
@@ -248,11 +248,11 @@ data:
 
 
 {{/*
-Create a common DB configMap data details for sharedAll
+Create a common DB configMap data details for store
 */}}
 {{- define "nosqlconfigmap.data" -}}
 data:
-  {{- if or (eq .Values.bsType "sharedAll" ) (eq .Values.omType "store" ) }}
+  {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
   {{- if eq .Values.storeType "Cassandra"  }}
   db_cass_server_hostname: "{{ .Values.cassconfigmap.cass_server_hostname }}"
   db_cass_server_port: "{{ .Values.cassconfigmap.cass_server_port }}"
@@ -293,7 +293,7 @@ Create a openshift persistent volume details
 {{- end -}}
 
 {{/*
-Create a openshift NFS path details for sharedNothing and sharedAll
+Create a openshift NFS path details for sharedNothing and store
 */}}
 {{- define "openshiftNFSsharedNothing.path" -}}
   nfs:
@@ -301,7 +301,7 @@ Create a openshift NFS path details for sharedNothing and sharedAll
     path: {{ .Values.persistentvolumes.openshift.volume.nfs.snpath }}
 {{- end -}}
 
-{{- define "openshiftNFSsharedAll.path" -}}
+{{- define "openshiftNFSstore.path" -}}
   nfs:
     server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
     path: {{ .Values.persistentvolumes.openshift.volume.nfs.sapath }}
