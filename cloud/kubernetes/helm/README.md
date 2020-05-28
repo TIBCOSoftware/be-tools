@@ -79,6 +79,10 @@ At any point to check how to use helm, simply run the `help` command
 helm --help
 ```
 
+## Testing Example:
+
+* To test FraudDetection example refer to readme.html in helm folder
+
 ## Uninstalling the Chart
 
 To uninstall/delete the my-release deployment:
