@@ -214,6 +214,12 @@ echo INFO: CDD file name - !CDD_FILE_NAME!
 echo INFO: EAR file name - !EAR_FILE_NAME!
 echo ----------------------------------------------
 
+if !FTL_FOUND! EQU 1 (
+  if !AS3X_FOUND! EQU 1 (
+    echo WARN: Local machine contains both FTL and AS2 installations. Removing unused installation improves the docker image size.
+  )
+)
+
 echo INFO: Copying packages...
 
 xcopy /Q /C /R /Y ..\lib !TEMP_FOLDER!\lib
@@ -238,10 +244,7 @@ powershell -Command "Copy-Item '!ARG_BE_HOME!\..\..\be\!SHORT_VERSION!\mm' -Dest
 if !FTL_FOUND! EQU 1 (
   powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\ftl\!FTL_VERSION! | out-null"
   powershell -Command "Copy-Item '!FTL_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!FTL_VERSION!' -Recurse | out-null"
-)
-if !AS3X_FOUND! EQU 1 (
-  powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!AS3X_VERSION! | out-null"
-  powershell -Command "Copy-Item '!AS3X_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!AS3X_VERSION!' -Recurse | out-null"
+  powershell -Command "Copy-Item '!FTL_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!FTL_VERSION!' -Recurse | out-null"
 )
 
 :: Replace user TIBCO_HOME path with container's tra files
