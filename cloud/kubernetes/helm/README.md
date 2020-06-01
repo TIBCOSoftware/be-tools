@@ -35,31 +35,38 @@ cd cloud/kubernetes
 helm dep update ./helm
 ```
 
-Update the required values for deployment in helm/values.yaml file(ex:image, imagePullPolicy etc.,)
 
-To install the chart with the release name `my-release` in minikube
+There are 4 primary configuration switches:
 
-* omType: inmemory 
+* cpType → Represents Cloud provider type. Valid values: AWS/Azure/OpenShift/GCP/Minikube | Default - Minikube
+* cmType → Represents Cluster management type. Valid values: None/AS2/FTL | Default - None
+* omType → Represents Object manage type. Valid values: Inmemory/Store/Cache | Default - Inmemory
+* bsType → Represents Backing Store type. Valid values: None/SharedNothing/Store | Default - None <br>
 
-```
-helm install my-release ./helm
-```
+There can be secondary configuration switches like mentioned below:
 
-For cache modes that includes persistentNone, sharedNothing and sharedAll
-* persistentType=None
-```
-helm install my-release ./helm --set omType:cache,persistentType=None
-```
+* storeType → Represents store type. It has significance only when bsType=Store OR omType=Store. Valid values: Oracle/SQLServer/DB2/MySql/PostgreSQL/AS4/Cassandra
+* cacheType → Represents cache type. Valid values: AS2/Ignite | Default - AS2 (when cmType=AS2) / Ignite (when cmType=FTL)
+Based on above switches section, Helm picks up required configuration and properties and deploys into connected Kubernetes environment.
 
-* persistentType=sharedNothing
-```
-helm install my-release ./helm --set omType:cache,persistentType=sharedNothing
-```
+Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options in case of AWS cloud provider(i.e. cpType=AWS):
 
-* persistentType=sharedAll with mysql dependency
-```
-helm install my-release ./helm --set omType:cache,persistentType=sharedAll,mysql.enabled=true
-```
+
+| Topology Name | cmType | omType | bsType  | storeType |
+| ------------- | :---: | :---: | :---: | :---: |
+| Unclustered Inmemory              |  unclustered      |        |        |           |
+| Unclustered store AS4              | unclustered        |  store      |        | AS4          |
+| Unclustered store Cassandra               | unclustered       | store       |        | Cassandra          | 
+| clustered store AS4               |  AS2      | cache       | None       |           |
+| clustered store Cassandra               | AS2       | cache       | sharedNothing        |           |
+| clustered Cache AS2 None              | AS2      | cache       | None        |           |
+| clustered Cache AS2 sharedNothing                | AS2       | cache       | sharedNothing       |           |
+| clustered Cache AS2 store               | AS2       | cache       | store        |  RDBMS         |
+| clustered Cache FTL None              |  FTL      | cache       | None       |           |
+| clustered Cache FTL sharedNothing               | FTL       | cache       | sharedNothing       |           |
+| clustered Cache FTL store RDBMS               |  FTL      |  cache      | store       | RDBMS          |
+| clustered Cache FTL store AS4               | FTL       | cache       | store       | AS4          |
+| clustered Cache FTL store Cassandra               |  FTL      | cache       | store       | Cassandra          |
 
 Note: minikube is the default provider
 
@@ -92,3 +99,4 @@ $ helm delete my-release
 ```
 
 The command removes all the Kubernetes components associated with the chart
+

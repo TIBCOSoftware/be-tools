@@ -36,11 +36,8 @@ spec:
          {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
         - name: {{ .Values.cachenode.containers.env.PU3name }}
           value: {{ include "cacheservice.fullname" . }}  
-        {{- range $key, $val := $.Values.ftl }}
-        - name: {{ $key }}
-          value: {{ $val }}
-        {{- end }}
-        {{- end }}
+        {{ include "ftl.data" . | trim }}
+       {{- end }}
 {{ include "store.configMap" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}

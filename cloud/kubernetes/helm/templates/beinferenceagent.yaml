@@ -36,10 +36,7 @@ spec:
           value: {{ include "cacheservice.fullname" . }} 
          {{- end }}
          {{- if eq .Values.cmType "FTL" }}   
-        {{- range $key, $val := $.Values.ftl }}
-        - name: {{ $key }}
-          value: {{ $val }}
-        {{- end }}
+        {{ include "ftl.data" . | trim }}  
         {{- end }} 
 {{ include "store.configMap" . | trim |  indent 8 }}
 {{ include "sharedNothing.volumeMount" . | trim | indent 8 }}

@@ -124,6 +124,9 @@ ignite:
 #*************************ConfigMap****************************************************
 
 #Required for store in all cloud providers
+sqlconfigmap:
+  name: sql
+
 configmap:
   name: db-provider
   dbdriver: com.mysql.jdbc.Driver
@@ -135,25 +138,17 @@ configmap:
 
 #Required for store in all cloud providers
 database:
-  name: db-provider
-  drivername: BACKINGSTORE_JDBC_DRIVER
-  driverval: db_driver
-  urlname: BACKINGSTORE_JDBC_URL
-  urlval: db_url
-  username: BACKINGSTORE_JDBC_USERNAME
-  userval: db_username
-  pwdname: BACKINGSTORE_JDBC_PASSWORD
-  pwdval: db_pwd
-  poolsizename: BACKINGSTORE_JDBC_POOL_SIZE
-  poolsizeval: "db_pool_size"
-  logintimeoutname: BACKINGSTORE_JDBC_LOGIN_TIMEOUT
-  logintimeoutval: db_login_timeout
+  BACKINGSTORE_JDBC_DRIVER: dbdriver 
+  BACKINGSTORE_JDBC_URL: dburl
+  BACKINGSTORE_JDBC_USERNAME: dbusername
+  BACKINGSTORE_JDBC_PASSWORD: dbpwd
+  BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
+  BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
 
-nosqlconfigmap:
-  name: nosql
+storeconfigmap:
+  name: store
 
 cassconfigmap:
-  name: cassandra
   cass_server_hostname: localhost
   cass_server_port: 9042
   cass_keyspace_name: testdb
@@ -161,41 +156,27 @@ cassconfigmap:
   cass_password: cassandra
 
 cassdatabase:
-  name: db-provider
-  drivername: CASS_SERVER_HOSTNAME
-  driverval: db_cass_server_hostname
-  portname: CASS_SERVER_PORT
-  portval: db_cass_server_port
-  keyspacename: CASS_KEYSPACE_NAME
-  keyspaceval: db_cass_keyspace_name
-  username: CASS_USERNAME
-  userval: db_cass_username
-  pwdname: CASS_PASSWORD
-  pwdval: db_cass_password
+  CASS_SERVER_HOSTNAME: cass_server_hostname
+  CASS_SERVER_PORT: cass_server_port
+  CASS_KEYSPACE_NAME: cass_keyspace_name
+  CASS_USERNAME: cass_username
+  CASS_PASSWORD: cass_password
 
 as4configmap:
-  name: as4
-  realm_url: http://192.168.0.110:8585
-  sec_realm_url: http://192.168.0.110:8585
+  realm_url: http://localhost:8585
+  sec_realm_url: http://localhost:8585
   grid_name: fd_store
   store_timeout: 5
   store_waittime: 0.1
   store_poolsize: 1
 
 as4database:
-  name: db-provider
-  realmname: REALM_URL
-  realmval: db_realm_url
-  secrealmurlname: SEC_REALM_URL
-  secrealmurlval: db_sec_realm_url
-  gridname: GRID_NAME
-  gridval: db_grid_name
-  storetimeoutname: STORE_TIMEOUT
-  storetimeoutval: db_store_timeout
-  storewaittimename: STORE_WAITTIME
-  storewaittimeval: "db_store_waittime"
-  poolsizename: STORE_POOLSIZE
-  poolsizeval: db_store_poolsize  
+  REALM_URL: realm_url
+  SEC_REALM_URL: sec_realm_url
+  GRID_NAME: grid_name
+  STORE_TIMEOUT: store_timeout
+  STORE_WAITTIME: "store_waittime"
+  STORE_POOLSIZE: store_poolsize  
 
 #*************************Volumes Part****************************************************
 volumes:
