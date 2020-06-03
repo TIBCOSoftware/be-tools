@@ -15,7 +15,7 @@ spec:
       protocol: TCP
   {{- end }}
   {{- if eq .Values.cmType "FTL" }}
-  {{- range $key, $port := $.Values.ignite }}
+  {{- range $key, $port := $.Values.ignitePort }}
     - port: {{ $port }}
       name: {{ $key }}
       protocol: TCP

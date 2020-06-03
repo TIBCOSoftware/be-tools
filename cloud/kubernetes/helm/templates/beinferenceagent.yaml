@@ -21,18 +21,18 @@ spec:
         image: {{ .Values.image }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
-        - name: {{ .Values.inferencenode.containers.env.PU1name }}
-          value: {{ .Values.inferencenode.containers.env.PU1value }}
+        - name: PU
+          value: default
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name  
          {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
-        - name: {{ .Values.inferencenode.containers.env.PU2name }}
+        - name: AS_DISCOVER_URL
           value: tcp://{{ include "cacheservice.fullname" . }}:50000
          {{- end }}
          {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
-        - name: {{ .Values.inferencenode.containers.env.PU3name }}
+        - name: {{ .Values.ignite.discover_url }}
           value: {{ include "cacheservice.fullname" . }} 
          {{- end }}
          {{- if eq .Values.cmType "FTL" }}   

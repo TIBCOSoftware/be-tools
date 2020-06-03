@@ -39,10 +39,13 @@ aws-efs:
     efsFileSystemId: fs-e8f5fa68
     awsRegion: us-east-1
 
-#*************************FTL****************************************************
+#*************************Agents env varaibles****************************************************
+
+ignite:
+  discover_url: IGNITE_DISCOVER_URL
 
 ftl:
-  FTL_gv_REALM_SERVER: http://localhost:8585
+  FTL_gv_REALM_SERVER: http://54.89.119.44:8585
   FTL_gv_REALM_NAME: cepFTLRealm
   FTL_gv_APP_NAME: cepFTLApp
   FTL_gv_CLUSTER_NAME: cepFTLCluster
@@ -60,12 +63,7 @@ cachenode:
   name: becacheagent
   replicaCount: 1
   containers:
-    name: cachenode    
-    env:
-      PU1name: PU
-      PU1value: cache
-      PU2name: AS_DISCOVER_URL
-      PU3name: IGNITE_DISCOVER_URL
+    name: cachenode
 
 #Required for all applications in  all cloud providers
 inferencenode:
@@ -73,11 +71,6 @@ inferencenode:
   replicaCount: 1
   containers:
     name: inferencenode
-    env:
-      PU1name: PU
-      PU1value: default
-      PU2name: AS_DISCOVER_URL
-      PU3name: IGNITE_DISCOVER_URL
 
 #*************************Service Part****************************************************
 #Required for cache, sharedNothing, store in all cloud providers
@@ -86,14 +79,10 @@ cacheservice:
   ports:
     port: 50000
     protocol: TCP
-  selector:
-    name: becacheagent
 
 #Required for all applications in all cloud providers
 jmxservice:
   name: jmx-service
-  selector:
-    name: beinferenceagent
   ports:
     protocol: TCP
     port: 5555
@@ -109,7 +98,7 @@ beservice:
     protocol: TCP
     port: 8108
 
-ignite:
+ignitePort:
   dis0: 47500
   dis1: 47501
   dis2: 47502
