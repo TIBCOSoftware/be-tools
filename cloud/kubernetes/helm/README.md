@@ -57,8 +57,8 @@ Following table illustrates how to use helm switches to select particular deploy
 | Unclustered Inmemory              |  unclustered      |        |        |           |
 | Unclustered store AS4              | unclustered        |  store      |        | AS4          |
 | Unclustered store Cassandra               | unclustered       | store       |        | Cassandra          | 
-| clustered store AS4               |  AS2      | cache       | None       |           |
-| clustered store Cassandra               | AS2       | cache       | sharedNothing        |           |
+| clustered store AS4               |  FTL      | store       |        | AS4          |
+| clustered store Cassandra               | FTL       | store       |         | Cassandra          |
 | clustered Cache AS2 None              | AS2      | cache       | None        |           |
 | clustered Cache AS2 sharedNothing                | AS2       | cache       | sharedNothing       |           |
 | clustered Cache AS2 store               | AS2       | cache       | store        |  RDBMS         |
