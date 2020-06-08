@@ -1,0 +1,353 @@
+---
+# This is used to populate the grid configuration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tibdg-conf
+  labels:
+    app: tibdg
+data:
+  ftl.yaml: |
+    globals:
+      core.servers:
+        ftlserver-0: ftlserver-0.ftlservers:30080
+    servers:
+      ftlserver-0:
+      - realm:
+          ftl: ftlserver-0.ftlservers:30083
+          data: /data/ftlserver_0_data
+    services:
+      realm: {}
+  conf.tibdg: |
+    grid create copyset_size=1 proxy_client_listen_port=8888 
+    copyset create cs-01
+    node create --copyset cs-01 --dir /data/cs-01-node-0 cs-01-node-0
+    keeper create --dir /data/keeper-0 keeper-0
+    proxy create proxy-0
+    table create t1 key long
+    column create t1 value string
+
+...
+---
+# Sets up an in-cluster DNS entry for each ftl-server, and an entry for ftlservers containing all three.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftlservers
+  labels:
+    com.tibco.datagrid.service: ftlservers
+    app: tibdg
+spec:
+  type: "LoadBalancer"
+  ports:
+    - name: http
+      port: 30080
+    - name: ftl
+      port: 30083
+  selector:
+    com.tibco.datagrid.service: ftlservers
+
+...
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ftlserver
+  labels:
+    com.tibco.datagrid.service: ftlservers
+    app: tibdg
+spec:
+  serviceName: ftlservers
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: ftlservers
+  template:
+    metadata:
+      labels:
+        com.tibco.datagrid.service: ftlservers
+        app: tibdg
+    spec:
+      containers:
+        - name: ftlservers
+          image: ftl-tibftlserver:6.4.0
+          args:
+            - '-c'
+            - '/config/ftl.yaml'
+            - '-n'
+            - '$(POD_NAME)'
+          ports:
+            - name: realm-http
+              containerPort: 30080
+            - name: realm-ftl
+              containerPort: 30083
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /config
+              name: config-pv
+            - mountPath: /data
+              name: ftl-server-pv
+      imagePullSecrets:
+        - name: beacrsecret
+      volumes:
+        - name: config-pv
+          configMap:
+            name: tibdg-conf
+  volumeClaimTemplates:
+    - metadata:
+        name: ftl-server-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "1Gi"
+
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tibdgadmind
+  labels:
+    com.tibco.datagrid.service: tibdgadmind
+    app: tibdg
+spec:
+  clusterIP: None
+  selector:
+    com.tibco.datagrid.service: tibdgadmind
+  ports:
+    - name: admind
+      port: 30081
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: admind
+  labels:
+    com.tibco.datagrid.service: tibdgadmind
+    app: tibdg
+spec:
+  serviceName: tibdgadmind
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgadmind
+  template:
+    metadata:
+      name: tibdgadmind
+      labels:
+        com.tibco.datagrid.service: tibdgadmind
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgadmind
+          image: as-tibdgadmind:4.4.0
+          args: 
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-l'
+            - ':30081'
+      imagePullSecrets:
+        - name: beacrsecret
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keeper
+  labels:
+    com.tibco.datagrid.service: tibdgkeeper
+    app: tibdg
+spec:
+  serviceName: tibdgkeeper
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgkeeper
+  template:
+    metadata:
+      name: tibdgkeeper
+      labels:
+        com.tibco.datagrid.service: tibdgkeeper
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgkeeper
+          image: as-tibdgkeeper:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /data
+              name: keeper-pv
+      imagePullSecrets:
+        - name: beacrsecret
+  volumeClaimTemplates:
+    - metadata:
+        name: keeper-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "1Gi"
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cs-01-node
+  labels:
+    com.tibco.datagrid.service: tibdgnode
+    app: tibdg
+spec:
+  serviceName: tibdgnode
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgnode
+      com.tibco.datagrid.node.copyset: cs-01
+  template:
+    metadata:
+      name: tibdgnode
+      labels:
+        com.tibco.datagrid.service: tibdgnode
+        com.tibco.datagrid.node.copyset: cs-01
+        app: tibdg
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: com.tibco.datagrid.node.copyset
+                      operator: In
+                      values: [ cs-01 ]
+            - weight: 50
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: com.tibco.datagrid.service
+                      operator: In
+                      values: [ tibdgnode ]
+      containers:
+        - name: tibdgnode
+          image: as-tibdgnode:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /data
+              name: node-pv
+      imagePullSecrets:
+        - name: beacrsecret
+  volumeClaimTemplates:
+    - metadata:
+        name: node-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "10Gi"
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: proxy
+  labels:
+    com.tibco.datagrid.service: tibdgproxy
+    app: tibdg
+spec:
+  serviceName: tibdgproxy
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgproxy
+  template:
+    metadata:
+      name: tibdgproxy
+      labels:
+        com.tibco.datagrid.service: tibdgproxy
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgproxy
+          image: as-tibdgproxy:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      imagePullSecrets:
+        - name: beacrsecret
+
+...
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tibdgconfig-job
+  labels:
+    app: tibdg
+spec:
+  template:
+    metadata:
+      name: tibdgconfig
+      labels:
+        app: tibdg
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: tibdgconfig
+          image: as-tibdg:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '--wait-for-realm'
+            - '60'
+            - '-s'
+            - '/config/conf.tibdg'
+          volumeMounts:
+            - name: config-pv
+              mountPath: /config
+      imagePullSecrets:
+        - name: beacrsecret
+      volumes:
+        - name: config-pv
+          configMap:
+            name: tibdg-conf
+
+...
