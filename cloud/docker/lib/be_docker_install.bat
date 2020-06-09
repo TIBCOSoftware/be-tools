@@ -107,9 +107,15 @@ REM INSTALLERS SUBROUTINES
 	set SHORT_VERSION=%~2
 	set InstallerType=%~3
 
-	echo Extracting %InstallerType%
-	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
-	cd /d c:/working/installer
+	if %InstallerType% NEQ ftl (
+		echo Extracting %InstallerType%
+		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+		cd /d c:/working/installer
+	)
+	if %InstallerType% EQU ftl (
+		cd /d c:/working
+	)
+
 	echo Installing %InstallerType%..
 	powershell -Command "mkdir c:/tibco/%InstallerType%/%SHORT_VERSION% | out-null"
 	TIB_%InstallerType%_%VERSION%_win_x86_64.exe /S /D=c:/tibco/%InstallerType%/%SHORT_VERSION%

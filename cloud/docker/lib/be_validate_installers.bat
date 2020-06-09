@@ -596,8 +596,10 @@ EXIT /B %LOCAL_RESULT%
   set LOCAL_TARGET_DIR=%~4
   set LOCAL_INSTLR_TYPE=%~5
   set /A LOCAL_RESULT=0
+  set ZIPOREXE=zip
   
   if "!LOCAL_INSTLR_TYPE!"=="ftl" (
+    set ZIPOREXE=exe
     if "!GLOBAL_VALID_FTL_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
       echo ERROR: No FTL version found for base BE version !LOCAL_BE_VERSION!
       set /A LOCAL_RESULT=1
@@ -616,7 +618,7 @@ EXIT /B %LOCAL_RESULT%
     
   SET INSTLR_REG="^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_linux.*\.zip$"
   if !ARG_INSTALLERS_PLATFORM! EQU win (
-    SET INSTLR_REG="^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_win.*\.zip$"
+    SET INSTLR_REG="^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_win.*\.%ZIPOREXE%$"
   )
   set /a index = 0
   for /f %%i in ('dir !LOCAL_TARGET_DIR! /b ^| findstr /I "%INSTLR_REG%"') do (
@@ -889,9 +891,12 @@ EXIT /B 0
   set INSTLR_TYPE=%~1
   set LOCAL_INSTLR_RESULT=na
   set INSTLR_REG="^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_linux.*\.zip$"
-  
+  set ZIPOREXE=zip
+  if %INSTLR_TYPE% EQU ftl (
+    set ZIPOREXE=exe
+  )
   if !ARG_INSTALLERS_PLATFORM! EQU win (
-    set INSTLR_REG=^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_win.*\.zip$
+    set INSTLR_REG=^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_win.*\.%ZIPOREXE%$
   )
   for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!INSTLR_REG!"') do (
     if !LOCAL_INSTLR_RESULT! NEQ na (
