@@ -184,7 +184,7 @@ echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo ----------------------------------------------
 
-if !ARG_FTL_VERSION! NEQ na (
+if !ARG_AS_VERSION! NEQ na (
   if !ARG_FTL_VERSION! NEQ na (
     echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS2 installers. Removing unused installer improves the docker image size.
   )
