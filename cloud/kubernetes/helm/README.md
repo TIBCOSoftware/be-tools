@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This chart install a Business Events application deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart installs Business Events application deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Dependencies:
 
-1. [MySQL chart](https://github.com/kubernetes/charts/tree/master/stable/mysql): It install a MySQL deployment for the database requirements of the backingstore BE applications. 
+1. [MySQL chart](https://github.com/kubernetes/charts/tree/master/stable/mysql): It installs MySQL deployment for the database requirements of the backingstore BE applications. 
 2. [efs-provisioner chart](https://github.com/helm/charts/tree/master/stable/efs-provisioner): Used to fulfill PersistentVolumeClaims with EFS PersistentVolumes for the BE applications.
 
 The persisent volumes are created as folders with in an AWS EFS filesystem.
@@ -18,7 +18,7 @@ https://aws.amazon.com/efs/
 * Kubernetes 1.15 or 1.17+
 * Helm stable version 3.1.0
 * PV provisioner support in the underlying infrastructure
-* A Kubernetes cluster: You must have Kubernetes installed. For the latest release of Helm, we recommend the latest stable release of Kubernetes, which in most cases is the second-latest minor release. 
+* A Kubernetes cluster: You must have Kubernetes installed. For the latest release of Helm, we recommend the latest stable release of Kubernetes. 
 
 ## StatefulSet and persistent volumes Details
 
@@ -46,10 +46,8 @@ There are 4 primary configuration switches:
 There can be secondary configuration switches like mentioned below:
 
 * storeType → Represents store type. It has significance only when bsType=Store OR omType=Store. Valid values: Oracle/SQLServer/DB2/MySql/PostgreSQL/AS4/Cassandra
-* cacheType → Represents cache type. Valid values: AS2/Ignite | Default - AS2 (when cmType=AS2) / Ignite (when cmType=FTL)
-Based on above switches section, Helm picks up required configuration and properties and deploys into connected Kubernetes environment.
 
-Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options in case of AWS cloud provider(i.e. cpType=AWS):
+Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options in case of AWS cloud provider(i.e. cpType=aws):
 
 
 | Topology Name | cmType | omType | bsType  | storeType |
