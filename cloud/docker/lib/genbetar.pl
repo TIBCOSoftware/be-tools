@@ -55,7 +55,7 @@ $asDir = $baseDir."/as";
 my $AS_FOUND = 1; #Set it to 0 if AS is not found
 # Check if AS directory exists
 if ( ! (-e $asDir and -d $asDir)) {
-  print "WARN: AS installation not found.\n";
+  # print "WARN: AS installation not found.\n";
   $AS_FOUND = 0;
 }
   
@@ -69,7 +69,7 @@ if ($AS_FOUND==1) {
   
   if (!($asDir =~ /as\/(\d\.\d)/)) {
     $AS_FOUND = 0;
-    print "WARN: AS installation not found.\n";
+    # print "WARN: AS installation not found.\n";
   }
 }
 

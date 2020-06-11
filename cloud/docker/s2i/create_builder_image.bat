@@ -262,7 +262,7 @@ EXIT /B 0
 ) else (
   echo Usage: create_builder_image.bat
 )
-  echo  [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
+  echo  [-l/--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]
   if !IS_S2I! EQU "false" (
   echo  [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]
   echo  [-r/--repo]                 :       The app image Repository [example - fdc:latest] [required]

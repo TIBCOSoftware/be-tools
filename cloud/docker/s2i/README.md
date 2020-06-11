@@ -25,7 +25,7 @@ Should be fairly straightforward. Lets start off with creating a reusable builde
     ./create_builder_image.sh -l
     
     where,
-    [-l|--installers-location] : Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required] 
+    [-l|--installers-location] : Location where TIBCO BusinessEvents and other required installers are located [required] 
     [-d|--docker-file] : Dockerfile to be used for generating image.(default Dockerfile) [optional]
     [--gv-providers] : Names of GV providers to be included in the image. Supported value(s) - consul [optional]"
     [-r|--repo] : The builder image Repository (example - s2ibuilder:latest) [required]"
