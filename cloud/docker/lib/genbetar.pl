@@ -232,7 +232,7 @@ $FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name 'be-teagent.props' -prin
 execCmd ($FINDRPLCMD);
 
 # Replace in be props file files using find, xargs, sed -i
-$FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name 'log4j.properties' -print0 | xargs -0 sed -i.bak 's/$srch/$repl/g'";
+$FINDRPLCMD = "find $DOCKER_BIN_DIR/$tempLocation -name 'log4j*.properties' -print0 | xargs -0 sed -i.bak 's/$srch/$repl/g'";
 execCmd ($FINDRPLCMD);
 
 # Remove the annotations file
