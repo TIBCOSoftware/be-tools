@@ -450,19 +450,7 @@ sub installFTLORAS3XPackages{
 
   my $pkgSourceFolder = "$pkgSourceRoot/" . "$installerType" . "$version";
   
-  my $installCmd = "cd $pkgSourceFolder;";
-
-  my $installerdpkg = `which dpkg`;
-  chomp($installerdpkg);
-  my $installeryum = `command -v yum`;
-  chomp($installeryum);
-  if($installerdpkg eq "/usr/bin/dpkg"){
-    $installCmd = "$installCmd"."dpkg -i deb/*.deb";
-  }elsif($installeryum eq "/usr/bin/yum"){
-    $installCmd = "$installCmd"."yum install -y rpm/*.rpm";
-  }else{
-    $installCmd = "$installCmd"."for f in tar/*; do tar -C / -xvf \$f; done";
-  }
+  my $installCmd = "cd $pkgSourceFolder;"."for f in tar/*; do tar -C / -xvf \$f; done";
   
   $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with command: $installCmd\n":"";
   my $installResult = `$installCmd` ;

@@ -13,7 +13,7 @@ ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG AS3X_VERSION
 ARG AS3X_SHORT_VERSION
-ARG BASE_IMAGE=centos:8
+ARG BASE_IMAGE=<RHEL_IMAGE>
 
 FROM ${BASE_IMAGE} as intermediate
 
@@ -146,10 +146,6 @@ ENV PU=default \
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store
-
-RUN yum update -y \
-    && yum install -y perl \
-    && dnf install libnsl -y
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
