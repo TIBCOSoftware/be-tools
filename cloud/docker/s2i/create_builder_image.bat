@@ -10,7 +10,6 @@ set S2I_DOCKER_FILE_APP="Dockerfile"
 set ARG_EDITION="enterprise"
 set ARG_VERSION="na"
 set ARG_ADDONS="na"
-set ARG_INSTALLER_LOCATION="na"
 set ARG_BE_HOTFIX="na"
 set ARG_AS_HOTFIX="na"
 set ARG_JRE_VERSION="na"
@@ -106,12 +105,12 @@ if !ARG_INSTALLER_LOCATION! EQU na (
   set "MISSING_ARG=!MISSING_ARG! Installer Location[-l/--installers-location] "
 )
 if !IS_S2I! NEQ "true"  (
-if !ARG_APP_LOCATION! EQU na (
+if !ARG_APP_LOCATION! EQU "na" (
   set "MISSING_ARG=!MISSING_ARG! App Location [-a/--app-location] "
 )
 )
 if !IS_S2I! NEQ "true"  (
-if !ARG_IMAGE_VERSION! EQU na (
+if !ARG_IMAGE_VERSION! EQU "na" (
   set "MISSING_ARG=!MISSING_ARG! Image repo [-r/--repo] "
 )
 )
