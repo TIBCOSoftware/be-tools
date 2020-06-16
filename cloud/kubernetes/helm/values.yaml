@@ -9,8 +9,8 @@ cpType: minikube
 #-----------------------------------------
 cmType: AS2                     #cmType can be unclustered,AS2,FTL
 omType: cache                   #omType can be inmemory,store,cache
-bsType: store         #BackingStore can be None sharedNothing, store
-storeType: RDBMS                 #storeType can be RDBMS, AS4, Cassandra
+bsType: sharedNothing         #BackingStore can be None sharedNothing, store
+storeType: None                 #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                      #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
@@ -20,7 +20,7 @@ imagePullSecrets:  #if required for azure
 
 #Required for store in  all cloud providers
 mysql:
-  enabled: true #use true for store
+  enabled: false #use true for store
   image: "mysql"
   imageTag: "5.7"
   args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
@@ -113,7 +113,7 @@ ignitePort:
 #*************************ConfigMap****************************************************
 
 #Required for store in all cloud providers
-configmapname: <configmap-name>
+configmapname: somename
 
 configmap:
   dbdriver: com.mysql.jdbc.Driver
