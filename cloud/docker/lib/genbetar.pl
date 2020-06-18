@@ -14,9 +14,9 @@ use strict;
 my $TEMP_FOLDER = $ARGV[0];
 my $BE_HOME = $ARGV[1];
 my $FTL_HOME = $ARGV[2];
-my $AS3X_HOME = $ARGV[3];
+my $AS4X_HOME = $ARGV[3];
 
-my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftlbaseDir, $ftlDir, $ftlVer, $FTL_FOUND, $as3xbaseDir, $as3xDir, $as3xVer, $AS3X_FOUND);
+my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftlbaseDir, $ftlDir, $ftlVer, $FTL_FOUND, $as4xbaseDir, $as4xDir, $as4xVer, $AS4X_FOUND);
 
 # Current directory from where this script is invoked. Check to see if it is a BE/AS installation
 if ($BE_HOME eq "../../..") {
@@ -111,34 +111,34 @@ if ($FTL_FOUND eq 1) {
   print "FTL_VERSION  : $ftlVer\n";
 }
 
-if ($AS3X_HOME ne "na"){
+if ($AS4X_HOME ne "na"){
 
-  if ( ! (-e $AS3X_HOME and -d $AS3X_HOME)) {
+  if ( ! (-e $AS4X_HOME and -d $AS4X_HOME)) {
     print "WARN: AS3x installation not found.\n";
-    $AS3X_FOUND = 0;
+    $AS4X_FOUND = 0;
   }else{
 
-    if ($AS3X_HOME =~ /(.*?)\/(as\/\d\.\d)/) {
-      $as3xbaseDir = $1;
-      $as3xDir = $2;
+    if ($AS4X_HOME =~ /(.*?)\/(as\/\d\.\d)/) {
+      $as4xbaseDir = $1;
+      $as4xDir = $2;
     } else {
-      print "AS3x folder as/<as-version> not found in the specified $AS3X_HOME, exiting.\n";
+      print "AS3x folder as/<as-version> not found in the specified $AS4X_HOME, exiting.\n";
       exit 1;
     }
     
-    if (!($as3xDir =~ /as\/(\d\.\d)/)) {
-      $AS3X_FOUND = 0;
+    if (!($as4xDir =~ /as\/(\d\.\d)/)) {
+      $AS4X_FOUND = 0;
     }else{
-      $AS3X_FOUND = 1;
-      $as3xVer = $1
+      $AS4X_FOUND = 1;
+      $as4xVer = $1
     }
   }
 
 }
 
-if ($AS3X_FOUND eq 1) {
-  print "AS3X_DIR      : $as3xDir\n";
-  print "AS3X_VERSION  : $as3xVer\n";
+if ($AS4X_FOUND eq 1) {
+  print "AS4X_DIR      : $as4xDir\n";
+  print "AS4X_VERSION  : $as4xVer\n";
 }
 
 if ( ($AS_FOUND == 1) && ($FTL_FOUND == 1)) {
@@ -161,8 +161,8 @@ if ($FTL_FOUND == 1) {
 }
 execCmd ($TARCMD);
 
-if ($AS3X_FOUND == 1) {
-  $TARCMD = "tar -C $as3xbaseDir -rf $DOCKER_BIN_DIR/be.tar $as3xDir/lib "
+if ($AS4X_FOUND == 1) {
+  $TARCMD = "tar -C $as4xbaseDir -rf $DOCKER_BIN_DIR/be.tar $as4xDir/lib "
 }
 execCmd ($TARCMD);
 
@@ -220,11 +220,11 @@ if ( $FTL_FOUND == 1) {
 }
 
 # Replace AS3x_HOME in TRA files using find, xargs, sed -i
-if ( $AS3X_FOUND == 1) {
-  my $AS3X_HOME_KEY = "tibco.env.AS3x_HOME=.*";
-  my $AS3X_HOME_VAL = "tibco.env.AS3x_HOME=$repl\\/as\\/$as3xVer";
-  my $FINDAS3XCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$AS3X_HOME_KEY/$AS3X_HOME_VAL/g'";
-  execCmd ($FINDAS3XCMD);
+if ( $AS4X_FOUND == 1) {
+  my $AS4X_HOME_KEY = "tibco.env.AS3x_HOME=.*";
+  my $AS4X_HOME_VAL = "tibco.env.AS3x_HOME=$repl\\/as\\/$as4xVer";
+  my $FINDAS4XCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$AS4X_HOME_KEY/$AS4X_HOME_VAL/g'";
+  execCmd ($FINDAS4XCMD);
 }
 
 # Replace in be props file files using find, xargs, sed -i
@@ -255,7 +255,7 @@ if ($AS_FOUND == 1) {
 if ($FTL_FOUND == 1 ) {
   $TARCMD = "$TARCMD ftl";
 }
-if ($AS3X_FOUND == 1 && $AS_FOUND == 0){
+if ($AS4X_FOUND == 1 && $AS_FOUND == 0){
   $TARCMD = "$TARCMD as";
 }
 
