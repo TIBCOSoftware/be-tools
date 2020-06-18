@@ -1,0 +1,12 @@
+{{- if or (eq .Values.omType "store" ) (eq .Values.omType "cache" ) }}
+{{- if or (eq .Values.storeType "AS4" ) (eq .Values.storeType "Cassandra" ) (eq .Values.storeType "RDBMS" ) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "configmapname.fullname" . }}
+  labels:
+    name: {{ include "configmapname.fullname" . }}
+{{ include "configmap.data" . }}
+{{- end }}
+{{- end }}
+

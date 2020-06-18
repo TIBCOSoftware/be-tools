@@ -1,0 +1,9 @@
+dependencies:
+- name: mysql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 1.6.2
+- name: efs-provisioner
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.11.0
+digest: sha256:ca43ada66a487d9adc76152a41fb53dead95e3f7388bf67d9fb428c621084a8e
+generated: "2020-04-21T13:06:40.777934288+05:30"
