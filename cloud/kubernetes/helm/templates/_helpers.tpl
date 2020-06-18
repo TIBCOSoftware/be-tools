@@ -32,12 +32,8 @@ If release name contains chart name it will be used as a full name.
 {{ .Release.Name }}-{{ .Values.jmxservice.name }}
 {{- end -}}
 
-{{- define "sqlconfigmap.fullname" -}}
-{{ .Release.Name }}-{{ .Values.sqlconfigmap.name }}
-{{- end -}}
-
-{{- define "storeconfigmap.fullname" -}}
-{{ .Release.Name }}-{{ .Values.storeconfigmap.name }}
+{{- define "configmapname.fullname" -}}
+{{ .Release.Name }}-{{ .Values.configmapname }}
 {{- end -}}
 
 {{- define "azurestorageclass.fullname" -}}
@@ -85,24 +81,23 @@ volumeMounts:
 Create a DB configMap environment details for store
 */}}
 {{- define "store.configMap" -}}
+{{- $mapName  :=  include "configmapname.fullname" . -}}
 {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
-{{- $sql  :=  include "sqlconfigmap.fullname" . -}}
 {{- range $key,$val := .Values.database }}
 - name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ $sql }}
+      name: {{ $mapName }}
       key: {{ $val }}
 {{- end }}
 {{- end }}
 {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
-{{- $store  :=  include "storeconfigmap.fullname" . -}}
 {{- if eq .Values.storeType "Cassandra"  }}
 {{- range $key,$val := .Values.cassdatabase }}
 - name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ $store }}
+      name: {{ $mapName }}
       key: {{ $val }}
 {{- end }}
 {{- end }}
@@ -111,7 +106,7 @@ Create a DB configMap environment details for store
 - name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ $store }}
+      name: {{ $mapName }}
       key: {{ $val }}
 {{- end }}     
 {{- end }}
@@ -158,29 +153,27 @@ volumeMounts:
           value: {{ $val }}
 {{- end }}
 {{- end -}}
+
 {{/*
 Create a common DB configMap data details for store
 */}}
-{{- define "sqlconfigmap.data" -}}
+{{- define "configmap.data" -}}
 data:
-  dbdriver: "{{ .Values.configmap.dbdriver }}"
-  {{- if eq .Values.mysql.enabled true }}
+  {{- $mysqlenabled := .Values.mysql.enabled }}
+  {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
+  {{- if eq $mysqlenabled true }}
   dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
-  {{- else }}
-  dburl: "{{ .Values.configmap.dburl }}"
   {{- end }}
-  dbusername: "{{ .Values.configmap.dbusername }}"
-  dbpwd: "{{ .Values.configmap.dbpwd }}"
-  dbpoolsize: "{{ .Values.configmap.dbpoolsize }}"
-  dblogintimeout: "{{ .Values.configmap.dblogintimeout }}"
-{{- end -}}
-
-
-{{/*
-Create a common DB configMap data details for store
-*/}}
-{{- define "nosqlconfigmap.data" -}}
-data:
+  {{- range $key, $val := $.Values.configmap }}
+  {{- if eq $mysqlenabled true }}
+  {{- if ne "dburl" $key }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- else }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end -}}
   {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
   {{- if eq .Values.storeType "Cassandra"  }}
   {{- range $key, $val := $.Values.cassconfigmap }}

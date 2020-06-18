@@ -11,7 +11,7 @@ cmType: AS2                     #cmType can be unclustered,AS2,FTL
 omType: cache                   #omType can be inmemory,store,cache
 bsType: sharedNothing         #BackingStore can be None sharedNothing, store
 storeType: None                 #storeType can be RDBMS, AS4, Cassandra
-cacheType: AS2                  #cacheType can be AS2, ignite
+cacheType: AS2                      #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
 image: ftlsnapp
@@ -113,11 +113,9 @@ ignitePort:
 #*************************ConfigMap****************************************************
 
 #Required for store in all cloud providers
-sqlconfigmap:
-  name: sql
+configmapname: storeconfig
 
 configmap:
-  name: db-provider
   dbdriver: com.mysql.jdbc.Driver
   dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
   dbusername: BE_USER
@@ -133,9 +131,6 @@ database:
   BACKINGSTORE_JDBC_PASSWORD: dbpwd
   BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
   BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
-
-storeconfigmap:
-  name: store
 
 cassconfigmap:
   cass_server_hostname: localhost
