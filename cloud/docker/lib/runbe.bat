@@ -70,6 +70,8 @@ powershell -Command "Get-ChildItem Env: | Foreach-Object { if ($_.Name -like 'tr
 ::Update the Cdd File to replace all BE_HOME values with container's BE_HOME; correct the dataStore path.
 powershell -Command "$prop = @(Select-String -Path '%CDD_FILE%' -Pattern '<property.*value=\""[a-z]\:' | Select-Object -First 1).Line.trim(); $start = $prop.LastIndexOf('value=\""')+7; $end=$prop.LastIndexOf('/be/'); $oldPath = $prop.Substring($start, $end-$start+7); (Get-Content '%CDD_FILE%') -replace $oldPath, '%BE_HOME%' | Set-Content '%CDD_FILE%'"
 powershell -Command "(Get-Content '%CDD_FILE%') -replace '<data-store-path.*>', '<data-store-path>c:\mnt\tibco\be\data-store</data-store-path>' | Set-Content '%CDD_FILE%'"
+:: Update the cdd file to use fixed mnt path in case of be6 shared nothing app
+powershell -Command "(Get-Content '%CDD_FILE%') -replace '<property name=\"data-store-path\" value=.*>', '<property name=\"data-store-path\" value=\"c:\mnt\tibco\be\data-store\"/>' | Set-Content '%CDD_FILE%'"
 
 cd /d c:\\tibco\be\application
 echo Starting Application..
