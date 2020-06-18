@@ -161,7 +161,7 @@ Create a common DB configMap data details for store
 data:
   {{- $mysqlenabled := .Values.mysql.enabled }}
   {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
-  {{- if eq .Values.mysql.enabled true }}
+  {{- if eq $mysqlenabled true }}
   dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
   {{- end }}
   {{- range $key, $val := $.Values.configmap }}
