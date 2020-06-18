@@ -113,7 +113,7 @@ ignitePort:
 #*************************ConfigMap****************************************************
 
 #Required for store in all cloud providers
-configmapname: somename
+configmapname: storeconfig
 
 configmap:
   dbdriver: com.mysql.jdbc.Driver
