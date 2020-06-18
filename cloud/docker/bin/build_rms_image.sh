@@ -142,7 +142,7 @@ result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
 len=$(echo ${result} | wc -l)
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
 	exit 1;
 fi
 

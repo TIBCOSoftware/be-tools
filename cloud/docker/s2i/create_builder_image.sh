@@ -8,13 +8,13 @@
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
 
 if [ -z "${USAGE}" ]; then
  USAGE="\nUsage: create_builder_image.sh"
 fi
-USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
+USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]"
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
 USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
 if [[ "$*" == *nos2i* ]]; then
@@ -43,6 +43,13 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 AS_VERSION="na"
+AS_SHORT_VERSION="na"
+FTL_VERSION="na"
+FTL_SHORT_VERSION="na"
+ARG_FTL_HOTFIX="na"
+AS3X_VERSION="na"
+AS3X_SHORT_VERSION="na"
+ARG_AS3X_HOTFIX="na"
 ARG_GVPROVIDERS="na"
 
 #Parse the arguments
@@ -183,10 +190,10 @@ BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
 
 #Check for BE Installer  --------------------------------------
 result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(echo ${result} | wc -l)
+len=$(echo ${#result})
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
 	exit 1;
 fi
 
@@ -304,6 +311,75 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
+# Validate and get FTL versions
+ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
+ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
+ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip")
+ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip" |  wc -l)
+ARG_FTL_VERSION="na"
+if [ $ftlPckgsCnt -gt 0 ]; then
+	ftlBasePckgsCnt=$(expr ${ftlPckgsCnt} - ${ftlHfPckgsCnt})
+	
+	if [ $ftlBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+		printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory..\n"
+		exit 1;
+	elif [ $ftlHfPckgsCnt -gt 1 ]; then
+		printf "\nERROR :More than one TIBCO FTL HF are present in the target directory.There should be only one.\n"
+		exit 1;
+	elif [ $ftlBasePckgsCnt -le 0 ]; then
+		printf "\nERROR :TIBCO FTL HF is present but TIBCO FTL Base version is not present in the target directory.\n"
+		exit 1;
+	elif [ $ftlBasePckgsCnt -eq 1 ]; then
+		FTL_BASE_PACKAGE="${ftlPckgs[0]}"
+		ARG_FTL_VERSION=$(echo "${FTL_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_ftl_/${BLANK}/g") 
+		if [ "$ARG_FTL_VERSION" = "" ]; then
+			ARG_FTL_VERSION="na"
+		fi
+		if [ $ftlHfPckgsCnt -eq 1 ]; then
+			ftlHf=$(echo "${ftlPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+			ARG_FTL_HOTFIX=$(echo $ftlHf| cut -d'-' -f 2| cut -d' ' -f 1)
+			if [[ "$ARG_FTL_VERSION" != "na" ]]; then
+				ARG_FTL_VERSION=$(echo $ARG_FTL_VERSION | cut -d'_' -f 1)
+			fi
+		fi
+	fi
+fi
+
+
+# Validate and get AS3X versions
+as3xPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
+as3xPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
+as3xHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
+as3xHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
+ARG_AS3X_VERSION="na"
+if [ $as3xPckgsCnt -gt 0 ]; then
+	as3xBasePckgsCnt=$(expr ${as3xPckgsCnt} - ${as3xHfPckgsCnt})
+	
+	if [ $as3xBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+		printf "\nERROR :More than one TIBCO AS base versions are present in the target directory..\n"
+		exit 1;
+	elif [ $as3xHfPckgsCnt -gt 1 ]; then
+		printf "\nERROR :More than one TIBCO AS HF are present in the target directory.There should be only one.\n"
+		exit 1;
+	elif [ $as3xBasePckgsCnt -le 0 ]; then
+		printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
+		exit 1;
+	elif [ $as3xBasePckgsCnt -eq 1 ]; then
+		AS3X_BASE_PACKAGE="${as3xPckgs[0]}"
+		ARG_AS3X_VERSION=$(echo "${AS3X_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
+		if [ "$ARG_AS3X_VERSION" = "" ]; then
+			ARG_AS3X_VERSION="na"
+		fi
+		if [ $as3xHfPckgsCnt -eq 1 ]; then
+			as3xHf=$(echo "${as3xPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+			ARG_AS3X_HOTFIX=$(echo $as3xHf| cut -d'-' -f 2| cut -d' ' -f 1)
+			if [[ "$ARG_AS3X_VERSION" != "na" ]]; then
+				ARG_AS3X_VERSION=$(echo $ARG_AS3X_VERSION | cut -d'_' -f 1)
+			fi
+		fi
+	fi
+fi
+
 echo "INFO:Supplied Arguments :"
 echo "----------------------------------------------"
 echo "INFO:VERSION : $ARG_VERSION"
@@ -314,9 +390,20 @@ echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
 echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+if [[ $ARG_FTL_VERSION != "na" ]]; then
+	echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
+	if [[ $ARG_FTL_HOTFIX != "na" ]]; then
+		echo "INFO:FTL-HF : $ARG_FTL_HOTFIX"	
+	fi
+fi
+if [[ $ARG_AS3X_VERSION != "na" ]]; then
+	echo "INFO:AS3X VERSION : $ARG_AS3X_VERSION"
+	if [[ $ARG_AS3X_HOTFIX != "na" ]]; then
+		echo "INFO:AS3X-HF : $ARG_AS3X_HOTFIX"
+	fi
+fi
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "----------------------------------------------"
-
 
 mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/installers
@@ -325,7 +412,7 @@ cp -a "../gvproviders" $TEMP_FOLDER/
 
  export PERL5LIB="../lib"
 
- VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
+ VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$ARG_FTL_HOTFIX','$ARG_AS3X_HOTFIX','$TEMP_FOLDER');")
 
 if [ "$?" = 0 ]
 then
@@ -341,11 +428,10 @@ CURRENT_DIR=$( cd $(dirname $0) ; pwd -P )
 while read -r line
 do
     name="$line"
-    cp $name $TEMP_FOLDER/installers
+	cp $name $TEMP_FOLDER/installers
     done < "$TEMP_FOLDER/package_files.txt"
 
   AS_VERSION=$(perl -nle 'print $1 if m{.*activespaces.*([\d].[\d].[\d])_linux}' $TEMP_FOLDER/package_files.txt)
-
 
 if [ "$AS_VERSION" = "" ]; then
 	AS_VERSION="na"
@@ -353,6 +439,10 @@ fi
 
 if [[ $strname =~ 3(.+)r ]]; then
     strresult=${BASH_REMATCH[1]}
+fi
+
+if [[ ($AS_VERSION != "na") && ($ARG_FTL_VERSION != "na") ]]; then
+	echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS2 installers. Removing unused installer improves the docker image size."
 fi
 
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
@@ -384,40 +474,64 @@ if [[ "$AS_VERSION" != "na" ]]
 	fi
 fi
 
-
-if [ "$IS_S2I" = "true" ]; then
-cd ../bin
-cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
-
-cd ../s2i
-
-ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
-
-mkdir -p $TEMP_FOLDER/app
-cd $TEMP_FOLDER/app
-touch dummy.txt
-cd ../..
-
-docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
-
-
-if [ "$?" != 0 ]; then
-  echo "Docker build failed."
-else
-    find . -name \*.zip -delete
-    rm "$ARG_INSTALLER_LOCATION/package_files.txt"
-  echo "DONE: Docker build successful."
+# Evaluate FTL version & short version
+FTL_VERSION=$ARG_FTL_VERSION
+if [[ "$FTL_VERSION" != "na" ]]; then
+	if [[ $FTL_VERSION =~ $VERSION_REGEX ]]; then
+		FTL_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		echo "ERROR:Improper FTL version.Aborting."
+		echo "Deleteting $TEMP_FOLDER folder"
+		rm -rf $TEMP_FOLDER
+		exit 1
+	fi
 fi
 
- echo "Deleting temporary intermediate image.."
- docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
- echo "Deleting $TEMP_FOLDER folder"
- rm -rf $TEMP_FOLDER
+# Evaluate AS3X version & short version
+AS3X_VERSION=$ARG_AS3X_VERSION
+if [[ "$AS3X_VERSION" != "na" ]]; then
+	if [[ $AS3X_VERSION =~ $VERSION_REGEX ]]; then
+		AS3X_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		echo "ERROR:Improper AS3X version.Aborting."
+		echo "Deleteting $TEMP_FOLDER folder"
+		rm -rf $TEMP_FOLDER
+		exit 1
+	fi
+fi
 
-docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
+if [ "$IS_S2I" = "true" ]; then
+	cd ../bin
+	cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
 
-docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+	cd ../s2i
 
-rm -rf app
+	ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
+
+	mkdir -p $TEMP_FOLDER/app
+	cd $TEMP_FOLDER/app
+	touch dummy.txt
+	cd ../..
+
+	docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg AS3X_VERSION="$AS3X_VERSION" --build-arg AS3X_SHORT_VERSION="$AS3X_SHORT_VERSION" --build-arg AS3X_PRODUCT_HOTFIX="$ARG_AS3X_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
+
+	if [ "$?" != 0 ]; then
+		echo "Docker build failed."
+	else
+		find . -name \*.zip -delete
+		rm "$ARG_INSTALLER_LOCATION/package_files.txt"
+		echo "DONE: Docker build successful."
+	fi
+
+	echo "Deleting temporary intermediate image.."
+	docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
+	echo "Deleting $TEMP_FOLDER folder"
+	rm -rf $TEMP_FOLDER
+
+	docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
+
+	docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+
+	rm -rf app
 
 fi

@@ -3,11 +3,14 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: becache
 spec:
+  selector:
+    matchLabels:
+      dep_name: becache-label
   replicas: 1
   template:
     metadata:
