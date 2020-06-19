@@ -153,6 +153,7 @@ if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile
 
 
 set /A RESULT=0
+set ARG_INST_FTL_AS_FLAG=false
 set ARG_JRE_VERSION=na
 set ARG_AS_VERSION=na
 set ARG_FTL_VERSION=na
@@ -161,7 +162,7 @@ set ARG_AS4X_VERSION=na
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders
 
 REM Performing validation
-call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HF ARG_AS4X_VERSION ARG_AS4X_HF
+call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HF ARG_AS4X_VERSION ARG_AS4X_HF ARG_INST_FTL_AS_FLAG
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
   GOTO END-withError
@@ -175,17 +176,21 @@ echo INFO: BusinessEvents HF - !ARG_HF!
 echo INFO: Addons - !ARG_ADDONS!
 echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
 echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
-if !ARG_FTL_VERSION! NEQ na echo INFO: FTL version - !ARG_FTL_VERSION!
-if !ARG_FTL_HF! NEQ na echo INFO: FTL Hf - !ARG_FTL_HF!
-if !ARG_AS4X_VERSION! NEQ na echo INFO: AS4X version - !ARG_AS4X_VERSION!
-if !ARG_AS4X_HF! NEQ na echo INFO: AS4X Hf - !ARG_AS4X_HF!
+if !ARG_INST_FTL_AS_FLAG! EQU true (
+  if !ARG_FTL_VERSION! NEQ na echo INFO: FTL version - !ARG_FTL_VERSION!
+  if !ARG_FTL_HF! NEQ na echo INFO: FTL Hf - !ARG_FTL_HF!
+  if !ARG_AS4X_VERSION! NEQ na echo INFO: AS4X version - !ARG_AS4X_VERSION!
+  if !ARG_AS4X_HF! NEQ na echo INFO: AS4X Hf - !ARG_AS4X_HF!
+)
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo ----------------------------------------------
 
-if !ARG_AS_VERSION! NEQ na (
-  if !ARG_FTL_VERSION! NEQ na (
-    echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS2 installers. Removing unused installer improves the docker image size.
+if !ARG_INST_FTL_AS_FLAG! EQU true (
+  if !ARG_AS_VERSION! NEQ na (
+    if !ARG_FTL_VERSION! NEQ na (
+      echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS2 installers. Removing unused installer improves the docker image size.
+    )
   )
 )
 

@@ -61,24 +61,25 @@ if exist c:/working/installer/TIBCOUniversalInstaller.silent (
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
 )
 
-:: if FTL is available extract and install it.
-if %FTL_VERSION% NEQ na (
-	call :InstallFTLorAS %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
-	:: if ftl hf present install it.
-	if %FTL_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
+if %INST_FTL_AS_FLAG% EQU true (
+	:: if FTL is available extract and install it.
+	if %FTL_VERSION% NEQ na (
+		call :InstallFTLorAS %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
+		:: if ftl hf present install it.
+		if %FTL_PRODUCT_HOTFIX% NEQ na (
+			call :InstallFtlorASHf %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
+		)
+	)
+
+	:: if AS4X is available extract and install it.
+	if %AS4X_VERSION% NEQ na (
+		call :InstallFTLorAS %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
+		:: if as4x hf present install it.
+		if %AS4X_PRODUCT_HOTFIX% NEQ na (
+			call :InstallFtlorASHf %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
+		)
 	)
 )
-
-:: if AS4X is available extract and install it.
-if %AS4X_VERSION% NEQ na (
-	call :InstallFTLorAS %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
-	:: if as4x hf present install it.
-	if %AS4X_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
-	)
-)
-
 :: Delete installer zip files.
 cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"

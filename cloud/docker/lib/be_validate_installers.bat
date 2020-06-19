@@ -50,6 +50,8 @@ set ARG_HF=na
 set ARG_AS_VERSION=na
 set ARG_AS_HF=na
 
+set ARG_INST_FTL_AS_FLAG=false
+
 set ARG_FTL_VERSION=na
 set ARG_FTL_HF=na
 set ARG_AS4X_VERSION=na
@@ -245,26 +247,31 @@ if "!RESULT: =!" NEQ "0" (
   GOTO END-withError
 )
 
-REM Performing ftl validation
-if !ARG_FTL_VERSION! NEQ na (
-  call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
-  if "!RESULT: =!" NEQ "0" (
-    echo Error in validating ftl
-    GOTO END-withError
-  )
-)
+call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+if !IS_LESS! EQU 1 (
+  set ARG_INST_FTL_AS_FLAG=true
 
-REM Performing as4x validation
-if !ARG_AS4X_VERSION! NEQ na (
-  call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_AS4X_VERSION%" "%ARG_AS4X_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
-  if "!RESULT: =!" NEQ "0" (
-    echo Error in validating as4x
-    GOTO END-withError
+  REM Performing ftl validation
+  if !ARG_FTL_VERSION! NEQ na (
+    call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
+    if "!RESULT: =!" NEQ "0" (
+      echo Error in validating ftl
+      GOTO END-withError
+    )
+  )
+
+  REM Performing as4x validation
+  if !ARG_AS4X_VERSION! NEQ na (
+    call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_AS4X_VERSION%" "%ARG_AS4X_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
+    if "!RESULT: =!" NEQ "0" (
+      echo Error in validating as4x
+      GOTO END-withError
+    )
   )
 )
 
 :END
-ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_AS4X_VERSION%& SET %~14=%ARG_AS4X_HF%
+ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_AS4X_VERSION%& SET %~14=%ARG_AS4X_HF%& SET %~15=%ARG_INST_FTL_AS_FLAG%
 EXIT /B 0
 
 :END-withError
