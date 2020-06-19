@@ -735,18 +735,19 @@ sub validate{
     exit 0;
   }
 
-  $result=validateFTL($version,$ftlHotfix,$targetDir);
+  my $isLess=isLessThan($version, "6.0.0");
+  if($isLess < 1 ){
+    $result=validateFTL($version,$ftlHotfix,$targetDir);
+    if($result == 0){
+      exit 0;
+    }
 
-  if($result == 0){
-    exit 0;
+    $result=validateAS4X($version,$as4xHotfix,$targetDir);
+    if($result == 0){
+      exit 0;
+    }
   }
 
-  $result=validateAS4X($version,$as4xHotfix,$targetDir);
-
-  if($result == 0){
-    exit 0;
-  }
-  
   writeToFile(\@FILES_LIST,"$tempdir/$FILE_PCKG_LIST");
   print "\n";
   exit 1;

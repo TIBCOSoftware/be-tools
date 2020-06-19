@@ -51,6 +51,9 @@ AS4X_VERSION="na"
 AS4X_SHORT_VERSION="na"
 ARG_AS4X_HOTFIX="na"
 ARG_GVPROVIDERS="na"
+INST_FTL_AS_FLAG="false"
+ARG_AS4X_VERSION="na"
+ARG_FTL_VERSION="na"
 
 #Parse the arguments
 
@@ -311,70 +314,77 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
-# Validate and get FTL versions
-ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
-ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
-ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip")
-ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip" |  wc -l)
-ARG_FTL_VERSION="na"
-if [ $ftlPckgsCnt -gt 0 ]; then
-	ftlBasePckgsCnt=$(expr ${ftlPckgsCnt} - ${ftlHfPckgsCnt})
-	
-	if [ $ftlBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory..\n"
-		exit 1;
-	elif [ $ftlHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO FTL HF are present in the target directory.There should be only one.\n"
-		exit 1;
-	elif [ $ftlBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO FTL HF is present but TIBCO FTL Base version is not present in the target directory.\n"
-		exit 1;
-	elif [ $ftlBasePckgsCnt -eq 1 ]; then
-		FTL_BASE_PACKAGE="${ftlPckgs[0]}"
-		ARG_FTL_VERSION=$(echo "${FTL_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_ftl_/${BLANK}/g") 
-		if [ "$ARG_FTL_VERSION" = "" ]; then
-			ARG_FTL_VERSION="na"
-		fi
-		if [ $ftlHfPckgsCnt -eq 1 ]; then
-			ftlHf=$(echo "${ftlPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
-			ARG_FTL_HOTFIX=$(echo $ftlHf| cut -d'-' -f 2| cut -d' ' -f 1)
-			if [[ "$ARG_FTL_VERSION" != "na" ]]; then
-				ARG_FTL_VERSION=$(echo $ARG_FTL_VERSION | cut -d'_' -f 1)
-			fi
-		fi
+if [ "$ARG_VERSION" != "na" ]; then
+	if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
+		INST_FTL_AS_FLAG="true"
 	fi
 fi
 
+if [ $INST_FTL_AS_FLAG == "true" ]; then
 
-# Validate and get AS4X versions
-as4xPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
-as4xPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
-as4xHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
-as4xHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
-ARG_AS4X_VERSION="na"
-if [ $as4xPckgsCnt -gt 0 ]; then
-	as4xBasePckgsCnt=$(expr ${as4xPckgsCnt} - ${as4xHfPckgsCnt})
-	
-	if [ $as4xBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO AS base versions are present in the target directory..\n"
-		exit 1;
-	elif [ $as4xHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO AS HF are present in the target directory.There should be only one.\n"
-		exit 1;
-	elif [ $as4xBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
-		exit 1;
-	elif [ $as4xBasePckgsCnt -eq 1 ]; then
-		AS4X_BASE_PACKAGE="${as4xPckgs[0]}"
-		ARG_AS4X_VERSION=$(echo "${AS4X_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
-		if [ "$ARG_AS4X_VERSION" = "" ]; then
-			ARG_AS4X_VERSION="na"
+	# Validate and get FTL version
+	ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
+	ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
+	ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip")
+	ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip" |  wc -l)
+	if [ $ftlPckgsCnt -gt 0 ]; then
+		ftlBasePckgsCnt=$(expr ${ftlPckgsCnt} - ${ftlHfPckgsCnt})
+		
+		if [ $ftlBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+			printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory..\n"
+			exit 1;
+		elif [ $ftlHfPckgsCnt -gt 1 ]; then
+			printf "\nERROR :More than one TIBCO FTL HF are present in the target directory.There should be only one.\n"
+			exit 1;
+		elif [ $ftlBasePckgsCnt -le 0 ]; then
+			printf "\nERROR :TIBCO FTL HF is present but TIBCO FTL Base version is not present in the target directory.\n"
+			exit 1;
+		elif [ $ftlBasePckgsCnt -eq 1 ]; then
+			FTL_BASE_PACKAGE="${ftlPckgs[0]}"
+			ARG_FTL_VERSION=$(echo "${FTL_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_ftl_/${BLANK}/g") 
+			if [ "$ARG_FTL_VERSION" = "" ]; then
+				ARG_FTL_VERSION="na"
+			fi
+			if [ $ftlHfPckgsCnt -eq 1 ]; then
+				ftlHf=$(echo "${ftlPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+				ARG_FTL_HOTFIX=$(echo $ftlHf| cut -d'-' -f 2| cut -d' ' -f 1)
+				if [[ "$ARG_FTL_VERSION" != "na" ]]; then
+					ARG_FTL_VERSION=$(echo $ARG_FTL_VERSION | cut -d'_' -f 1)
+				fi
+			fi
 		fi
-		if [ $as4xHfPckgsCnt -eq 1 ]; then
-			as4xHf=$(echo "${as4xPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
-			ARG_AS4X_HOTFIX=$(echo $as4xHf| cut -d'-' -f 2| cut -d' ' -f 1)
-			if [[ "$ARG_AS4X_VERSION" != "na" ]]; then
-				ARG_AS4X_VERSION=$(echo $ARG_AS4X_VERSION | cut -d'_' -f 1)
+	fi
+
+
+	# Validate and get AS4X version
+	as4xPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
+	as4xPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
+	as4xHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
+	as4xHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
+	if [ $as4xPckgsCnt -gt 0 ]; then
+		as4xBasePckgsCnt=$(expr ${as4xPckgsCnt} - ${as4xHfPckgsCnt})
+		
+		if [ $as4xBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+			printf "\nERROR :More than one TIBCO AS base versions are present in the target directory..\n"
+			exit 1;
+		elif [ $as4xHfPckgsCnt -gt 1 ]; then
+			printf "\nERROR :More than one TIBCO AS HF are present in the target directory.There should be only one.\n"
+			exit 1;
+		elif [ $as4xBasePckgsCnt -le 0 ]; then
+			printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
+			exit 1;
+		elif [ $as4xBasePckgsCnt -eq 1 ]; then
+			AS4X_BASE_PACKAGE="${as4xPckgs[0]}"
+			ARG_AS4X_VERSION=$(echo "${AS4X_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
+			if [ "$ARG_AS4X_VERSION" = "" ]; then
+				ARG_AS4X_VERSION="na"
+			fi
+			if [ $as4xHfPckgsCnt -eq 1 ]; then
+				as4xHf=$(echo "${as4xPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+				ARG_AS4X_HOTFIX=$(echo $as4xHf| cut -d'-' -f 2| cut -d' ' -f 1)
+				if [[ "$ARG_AS4X_VERSION" != "na" ]]; then
+					ARG_AS4X_VERSION=$(echo $ARG_AS4X_VERSION | cut -d'_' -f 1)
+				fi
 			fi
 		fi
 	fi
