@@ -1,0 +1,26 @@
+#Persistent volume used in mysql
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
+{{- if and (eq .Values.cpType "openshift" ) (eq .Values.omType "cache" ) }}
+{{- if eq .Values.bsType "store" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistentvolumes.openshift.volume.savolname }}
+spec:
+  {{ include "openshiftPV.details" . }}
+  {{ include "openshiftNFSstore.path" . }}
+---
+{{- else if eq .Values.bsType "sharedNothing" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistentvolumes.openshift.volume.snvolname }}
+spec:
+  {{ include "openshiftPV.details" . }}
+  {{ include "openshiftNFSsharedNothing.path" . }}
+----
+{{- end }}
+{{- end }}
+{{- end }}

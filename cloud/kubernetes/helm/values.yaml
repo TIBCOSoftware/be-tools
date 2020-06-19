@@ -1,0 +1,199 @@
+# Default values.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#Cloud Providers: minikube, PKS, Azure, AWS-EKS, Openshift
+
+#Required parameter to be passed for all cloud providers
+cpType: minikube
+#-----------------------------------------
+cmType: AS2                     #cmType can be unclustered,AS2,FTL
+omType: cache                   #omType can be inmemory,store,cache
+bsType: sharedNothing         #BackingStore can be None sharedNothing, store
+storeType: None                 #storeType can be RDBMS, AS4, Cassandra
+cacheType: AS2                      #cacheType can be AS2, ignite
+
+# Image name and pull policy required for be app
+image: ftlsnapp
+imagePullPolicy: IfNotPresent
+imagePullSecrets:  #if required for azure
+
+#Required for store in  all cloud providers
+mysql:
+  enabled: false #use true for store
+  image: "mysql"
+  imageTag: "5.7"
+  args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
+  mysqlUser: root
+  mysqlPassword: root
+  mysqlRootPassword: password
+  mysqlDatabase: BE_DATABASE #datbase name
+  # persistence: 
+  #   storageClass: "-" #Type of persistent volume claim
+
+# Required for sharedNothing and store in AWS
+aws-efs:
+  enabled: false #use true for aws 
+  replicaCount: 1
+  efsProvisioner:
+    efsFileSystemId: fs-e8f5fa68
+    awsRegion: us-east-1
+
+#*************************Agents env varaibles****************************************************
+
+ignite:
+  discover_url: IGNITE_DISCOVER_URL
+
+ftl:
+  FTL_gv_REALM_SERVER: http://54.89.119.44:8585
+  FTL_gv_REALM_NAME: cepFTLRealm
+  FTL_gv_APP_NAME: cepFTLApp
+  FTL_gv_CLUSTER_NAME: cepFTLCluster
+  FTL_gv_PUBSUB_ENDPOINT: cepFTLDefaultEndpoint
+  FTL_gv_MAP_ENDPOINT: cepFTLMapEndpoint
+  FTL_gv_PERSISTENT_ENDPOINT: cepFTLPersistenceEndpoint
+  FTL_gv_SHARED_ENDPOINT: cepFTLSharedEndpoint
+  FTL_gv_USER_NAME: guest
+  FTL_gv_USER_PWD: guest-pw
+
+#*************************Agents Part****************************************************
+
+#Required for cache, sharedNothing, store in  all cloud providers
+cachenode:
+  name: becacheagent
+  replicaCount: 1
+  containers:
+    name: cachenode
+
+#Required for all applications in  all cloud providers
+inferencenode:
+  name: beinferenceagent
+  replicaCount: 1
+  containers:
+    name: inferencenode
+
+#*************************Service Part****************************************************
+#Required for cache, sharedNothing, store in all cloud providers
+cacheservice:
+  name: becache-service
+  ports:
+    port: 50000
+    protocol: TCP
+
+#Required for all applications in all cloud providers
+jmxservice:
+  name: jmx-service
+  ports:
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
+  type: LoadBalancer
+
+#Required for all applications in all cloud providers
+beservice:
+  name: beservice
+  type: NodePort              #LoadBalancer for azure, NodePort
+  ports:
+    name: port1
+    protocol: TCP
+    port: 8108
+
+ignitePort:
+  dis0: 47500
+  dis1: 47501
+  dis2: 47502
+  dis3: 47503
+  dis4: 47504
+  dis5: 47505
+  dis6: 47506
+  dis7: 47507
+  dis8: 47508
+  dis9: 47509  
+
+#*************************ConfigMap****************************************************
+
+#Required for store in all cloud providers
+configmapname: storeconfig
+
+configmap:
+  dbdriver: com.mysql.jdbc.Driver
+  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  dbusername: BE_USER
+  dbpwd: BE_USER
+  dbpoolsize: 5
+  dblogintimeout: 0
+
+#Required for store in all cloud providers
+database:
+  BACKINGSTORE_JDBC_DRIVER: dbdriver 
+  BACKINGSTORE_JDBC_URL: dburl
+  BACKINGSTORE_JDBC_USERNAME: dbusername
+  BACKINGSTORE_JDBC_PASSWORD: dbpwd
+  BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
+  BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
+
+cassconfigmap:
+  cass_server_hostname: localhost
+  cass_server_port: 9042
+  cass_keyspace_name: testdb
+  cass_username: cassandra
+  cass_password: cassandra
+
+cassdatabase:
+  CASS_SERVER_HOSTNAME: cass_server_hostname
+  CASS_SERVER_PORT: cass_server_port
+  CASS_KEYSPACE_NAME: cass_keyspace_name
+  CASS_USERNAME: cass_username
+  CASS_PASSWORD: cass_password
+
+as4configmap:
+  realm_url: http://localhost:8585
+  sec_realm_url: http://localhost:8585
+  grid_name: fd_store
+  store_timeout: 5
+  store_waittime: 0.1
+  store_poolsize: 1
+
+as4database:
+  REALM_URL: realm_url
+  SEC_REALM_URL: sec_realm_url
+  GRID_NAME: grid_name
+  STORE_TIMEOUT: store_timeout
+  STORE_WAITTIME: "store_waittime"
+  STORE_POOLSIZE: store_poolsize  
+
+#*************************Volumes Part****************************************************
+volumes:
+  #Required for sharedNothing and store in all cloud providers
+  snmountPath: "/mnt/tibco/be/data-store"
+  snmountVolume: store
+  accessModes: ["ReadWriteOnce"]
+  storage: 0.5Gi
+  storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
+  snclaimVolume: pv0003                         #Update it for sharedNothing in Openshift
+  saclaimVolume: pv0004                          #Update it for store in Openshift
+  samountPath: "/var/lib/mysql"
+  samountVolume: sastore
+  #Required for sharedNothing and store in Azure
+  azure:
+    storageClassName: azurestorageclass
+    skuName: Standard_LRS
+    provisioner: kubernetes.io/azure-file
+    dir_mode: 0777
+    file_mode: 0777
+    uid: 1000
+    gid: 1000
+
+persistentvolumes:
+#Required for sharedNothing, store in Openshift.
+  openshift:
+    volume:
+      snvolname: pv0003
+      savolname: pv0004
+      storage: 1Gi
+      accessModes: ReadWriteOnce
+      persistentVolumeReclaimPolicy: Recycle
+      nfs:
+        server: qa.lab.openshift.com       #update the servername
+        snpath: /home/data/pv0003          #Update path for sharedNothing
+        sapath: /home/data/pv0004          #Update path for store

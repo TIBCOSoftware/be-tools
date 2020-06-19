@@ -1,0 +1,46 @@
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
+  {{- if eq .Values.omType "cache" }}
+    {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "store" ) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "becacheagent.fullname" . }}
+spec:
+  replicas: {{ .Values.cachenode.replicaCount }}
+  selector:
+    matchLabels:
+      name: {{ include "becacheagent.fullname" . }}
+  serviceName: {{ include "cacheservice.fullname" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "becacheagent.fullname" . }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets }}    #if required
+      containers:
+      - name: {{ .Values.cachenode.containers.name }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: PU
+          value: cache
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
+        - name: AS_DISCOVER_URL
+          value: tcp://{{ include "cacheservice.fullname" . }}:50000
+         {{- end }}
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
+        - name: {{ .Values.ignite.discover_url }}
+          value: {{ include "cacheservice.fullname" . }}  
+        {{ include "ftl.data" . | trim }}
+       {{- end }}
+{{ include "store.configMap" . | trim | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
+{{ include "sharedNothing.volumeClaim" . }}
+    {{- end }}
+  {{- end }}
+{{- end }}

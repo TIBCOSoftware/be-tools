@@ -1,0 +1,3 @@
+Thank you for installing {{ .Chart.Name }}.
+
+# Your release is named {{ .Release.Name }}. and deployed in `{{ .Values.cpType }}` with `{{ .Values.cmType }}` mode
