@@ -156,12 +156,12 @@ set /A RESULT=0
 set ARG_JRE_VERSION=na
 set ARG_AS_VERSION=na
 set ARG_FTL_VERSION=na
-set ARG_AS3X_VERSION=na
+set ARG_AS4X_VERSION=na
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders
 
 REM Performing validation
-call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HF ARG_AS3X_VERSION ARG_AS3X_HF
+call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HF ARG_AS4X_VERSION ARG_AS4X_HF
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
   GOTO END-withError
@@ -177,8 +177,8 @@ echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
 echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
 if !ARG_FTL_VERSION! NEQ na echo INFO: FTL version - !ARG_FTL_VERSION!
 if !ARG_FTL_HF! NEQ na echo INFO: FTL Hf - !ARG_FTL_HF!
-if !ARG_AS3X_VERSION! NEQ na echo INFO: AS3X version - !ARG_AS3X_VERSION!
-if !ARG_AS3X_HF! NEQ na echo INFO: AS3X Hf - !ARG_AS3X_HF!
+if !ARG_AS4X_VERSION! NEQ na echo INFO: AS4X version - !ARG_AS4X_VERSION!
+if !ARG_AS4X_HF! NEQ na echo INFO: AS4X Hf - !ARG_AS4X_HF!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo ----------------------------------------------
@@ -202,7 +202,7 @@ for /F "tokens=*" %%f in (!TEMP_FOLDER!/package_files.txt) do (
 set SHORT_VERSION=!ARG_VERSION:~0,3!
 set AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
 set FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
-set AS3X_SHORT_VERSION=!ARG_AS3X_VERSION:~0,3!
+set AS4X_SHORT_VERSION=!ARG_AS4X_VERSION:~0,3!
 xcopy /Q /C /R /Y /E ..\lib !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E ..\gvproviders !TEMP_FOLDER!\gvproviders
 
@@ -223,7 +223,7 @@ type NUL > dummy.txt
 cd ../..
 
 
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HF!" --build-arg AS3X_VERSION="!ARG_AS3X_VERSION!" --build-arg AS3X_SHORT_VERSION="!AS3X_SHORT_VERSION!" --build-arg AS3X_PRODUCT_HOTFIX="!ARG_AS3X_HF!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!BE_TAG!":"!ARG_VERSION!"-"!ARG_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HF!" --build-arg AS4X_VERSION="!ARG_AS4X_VERSION!" --build-arg AS4X_SHORT_VERSION="!AS4X_SHORT_VERSION!" --build-arg AS4X_PRODUCT_HOTFIX="!ARG_AS4X_HF!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!BE_TAG!":"!ARG_VERSION!"-"!ARG_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."

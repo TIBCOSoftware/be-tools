@@ -70,12 +70,12 @@ if %FTL_VERSION% NEQ na (
 	)
 )
 
-:: if AS3X is available extract and install it.
-if %AS3X_VERSION% NEQ na (
-	call :InstallFTLorAS %AS3X_VERSION% %AS3X_SHORT_VERSION% "as"
-	:: if as3x hf present install it.
-	if %AS3X_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %AS3X_VERSION% %AS3X_SHORT_VERSION% "as"
+:: if AS4X is available extract and install it.
+if %AS4X_VERSION% NEQ na (
+	call :InstallFTLorAS %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
+	:: if as4x hf present install it.
+	if %AS4X_PRODUCT_HOTFIX% NEQ na (
+		call :InstallFtlorASHf %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
 	)
 )
 
@@ -107,7 +107,7 @@ REM INSTALLERS SUBROUTINES
 	set SHORT_VERSION=%~2
 	set InstallerType=%~3
 
-	if %InstallerType% NEQ ftl (
+	if %InstallerType% EQU as (
 		echo Extracting %InstallerType%
 		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 		cd /d c:/working/installer
