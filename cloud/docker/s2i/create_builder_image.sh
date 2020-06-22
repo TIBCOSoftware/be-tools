@@ -51,7 +51,6 @@ AS4X_VERSION="na"
 AS4X_SHORT_VERSION="na"
 ARG_AS4X_HOTFIX="na"
 ARG_GVPROVIDERS="na"
-INST_FTL_AS_FLAG="false"
 ARG_AS4X_VERSION="na"
 ARG_FTL_VERSION="na"
 
@@ -314,14 +313,15 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
+# check for FTL and AS4 only when BE version is > 6.0.0
+checkForFTLnAS4 = "false"
 if [ "$ARG_VERSION" != "na" ]; then
 	if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
-		INST_FTL_AS_FLAG="true"
+		checkForFTLnAS4="true"
 	fi
 fi
 
-if [ $INST_FTL_AS_FLAG == "true" ]; then
-
+if [ $checkForFTLnAS4 == "true" ]; then
 	# Validate and get FTL version
 	ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
 	ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)

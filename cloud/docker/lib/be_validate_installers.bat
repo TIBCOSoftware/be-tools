@@ -50,8 +50,6 @@ set ARG_HF=na
 set ARG_AS_VERSION=na
 set ARG_AS_HF=na
 
-set ARG_INST_FTL_AS_FLAG=false
-
 set ARG_FTL_VERSION=na
 set ARG_FTL_HF=na
 set ARG_AS4X_VERSION=na
@@ -194,40 +192,43 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
   )
 )
 
-REM Identify ftl version
-call :IdentifyInstaller "ftl" LOCAL_INSTLR_RESULT
-if !LOCAL_INSTLR_RESULT! NEQ na (
-   set ARG_FTL_VERSION=%LOCAL_INSTLR_RESULT%
-)
-if !LOCAL_INSTLR_RESULT! EQU multiple (
-  GOTO END-withError
-)
+call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+if !IS_LESS! EQU 1 (
+  REM Identify ftl version
+  call :IdentifyInstaller "ftl" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_FTL_VERSION=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
 
-REM Identify as4x version
-call :IdentifyInstaller "as" LOCAL_INSTLR_RESULT
-if !LOCAL_INSTLR_RESULT! NEQ na (
-   set ARG_AS4X_VERSION=%LOCAL_INSTLR_RESULT%
-)
-if !LOCAL_INSTLR_RESULT! EQU multiple (
-  GOTO END-withError
-)
+  REM Identify as4x version
+  call :IdentifyInstaller "as" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_AS4X_VERSION=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
 
-REM Identify ftl HF
-call :IdentifyInstallerHf "ftl" LOCAL_INSTLR_RESULT
-if !LOCAL_INSTLR_RESULT! NEQ na (
-   set ARG_FTL_HF=%LOCAL_INSTLR_RESULT%
-)
-if !LOCAL_INSTLR_RESULT! EQU multiple (
-  GOTO END-withError
-)
+  REM Identify ftl HF
+  call :IdentifyInstallerHf "ftl" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_FTL_HF=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
 
-REM Identify as4x HF
-call :IdentifyInstallerHf "as" LOCAL_INSTLR_RESULT
-if !LOCAL_INSTLR_RESULT! NEQ na (
-   set ARG_AS4X_HF=%LOCAL_INSTLR_RESULT%
-)
-if !LOCAL_INSTLR_RESULT! EQU multiple (
-  GOTO END-withError
+  REM Identify as4x HF
+  call :IdentifyInstallerHf "as" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_AS4X_HF=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
 )
 
 set /A RESULT=0
@@ -249,8 +250,6 @@ if "!RESULT: =!" NEQ "0" (
 
 call :isLess !ARG_VERSION! "6.0.0" IS_LESS
 if !IS_LESS! EQU 1 (
-  set ARG_INST_FTL_AS_FLAG=true
-
   REM Performing ftl validation
   if !ARG_FTL_VERSION! NEQ na (
     call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
@@ -271,7 +270,7 @@ if !IS_LESS! EQU 1 (
 )
 
 :END
-ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_AS4X_VERSION%& SET %~14=%ARG_AS4X_HF%& SET %~15=%ARG_INST_FTL_AS_FLAG%
+ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_AS4X_VERSION%& SET %~14=%ARG_AS4X_HF%
 EXIT /B 0
 
 :END-withError
