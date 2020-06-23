@@ -314,7 +314,7 @@ if [ $asPckgsCnt -gt 0 ]; then
 fi
 
 # check for FTL and AS4 only when BE version is > 6.0.0
-checkForFTLnAS4 = "false"
+checkForFTLnAS4="false"
 if [ "$ARG_VERSION" != "na" ]; then
 	if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
 		checkForFTLnAS4="true"
