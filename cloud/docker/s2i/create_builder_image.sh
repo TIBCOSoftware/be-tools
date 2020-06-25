@@ -202,7 +202,8 @@ beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM"
 # Check Single Base version  exist, zero or one HF exist. --------------------------------------
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 
-if [ $beBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+
+if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR: More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
