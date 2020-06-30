@@ -6,7 +6,7 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 
-FROM ubuntu:latest as intermediate
+FROM ubuntu:18.04 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -45,7 +45,7 @@ RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:latest
+FROM ubuntu:18.04
 
 RUN apt-get update -y \
  && apt-get upgrade python-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python python-pip -y \
