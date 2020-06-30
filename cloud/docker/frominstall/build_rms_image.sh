@@ -88,12 +88,7 @@ then
 	cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 fi
 
-if [ "$BE_HOME" = "../../.." ]
-then
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
-else
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
-fi
+perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME na na
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"
