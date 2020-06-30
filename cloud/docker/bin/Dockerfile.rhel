@@ -75,7 +75,7 @@ RUN echo \ >> be-engine.tra \
 RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
 
 #set as4x home in tra file
-RUN sed -i "s@tibco.env.AS3x_HOME=@tibco.env.AS3x_HOME=/opt/tibco/as/$AS4X_SHORT_VERSION@g" be-engine.tra
+RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$AS4X_SHORT_VERSION@g" be-engine.tra
 
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}

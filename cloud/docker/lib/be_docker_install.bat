@@ -5,10 +5,10 @@
 powershell -Command "mkdir c:\tibco -ErrorAction Ignore | out-null; mkdir c:\tibco\be\application -ErrorAction Ignore | out-null"
 :: if AS is available extract and install it.
 if %AS_VERSION% NEQ na (
-	echo Extracting ActiveSpaces
+	echo Extracting ActiveSpaces Legacy
 	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_activespaces_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 	cd /d c:/working/installer
-	echo Installing ActiveSpaces..
+	echo Installing ActiveSpaces Legacy..
 	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent') -replace '<entry key=\"installationRoot\">c:\\TIBCO</entry>', '<entry key=\"installationRoot\">c:\tibco</entry>' | Set-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent'"
 	TIBCOUniversalInstaller-x86-64.exe -silent
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -19,9 +19,9 @@ if %AS_VERSION% NEQ na (
 	if %AS_VERSION% NEQ na (
 		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_activespaces_.*[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 		if exist c:/working/installer/TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent (
-			echo Extracting ActiveSpaces HF
+			echo Extracting ActiveSpaces Legacy HF
 			cd /d c:/working/installer
-			echo Installing ActiveSpaces HF..
+			echo Installing ActiveSpaces Legacy HF..
 			powershell -Command "(Get-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent') -replace '<entry key=\"installationRoot\">c:\\TIBCO</entry>', '<entry key=\"installationRoot\">c:\tibco</entry>' | Set-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent'"
 			TIBCOUniversalInstaller-x86-64.exe -silent
 			powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -108,15 +108,16 @@ REM INSTALLERS SUBROUTINES
 	set InstallerType=%~3
 
 	if %InstallerType% EQU as (
-		echo Extracting %InstallerType%
+		echo Extracting Activespaces
 		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 		cd /d c:/working/installer
+		echo Installing Activespaces..
 	)
 	if %InstallerType% EQU ftl (
 		cd /d c:/working
+		echo Installing FTL..
 	)
 
-	echo Installing %InstallerType%..
 	powershell -Command "mkdir c:/tibco/%InstallerType%/%SHORT_VERSION% | out-null"
 	TIB_%InstallerType%_%VERSION%_win_x86_64.exe /S /D=c:/tibco/%InstallerType%/%SHORT_VERSION%
 	powershell -Command "while (Get-Process TIB_%InstallerType%_%VERSION%_win_x86_64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -128,7 +129,7 @@ REM INSTALLERS SUBROUTINES
 
 	if exist %BE_HOME%/bin/be-engine.tra (
 		if %InstallerType% EQU ftl powershell -Command "(Get-Content '%BE_HOME%/bin/be-engine.tra') -replace 'tibco.env.FTL_HOME=', 'tibco.env.FTL_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/bin/be-engine.tra'"
-		if %InstallerType% EQU as powershell -Command "(Get-Content '%BE_HOME%/bin/be-engine.tra') -replace 'tibco.env.AS3x_HOME=', 'tibco.env.AS3x_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/bin/be-engine.tra'"
+		if %InstallerType% EQU as powershell -Command "(Get-Content '%BE_HOME%/bin/be-engine.tra') -replace 'tibco.env.ACTIVESPACES_HOME=', 'tibco.env.ACTIVESPACES_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/bin/be-engine.tra'"
 	)
 Exit /B 0
 

@@ -137,7 +137,7 @@ sub install_be {
 		}
 
 		#-------------------------------------------------------------------
-		print "\nINFO:Installing ActiveSpaces $asVersion...\n";
+		print "\nINFO:Installing ActiveSpaces Legacy $asVersion...\n";
     my $asInstallResult =
 		  extractAndInstall( $ROOT_FOLDER, $asVersion, $asProd[0], 0,
 			$asHfPkgVal, $FOLDER_AS_INSTALLER, 'as', 0, $arg_asHotfix );
@@ -146,7 +146,7 @@ sub install_be {
 			print "\nERROR : Error occurred while installating AS.Aborting\n";
 			exit 0;
 		}
-		print "\nINFO:Installing ActiveSpaces $asVersion...DONE\n\n";
+		print "\nINFO:Installing ActiveSpaces Legacy $asVersion...DONE\n\n";
 
 		#-------------------------------------------------------------------
 	}else{
@@ -297,42 +297,42 @@ sub install_as4x {
     return 1;
   }
 
-  print "\nINFO:Installing AS4X $arg_as4xVersion...\n";
+  print "\nINFO:Installing Activespaces $arg_as4xVersion...\n";
   
   my $baseProdRegex="*as_$arg_as4xVersion*zip";
   my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
 
   my $result=extractPackages($ROOT_FOLDER,$arg_as4xVersion,$baseProd[0],'as4x_installers');
   if($result == 0){
-    print "\nERROR : Error occurred while extracting AS4X installer package - $baseProd[0]. Aborting\n";
+    print "\nERROR : Error occurred while extracting activespaces installer package - $baseProd[0]. Aborting\n";
     return 0;
   }
 
   my $result=installFTLORAS4XPackages($arg_as4xVersion,'as4x_installers',"TIB_as_");
   if($result == 0){
-    print "\nERROR : Error occurred while installing AS4X. Aborting\n";
+    print "\nERROR : Error occurred while installing activespaces. Aborting\n";
     return 0;
   }
-  print "\nINFO:Installing AS4X $arg_as4xVersion...DONE\n\n";
+  print "\nINFO:Installing Activespaces $arg_as4xVersion...DONE\n\n";
 
   if($arg_as4xHotfix ne "na"){
-    print "\nINFO:Installing AS4X $arg_as4xVersion HF $arg_as4xHotfix ...\n";
+    print "\nINFO:Installing Activespaces $arg_as4xVersion HF $arg_as4xHotfix ...\n";
     
     my $baseAs3xHfRegex="*as_$arg_as4xVersion*$arg_as4xHotfix*zip";
     my (@baseAs3xHf) = glob "$ROOT_FOLDER/$baseAs3xHfRegex";
 
     my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_as4xVersion,$baseAs3xHf[0],'as4x_installers_hf');
     if($hfResult == 0){
-      print "\nERROR : Error occurred while extracting AS4X HF installer package - $baseAs3xHf[0]. Aborting\n";
+      print "\nERROR : Error occurred while extracting activespaces HF installer package - $baseAs3xHf[0]. Aborting\n";
       return 0;
     }
 
     my $hfResult=installFTLORAS4XPackages($arg_as4xVersion,'as4x_installers_hf',"TIB_as_");
     if($hfResult == 0){
-      print "\nERROR : Error occurred while installing AS4X HF. Aborting\n";
+      print "\nERROR : Error occurred while installing activespaces HF. Aborting\n";
       return 0;
     }
-    print "\nINFO:Installing AS4X $arg_as4xVersion HF $arg_as4xHotfix ...DONE\n\n";
+    print "\nINFO:Installing Activespaces $arg_as4xVersion HF $arg_as4xHotfix ...DONE\n\n";
   }
 
 }
@@ -1075,11 +1075,11 @@ sub validateAS4X{
       my $isLess=isLessThan($as4xVersion, $AS4X_VERSION_MAP{$arg_version});
       my $isGreater=isGreaterThan($as4xVersion, $AS4X_VERSION_MAP_MAX{$arg_version});
       if($isLess > 0 or $isGreater > 0 ){
-        print "argver: $arg_version, as4xver: $AS4X_VERSION_MAP{$arg_version}, as4xver:$as4xVersion \n";
-        print "\nERROR :BE Version :$arg_version is not compatible with AS4X version $as4xVersion.\n";
+        print "argver: $arg_version, activespaces: $AS4X_VERSION_MAP{$arg_version}, activespaces ver:$as4xVersion \n";
+        print "\nERROR :BE Version :$arg_version is not compatible with activespaces version $as4xVersion.\n";
         return 0;
       }else{
-        $DEBUG_ENABLE==1?print "\nDEBUG: AS4X VERSION : $as4xPckgFiltered[0]\n":"";
+        $DEBUG_ENABLE==1?print "\nDEBUG: activespaces VERSION : $as4xPckgFiltered[0]\n":"";
         push @FILES_LIST, "$as4xPckgFiltered[0]\n";
 
         if($arg_as4xHotfix ne "na"){
@@ -1095,7 +1095,7 @@ sub validateAS4X{
                 $DEBUG_ENABLE==1?print "\nDEBUG: HF : $hfPkg[0]\n":"";
 				        push @FILES_LIST, "$hfPkg[0]\n";
               }else{
-                print "\nERROR :as4x version does not match with the hotfix version.
+                print "\nERROR :activespaces version does not match with the hotfix version.
                 Make sure both the packages are of same version. \n";
               }
             }else{

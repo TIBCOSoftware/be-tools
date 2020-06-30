@@ -142,7 +142,7 @@ if [[ $FTL_HOME == '' ]]; then
 fi
 
 # get as4x home
-AS4X_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS3x_HOME | cut -d'=' -f 2)
+AS4X_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
 AS4X_HOME=${AS4X_HOME%?}
 if [[ $AS4X_HOME == '' ]]; then
   AS4X_HOME="na"
@@ -160,7 +160,7 @@ if [[ $FTL_HOME != "na" ]]; then
   echo "INFO: FTL_HOME : $FTL_HOME"
 fi
 if [[ $AS4X_HOME != "na" ]]; then
-  echo "INFO: AS4X_HOME : $AS4X_HOME"
+  echo "INFO: ACTIVESPACES_HOME : $AS4X_HOME"
 fi
 echo "----------------------------------------------"
 

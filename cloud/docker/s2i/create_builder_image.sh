@@ -314,7 +314,7 @@ if [ $asPckgsCnt -gt 0 ]; then
 fi
 
 # check for FTL and AS4 only when BE version is > 6.0.0
-checkForFTLnAS4 = "false"
+checkForFTLnAS4="false"
 if [ "$ARG_VERSION" != "na" ]; then
 	if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
 		checkForFTLnAS4="true"
@@ -399,7 +399,7 @@ echo "INFO:APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
 echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
-echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+echo "INFO:AS Legacy-HF : $ARG_AS_HOTFIX"
 if [[ $ARG_FTL_VERSION != "na" ]]; then
 	echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
 	if [[ $ARG_FTL_HOTFIX != "na" ]]; then
@@ -407,9 +407,9 @@ if [[ $ARG_FTL_VERSION != "na" ]]; then
 	fi
 fi
 if [[ $ARG_AS4X_VERSION != "na" ]]; then
-	echo "INFO:AS4X VERSION : $ARG_AS4X_VERSION"
+	echo "INFO:ACTIVESPACES VERSION : $ARG_AS4X_VERSION"
 	if [[ $ARG_AS4X_HOTFIX != "na" ]]; then
-		echo "INFO:AS4X-HF : $ARG_AS4X_HOTFIX"
+		echo "INFO:ACTIVESPACES - HF : $ARG_AS4X_HOTFIX"
 	fi
 fi
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
@@ -452,7 +452,7 @@ if [[ $strname =~ 3(.+)r ]]; then
 fi
 
 if [[ ($AS_VERSION != "na") && ($ARG_FTL_VERSION != "na") ]]; then
-	echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS2 installers. Removing unused installer improves the docker image size."
+	echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS legacy installers. Removing unused installer improves the docker image size."
 fi
 
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
@@ -503,7 +503,7 @@ if [[ "$AS4X_VERSION" != "na" ]]; then
 	if [[ $AS4X_VERSION =~ $VERSION_REGEX ]]; then
 		AS4X_SHORT_VERSION=${BASH_REMATCH[1]};
 	else
-		echo "ERROR:Improper AS4X version.Aborting."
+		echo "ERROR:Improper activespaces version.Aborting."
 		echo "Deleteting $TEMP_FOLDER folder"
 		rm -rf $TEMP_FOLDER
 		exit 1

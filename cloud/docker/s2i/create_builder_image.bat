@@ -173,19 +173,19 @@ echo INFO: Installers Platform - !ARG_INSTALLERS_PLATFORM!
 echo INGO: BusinessEvents version - !ARG_VERSION!
 echo INFO: BusinessEvents HF - !ARG_HF!
 echo INFO: Addons - !ARG_ADDONS!
-echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
-echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
+echo INFO: AS legacy version - !ARG_AS_VERSION!
+echo INFO: AS legacy Hf - !ARG_AS_HF!
 if !ARG_FTL_VERSION! NEQ na echo INFO: FTL version - !ARG_FTL_VERSION!
 if !ARG_FTL_HF! NEQ na echo INFO: FTL Hf - !ARG_FTL_HF!
-if !ARG_AS4X_VERSION! NEQ na echo INFO: AS4X version - !ARG_AS4X_VERSION!
-if !ARG_AS4X_HF! NEQ na echo INFO: AS4X Hf - !ARG_AS4X_HF!
+if !ARG_AS4X_VERSION! NEQ na echo INFO: Activespaces version - !ARG_AS4X_VERSION!
+if !ARG_AS4X_HF! NEQ na echo INFO: Activespaces Hf - !ARG_AS4X_HF!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo ----------------------------------------------
 
 if !ARG_AS_VERSION! NEQ na (
   if !ARG_FTL_VERSION! NEQ na (
-    echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS2 installers. Removing unused installer improves the docker image size.
+    echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS legacy installers. Removing unused installer improves the docker image size.
   )
 )
 

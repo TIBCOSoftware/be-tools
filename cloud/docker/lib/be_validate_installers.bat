@@ -263,7 +263,7 @@ if !IS_LESS! EQU 1 (
   if !ARG_AS4X_VERSION! NEQ na (
     call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_AS4X_VERSION%" "%ARG_AS4X_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
     if "!RESULT: =!" NEQ "0" (
-      echo Error in validating as4x
+      echo Error in validating activespaces
       GOTO END-withError
     )
   )

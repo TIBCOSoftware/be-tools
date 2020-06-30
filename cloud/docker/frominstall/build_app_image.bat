@@ -203,7 +203,7 @@ if !FTL_HOME! NEQ na (
 )
 
 REM Check AS4X_HOME from tra file
-for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.AS3x_HOME=" !ARG_BE_HOME!\bin\be-engine.tra') do (
+for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.ACTIVESPACES_HOME=" !ARG_BE_HOME!\bin\be-engine.tra') do (
     for %%f in (%%i) do (
         set AS4X_HOME=%%~f
         set AS4X_VERSION=%%~nxf
@@ -213,7 +213,7 @@ for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.AS3x_HOME=" !ARG_BE_
 REM Check AS4X_HOME exist or not if it present, and assign as4x found flag
 if !AS4X_HOME! NEQ na (
     if NOT EXIST !AS4X_HOME! (
-        echo ERROR: The directory - !AS4X_HOME! is not a valid directory. Skipping AS3x installation.
+        echo ERROR: The directory - !AS4X_HOME! is not a valid directory. Skipping activespaces installation.
     ) else (
         set AS4X_FOUND=1
     )
@@ -228,7 +228,7 @@ if !FTL_FOUND! EQU 1 (
     echo INFO: FTL_HOME directory - !FTL_HOME!
 )
 if !AS4X_FOUND! EQU 1 (
-    echo INFO: AS4X_HOME directory - !AS4X_HOME!
+    echo INFO: ACTIVESPACES_HOME directory - !AS4X_HOME!
 )
 echo INFO: BusinessEvents version - !ARG_VERSION!
 echo INFO: Ear/Application Location - !ARG_APP_LOCATION!
@@ -274,12 +274,12 @@ if !FTL_FOUND! EQU 1 (
 :: Replace user TIBCO_HOME path with container's tra files
 powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
 
-:: Replace user FTL_HOME and AS3x_HOME with container's in tra file
+:: Replace user FTL_HOME and ACTIVESPACES_HOME with container's in tra file
 if !FTL_FOUND! EQU 1 (
   powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.FTL_HOME').Line.Substring(19), 'c:/tibco/ftl/!FTL_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
 )
 if !AS4X_FOUND! EQU 1 (
-  powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.AS3x_HOME').Line.Substring(20), 'c:/tibco/as/!AS4X_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
+  powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.ACTIVESPACES_HOME').Line.Substring(28), 'c:/tibco/as/!AS4X_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra'"
 )
 
 echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!SHORT_VERSION!\bin\be-engine.tra

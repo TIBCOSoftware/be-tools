@@ -141,8 +141,8 @@ echo INFO: Installers Location - !ARG_INSTALLER_LOCATION!
 echo INFO: Installers Platform - !ARG_INSTALLERS_PLATFORM!
 echo INGO: BusinessEvents version - !ARG_VERSION!
 echo INFO: BusinessEvents HF - !ARG_HF!
-echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
-echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
+echo INFO: ActiveSpaces Legacy version - !ARG_AS_VERSION!
+echo INFO: ActiveSpaces Legacy Hf - !ARG_AS_HF!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
