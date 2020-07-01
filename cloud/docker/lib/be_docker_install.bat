@@ -70,12 +70,12 @@ if %FTL_VERSION% NEQ na (
 	)
 )
 
-:: if AS4X is available extract and install it.
-if %AS4X_VERSION% NEQ na (
-	call :InstallFTLorAS %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
-	:: if as4x hf present install it.
-	if %AS4X_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %AS4X_VERSION% %AS4X_SHORT_VERSION% "as"
+:: if ACTIVESPACES is available extract and install it.
+if %ACTIVESPACES_VERSION% NEQ na (
+	call :InstallFTLorAS %ACTIVESPACES_VERSION% %ACTIVESPACES_SHORT_VERSION% "as"
+	:: if activespaces hf present install it.
+	if %ACTIVESPACES_PRODUCT_HOTFIX% NEQ na (
+		call :InstallFtlorASHf %ACTIVESPACES_VERSION% %ACTIVESPACES_SHORT_VERSION% "as"
 	)
 )
 

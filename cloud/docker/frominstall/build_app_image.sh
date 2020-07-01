@@ -141,11 +141,11 @@ if [[ $FTL_HOME == '' ]]; then
   FTL_HOME="na"
 fi
 
-# get as4x home
-AS4X_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
-AS4X_HOME=${AS4X_HOME%?}
-if [[ $AS4X_HOME == '' ]]; then
-  AS4X_HOME="na"
+# get activespaces home
+ACTIVESPACES_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
+ACTIVESPACES_HOME=${ACTIVESPACES_HOME%?}
+if [[ $ACTIVESPACES_HOME == '' ]]; then
+  ACTIVESPACES_HOME="na"
 fi
 
 echo "----------------------------------------------"
@@ -159,8 +159,8 @@ echo "INFO: BE_HOME : $BE_HOME"
 if [[ $FTL_HOME != "na" ]]; then
   echo "INFO: FTL_HOME : $FTL_HOME"
 fi
-if [[ $AS4X_HOME != "na" ]]; then
-  echo "INFO: ACTIVESPACES_HOME : $AS4X_HOME"
+if [[ $ACTIVESPACES_HOME != "na" ]]; then
+  echo "INFO: ACTIVESPACES_HOME : $ACTIVESPACES_HOME"
 fi
 echo "----------------------------------------------"
 
@@ -174,7 +174,7 @@ cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 
-perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $AS4X_HOME
+perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $ACTIVESPACES_HOME
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"

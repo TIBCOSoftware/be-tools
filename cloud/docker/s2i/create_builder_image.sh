@@ -47,11 +47,11 @@ AS_SHORT_VERSION="na"
 FTL_VERSION="na"
 FTL_SHORT_VERSION="na"
 ARG_FTL_HOTFIX="na"
-AS4X_VERSION="na"
-AS4X_SHORT_VERSION="na"
-ARG_AS4X_HOTFIX="na"
+ACTIVESPACES_VERSION="na"
+ACTIVESPACES_SHORT_VERSION="na"
+ARG_ACTIVESPACES_HOTFIX="na"
 ARG_GVPROVIDERS="na"
-ARG_AS4X_VERSION="na"
+ARG_ACTIVESPACES_VERSION="na"
 ARG_FTL_VERSION="na"
 
 #Parse the arguments
@@ -356,34 +356,34 @@ if [ $checkForFTLnAS4 == "true" ]; then
 	fi
 
 
-	# Validate and get AS4X version
-	as4xPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
-	as4xPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
-	as4xHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
-	as4xHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
-	if [ $as4xPckgsCnt -gt 0 ]; then
-		as4xBasePckgsCnt=$(expr ${as4xPckgsCnt} - ${as4xHfPckgsCnt})
+	# Validate and get ACTIVESPACES version
+	activespacesPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
+	activespacesPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
+	activespacesHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
+	activespacesHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
+	if [ $activespacesPckgsCnt -gt 0 ]; then
+		activespacesBasePckgsCnt=$(expr ${activespacesPckgsCnt} - ${activespacesHfPckgsCnt})
 		
-		if [ $as4xBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+		if [ $activespacesBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
 			printf "\nERROR :More than one TIBCO AS base versions are present in the target directory..\n"
 			exit 1;
-		elif [ $as4xHfPckgsCnt -gt 1 ]; then
+		elif [ $activespacesHfPckgsCnt -gt 1 ]; then
 			printf "\nERROR :More than one TIBCO AS HF are present in the target directory.There should be only one.\n"
 			exit 1;
-		elif [ $as4xBasePckgsCnt -le 0 ]; then
+		elif [ $activespacesBasePckgsCnt -le 0 ]; then
 			printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
 			exit 1;
-		elif [ $as4xBasePckgsCnt -eq 1 ]; then
-			AS4X_BASE_PACKAGE="${as4xPckgs[0]}"
-			ARG_AS4X_VERSION=$(echo "${AS4X_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
-			if [ "$ARG_AS4X_VERSION" = "" ]; then
-				ARG_AS4X_VERSION="na"
+		elif [ $activespacesBasePckgsCnt -eq 1 ]; then
+			ACTIVESPACES_BASE_PACKAGE="${activespacesPckgs[0]}"
+			ARG_ACTIVESPACES_VERSION=$(echo "${ACTIVESPACES_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
+			if [ "$ARG_ACTIVESPACES_VERSION" = "" ]; then
+				ARG_ACTIVESPACES_VERSION="na"
 			fi
-			if [ $as4xHfPckgsCnt -eq 1 ]; then
-				as4xHf=$(echo "${as4xPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
-				ARG_AS4X_HOTFIX=$(echo $as4xHf| cut -d'-' -f 2| cut -d' ' -f 1)
-				if [[ "$ARG_AS4X_VERSION" != "na" ]]; then
-					ARG_AS4X_VERSION=$(echo $ARG_AS4X_VERSION | cut -d'_' -f 1)
+			if [ $activespacesHfPckgsCnt -eq 1 ]; then
+				activespacesHf=$(echo "${activespacesPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+				ARG_ACTIVESPACES_HOTFIX=$(echo $activespacesHf| cut -d'-' -f 2| cut -d' ' -f 1)
+				if [[ "$ARG_ACTIVESPACES_VERSION" != "na" ]]; then
+					ARG_ACTIVESPACES_VERSION=$(echo $ARG_ACTIVESPACES_VERSION | cut -d'_' -f 1)
 				fi
 			fi
 		fi
@@ -406,10 +406,10 @@ if [[ $ARG_FTL_VERSION != "na" ]]; then
 		echo "INFO:FTL-HF : $ARG_FTL_HOTFIX"	
 	fi
 fi
-if [[ $ARG_AS4X_VERSION != "na" ]]; then
-	echo "INFO:ACTIVESPACES VERSION : $ARG_AS4X_VERSION"
-	if [[ $ARG_AS4X_HOTFIX != "na" ]]; then
-		echo "INFO:ACTIVESPACES - HF : $ARG_AS4X_HOTFIX"
+if [[ $ARG_ACTIVESPACES_VERSION != "na" ]]; then
+	echo "INFO:ACTIVESPACES VERSION : $ARG_ACTIVESPACES_VERSION"
+	if [[ $ARG_ACTIVESPACES_HOTFIX != "na" ]]; then
+		echo "INFO:ACTIVESPACES - HF : $ARG_ACTIVESPACES_HOTFIX"
 	fi
 fi
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
@@ -422,7 +422,7 @@ cp -a "../gvproviders" $TEMP_FOLDER/
 
  export PERL5LIB="../lib"
 
- VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$ARG_FTL_HOTFIX','$ARG_AS4X_HOTFIX','$TEMP_FOLDER');")
+ VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$ARG_FTL_HOTFIX','$ARG_ACTIVESPACES_HOTFIX','$TEMP_FOLDER');")
 
 if [ "$?" = 0 ]
 then
@@ -497,11 +497,11 @@ if [[ "$FTL_VERSION" != "na" ]]; then
 	fi
 fi
 
-# Evaluate AS4X version & short version
-AS4X_VERSION=$ARG_AS4X_VERSION
-if [[ "$AS4X_VERSION" != "na" ]]; then
-	if [[ $AS4X_VERSION =~ $VERSION_REGEX ]]; then
-		AS4X_SHORT_VERSION=${BASH_REMATCH[1]};
+# Evaluate ACTIVESPACES version & short version
+ACTIVESPACES_VERSION=$ARG_ACTIVESPACES_VERSION
+if [[ "$ACTIVESPACES_VERSION" != "na" ]]; then
+	if [[ $ACTIVESPACES_VERSION =~ $VERSION_REGEX ]]; then
+		ACTIVESPACES_SHORT_VERSION=${BASH_REMATCH[1]};
 	else
 		echo "ERROR:Improper activespaces version.Aborting."
 		echo "Deleteting $TEMP_FOLDER folder"
@@ -523,7 +523,7 @@ if [ "$IS_S2I" = "true" ]; then
 	touch dummy.txt
 	cd ../..
 
-	docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg AS4X_VERSION="$AS4X_VERSION" --build-arg AS4X_SHORT_VERSION="$AS4X_SHORT_VERSION" --build-arg AS4X_PRODUCT_HOTFIX="$ARG_AS4X_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
+	docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ACTIVESPACES_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ACTIVESPACES_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_ACTIVESPACES_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
 
 	if [ "$?" != 0 ]; then
 		echo "Docker build failed."
