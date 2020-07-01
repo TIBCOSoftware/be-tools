@@ -14,9 +14,9 @@ use strict;
 my $TEMP_FOLDER = $ARGV[0];
 my $BE_HOME = $ARGV[1];
 my $FTL_HOME = $ARGV[2];
-my $AS4X_HOME = $ARGV[3];
+my $ACTIVESPACES_HOME = $ARGV[3];
 
-my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftlbaseDir, $ftlDir, $ftlVer, $FTL_FOUND, $as4xbaseDir, $as4xDir, $as4xVer, $AS4X_FOUND);
+my ($dir, $baseDir, $beDir, $beVer, $asVer, $asDir, $ftlbaseDir, $ftlDir, $ftlVer, $FTL_FOUND, $activespacesbaseDir, $activespacesDir, $activespacesVer, $ACTIVESPACES_FOUND);
 
 # Current directory from where this script is invoked. Check to see if it is a BE/AS installation
 if ($BE_HOME eq "../../..") {
@@ -77,8 +77,8 @@ print "BASEDIR     : $baseDir\n";
 print "BE_DIR      : $beDir\n";
 print "BE_VERSION  : $beVer\n";
 if ($AS_FOUND==1) {
-  print "AS_DIR      : $asDir\n";
-  print "AS_VERSION  : $asVer\n";
+  print "ASLegacy_DIR      : $asDir\n";
+  print "ASLegacy_VERSION  : $asVer\n";
 }
 
 if ($FTL_HOME ne "na"){
@@ -111,38 +111,38 @@ if ($FTL_FOUND eq 1) {
   print "FTL_VERSION  : $ftlVer\n";
 }
 
-if ($AS4X_HOME ne "na"){
+if ($ACTIVESPACES_HOME ne "na"){
 
-  if ( ! (-e $AS4X_HOME and -d $AS4X_HOME)) {
-    print "WARN: AS3x installation not found.\n";
-    $AS4X_FOUND = 0;
+  if ( ! (-e $ACTIVESPACES_HOME and -d $ACTIVESPACES_HOME)) {
+    print "WARN: activespaces installation not found.\n";
+    $ACTIVESPACES_FOUND = 0;
   }else{
 
-    if ($AS4X_HOME =~ /(.*?)\/(as\/\d\.\d)/) {
-      $as4xbaseDir = $1;
-      $as4xDir = $2;
+    if ($ACTIVESPACES_HOME =~ /(.*?)\/(as\/\d\.\d)/) {
+      $activespacesbaseDir = $1;
+      $activespacesDir = $2;
     } else {
-      print "AS3x folder as/<as-version> not found in the specified $AS4X_HOME, exiting.\n";
+      print "activespaces folder as/<as-version> not found in the specified $ACTIVESPACES_HOME, exiting.\n";
       exit 1;
     }
     
-    if (!($as4xDir =~ /as\/(\d\.\d)/)) {
-      $AS4X_FOUND = 0;
+    if (!($activespacesDir =~ /as\/(\d\.\d)/)) {
+      $ACTIVESPACES_FOUND = 0;
     }else{
-      $AS4X_FOUND = 1;
-      $as4xVer = $1
+      $ACTIVESPACES_FOUND = 1;
+      $activespacesVer = $1
     }
   }
 
 }
 
-if ($AS4X_FOUND eq 1) {
-  print "AS4X_DIR      : $as4xDir\n";
-  print "AS4X_VERSION  : $as4xVer\n";
+if ($ACTIVESPACES_FOUND eq 1) {
+  print "Activespaces Dir      : $activespacesDir\n";
+  print "Activespaces Version  : $activespacesVer\n";
 }
 
 if ( ($AS_FOUND == 1) && ($FTL_FOUND == 1)) {
-  print "WARN: Local machine contains both FTL and AS2 installations. Removing unused installation improves the docker image size. \n";
+  print "WARN: Local machine contains both FTL and AS legacy installations. Removing unused installation improves the docker image size. \n";
 }
 
 my $DOCKER_BIN_DIR = "$TEMP_FOLDER";
@@ -161,8 +161,8 @@ if ($FTL_FOUND == 1) {
 }
 execCmd ($TARCMD);
 
-if ($AS4X_FOUND == 1) {
-  $TARCMD = "tar -C $as4xbaseDir -rf $DOCKER_BIN_DIR/be.tar $as4xDir/lib "
+if ($ACTIVESPACES_FOUND == 1) {
+  $TARCMD = "tar -C $activespacesbaseDir -rf $DOCKER_BIN_DIR/be.tar $activespacesDir/lib "
 }
 execCmd ($TARCMD);
 
@@ -219,12 +219,12 @@ if ( $FTL_FOUND == 1) {
   execCmd ($FINDFTLCMD);
 }
 
-# Replace AS3x_HOME in TRA files using find, xargs, sed -i
-if ( $AS4X_FOUND == 1) {
-  my $AS4X_HOME_KEY = "tibco.env.AS3x_HOME=.*";
-  my $AS4X_HOME_VAL = "tibco.env.AS3x_HOME=$repl\\/as\\/$as4xVer";
-  my $FINDAS4XCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$AS4X_HOME_KEY/$AS4X_HOME_VAL/g'";
-  execCmd ($FINDAS4XCMD);
+# Replace ACTIVESPACES_HOME in TRA files using find, xargs, sed -i
+if ( $ACTIVESPACES_FOUND == 1) {
+  my $ACTIVESPACES_HOME_KEY = "tibco.env.ACTIVESPACES_HOME=.*";
+  my $ACTIVESPACES_HOME_VAL = "tibco.env.ACTIVESPACES_HOME=$repl\\/as\\/$activespacesVer";
+  my $FINDACTIVESPACESCMD = "find $DOCKER_BIN_DIR/$tempLocation -name '*.tra' -print0 | xargs -0 sed -i.bak  's/$ACTIVESPACES_HOME_KEY/$ACTIVESPACES_HOME_VAL/g'";
+  execCmd ($FINDACTIVESPACESCMD);
 }
 
 # Replace in be props file files using find, xargs, sed -i
@@ -255,7 +255,7 @@ if ($AS_FOUND == 1) {
 if ($FTL_FOUND == 1 ) {
   $TARCMD = "$TARCMD ftl";
 }
-if ($AS4X_FOUND == 1 && $AS_FOUND == 0){
+if ($ACTIVESPACES_FOUND == 1 && $AS_FOUND == 0){
   $TARCMD = "$TARCMD as";
 }
 

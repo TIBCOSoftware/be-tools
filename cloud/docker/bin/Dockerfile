@@ -11,8 +11,8 @@ ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
 ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
-ARG AS4X_VERSION
-ARG AS4X_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
 
 FROM ubuntu:20.10 as intermediate
 
@@ -28,9 +28,9 @@ ARG AS_VERSION
 ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG FTL_PRODUCT_HOTFIX
-ARG AS4X_VERSION
-ARG AS4X_SHORT_VERSION
-ARG AS4X_PRODUCT_HOTFIX
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG ACTIVESPACES_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
@@ -57,11 +57,11 @@ ENV TIBCO_HOME=/opt/tibco \
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_ftl('$FTL_VERSION','$FTL_PRODUCT_HOTFIX')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_as4x('$AS4X_VERSION','$AS4X_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$ACTIVESPACES_VERSION','$ACTIVESPACES_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers ftl_installers ftl_installers_hf as4x_installers as4x_installers_hf *.zip \
+ && rm -rf as_installers be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
@@ -74,8 +74,8 @@ RUN echo \ >> be-engine.tra \
 #set ftl home in tra file
 RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
 
-#set as4x home in tra file
-RUN sed -i "s@tibco.env.AS3x_HOME=@tibco.env.AS3x_HOME=/opt/tibco/as/$AS4X_SHORT_VERSION@g" be-engine.tra
+#set activespaces home in tra file
+RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
 
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
@@ -85,7 +85,7 @@ RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
     && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
     && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
     && mkdir -p /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib \
-    && mkdir -p /opt/tibco/as/${AS4X_SHORT_VERSION}/lib \
+    && mkdir -p /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib \
     && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
     && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 
@@ -102,8 +102,8 @@ ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
-ARG AS4X_VERSION
-ARG AS4X_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
@@ -122,8 +122,8 @@ COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${A
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
 # copy ftl related files
 COPY --from=intermediate /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib
-# copy as4x related files
-COPY --from=intermediate /opt/tibco/as/${AS4X_SHORT_VERSION}/lib /opt/tibco/as/${AS4X_SHORT_VERSION}/lib
+# copy activespaces related files
+COPY --from=intermediate /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION

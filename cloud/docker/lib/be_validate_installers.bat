@@ -24,8 +24,8 @@ set GLOBAL_VALID_FTL_MAP[6.0.0]=6.2.0
 set GLOBAL_VALID_FTL_MAP_MAX[6.0.0]=6.x.x
 
 ::Valid AS3x Version Mapping
-set GLOBAL_VALID_AS4X_MAP[6.0.0]=4.2.0
-set GLOBAL_VALID_AS4X_MAP_MAX[6.0.0]=4.x.x
+set GLOBAL_VALID_ACTIVESPACES_MAP[6.0.0]=4.2.0
+set GLOBAL_VALID_ACTIVESPACES_MAP_MAX[6.0.0]=4.x.x
 
 ::JRE version
 set GLOBAL_JRE_VERSION_MAP[5.6.0]=1.8.0
@@ -52,8 +52,8 @@ set ARG_AS_HF=na
 
 set ARG_FTL_VERSION=na
 set ARG_FTL_HF=na
-set ARG_AS4X_VERSION=na
-set ARG_AS4X_HF=na
+set ARG_ACTIVESPACES_VERSION=na
+set ARG_ACTIVESPACES_HF=na
 
 REM Identify Installers platform (linux, win)
 set ARG_INSTALLERS_PLATFORM=na
@@ -203,10 +203,10 @@ if !IS_LESS! EQU 1 (
     GOTO END-withError
   )
 
-  REM Identify as4x version
+  REM Identify activespaces version
   call :IdentifyInstaller "as" LOCAL_INSTLR_RESULT
   if !LOCAL_INSTLR_RESULT! NEQ na (
-    set ARG_AS4X_VERSION=!LOCAL_INSTLR_RESULT!
+    set ARG_ACTIVESPACES_VERSION=!LOCAL_INSTLR_RESULT!
   )
   if !LOCAL_INSTLR_RESULT! EQU multiple (
     GOTO END-withError
@@ -221,10 +221,10 @@ if !IS_LESS! EQU 1 (
     GOTO END-withError
   )
 
-  REM Identify as4x HF
+  REM Identify activespaces HF
   call :IdentifyInstallerHf "as" LOCAL_INSTLR_RESULT
   if !LOCAL_INSTLR_RESULT! NEQ na (
-    set ARG_AS4X_HF=!LOCAL_INSTLR_RESULT!
+    set ARG_ACTIVESPACES_HF=!LOCAL_INSTLR_RESULT!
   )
   if !LOCAL_INSTLR_RESULT! EQU multiple (
     GOTO END-withError
@@ -252,25 +252,25 @@ call :isLess !ARG_VERSION! "6.0.0" IS_LESS
 if !IS_LESS! EQU 1 (
   REM Performing ftl validation
   if !ARG_FTL_VERSION! NEQ na (
-    call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
+    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
     if "!RESULT: =!" NEQ "0" (
       echo Error in validating ftl
       GOTO END-withError
     )
   )
 
-  REM Performing as4x validation
-  if !ARG_AS4X_VERSION! NEQ na (
-    call :validateFTLorAS4X "%ARG_VERSION%" "%ARG_AS4X_VERSION%" "%ARG_AS4X_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
+  REM Performing activespaces validation
+  if !ARG_ACTIVESPACES_VERSION! NEQ na (
+    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_ACTIVESPACES_VERSION%" "%ARG_ACTIVESPACES_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
     if "!RESULT: =!" NEQ "0" (
-      echo Error in validating as4x
+      echo Error in validating activespaces
       GOTO END-withError
     )
   )
 )
 
 :END
-ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_AS4X_VERSION%& SET %~14=%ARG_AS4X_HF%
+ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_ACTIVESPACES_VERSION%& SET %~14=%ARG_ACTIVESPACES_HF%
 EXIT /B 0
 
 :END-withError
@@ -594,7 +594,7 @@ EXIT /B %LOCAL_RESULT%
 
 EXIT /B %LOCAL_RESULT%
 
-:validateFTLorAS4X 
+:validateFTLorACTIVESPACES 
   SETLOCAL
   set LOCAL_BE_VERSION=%~1
   set LOCAL_INSTLR_VERSION=%~2
@@ -609,15 +609,15 @@ EXIT /B %LOCAL_RESULT%
     if "!GLOBAL_VALID_FTL_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
       echo ERROR: No FTL version found for base BE version !LOCAL_BE_VERSION!
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
   )
 
   if "!LOCAL_INSTLR_TYPE!"=="as" (
-    if "!GLOBAL_VALID_AS4X_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
+    if "!GLOBAL_VALID_ACTIVESPACES_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
       echo ERROR: No AS3x version found for base BE version !LOCAL_BE_VERSION!
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
   )
 
@@ -637,7 +637,7 @@ EXIT /B %LOCAL_RESULT%
           echo FTL_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
         )
         if "!LOCAL_INSTLR_TYPE!"=="as" (
-          echo AS4X_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+          echo ACTIVESPACES_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
         )
       )
       set /a index += 1
@@ -652,8 +652,8 @@ EXIT /B %LOCAL_RESULT%
     set LOCAL_INSTLR_VERSION_MAX=!GLOBAL_VALID_FTL_MAP_MAX[%LOCAL_BE_VERSION: =%]!
   )
   if "!LOCAL_INSTLR_TYPE!"=="as" (
-    set LOCAL_INSTLR_VERSION_MIN=!GLOBAL_VALID_AS4X_MAP[%LOCAL_BE_VERSION: =%]! 
-    set LOCAL_INSTLR_VERSION_MAX=!GLOBAL_VALID_AS4X_MAP_MAX[%LOCAL_BE_VERSION: =%]!
+    set LOCAL_INSTLR_VERSION_MIN=!GLOBAL_VALID_ACTIVESPACES_MAP[%LOCAL_BE_VERSION: =%]! 
+    set LOCAL_INSTLR_VERSION_MAX=!GLOBAL_VALID_ACTIVESPACES_MAP_MAX[%LOCAL_BE_VERSION: =%]!
   )
   
   call :isLess !LOCAL_INSTLR_VERSION! !LOCAL_INSTLR_VERSION_MIN! IS_LESS
@@ -663,13 +663,13 @@ EXIT /B %LOCAL_RESULT%
   IF !IS_LESS! NEQ 1 (
     echo ERROR: !LOCAL_INSTLR_TYPE! Version:!LOCAL_INSTLR_VERSION! is incompatible with the BE Version:!LOCAL_BE_VERSION!
 	  set /A LOCAL_RESULT=1
-	  GOTO END-validateFTLorAS4X
+	  GOTO END-validateFTLorACTIVESPACES
   )
   
   IF !IS_GREATER! NEQ 1 (
     echo ERROR: !LOCAL_INSTLR_TYPE! Version:!LOCAL_INSTLR_VERSION! is incompatible with the BE Version:!LOCAL_BE_VERSION!
 	  set /A LOCAL_RESULT=1
-	  GOTO END-validateFTLorAS4X
+	  GOTO END-validateFTLorACTIVESPACES
   )
   
   ::Checking for only numberic in installer HF
@@ -678,20 +678,20 @@ EXIT /B %LOCAL_RESULT%
     if defined var (
       echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE!_HF : !LOCAL_INSTLR_HF! 
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
     set /A INSTLR_HF_LEN=0
     call :strLen LOCAL_INSTLR_HF INSTLR_HF_LEN
     if  !INSTLR_HF_LEN! EQU 0 (
       echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE! HF : !LOCAL_INSTLR_HF! 
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
 
     if !INSTLR_HF_LEN! GTR 3 (
       echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE! HF : !LOCAL_INSTLR_HF! 
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
 
     if !INSTLR_HF_LEN! EQU 1 (
@@ -706,12 +706,12 @@ EXIT /B %LOCAL_RESULT%
     if !INSTLR_HF_COUNT! EQU 0 (
       echo ERROR: No package found for !LOCAL_INSTLR_TYPE! version %LOCAL_INSTLR_VERSION%  HF-!LOCAL_INSTLR_HF! in the installer location.
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
     if !INSTLR_HF_COUNT! GTR 1 (
       echo ERROR: More than one !LOCAL_INSTLR_TYPE! HF packages are present in the target directory. There should be only one.
       set /A LOCAL_RESULT=1
-      GOTO END-validateFTLorAS4X
+      GOTO END-validateFTLorACTIVESPACES
     )
     set /a index = 0
     if  !INSTLR_HF_COUNT! EQU 1 (
@@ -724,7 +724,7 @@ EXIT /B %LOCAL_RESULT%
                  echo FTL_HF_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
                )
                if "!LOCAL_INSTLR_TYPE!"=="as" (
-                 echo AS4X_HF_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+                 echo ACTIVESPACES_HF_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
                )
             )
             set /a index += 1
@@ -733,7 +733,7 @@ EXIT /B %LOCAL_RESULT%
     )
   )
   
-  :END-validateFTLorAS4X
+  :END-validateFTLorACTIVESPACES
   (ENDLOCAL & REM -- RETURNING RESULT
    SET %~6=%LOCAL_RESULT%
   )

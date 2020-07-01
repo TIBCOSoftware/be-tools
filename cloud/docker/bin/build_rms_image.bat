@@ -141,8 +141,8 @@ echo INFO: Installers Location - !ARG_INSTALLER_LOCATION!
 echo INFO: Installers Platform - !ARG_INSTALLERS_PLATFORM!
 echo INGO: BusinessEvents version - !ARG_VERSION!
 echo INFO: BusinessEvents HF - !ARG_HF!
-echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
-echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
+echo INFO: ActiveSpaces Legacy version - !ARG_AS_VERSION!
+echo INFO: ActiveSpaces Legacy Hf - !ARG_AS_HF!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo INFO: RMS Ear/Cdd Location - !ARG_APP_LOCATION!
@@ -166,7 +166,7 @@ if !ARG_APP_LOCATION! NEQ na (
 echo INFO: Building docker image for TIBCO BusinessEvents Version:!ARG_VERSION! and Image Repository:!ARG_IMAGE_VERSION! and Docker file:!ARG_DOCKERFILE!
 copy !ARG_DOCKERFILE! !TEMP_FOLDER!
 for %%f in (!ARG_DOCKERFILE!) do set ARG_DOCKERFILE=%%~nxf
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!"   --build-arg FTL_VERSION="na" --build-arg FTL_SHORT_VERSION="na" --build-arg FTL_PRODUCT_HOTFIX="na"  --build-arg ACTIVESPACES_VERSION="na" --build-arg ACTIVESPACES_SHORT_VERSION="na" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="na" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo Docker build failed.
