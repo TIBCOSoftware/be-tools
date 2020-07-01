@@ -118,7 +118,15 @@ else
   		exit
 	else
 		if [ "$CDD_FILE" = "/opt/tibco/be/application/dummy.txt" ]; then
-				CDD_FILE="/opt/tibco/be/application/*.cdd"
+			#Check App location have cdd or not
+			CDD_LOCATION="/opt/tibco/be/application"
+			cdds=$(find $CDD_LOCATION -name "*.cdd")
+			cddCnt=$(find $CDD_LOCATION -name "*.cdd" | wc -l)
+			if [ $cddCnt -ne 1 ]; then
+				printf "ERROR: The directory - $CDD_LOCATION must have single CDD file\n"
+				exit 1
+			fi
+			CDD_FILE=${cdds[0]}
 		fi
 	fi
 	if [ "$EAR_FILE" = "no-default" ]; then
@@ -126,7 +134,15 @@ else
   		exit
 	else
 		if [ "$EAR_FILE" = "/opt/tibco/be/application/ear/dummy.txt" ]; then
-				EAR_FILE="/opt/tibco/be/application/ear/*.ear"
+			#Check App location have ear or not
+			EAR_LOCATION="/opt/tibco/be/application/ear"
+			ears=$(find $EAR_LOCATION -name "*.ear")
+			earCnt=$(find $EAR_LOCATION -name "*.ear" | wc -l)
+			if [ $earCnt -ne 1 ]; then
+				printf "ERROR: The directory - $EAR_LOCATION must have single EAR file\n"
+				exit 1
+			fi
+			EAR_FILE=${ears[0]}
 		fi
 	fi
 
@@ -144,9 +160,6 @@ else
 
 	UPDATE_CDD_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::updateCddFile('$CDD_FILE','/mnt/tibco/be/data-store','/mnt/tibco/be/logs','$SHORT_VERSION','$BE_HOME/')")
 	
-	#change data-store path for shared nothing case in be6 based cdd file
-	sed -i "s@<property name=\"data-store-path\" value=.*@<property name=\"data-store-path\" value=\"/mnt/tibco/be/data-store\"/>@g" $CDD_FILE
-
 	if [ "$LOG_LEVEL" != "na" ]; then
   		#Putting tra entry for log level
   		LOG_LEVEL=${LOG_LEVEL//:/\\:}
