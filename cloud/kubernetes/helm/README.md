@@ -45,7 +45,7 @@ Following table illustrates how to use helm switches to select particular deploy
 
 | Topology Name | cmType | omType | bsType  | storeType |
 | ------------- | :---: | :---: | :---: | :---: |
-| Unclustered Inmemory              |  unclustered      | na       |  na      | na          |
+| Unclustered Inmemory              |  unclustered      | inmemory       |  na      | na          |
 | Unclustered store AS4              | unclustered        |  store      | na       | AS4          |
 | Unclustered store Cassandra               | unclustered       | store       |na        | Cassandra          | 
 | clustered store AS4               |  FTL      | store       | na        | AS4          |

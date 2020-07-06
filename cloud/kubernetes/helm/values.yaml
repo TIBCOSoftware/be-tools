@@ -6,7 +6,7 @@
 cpType: minikube
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,AS2,FTL
-omType: na                   #omType can be inmemory,store,cache
+omType: inmemory                   #omType can be inmemory,store,cache
 bsType: na         #BackingStore can be None sharedNothing, store
 storeType: na                 #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                      #cacheType can be AS2, ignite
