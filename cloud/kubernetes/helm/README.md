@@ -35,33 +35,26 @@ cd cloud/kubernetes
 helm dep update ./helm
 ```
 
+* cpType → Refers to Cloud provider type.
+* cmType → Refers to Cluster management type.
+* omType → Refers to Object manage type.
+* bsType → Refers to Backing Store type.
+* storeType → Refers to store type. It has significance only when bsType=store OR omType=store. Valid values: RDBMS(Oracle/SQLServer/DB2/MySql/PostgreSQL)/AS4/Cassandra
 
-There are 4 primary configuration switches:
-
-* cpType → Represents Cloud provider type. Valid values: AWS/Azure/OpenShift/GCP/Minikube | Default - Minikube
-* cmType → Represents Cluster management type. Valid values: None/AS2/FTL | Default - None
-* omType → Represents Object manage type. Valid values: Inmemory/Store/Cache | Default - Inmemory
-* bsType → Represents Backing Store type. Valid values: None/SharedNothing/Store | Default - None <br>
-
-There can be secondary configuration switches like mentioned below:
-
-* storeType → Represents store type. It has significance only when bsType=Store OR omType=Store. Valid values: Oracle/SQLServer/DB2/MySql/PostgreSQL/AS4/Cassandra
-
-Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options in case of AWS cloud provider(i.e. cpType=aws):
-
+Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options:
 
 | Topology Name | cmType | omType | bsType  | storeType |
 | ------------- | :---: | :---: | :---: | :---: |
-| Unclustered Inmemory              |  unclustered      |        |        |           |
-| Unclustered store AS4              | unclustered        |  store      |        | AS4          |
-| Unclustered store Cassandra               | unclustered       | store       |        | Cassandra          | 
-| clustered store AS4               |  FTL      | store       |        | AS4          |
-| clustered store Cassandra               | FTL       | store       |         | Cassandra          |
-| clustered Cache AS2 None              | AS2      | cache       | None        |           |
-| clustered Cache AS2 sharedNothing                | AS2       | cache       | sharedNothing       |           |
+| Unclustered Inmemory              |  unclustered      | na       |  na      | na          |
+| Unclustered store AS4              | unclustered        |  store      | na       | AS4          |
+| Unclustered store Cassandra               | unclustered       | store       |na        | Cassandra          | 
+| clustered store AS4               |  FTL      | store       | na        | AS4          |
+| clustered store Cassandra               | FTL       | store       | na         | Cassandra          |
+| clustered Cache AS2 None              | AS2      | cache       | None        | na          |
+| clustered Cache AS2 sharedNothing                | AS2       | cache       | sharedNothing       |  na         |
 | clustered Cache AS2 store               | AS2       | cache       | store        |  RDBMS         |
-| clustered Cache FTL None              |  FTL      | cache       | None       |           |
-| clustered Cache FTL sharedNothing               | FTL       | cache       | sharedNothing       |           |
+| clustered Cache FTL None              |  FTL      | cache       | None       |   na        |
+| clustered Cache FTL sharedNothing               | FTL       | cache       | sharedNothing       | na           |
 | clustered Cache FTL store RDBMS               |  FTL      |  cache      | store       | RDBMS          |
 | clustered Cache FTL store AS4               | FTL       | cache       | store       | AS4          |
 | clustered Cache FTL store Cassandra               |  FTL      | cache       | store       | Cassandra          |
@@ -74,8 +67,8 @@ To install the chart with the release name `my-release` in azure
 helm install my-release ./helm --set cpType=azure
 ```
 
-Note:<br> 
-1.minikube is the default provider.<br> 
+Note: <br>
+1.minikube is the default provider.<br>
 2.Update the values of mysql and efs-provisioner dependency in mysql section of helm/values.yaml.<br>
 
 
@@ -83,10 +76,6 @@ At any point to check how to use helm, simply run the `help` command
 ```
 helm --help
 ```
-
-## Testing Example:
-
-* To test FraudDetection example refer to readme.html in helm folder
 
 ## Uninstalling the Chart
 
@@ -97,4 +86,3 @@ $ helm delete my-release
 ```
 
 The command removes all the Kubernetes components associated with the chart
-
