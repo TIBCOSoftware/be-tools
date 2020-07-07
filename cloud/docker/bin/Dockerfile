@@ -66,7 +66,8 @@ RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
  && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
  && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
  && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
- && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+ && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer \
+ && rm -rf /home/tibco/be/be_installers-hf
 
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:latest
