@@ -13,8 +13,8 @@ USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
 USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
-USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]" 
-USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
+USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]"
+USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
@@ -44,28 +44,28 @@ while [[ $# -gt 0 ]]; do
         -d=*|--docker-file=*)
         ARG_DOCKER_FILE="${key#*=}"
         ;;
-        -l|--installers-location) 
+        -l|--installers-location)
         shift # past the key and to the value
         ARG_INSTALLER_LOCATION="$1"
         ;;
         -l=*|--installers-location=*)
         ARG_INSTALLER_LOCATION="${key#*=}"
         ;;
-         -r|--repo) 
+         -r|--repo)
         shift # past the key and to the value
         ARG_IMAGE_VERSION="$1"
         ;;
         -r=*|--repo=*)
         ARG_IMAGE_VERSION="${key#*=}"
         ;;
-	   -a|--app-location) 
+	   -a|--app-location)
         shift # past the key and to the value
         ARG_APP_LOCATION="$1"
         ;;
         -a=*|--app-location=*)
         ARG_APP_LOCATION="${key#*=}"
         ;;
-        -h|--help) 
+        -h|--help)
         shift # past the key and to the value
         printf "$USAGE"
         exit 0
@@ -84,7 +84,7 @@ FIRST=1
 if [ "$ARG_INSTALLER_LOCATION" = "na" -o "$ARG_INSTALLER_LOCATION" = "nax" -o -z "${ARG_INSTALLER_LOCATION// }" ]
 then
   if [ $FIRST = 1 ]
-  then 
+  then
   	MISSING_ARGS="$MISSING_ARGS Installers Location[-l|--installers-location]"
 	FIRST=0
   else
@@ -132,9 +132,9 @@ BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 
 BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
-AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
-AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
+BE_HF_REGEX="${BE_PRODUCT}-hf_*_HF"
+#AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
+#AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
 
 
 #Check for BE Installer  --------------------------------------
@@ -155,41 +155,43 @@ bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$
 beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "$BE_HF_REGEX*$INSTALLER_PLATFORM")
 beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM" | wc -l)
 
-# Check Single Base version for 5.6.0 exist, zero or one HF exist. --------------------------------------
+# Check Single Base version exist, zero or one HF exist. --------------------------------------
 
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 
-if [ $beBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory.There should be only one.\n"
 	exit 1;
-elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not present
+elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
-	exit 1;	
-elif [ $beBasePckgsCnt -eq 1 ]; then
+	exit 1;
+elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
 		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
 			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-			break;	
+			break;
 		fi
 	done
-	
+
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-		if [ $ARG_VERSION == $hfbeversion];then
-			ARG_BE_HOTFIX=$(echo "${beversion}"| cut -d'_' -f 5)
+		VERSION_PACKAGE="${beHfPckgs[0]}"
+    hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+    hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
+    if [ $ARG_VERSION == $hfbeversion ];then
+      ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
-		fi 
-		
+		fi
+
 	elif [ $beHfCnt -eq 0 ]; then
 		ARG_BE_HOTFIX="na"
 	fi
@@ -213,20 +215,20 @@ if [ $asPckgsCnt -gt 0 ]; then
 		exit 1;
 	elif [ $asBasePckgsCnt -le 0 ]; then
 		printf "\nERROR :TIBCO Activespaces HF is present but TIBCO Activespaces Base version is not present in the target directory.\n"
-		exit 1;	
+		exit 1;
 	elif [ $asBasePckgsCnt -eq 1 ]; then
 		if [ $asHfPckgsCnt -eq 1 ]; then
 			asHf=$(echo "${asHfPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
 			ARG_AS_HOTFIX=$(echo $asHf| cut -d'-' -f 2)
 		elif [ $asHfPckgsCnt -eq 0 ]; then
 			ARG_AS_HOTFIX="na"
-		fi	
-	else 
-		ARG_AS_HOTFIX="na"	
+		fi
+	else
+		ARG_AS_HOTFIX="na"
 	fi
 fi
 
-if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ] 
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ]
 then
 	ARG_IMAGE_VERSION="rms:$ARG_VERSION";
 fi
@@ -343,5 +345,5 @@ fi
  echo "Deleting temporary intermediate image.."
  docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  echo "Deleteting $TEMP_FOLDER folder"
- 
+
 rm -rf $TEMP_FOLDER
