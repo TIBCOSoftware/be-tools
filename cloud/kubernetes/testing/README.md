@@ -66,6 +66,7 @@ kubectl delete namespace asdg
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install cassandra bitnami/cassandra
 ```
+Note: Refer to https://bitnami.com/stack/cassandra/helm for more details.
 
 2)Get the cassandra password:
 ```sh
