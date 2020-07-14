@@ -61,19 +61,20 @@ kubectl delete namespace asdg
 
 ## Cassandra
 
-1)Install Cassandra using helm chart:
+Install Cassandra using using [BITNAMI CASSANDRA](https://bitnami.com/stack/cassandra/helm) helm chart:
 ```sh
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install cassandra bitnami/cassandra
 ```
-Note: Refer to https://bitnami.com/stack/cassandra/helm for more details.
 
-2)Get the cassandra password:
+Get the cassandra password:
 ```sh
 kubectl get secret --namespace default cassandra -o jsonpath="{.data.cassandra-password}" | base64 --decode
 ```
-3)Login to the cassandra pod and Connect to db replacing the Cassandra pod name and password:
+
+Connect to cassandra db:
 ```sh
+# Replace CASSANDRA-POD-NAME and PASSWORD with actual values
 kubectl exec -it CASSANDRA-POD-NAME bash
 cqlsh -u cassandra -p PASSWORD 127.0.0.1 9042
 ```
