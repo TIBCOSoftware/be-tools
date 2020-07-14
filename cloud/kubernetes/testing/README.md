@@ -1,4 +1,4 @@
-# Basic FTL & AS4 Applications for BE testing
+# Basic FTL, AS4 and Cassandra Applications for BE testing
 This page contains steps to deploy basic FTL & AS4 applications into kubernetes cluster.
 
 ## FTL
@@ -57,4 +57,22 @@ Clean up:
 kubectl delete -f asdg.yml -n asdg
 kubectl get pvc -n asdg -o name | xargs kubectl delete -n asdg
 kubectl delete namespace asdg
+```
+
+## Cassandra
+
+1)Install Cassandra using helm chart:
+```sh
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install cassandra bitnami/cassandra
+```
+
+2)Get the cassandra password:
+```sh
+kubectl get secret --namespace default cassandra -o jsonpath="{.data.cassandra-password}" | base64 --decode
+```
+3)Login to the cassandra pod and Connect to db replacing the Cassandra pod name and password:
+```sh
+kubectl exec -it CASSANDRA-POD-NAME bash
+cqlsh -u cassandra -p PASSWORD 127.0.0.1 9042
 ```
