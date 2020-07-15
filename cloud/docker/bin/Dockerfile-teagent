@@ -6,7 +6,7 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 
-FROM ubuntu:latest as intermediate
+FROM ubuntu:20.04 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -16,6 +16,7 @@ ARG BE_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
+ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL be-intermediate-image=true
 
@@ -45,16 +46,13 @@ RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 RUN apt-get update -y \
- && apt-get upgrade python-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python python-pip -y \
- && pip install jsonpickle requests awscli boto boto3 botocore \
+ && apt-get upgrade python3-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python3 python3-pip -y \
+ && pip3 install jsonpickle requests awscli boto boto3 botocore \
  && curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  apt-key add - \
- && add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable" \
+ && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" \
  && apt-get update -y  \ 
  && apt-get install --no-install-recommends docker-ce jq -y \
  && curl -L git.io/weave -o /usr/local/bin/weave \
