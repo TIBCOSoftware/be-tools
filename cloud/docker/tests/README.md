@@ -8,13 +8,13 @@ These tests performs following validations on the BE app image:
 4. Whether important files are updated correctly
 
 ## Run Tests
-Run run_tests.sh in a shell to invoke BE container structure tests.
+Run run_tests.sh in a shell to invoke BE container structure tests. To check usage run below command.
 ```sh
-./run_tests.sh
-``` 
+./run_tests.sh -h
+```
 
 ## Test Cases
-Various test cases are developed and organized in different yaml files.
-* `be-testcases.yaml` Validates BE related artifacts
-* `as-testcases.yaml` Validates AS related artifacts
-* `ftl-testcases.yaml` Validates FTL related artifacts
+Various test cases are developed and organized in different yaml files. File names are self explanatory.
+* `be-<be-version>-testcases.yaml` Validates BE related artifacts
+* `as-<as/as legacy-version>-<be-version>-testcases.yaml` Validates AS related artifacts
+* `ftl-<ftl-version>-<be-version>-testcases.yaml` Validates FTL related artifacts

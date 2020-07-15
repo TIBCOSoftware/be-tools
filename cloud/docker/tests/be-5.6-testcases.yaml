@@ -1,0 +1,11 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'BE Path'
+  path: '/opt/tibco/be/5.6/bin/'
+  shouldExist: true
+- name: 'BE Engine Binary'
+  path: '/opt/tibco/be/5.6/bin/be-engine'
+  shouldExist: true
+- name: 'BE Engine TRA File'
+  path: '/opt/tibco/be/5.6/bin/be-engine.tra'
+  shouldExist: true

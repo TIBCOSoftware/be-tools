@@ -531,6 +531,7 @@ if [ "$IS_S2I" = "true" ]; then
 		find . -name \*.zip -delete
 		rm "$ARG_INSTALLER_LOCATION/package_files.txt"
 		echo "DONE: Docker build successful."
+		BUILD_SUCCESS='true'
 	fi
 
 	echo "Deleting temporary intermediate image.."
@@ -543,5 +544,12 @@ if [ "$IS_S2I" = "true" ]; then
 	docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
 
 	rm -rf app
+
+	if [ $BUILD_SUCCESS == 'true' ]; then
+		echo "=========================TESTING DOCKER IMAGE========================="
+		cd ../tests
+		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
+		echo "=========================TESTING END=================================="
+	fi
 
 fi
