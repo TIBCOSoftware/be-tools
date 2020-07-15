@@ -4,21 +4,19 @@
 
 This chart installs Business Events application deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-## Dependencies:
-
-1. [MySQL chart](https://github.com/kubernetes/charts/tree/master/stable/mysql): It installs MySQL deployment for the database requirements of the backingstore BE applications. 
-2. [efs-provisioner chart](https://github.com/helm/charts/tree/master/stable/efs-provisioner): Used to fulfill PersistentVolumeClaims with EFS PersistentVolumes for the BE applications.
-
-The persisent volumes are created as folders with in an AWS EFS filesystem.
-
-https://aws.amazon.com/efs/
-
 ## Prerequisites Details
 
 * Kubernetes 1.15 or 1.17+
 * Helm stable version 3.1.0
 * PV provisioner support in the underlying infrastructure
 * A Kubernetes cluster: You must have Kubernetes installed. For the latest release of Helm, we recommend the latest stable release of Kubernetes. 
+
+## Dependencies:
+
+Below dependencies are included in BE helm charts
+
+1. [MySQL chart](https://github.com/kubernetes/charts/tree/master/stable/mysql): It installs MySQL deployment for the database requirements of the backingstore BE applications. 
+2. [efs-provisioner chart](https://github.com/helm/charts/tree/master/stable/efs-provisioner): Used to fulfill PersistentVolumeClaims with EFS PersistentVolumes for the BE applications.
 
 ## StatefulSet and persistent volumes Details
 
@@ -69,13 +67,16 @@ helm install my-release ./helm --set cpType=azure
 
 Note: <br>
 1.minikube is the default provider.<br>
-2.Update the values of mysql and efs-provisioner dependency in mysql section of helm/values.yaml.<br>
+2.Update the required values in helm/values.yaml.(ex: image,imagePullPolicy etc..,)  <br>
 
 
 At any point to check how to use helm, simply run the `help` command
 ```
 helm --help
 ```
+## Testing
+
+* Refer to readme.html in BE package examples folder.
 
 ## Uninstalling the Chart
 

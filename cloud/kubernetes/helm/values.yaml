@@ -23,6 +23,7 @@ ignite:
 
 ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
+  FTL_gv_CLUSTER_NAME: ftl.default.cluster
 
 #*************************Agents Part****************************************************
 
