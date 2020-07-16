@@ -12,6 +12,9 @@ ARG_AS_LEG_VERSION=na
 ARG_AS_VERSION=na
 ARG_FTL_VERSION=na
 
+## local variables
+TEMP_FOLDER="tmp_$RANDOM"
+
 ## usage
 if [ -z "${USAGE}" ]; then
   USAGE="\nUsage: run_tests.sh"
@@ -93,7 +96,7 @@ CONFIG_FILE_ARGS=''
 ## be version validation
 if [ $ARG_BE_VERSION != na ]; then
   echo "INFO: be version         --[${ARG_BE_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/be-${ARG_BE_VERSION}-testcases.yaml "
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-${ARG_BE_VERSION}-testcases.yaml "
 else
   echo "ERROR: Be version is mandatory "
   printf " ${USAGE} "
@@ -103,23 +106,27 @@ fi
 ## as legacy version validation
 if [ $ARG_AS_LEG_VERSION != na ]; then
   echo "INFO: as legacy version  --[${ARG_AS_LEG_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/as-${ARG_AS_LEG_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/as-${ARG_AS_LEG_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
 fi
 
 ## as version validation
 if [ $ARG_AS_VERSION != na ]; then
   echo "INFO: as version         --[${ARG_AS_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/as-${ARG_AS_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/as-${ARG_AS_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
 fi
 
 ## ftl version validation
 if [ $ARG_FTL_VERSION != na ]; then
   echo "INFO: ftl version        --[${ARG_FTL_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/ftl-${ARG_FTL_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl-${ARG_FTL_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
 fi
 
 echo "-----------------------------------------------"
 echo ""
+
+## generate testcases
+source generate_testcases.sh
+
 echo "INFO: Running container structure tests on BE application image [$ARG_IMAGE_NAME]."
 
 ## docker test command
@@ -129,3 +136,6 @@ docker run -i --rm \
     test \
     --image ${ARG_IMAGE_NAME} \
     ${CONFIG_FILE_ARGS}
+
+## rem temp dir
+rm -r ${TEMP_FOLDER}

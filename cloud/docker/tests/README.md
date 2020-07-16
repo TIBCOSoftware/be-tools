@@ -15,6 +15,6 @@ Run run_tests.sh in a shell to invoke BE container structure tests. To check usa
 
 ## Test Cases
 Various test cases are developed and organized in different yaml files. File names are self explanatory.
-* `be-<be-version>-testcases.yaml` Validates BE related artifacts
-* `as-<as/as legacy-version>-<be-version>-testcases.yaml` Validates AS related artifacts
-* `ftl-<ftl-version>-<be-version>-testcases.yaml` Validates FTL related artifacts
+* `betestcases.yaml` Validates BE related artifacts
+* `astestcases.yaml/aslegacytestcases.yaml` Validates AS related artifacts
+* `ftltestcases.yaml` Validates FTL related artifacts

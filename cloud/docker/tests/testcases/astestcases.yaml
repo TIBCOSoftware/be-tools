@@ -1,0 +1,9 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'AS lib Path'
+  path: '/opt/tibco/as/ARG_AS_VERSION/lib/'
+  shouldExist: true
+fileContentTests:
+- name: 'BE TRA Updated with AS home'
+  path: '/opt/tibco/be/ARG_BE_VERSION/bin/be-engine.tra'
+  expectedContents: ['/opt/tibco/as/ARG_AS_VERSION']
