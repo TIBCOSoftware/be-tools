@@ -44,7 +44,8 @@ RUN echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-
 
 RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
-   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer \
+   && rm -rf /home/tibco/be/be_installers-hf
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.04
 
