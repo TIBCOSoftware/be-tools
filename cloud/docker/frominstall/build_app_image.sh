@@ -202,5 +202,35 @@ if [ "$?" != 0 ]; then
 else
   echo "DONE: Docker build successful."
   rm -rf $TEMP_FOLDER
+
+  echo "=========================TESTING DOCKER IMAGE========================="
+  
+  ## get ftl version
+  if [ $FTL_HOME != "na" ]; then
+    FTL_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
+  else
+    FTL_VERSION=na
+  fi
+
+  ## get as legacy version
+  AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
+  AS_LEG_HOME=${AS_LEG_HOME%?}
+  if [[ $AS_LEG_HOME == '' ]]; then
+    AS_LEGACY_VERSION="na"
+  else
+    AS_LEGACY_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
+  fi
+
+  ## get as version
+  if [ $ACTIVESPACES_HOME != "na" ]; then
+    AS_VERSION=$( echo ${ACTIVESPACES_HOME}  | rev | cut -d'/' -f1 | rev )
+  else
+    AS_VERSION=na
+  fi
+  
+	cd ../tests
+	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_LEGACY_VERSION -as $AS_VERSION -f $FTL_VERSION
+	echo "=========================TESTING END=================================="
+
   exit 0
 fi
