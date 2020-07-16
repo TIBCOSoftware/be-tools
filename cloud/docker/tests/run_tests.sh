@@ -149,7 +149,7 @@ docker run -i --rm \
     ${CONFIG_FILE_ARGS}
 
 ## rem temp dir
-# rm -r ${TEMP_FOLDER}
+rm -r ${TEMP_FOLDER}
 
 echo ""
 echo "=================END OF CONTAINER STRUCTURE TESTS=================="
