@@ -14,8 +14,13 @@ cacheType: AS2                      #cacheType can be AS2, ignite
 # Image name and pull policy required for be app
 image: ftlsnapp
 imagePullPolicy: IfNotPresent
-imagePullSecrets:  #if required for azure
 
+# imageCredentials Credentials to pull image from a private registry. Provide these details, if BE docker image is available at private registry.
+imageCredentials:
+  registry:   #Ex: hub.docker.com
+  username:
+  password:
+  email:
 #*************************Agents env varaibles****************************************************
 
 ignite:

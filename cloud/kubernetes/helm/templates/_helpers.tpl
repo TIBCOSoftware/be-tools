@@ -223,3 +223,13 @@ Create a openshift NFS path details for sharedNothing and store
     server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
     path: {{ .Values.persistentvolumes.openshift.volume.nfs.sapath }}
 {{- end -}}
+
+{{- define "beimagepullsecret.fullname" -}}
+{{ .Release.Name }}-beimagepullsecret
+{{- end -}}
+
+{{- define "imagePullSecret" }}
+{{- with .Values.imageCredentials }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}
