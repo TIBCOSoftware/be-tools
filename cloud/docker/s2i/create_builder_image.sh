@@ -548,10 +548,8 @@ if [ "$IS_S2I" = "true" ]; then
 	rm -rf app
 
 	if [ $BUILD_SUCCESS == 'true' ]; then
-		echo "=========================TESTING DOCKER IMAGE========================="
 		cd ../tests
 		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
-		echo "=========================TESTING END=================================="
 	fi
 
 fi

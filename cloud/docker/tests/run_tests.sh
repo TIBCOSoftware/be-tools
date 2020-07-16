@@ -7,10 +7,10 @@
 
 ## default arguments
 ARG_IMAGE_NAME=na
-ARG_BE_VERSION=na
-ARG_AS_LEG_VERSION=na
-ARG_AS_VERSION=na
-ARG_FTL_VERSION=na
+ARG_BE_SHORT_VERSION=na
+ARG_AS_LEG_SHORT_VERSION=na
+ARG_AS_SHORT_VERSION=na
+ARG_FTL_SHORT_VERSION=na
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
@@ -42,31 +42,31 @@ while [[ $# -gt 0 ]]; do
         ;;
 		    -b|--be-version)
         shift # past the key and to the value
-        ARG_BE_VERSION="$1"
+        ARG_BE_SHORT_VERSION="$1"
         ;;
         -b=*|--be-version=*)
-        ARG_BE_VERSION="${key#*=}"
+        ARG_BE_SHORT_VERSION="${key#*=}"
         ;;
         -al|--as-legacy-version)
         shift # past the key and to the value
-        ARG_AS_LEG_VERSION="$1"
+        ARG_AS_LEG_SHORT_VERSION="$1"
         ;;
         -al=*|--as-legacy-version=*)
-        ARG_AS_LEG_VERSION="${key#*=}"
+        ARG_AS_LEG_SHORT_VERSION="${key#*=}"
 	      ;;
         -as|--as-version)
         shift # past the key and to the value
-        ARG_AS_VERSION="$1"
+        ARG_AS_SHORT_VERSION="$1"
         ;;
         -as=*|--as-version=*)
-        ARG_AS_VERSION="${key#*=}"
+        ARG_AS_SHORT_VERSION="${key#*=}"
         ;;
         -f|--ftl-version)
         shift # past the key and to the value
-        ARG_FTL_VERSION="$1"
+        ARG_FTL_SHORT_VERSION="$1"
         ;;
         -f=*|--ftl-version=*)
-        ARG_FTL_VERSION="${key#*=}"
+        ARG_FTL_SHORT_VERSION="${key#*=}"
         ;;
         -h|--help)
         shift # past the key and to the value
@@ -81,6 +81,10 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+echo ""
+echo "=================RUNNING CONTAINER STRUCTURE TESTS================="
+echo ""
+
 ## validating and appending config files based on argument values
 echo "-----------------------------------------------"
 if [ $ARG_IMAGE_NAME == na ]; then
@@ -88,15 +92,17 @@ if [ $ARG_IMAGE_NAME == na ]; then
   printf " ${USAGE} "
   exit 1;
 else
-  echo "INFO: image name         --[${ARG_IMAGE_NAME}]"
+  echo "INFO: image name:          [${ARG_IMAGE_NAME}]"
 fi
 
 CONFIG_FILE_ARGS=''
+SED_EXP=''
 
 ## be version validation
-if [ $ARG_BE_VERSION != na ]; then
-  echo "INFO: be version         --[${ARG_BE_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-${ARG_BE_VERSION}-testcases.yaml "
+if [ $ARG_BE_SHORT_VERSION != na ]; then
+  echo "INFO: be version:          [${ARG_BE_SHORT_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be.yaml "
+  SED_EXP+=" -e s/BE_SHORT_VERSION/${ARG_BE_SHORT_VERSION}/g "
 else
   echo "ERROR: Be version is mandatory "
   printf " ${USAGE} "
@@ -104,30 +110,35 @@ else
 fi
 
 ## as legacy version validation
-if [ $ARG_AS_LEG_VERSION != na ]; then
-  echo "INFO: as legacy version  --[${ARG_AS_LEG_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/as-${ARG_AS_LEG_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+if [ $ARG_AS_LEG_SHORT_VERSION != na ]; then
+  echo "INFO: as legacy version:   [${ARG_AS_LEG_SHORT_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/aslegacy.yaml "
+  SED_EXP+=" -e s/AS_LEG_SHORT_VERSION/${ARG_AS_LEG_SHORT_VERSION}/g "
 fi
 
 ## as version validation
-if [ $ARG_AS_VERSION != na ]; then
-  echo "INFO: as version         --[${ARG_AS_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/as-${ARG_AS_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+if [ $ARG_AS_SHORT_VERSION != na ]; then
+  echo "INFO: as version:          [${ARG_AS_SHORT_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/as.yaml "
+  SED_EXP+=" -e s/AS_SHORT_VERSION/${ARG_AS_SHORT_VERSION}/g "
 fi
 
 ## ftl version validation
-if [ $ARG_FTL_VERSION != na ]; then
-  echo "INFO: ftl version        --[${ARG_FTL_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl-${ARG_FTL_VERSION}-${ARG_BE_VERSION}-testcases.yaml "
+if [ $ARG_FTL_SHORT_VERSION != na ]; then
+  echo "INFO: ftl version:         [${ARG_FTL_SHORT_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl.yaml "
+  SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
 fi
 
 echo "-----------------------------------------------"
 echo ""
 
-## generate testcases
-source generate_testcases.sh
-
-echo "INFO: Running container structure tests on BE application image [$ARG_IMAGE_NAME]."
+## copying testcases and updating ftl/as/be short versions
+mkdir ${TEMP_FOLDER}
+FILES=${PWD}/testcases/*
+for f in $FILES ; do
+   sed  ${SED_EXP} $f  > ${PWD}/${TEMP_FOLDER}/$(basename ${f})
+done
 
 ## docker test command
 docker run -i --rm \
@@ -138,4 +149,8 @@ docker run -i --rm \
     ${CONFIG_FILE_ARGS}
 
 ## rem temp dir
-rm -r ${TEMP_FOLDER}
+# rm -r ${TEMP_FOLDER}
+
+echo ""
+echo "=================END OF CONTAINER STRUCTURE TESTS=================="
+echo ""
