@@ -15,7 +15,7 @@ spec:
         name: {{ include "beinferenceagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ if .Values.imageCredentials.registry }}{{ include "beimagepullsecret.fullname" . }}{{ end }}
+        - name: {{ include "beimagepullsecret.fullname" . }}
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}
