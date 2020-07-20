@@ -11,6 +11,7 @@ ARG_BE_SHORT_VERSION=na
 ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
+ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
@@ -25,6 +26,7 @@ USAGE+="\n\n [ -b|--be-version]           : Be version in x.x format ex(5.6) [re
 USAGE+="\n\n [-al|--as-legacy-version]    : Activespaces legacy version in x.x format ex(2.4) [optional]"
 USAGE+="\n\n [-as|--as-version]           : Activespaces version in x.x format ex(4.4) [optional]"
 USAGE+="\n\n [ -f|--ftl-version]          : Ftl version in x.x format ex(6.4) [optional]"
+USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
@@ -67,6 +69,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -f=*|--ftl-version=*)
         ARG_FTL_SHORT_VERSION="${key#*=}"
+        ;;
+        -kv|--key-value-pair)
+        shift # past the key and to the value
+        ARG_KEY_VALUE_PAIRS+=" $1"
+        ;;
+        -kv=*|--key-value-pair=*)
+        ARG_KEY_VALUE_PAIRS+=" ${key#*=}"
         ;;
         -h|--help)
         shift # past the key and to the value
@@ -130,6 +139,22 @@ if [ $ARG_FTL_SHORT_VERSION != na ]; then
   SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
 fi
 
+## key value pairs validation
+if [ "${ARG_KEY_VALUE_PAIRS}" != "" ]; then
+  echo "INFO: key value pairs:     [${ARG_KEY_VALUE_PAIRS}]"
+  for kv in $ARG_KEY_VALUE_PAIRS ; do
+    if [[ $kv != *"="* ]]; then
+      echo "ERROR: Invalid key value pairs"
+      printf " ${USAGE} "
+      exit 1
+    else
+      KEY=$(echo $kv | cut -d'=' -f1)
+      VAL=$(echo $kv | cut -d'=' -f2)
+      SED_EXP+=" -e s/${KEY}/${VAL}/g "
+    fi
+  done
+fi
+
 echo "-----------------------------------------------"
 echo ""
 
@@ -137,7 +162,11 @@ echo ""
 mkdir ${TEMP_FOLDER}
 FILES=${PWD}/testcases/*
 for f in $FILES ; do
-   sed  ${SED_EXP} $f  > ${PWD}/${TEMP_FOLDER}/$(basename ${f})
+  FILE_NAME=$(basename ${f})
+  sed  ${SED_EXP} $f  > ${PWD}/${TEMP_FOLDER}/${FILE_NAME}
+  if [[ ${CONFIG_FILE_ARGS} != *${FILE_NAME}* ]]; then
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/${FILE_NAME} "
+  fi
 done
 
 ## docker test command
