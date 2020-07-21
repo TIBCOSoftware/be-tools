@@ -13,10 +13,27 @@ Run run_tests.sh in a shell to invoke BE container structure tests. To check usa
 ./run_tests.sh -h
 ```
 
+Sample run command:
+```sh
+./run_tests.sh --image-name beappimage:01 \
+--be-version 6.0 \
+--as-version 4.4 \
+--ftl-version 6.4
+```
+
 ## Test Cases
 Various test cases are developed and organized in different yaml files. File names are self explanatory.
-* `betestcases.yaml` Validates BE related artifacts
-* `astestcases.yaml/aslegacytestcases.yaml` Validates AS related artifacts
-* `ftltestcases.yaml` Validates FTL related artifacts<br><br>
+* `betestcases.yaml` Contains BE artifacts related test cases
+* `astestcases.yaml/aslegacytestcases.yaml` Contains Active Spaces artifacts related test cases
+* `ftltestcases.yaml` Contains FTL artifacts related test cases
+<br><br>
 
-Note: A part from given files you can create your own yaml testcases. If you have generic testcases there is option for supplying key value pairs using `-kv or --key-value-pair`. This key should be unique string in all yaml files. Custom yaml files should be placed along with existing testcases.
+## Notes to add Additional Test Cases
+
+* Additional test cases can be added in existing yaml files OR Add new test case file with extension *.yaml under /testcases folder
+* You can add more generic test cases wich has variable tokens/keys in it like BE_SHORT_VERSION, JRE_VERSION, etc. Supply values to be replaced using `-kv or --key-value-pair` while running test cases.
+Sample usage:
+```sh
+./run_tests.sh --image-name beappimage:01 \
+--key-value-pair JRE_VERSION=1.8.0
+```
