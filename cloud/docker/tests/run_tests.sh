@@ -15,6 +15,7 @@ ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
+FIXED_TESTCASES="be.yaml,as.yaml,aslegacy.yaml,ftl.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -164,7 +165,7 @@ FILES=${PWD}/testcases/*
 for f in $FILES ; do
   FILE_NAME=$(basename ${f})
   sed  ${SED_EXP} $f  > ${PWD}/${TEMP_FOLDER}/${FILE_NAME}
-  if [[ ${CONFIG_FILE_ARGS} != *${FILE_NAME}* ]]; then
+  if [[ ${FIXED_TESTCASES} != *${FILE_NAME}* ]]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/${FILE_NAME} "
   fi
 done
