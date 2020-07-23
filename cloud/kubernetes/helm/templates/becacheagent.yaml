@@ -17,7 +17,7 @@ spec:
         name: {{ include "becacheagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets }}    #if required
+        - name: {{ include "beimagepullsecret.fullname" . }}
       containers:
       - name: {{ .Values.cachenode.containers.name }}
         image: {{ .Values.image }}
