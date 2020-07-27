@@ -140,6 +140,17 @@ if [ $ARG_FTL_SHORT_VERSION != na ]; then
   SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
 fi
 
+## adding be product full version, cdd name and ear name to sed expression
+if [ "$ARG_VERSION" != "" ]; then
+  SED_EXP+=" -e s/BE_PRODUCT_VERSION_KEY/${ARG_VERSION}/g "
+fi
+if [ "$CDD_FILE_NAME" != "" ]; then
+  SED_EXP+=" -e s/CDD_FILE_NAME_KEY/${CDD_FILE_NAME}/g "
+fi
+if [ "$EAR_FILE_NAME" != "" ]; then
+  SED_EXP+=" -e s/EAR_FILE_NAME_KEY/${EAR_FILE_NAME}/g "
+fi
+
 ## key value pairs validation
 if [ "${ARG_KEY_VALUE_PAIRS}" != "" ]; then
   echo "INFO: key value pairs:     [${ARG_KEY_VALUE_PAIRS}]"
@@ -151,7 +162,12 @@ if [ "${ARG_KEY_VALUE_PAIRS}" != "" ]; then
     else
       KEY=$(echo $kv | cut -d'=' -f1)
       VAL=$(echo $kv | cut -d'=' -f2)
-      SED_EXP+=" -e s/${KEY}/${VAL}/g "
+      ## setting kv pair as top values in sed expression string
+      if [[ $SED_EXP == *"$KEY"* ]]; then
+        SED_EXP=" -e s/${KEY}/${VAL}/g $SED_EXP"
+      else
+        SED_EXP+=" -e s/${KEY}/${VAL}/g "
+      fi
     fi
   done
 fi
