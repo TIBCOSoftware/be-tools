@@ -104,7 +104,7 @@ BLANK=""
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_${ARG_VERSION}_HF"
+BE_HF_REGEX="${BE_PRODUCT}-hf_*_HF"
 
 
 
@@ -129,16 +129,16 @@ beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM"
 # Check Single Base version  exist, zero or one HF exist. --------------------------------------
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 
-if [ $beBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory.There should be only one.\n"
 	exit 1;
-elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not present
+elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
 	exit 1;	
-elif [ $beBasePckgsCnt -eq 1 ]; then
+elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
 	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
@@ -151,9 +151,11 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 		fi
 	done
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-		if [ $ARG_VERSION == $hfbeversion];then
-			ARG_BE_HOTFIX=$(echo "${beversion}"| cut -d'_' -f 5)
+		VERSION_PACKAGE="${beHfPckgs[0]}"
+		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
+    if [ $ARG_VERSION == $hfbeversion ];then
+      ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
