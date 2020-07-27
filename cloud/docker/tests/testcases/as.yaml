@@ -1,7 +1,10 @@
 schemaVersion: '2.0.0'
 fileExistenceTests:
-  - name: 'AS lib Path'
+  - name: 'AS Lib Path'
     path: '/opt/tibco/as/AS_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'AS Lib Jar File'
+    path: '/opt/tibco/as/AS_SHORT_VERSION/lib/tibdg.jar'
     shouldExist: true
 fileContentTests:
   - name: 'BE TRA Updated with AS home'

@@ -1,7 +1,10 @@
 schemaVersion: '2.0.0'
 fileExistenceTests:
-  - name: 'FTL lib Path'
+  - name: 'FTL Lib Path'
     path: '/opt/tibco/ftl/FTL_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'FTL Lib Jar File'
+    path: '/opt/tibco/ftl/FTL_SHORT_VERSION/lib/tibftl.jar'
     shouldExist: true
 fileContentTests:
   - name: 'BE TRA Updated with FTL home'
