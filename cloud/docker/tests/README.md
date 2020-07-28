@@ -32,10 +32,9 @@ Various test cases are developed and organized in different yaml files. File nam
 
 ## Notes to add Additional Test Cases
 
-* Additional test cases can be added in existing yaml files OR Add new test case file with extension *.yaml under /testcases folder
-* You can add more generic test cases wich has variable tokens/keys in it like BE_SHORT_VERSION, JRE_VERSION, etc. Supply values to be replaced using `-kv or --key-value-pair` while running test cases.
+* Additional test cases can be added to existing yaml files OR to a new file with extension *.yaml under /testcases folder
+* You can add generic test cases wich has variable tokens in it like BE_SHORT_VERSION, JRE_VERSION, etc. Supply values to be replaced using `-kv or --key-value-pair` while running test cases.
 Sample usage:
 ```sh
-./run_tests.sh --image-name beappimage:01 \
 --key-value-pair JRE_VERSION=1.8.0
 ```
