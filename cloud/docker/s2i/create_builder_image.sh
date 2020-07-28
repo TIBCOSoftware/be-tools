@@ -233,7 +233,6 @@ elif [ $bePckgsCnt -eq 1 ]; then
 		fi
 	done
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-	
 		VERSION_PACKAGE="${beHfPckgs[0]}"
 		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
 		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
@@ -534,6 +533,7 @@ if [ "$IS_S2I" = "true" ]; then
 		find . -name \*.zip -delete
 		rm "$ARG_INSTALLER_LOCATION/package_files.txt"
 		echo "DONE: Docker build successful."
+		BUILD_SUCCESS='true'
 	fi
 
 	echo "Deleting temporary intermediate image.."
@@ -546,5 +546,12 @@ if [ "$IS_S2I" = "true" ]; then
 	docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
 
 	rm -rf app
+
+	if [ $BUILD_SUCCESS == 'true' ]; then
+		cd ../tests
+		EAR_FILE_NAME="dummy.txt"
+		CDD_FILE_NAME="dummy.txt"
+		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
+	fi
 
 fi

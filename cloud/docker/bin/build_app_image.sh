@@ -52,6 +52,7 @@ docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_
 if [ "$?" != 0 ]; then
   echo "Docker build failed."
 else
+  BUILD_SUCCESS='true'
   echo "DONE: Docker build successful."
 fi
 
@@ -59,3 +60,8 @@ echo "Deleting temporary intermediate image.."
 docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
 echo "Deleting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER
+
+if [ $BUILD_SUCCESS == 'true' ]; then
+	cd ../tests
+	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
+fi
