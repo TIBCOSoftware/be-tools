@@ -8,6 +8,8 @@
 ## default arguments
 ARG_IMAGE_NAME=na
 ARG_BE_SHORT_VERSION=na
+ARG_CDD_FILE_NAME=na
+ARG_EAR_FILE_NAME=na
 ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
@@ -24,6 +26,8 @@ fi
 
 USAGE+="\n\n [ -i|--image-name]           : Be app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
 USAGE+="\n\n [ -b|--be-version]           : Be version in x.x format ex(5.6) [required]"
+USAGE+="\n\n [ -c|--cdd-filename]         : CDD file name ex(fd.cdd) [required]"
+USAGE+="\n\n [ -e|--ear-filename]         : EAR file name ex(fd.ear) [required]"
 USAGE+="\n\n [-al|--as-legacy-version]    : Activespaces legacy version in x.x format ex(2.4) [optional]"
 USAGE+="\n\n [-as|--as-version]           : Activespaces version in x.x format ex(4.4) [optional]"
 USAGE+="\n\n [ -f|--ftl-version]          : Ftl version in x.x format ex(6.4) [optional]"
@@ -49,6 +53,20 @@ while [[ $# -gt 0 ]]; do
         ;;
         -b=*|--be-version=*)
         ARG_BE_SHORT_VERSION="${key#*=}"
+        ;;
+		    -c|--cdd-filename)
+        shift # past the key and to the value
+        ARG_CDD_FILE_NAME="$1"
+        ;;
+        -c=*|--cdd-filename=*)
+        ARG_CDD_FILE_NAME="${key#*=}"
+        ;;
+		    -e|--ear-filename)
+        shift # past the key and to the value
+        ARG_EAR_FILE_NAME="$1"
+        ;;
+        -e=*|--ear-filename=*)
+        ARG_EAR_FILE_NAME="${key#*=}"
         ;;
         -al|--as-legacy-version)
         shift # past the key and to the value
@@ -119,6 +137,26 @@ else
   exit 1;
 fi
 
+## cdd file name validation
+if [ $ARG_CDD_FILE_NAME != na ]; then
+  echo "INFO: cdd file name:       [${ARG_CDD_FILE_NAME}]"
+  SED_EXP+=" -e s/CDD_FILE_NAME_KEY/${ARG_CDD_FILE_NAME}/g "
+else
+  echo "ERROR: cdd file name is mandatory "
+  printf " ${USAGE} "
+  exit 1;
+fi
+
+## ear file name validation
+if [ $ARG_EAR_FILE_NAME != na ]; then
+  echo "INFO: ear file name:       [${ARG_EAR_FILE_NAME}]"
+  SED_EXP+=" -e s/EAR_FILE_NAME_KEY/${ARG_EAR_FILE_NAME}/g "
+else
+  echo "ERROR: ear file name is mandatory "
+  printf " ${USAGE} "
+  exit 1;
+fi
+
 ## as legacy version validation
 if [ $ARG_AS_LEG_SHORT_VERSION != na ]; then
   echo "INFO: as legacy version:   [${ARG_AS_LEG_SHORT_VERSION}]"
@@ -138,17 +176,6 @@ if [ $ARG_FTL_SHORT_VERSION != na ]; then
   echo "INFO: ftl version:         [${ARG_FTL_SHORT_VERSION}]"
   CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl.yaml "
   SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
-fi
-
-## adding be product full version, cdd name and ear name to sed expression
-if [ "$ARG_VERSION" != "" ]; then
-  SED_EXP+=" -e s/BE_PRODUCT_VERSION_KEY/${ARG_VERSION}/g "
-fi
-if [ "$CDD_FILE_NAME" != "" ]; then
-  SED_EXP+=" -e s/CDD_FILE_NAME_KEY/${CDD_FILE_NAME}/g "
-fi
-if [ "$EAR_FILE_NAME" != "" ]; then
-  SED_EXP+=" -e s/EAR_FILE_NAME_KEY/${EAR_FILE_NAME}/g "
 fi
 
 ## key value pairs validation

@@ -17,6 +17,8 @@ Sample run command:
 ```sh
 ./run_tests.sh --image-name beappimage:01 \
 --be-version 6.0 \
+--cdd-filename fd.cdd \
+--ear-filename fd.ear \
 --as-version 4.4 \
 --ftl-version 6.4
 ```

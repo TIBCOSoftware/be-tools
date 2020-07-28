@@ -3,8 +3,6 @@ metadataTest:
   env:
     - key: TIBCO_HOME
       value: /opt/tibco
-    - key: BE_PRODUCT_VERSION
-      value: BE_PRODUCT_VERSION_KEY
     - key: BE_HOME
       value: /opt/tibco/be/BE_SHORT_VERSION
     - key: PU
