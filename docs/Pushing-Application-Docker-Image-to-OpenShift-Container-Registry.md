@@ -69,6 +69,13 @@ To deploy the application, you must push the application Docker image to the Ope
 
  ## For Azure registry
 
- To Create an azure registry, please follow [steps]((Setting%20Up%20an%20Azure%20Container%20Registry))  
+ To Create an azure registry, please follow [steps](Setting%20Up%20an%20Azure%20Container%20Registry)  
 
-**Next topics:** [Kubernetes Deployments](deployments)
+## Next Steps
+
+* How to deploy TIBCO BusinessEvents application is available [here](deployments)
+
+
+## Next Steps
+
+* How to deploy TIBCO BusinessEvents application is available [here](deployments)

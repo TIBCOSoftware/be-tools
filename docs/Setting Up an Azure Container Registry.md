@@ -73,4 +73,6 @@ For more information about commands used in the following procedure, see [Micros
     az acr repository list --name <registry_login_server> --output table
     ```
 
-**Next Topic**: Continue to [Kubernetes Deployments](deployments)
+## Next Steps
+
+* How to deploy TIBCO BusinessEvents application is available [here](deployments)
