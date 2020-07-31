@@ -29,9 +29,12 @@ Ensure that you have the following infrastructure in place:
 -   Installer ZIP files for the following software:
 
     -   TIBCO BusinessEvents
-    -   TIBCO ActiveSpaces \(for cache-based projects\)
-    -   TIBCO BusinessEvents add-ons \(if your project uses it\)
-    **Note:** **\(macOS only\)** On the macOS platform, you can build only Linux containers. To build a Docker image on macOS, you must store the TIBCO BusinessEvents Linux installer ZIP file \(`TIB_businessevents-enterprise_<version>_linux26gl25_x86_64.zip`\) on your computer instead of the macOS installer ZIP file. Similarly, if your application uses cache, download Linux installers for TIBCO ActiveSpaces. Or if it uses TIBCO BusinessEvents add-ons, download Linux installers for TIBCO BusinessEvents add-ons on your computer.
+    -   TIBCO ActiveSpaces Legacy \(for cache-based projects\)
+    -   TIBCO FTL \(for cache and store based projects-if your project uses it\)
+    -   TIBCO ActiveSpaces \(for cache-based projects-if your project uses it\)
+    -   TIBCO BusinessEvents add-ons \(if your project uses it\)<br>
+**Note** **\(macOS only\)**: <br>
+    On the macOS platform, you can build only Linux containers. To build a Docker image on macOS, you must store the TIBCO BusinessEvents Linux installer ZIP file \(`TIB_businessevents-enterprise_<version>_linux26gl25_x86_64.zip`\) on your computer instead of the macOS installer ZIP file. Similarly, if your application uses cache, download Linux installers for TIBCO ActiveSpaces. Or if it uses TIBCO BusinessEvents add-ons, download Linux installers for TIBCO BusinessEvents add-ons on your computer.
 
 -   \(Optional\) For monitoring TIBCO BusinessEvents applications, install TIBCO Enterprise Administrator with the latest hotfix. For installation instructions, see [TIBCO Enterprise Administrator documentation](https://docs.tibco.com/products/tibco-enterprise-administrator).
 -   If you are running the application in a Kubernetes cluster on a cloud platform, ensure that you have an active account on that cloud platform.

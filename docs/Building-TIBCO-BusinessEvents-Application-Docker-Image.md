@@ -29,7 +29,8 @@ See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#prepa
 
 -   **\(*Windows and Linux Only*\) Application Docker Image by Using Existing TIBCO BusinessEvents Installation**
 
-    Go to the `BE_HOME/cloud/docker/frominstall` folder and run the `build_app_image` application Docker image building script.
+**Note**:
+* FTL and ACTIVESPACES will get included in image only when FTL_HOME and ACTIVESPACES_HOME values are set in `be-engine.tra`
 
     **Syntax:**
 
@@ -42,13 +43,43 @@ See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#prepa
     ```
     build_app_image -a /home/user/tibco/be/5.6/examples/standard/FraudDetection -r fdapp --gv-providers "consul"
     ```
--  Build Applicaition Docker Image by using [s2i](docker-image-s2i)
-
 **Note:** For the Windows platform, enclose all arguments in double quotes \("\).
+
+-  **Build Application Docker Image by using s2i**
+
+     Go to the `BE_HOME/cloud/docker/s2i` folder and run the `create_builder_image` application Docker image building script.
+
+    **Syntax:**
+    ``` 
+    ./create_builder_image.sh -l <installers-directory> -r <app-image-name>:<app-image-version> [--gv-providers <names-of-GV-providers>] [-d <Dockerfile>] [-h]
+    ```
+    **Example:**
+    ```
+    ./create_builder_image.sh -l /Users/test/BE_Installers -r s2ibuilder:01
+    ```
+
+
+    Next we provide application source to s2i to create an assembled image off the previously created builder image.
+
+    **Syntax:**
+
+    ```
+
+    s2i build <location of the source code> <name of the builder image> <name of the application image>
+    ```
+
+    **Example:**
+
+    ```
+    s2i build /Users/test/Applications/FraudDetection/source s2ibuilder:01 fdopenshifts2i:01
+    ```
+
+
+
 
 |Argument|Required/Optional|Description|
 |--------|-----------------|-----------|
-|`-l/--installers-location` \(*For the Docker image based on software installers*\)|Required|The location where installers for TIBCO BusinessEvents, TIBCO ActiveSpaces \(optional\), and TIBCO BusinessEvents add-ons \(optional\) are stored. This option is available for scripts that are run from BE_HOME/cloud/docker/bin.|
+|`-l/--installers-location` \(*For the Docker image based on software installers*\)|Required|The location where installers for TIBCO BusinessEvents, TIBCO ActiveSpaces Legacy \(optional\),TIBCO ActiveSpaces \(optional\), TIBCO FTL \(optional\) and TIBCO BusinessEvents add-ons \(optional\) are stored. This option is available for scripts that are run from BE_HOME/cloud/docker/bin.|
 |`-l/--be-home` \(*For the Docker image based on the existing TIBCO BusinessEvents installation*\)|Optional|Specify TIBCO BusinessEvents installation \(BE_HOME\) location. This is optional if the script runs from its default location \(BE_HOME/cloud/docker/frominstall\).|
 |`-a/-app-location`|Required|The location where the application CDD file, enterprise archive \(EAR\) file, and external JAR files are stored.|
 |`-r/-repo`|Required|Name that you want to assign to application Docker image. Optionally, you can provide the version number for the Docker image. Use the following naming convention for the application Docker image:```<image-name>:[version-number]```. For example, `fdc:1.0`.|

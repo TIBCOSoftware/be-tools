@@ -86,7 +86,7 @@ By default the following ports are exposed by the TIBCO BusinessEvents Dockerfil
 -   `50000` and `50001`: These are the ports on which TIBCO ActiveSpaces listens. These are exposed by the base image.
 
     **Note:** The port for `AS_LISTEN_URL` and `AS_DISCOVER_URL` are set to `50000` in scripts. Also, for `AS_REMOTE_LISTEN_URL`, the port is set to `50001`. You must not change these ports.
-
+-  `47500-47510` and `47100-47110` are the ports used by Apache Ignite nodes as listen ports and as communication ports.
 -   `5555`: This is the JMX port exposed by the base image.
 -   `8090` and `5000`: These are the rule management server ports exposed by the base image.
 
