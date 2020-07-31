@@ -4,16 +4,25 @@ You can run any TIBCO BusinessEvents application on Amazon Elastic Kubernetes Se
 
 For details, see [Amazon EKS Documentation](https://docs.aws.amazon.com/eks/index.html).
 
-## Readme for Sample Applications
+## Prerequisite
 
-The readme.html files that are provided with TIBCO BusinessEvents contain information about running the sample applications and components on Amazon EKS. You can follow the instruction in the readme.html files to run the application, WebStudio, and TIBCO BusinessEvents Enterprise Administrator Agent by using the sample YAML files.
+* Setup eksctl [cli](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
 
-The following table lists location of readme.html and sample YAML files for running sample applications and other components:
 
-|Scenario|Readme.html and Sample YAML Files Location|
-|--------|------------------------------------------|
-|Running TIBCO BusinessEvents application \(FraudDetection\) without cache on AWS|BE_HOME\cloud\kubernetes\AWS\inmemory|
-|Running TIBCO BusinessEvents application \(FraudDetectionCache and FraudDetectionStore\) with cache on AWS|BE_HOME\cloud\kubernetes\AWS\cache|
-|Running TIBCO BusinessEvents WebStudio on AWS|BE_HOME\cloud\kubernetes\AWS\rms|
-|Running TIBCO BusinessEvents Enterprise Administration Agent for monitoring TIBCO BusinessEvents applications on AWS|BE_HOME\cloud\kubernetes\AWS\tea|
+## Create EKS Cluster
+* Create your Amazon EKS cluster and worker nodes with the following command:
+```
+eksctl create cluster
+eksctl create cluster --help
+```
+* To delete the cluster, run the following command:
+```
+eksctl delete cluster --name <cluster-name>
+```
+* To check if everything is properly configured, run the following command
+```
+kubectl get services
+```
+
+**Next Topic**: [Registry](Setting%20Up%20an%20AWS%20Container%20Registry)
 

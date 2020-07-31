@@ -1,3 +1,8 @@
+## Prerequistes
+
+* Kubernetes cluster must be up and running, accessible
+* kubectl installed
+
 ## Introduction
 
 
@@ -20,14 +25,6 @@ Please refer to deployments below.
 * [Running BE Application](Running%20an%20Application)
 * [Running the RMS](Running-on-RMS.md)
 * [ Monitoring TIBCO BusinessEvents Applications](Monitoring%20TIBCO%20BusinessEvents%20Applications.md)
-
-## Need to add content 
-
-ex: abt BE app, RMS and tea
-
-Provide reference in below pages
-1. Cluster setup of cloud provider
-2. link as Next topic in cloud registry setup
 
 
 Note: For Openshift cluster deployments, you can use `oc` or `kubectl` cli for deployments to cluster.

@@ -45,21 +45,21 @@ helm dep update ./helm
 
 Following table illustrates how to use helm switches to select particular deployment option out of 13 possible options:
 
-| Topology Name | cmType | omType | bsType  | storeType |
-| ------------- | :---: | :---: | :---: | :---: |
-| Unclustered Inmemory              |  unclustered      | inmemory       |  na      | na          |
-| Unclustered store AS4              | unclustered        |  store      | na       | AS4          |
-| Unclustered store Cassandra               | unclustered       | store       |na        | Cassandra          |
-| clustered store AS4               |  FTL      | store       | na        | AS4          |
-| clustered store Cassandra               | FTL       | store       | na         | Cassandra          |
-| clustered Cache AS2 None              | AS2      | cache       | None        | na          |
-| clustered Cache AS2 sharedNothing                | AS2       | cache       | sharedNothing       |  na         |
-| clustered Cache AS2 store               | AS2       | cache       | store        |  RDBMS         |
-| clustered Cache FTL None              |  FTL      | cache       | None       |   na        |
-| clustered Cache FTL sharedNothing               | FTL       | cache       | sharedNothing       | na           |
-| clustered Cache FTL store RDBMS               |  FTL      |  cache      | store       | RDBMS          |
-| clustered Cache FTL store AS4               | FTL       | cache       | store       | AS4          |
-| clustered Cache FTL store Cassandra               |  FTL      | cache       | store       | Cassandra          |
+| Topology Name | BE Version | cmType | omType | bsType  | storeType |
+| ------------- | :---:  | :---: | :---: | :---: | :---: |
+| Unclustered Inmemory  | 5.6.1,6.0            |  unclustered      | inmemory       |  na      | na          |
+| Unclustered store AS4              |6.0            | unclustered        |  store      | na       | AS4          |
+| Unclustered store Cassandra               |6.0            | unclustered       | store       |na        | Cassandra          |
+| clustered store AS4               | 6.0            | FTL      | store       | na        | AS4          |
+| clustered store Cassandra               |6.0            | FTL       | store       | na         | Cassandra          |
+| clustered Cache AS2 None              |  5.6.1,6.0            | AS2      | cache       | None        | na          |
+| clustered Cache AS2 sharedNothing                |  5.6.1,6.0            | AS2       | cache       | sharedNothing       |  na         |
+| clustered Cache AS2 store               |  5.6.1,6.0            |AS2       | cache       | store        |  RDBMS         |
+| clustered Cache FTL None              | 6.0            | FTL      | cache       | None       |   na        |
+| clustered Cache FTL sharedNothing               | 6.0            |FTL       | cache       | sharedNothing       | na           |
+| clustered Cache FTL store RDBMS               |6.0            |  FTL      |  cache      | store       | RDBMS          |
+| clustered Cache FTL store AS4               |6.0            | FTL       | cache       | store       | AS4          |
+| clustered Cache FTL store Cassandra               |6.0            |  FTL      | cache       | store       | Cassandra          |
 
 Note: minikube is the default provider
 

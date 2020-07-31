@@ -5,7 +5,10 @@
 1. Using physical boxes
 2. Using Azure
 
-## OpenShift cluster setup
+# OpenShift cluster setup
+
+## Using physical boxes
+
 To run the application in a Kubernetes cluster on OpenShift, you can use OpenShift Container Platform CLI which runs on top of the Kubernetes cluster.
 
 You can download the `oc` client tool from the OpenShift web console and install it to execute OpenShift Container Platform commands. In the OpenShift Container Platform, you can create a new project that defines the scope of resources and who can access those resources. The application images are deployed in a project.
@@ -37,10 +40,13 @@ For details about OpenShift Container Platform or any of the steps in the follow
 ### Result
 A new project `be-project` is created and you are its project admin. You can use the `oc status` command to see the status of your projects.
 
+Note: For Openshift cluster deployments, you can use `oc` or `kubectl` cli for deployments to cluster.
+
+
 **Next topic:**
 [Pushing Application Docker Image to OpenShift Container Registry](Pushing-Application-Docker-Image-to-OpenShift-Container-Registry)
 
-## Azure OpenShift cluster setup
+## Using Azure
 
 ### Prerequisites
 * Azure subscription. You need to have access to [Azure portal](https://portal.azure.com/)
