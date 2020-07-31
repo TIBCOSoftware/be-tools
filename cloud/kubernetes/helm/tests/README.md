@@ -6,11 +6,11 @@ Validations include:
 2. Integration Tests: Whether `kubernetes` templates are deployed as expected
 
 ## Setup
-Install [Go](https://golang.org/doc/install) `v1.13` or above.
+Install [Go](https://golang.org/doc/install) `v1.14` or above.
 
 ## Run Tests
 Run test using `go test` command:
 ```sh
-cd cloud/kubernetes/tests
+cd cloud/kubernetes/helm/tests
 go test -v ./...
 ```
