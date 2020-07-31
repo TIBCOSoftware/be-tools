@@ -145,4 +145,6 @@ docker tag <image> <harbor_host_address>/library/<image>
 docker push <harbor_host_address>/library/<image>
 ```
 
-**[Next]**: Continue to [Kubernetes Deployments](deployments) 
+## Next Steps
+
+* How to deploy TIBCO BusinessEvents application is available [here](deployments)

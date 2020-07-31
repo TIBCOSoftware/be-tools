@@ -8,6 +8,8 @@ For details, see [OpenShift Container Platform documentation](https://docs.opens
 * Setup [Azure OpenShift Cluster](Setting-Up-the-OpenShift-Container-Platform-CLI-Environment)
 * create [container registry](Setting%20Up%20an%20Azure%20Container%20Registry)
 
+Note: For Openshift cluster deployments, you can use `oc` or `kubectl` cli for deployments to cluster.
+
 
 ## Backing Store persistence setup 
 
@@ -28,3 +30,5 @@ For details, see [OpenShift Container Platform documentation](https://docs.opens
 4. Set up the provisioner for the MySQL database by creating the persistent volume and PVC.
 
    For details about the sample YAML files for persistent volume and PVC, see [Sample Kubernetes YAML Files for Applications with Shared All Persistence](Sample-Kubernetes-YAML-Files-for-Applications-with-Shared-All-Persistence).
+
+

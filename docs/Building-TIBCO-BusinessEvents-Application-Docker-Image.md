@@ -42,7 +42,7 @@ See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#prepa
     ```
     build_app_image -a /home/user/tibco/be/5.6/examples/standard/FraudDetection -r fdapp --gv-providers "consul"
     ```
-
+-  Build Applicaition Docker Image by using [s2i](docker-image-s2i)
 
 **Note:** For the Windows platform, enclose all arguments in double quotes \("\).
 

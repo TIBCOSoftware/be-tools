@@ -42,27 +42,5 @@ Set up the Azure Container Registry and push the application Docker image to it,
     kubectl get nodes
     ```
 
-
-Based on your application architecture, deploy the application on the Kubernetes cluster:
-
--   For deployment of application for No Backing Store cluster, see [Running the Application Without Backing Store on Azure](Running%20the%20TIBCO%20BusinessEvents%20Application%20for%20No%20Backing%20Store#).
--   For deployment of application for Shared Nothing persistence, see [Running an Application with Shared Nothing Persistence on Azure](Running%20an%20Application%20with%20Shared%20Nothing%20Storage%20on%20Azure#).
--   For deployment of application for Shared All persistence, see [Running an Application with Shared All Persistence on Azure](Running%20the%20Application%20for%20Shared%20All%20Storage%20on%20Azure#).
-
-**Parent topic:**[Running an Application on Microsoft Azure Based Kubernetes Cluster](Running%20an%20Application%20on%20Microsoft%20Azure%20Based%20Kubernetes%20Cluster)
-
-**Related information**  
-
-
-[Running an Application with Shared Nothing Persistence on Azure](Running%20an%20Application%20with%20Shared%20Nothing%20Storage%20on%20Azure)
-
-[Running RMS on Azure Based Kubernetes](Running%20RMS%20on%20Azure%20Based%20Kubernetes)
-
-[Running an Application with Shared All Persistence on Azure](Running%20the%20Application%20for%20Shared%20All%20Storage%20on%20Azure)
-
-[Running the Application Without Backing Store on Azure](Running%20the%20TIBCO%20BusinessEvents%20Application%20for%20No%20Backing%20Store)
-
-[Setting up the Microsoft Azure CLI Environment](Setting%20Microsoft%20Azure%20CLI%20Environment)
-
-[Setting Up an Azure Container Registry](Setting%20Up%20an%20Azure%20Container%20Registry)
+**Next Topic** [Setting Up an Azure Container Registry](Setting%20Up%20an%20Azure%20Container%20Registry).
 
