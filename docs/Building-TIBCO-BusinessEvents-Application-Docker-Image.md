@@ -79,7 +79,7 @@ See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#prepa
 
 |Argument|Required/Optional|Description|
 |--------|-----------------|-----------|
-|`-l/--installers-location` \(*For the Docker image based on software installers*\)|Required|The location where installers for TIBCO BusinessEvents, TIBCO ActiveSpaces Legacy \(optional\),TIBCO ActiveSpaces \(optional\), TIBCO FTL \(optional\) and TIBCO BusinessEvents add-ons \(optional\) are stored. This option is available for scripts that are run from BE_HOME/cloud/docker/bin.|
+|`-l/--installers-location` \(*For the Docker image based on software installers*\)|Required|The location where installers for TIBCO BusinessEvents, TIBCO BusinessEvents add-ons \(optional\), see the `Optional Software Requirements` section in *TIBCO BusinessEvents Installation Guide* at [TIBCO BusinessEvents Documentation](https://docs.tibco.com/products/tibco-businessevents-enterprise-edition). This option is available for scripts that are run from BE_HOME/cloud/docker/bin.|
 |`-l/--be-home` \(*For the Docker image based on the existing TIBCO BusinessEvents installation*\)|Optional|Specify TIBCO BusinessEvents installation \(BE_HOME\) location. This is optional if the script runs from its default location \(BE_HOME/cloud/docker/frominstall\).|
 |`-a/-app-location`|Required|The location where the application CDD file, enterprise archive \(EAR\) file, and external JAR files are stored.|
 |`-r/-repo`|Required|Name that you want to assign to application Docker image. Optionally, you can provide the version number for the Docker image. Use the following naming convention for the application Docker image:```<image-name>:[version-number]```. For example, `fdc:1.0`.|

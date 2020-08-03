@@ -61,8 +61,8 @@ Using data volumes, you can persist the data across Docker runs. For example, in
 
 |Volumes|Dockerfiles|Description|
 |-------|-----------|-----------|
-|/mnt/tibco/be/logs|`Dockerfile` `Dockerfile-rms`|Directory where log files are stored.|
-|/mnt/tibco/be/data-store|`Dockerfile` `Dockerfile-rms`|Directory where shared nothing data is stored.|
+|`/mnt/tibco/be/logs`|`Dockerfile` `Dockerfile-rms`|Directory where log files are stored.|
+|`/mnt/tibco/be/data-store`|`Dockerfile` `Dockerfile-rms`|Directory where shared nothing data is stored.|
 |`/opt/tibco/be/${BE_SHORT_VERSION}/rms/config/security`|`Dockerfile-rms`|Directory which holds the RMS application’s ACL \(permission configuration\) and user.pwd files.|
 |`/opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/WebStudio`|`Dockerfile-rms`|The repository directory for BusinessEvents WebStudio where all projects are stored.|
 |`/opt/tibco/be/${BE_SHORT_VERSION}/rms/config/notify`|`Dockerfile-rms`|Directory where email notification configuration files are stored.|
@@ -86,7 +86,6 @@ By default the following ports are exposed by the TIBCO BusinessEvents Dockerfil
 -   `50000` and `50001`: These are the ports on which TIBCO ActiveSpaces listens. These are exposed by the base image.
 
     **Note:** The port for `AS_LISTEN_URL` and `AS_DISCOVER_URL` are set to `50000` in scripts. Also, for `AS_REMOTE_LISTEN_URL`, the port is set to `50001`. You must not change these ports.
--  `47500-47510` and `47100-47110` are the ports used by Apache Ignite nodes as listen ports and as communication ports.
 -   `5555`: This is the JMX port exposed by the base image.
 -   `8090` and `5000`: These are the rule management server ports exposed by the base image.
 
