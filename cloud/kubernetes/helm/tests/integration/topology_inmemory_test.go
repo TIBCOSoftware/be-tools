@@ -17,7 +17,7 @@ func TestDeploy(t *testing.T) {
 	helmChartPath := "../../"
 	kubectlOptions := k8s.NewKubectlOptions("", "", "default")
 	helmOptions := &helm.Options{
-		SetValues: common.ValuesInmemory,
+		SetValues: common.InmemoryValues(),
 	}
 	releaseName := fmt.Sprintf("beapp-%s", strings.ToLower(random.UniqueId()))
 
