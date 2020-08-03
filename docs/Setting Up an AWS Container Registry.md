@@ -1,4 +1,4 @@
-# Setting Up an Azure Container Registry
+# Setting Up an AWS Container Registry
 
 Amazon AWS uses the AWS Container Registry for securely building and deploying your applications.
 
