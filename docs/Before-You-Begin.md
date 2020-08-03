@@ -26,12 +26,16 @@ Ensure that you have the following infrastructure in place:
 
     **Note:** In this guide, it is assumed that the `cloud` folder from GitHub is downloaded at BE_HOME and merged with the existing BE_HOME/cloud folder. Thus, all file paths in this guide are mentioned based on this assumption.
 
--   For Installer ZIP files, see *TIBCO BusinessEvents Installation Guide* at [TIBCO BusinessEvents Documentation](https://docs.tibco.com/products/tibco-businessevents-enterprise-edition). 
+-   Installer ZIP files for the following software:
+    -   TIBCO BusinessEvents
+    -   TIBCO BusinessEvents add-ons \(Optional\)
+    -   TIBCO ActiveSpaces \(Optional\)
+    -   TIBCO FTL \(Optional\)
 
-- For more details, see the `Optional Software Requirements` section in *TIBCO BusinessEvents Installation Guide* at [TIBCO BusinessEvents Documentation](https://docs.tibco.com/products/tibco-businessevents-enterprise-edition) <br>
+    For more details, see the `Optional Software Requirements` section in *TIBCO BusinessEvents Installation Guide* at [TIBCO BusinessEvents Documentation](https://docs.tibco.com/products/tibco-businessevents-enterprise-edition) <br>
 
 
-**Note** **\(macOS only\)**: <br>
+    **Note** **\(macOS only\)**: <br>
     On the macOS platform, you can build only Linux containers. To build a Docker image on macOS, you must store the TIBCO BusinessEvents Linux installer ZIP file \(`TIB_businessevents-enterprise_<version>_linux26gl25_x86_64.zip`\) on your computer instead of the macOS installer ZIP file. Similarly, if your application uses cache, download Linux installers for TIBCO ActiveSpaces. Or if it uses TIBCO BusinessEvents add-ons, download Linux installers for TIBCO BusinessEvents add-ons on your computer.
 
 -   \(Optional\) For monitoring TIBCO BusinessEvents applications, install TIBCO Enterprise Administrator with the latest hotfix. For installation instructions, see [TIBCO Enterprise Administrator documentation](https://docs.tibco.com/products/tibco-enterprise-administrator).
