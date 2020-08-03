@@ -29,8 +29,7 @@ See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#prepa
 
 -   **\(*Windows and Linux Only*\) Application Docker Image by Using Existing TIBCO BusinessEvents Installation**
 
-**Note**:
-* FTL and ACTIVESPACES will get included in image only when FTL_HOME and ACTIVESPACES_HOME values are set in `be-engine.tra`
+    Go to the `BE_HOME/cloud/docker/frominstall` folder and run the `build_app_image` application Docker image building script.
 
     **Syntax:**
 
