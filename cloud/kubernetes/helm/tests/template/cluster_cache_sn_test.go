@@ -14,7 +14,14 @@ func TestAS2CacheSN(t *testing.T) {
 	}
 
 	appAndJmxServices(t, options, helmChartPath)
-	cacheAndInferenceSN(t, options, helmChartPath)
+
+	// inference agent test
+	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	common.InferenceAS2SNTest(inferenceOutput, t)
+
+	// cache agent test
+	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
+	common.CacheAS2SNTest(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
@@ -28,14 +35,7 @@ func TestFTLCacheSN(t *testing.T) {
 	}
 
 	appAndJmxServices(t, options, helmChartPath)
-	cacheAndInferenceSN(t, options, helmChartPath)
 
-	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
-}
-
-func cacheAndInferenceSN(t *testing.T, options *helm.Options, helmChartPath string) {
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceFTLSNTest(inferenceOutput, t)
@@ -43,4 +43,8 @@ func cacheAndInferenceSN(t *testing.T, options *helm.Options, helmChartPath stri
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheFTLSNTest(cacheAppOutput, t)
+
+	// be cache service test
+	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
+	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 }
