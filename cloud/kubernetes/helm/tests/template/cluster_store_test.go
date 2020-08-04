@@ -13,7 +13,7 @@ func TestFTLStoreAS4(t *testing.T) {
 		SetValues: common.FTLAS4StoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -30,7 +30,7 @@ func TestFTLStoreCassandra(t *testing.T) {
 		SetValues: common.FTLCassandraStoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})

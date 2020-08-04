@@ -13,7 +13,7 @@ func TestAS2CacheNone(t *testing.T) {
 		SetValues: common.AS2CacheNoneValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -34,7 +34,7 @@ func TestFTLCacheNone(t *testing.T) {
 		SetValues: common.FTLCacheNoneValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})

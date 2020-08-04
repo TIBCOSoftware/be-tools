@@ -13,9 +13,20 @@ func TestInmemory(t *testing.T) {
 		SetValues: common.InmemoryValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceTest(output, t)
+}
+
+// appAndJmxServices contains common be app and jmx service related tests
+func appAndJmxServices(t *testing.T, options *helm.Options, helmChartPath string) {
+	// be app service test
+	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
+	common.AppServiceTest(beServiceOutput, t)
+
+	// jmx service test
+	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
+	common.JmxServiceTest(jmxServiceOutput, t)
 }

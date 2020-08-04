@@ -13,7 +13,7 @@ func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
 		SetValues: common.AS2CacheRDBMSStoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -38,7 +38,7 @@ func TestFTLCacheStoreAS4(t *testing.T) {
 		SetValues: common.FTLCacheAS4StoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -63,7 +63,7 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 		SetValues: common.FTLCacheCassandraStoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -88,7 +88,7 @@ func TestFTLCacheStoreMysql(t *testing.T) {
 		SetValues: common.FTLCacheMysqlStoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})

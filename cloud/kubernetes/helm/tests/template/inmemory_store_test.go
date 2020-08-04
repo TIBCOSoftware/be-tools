@@ -13,7 +13,7 @@ func TestInmemoryStoreAS4(t *testing.T) {
 		SetValues: common.InmemoryAS4StoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -30,7 +30,7 @@ func TestInmemoryStoreCassandra(t *testing.T) {
 		SetValues: common.InmemoryCassandraStoreValues(),
 	}
 
-	common.AppJmxServiceTemplate(t, options, helmChartPath)
+	appAndJmxServices(t, options, helmChartPath)
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})

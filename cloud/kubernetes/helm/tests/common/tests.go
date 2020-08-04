@@ -124,8 +124,8 @@ func InferenceAS2SNTest(data string, t *testing.T) {
 	checkVolumeClaims(sSet, t)
 }
 
-// appServiceTest testing be service content
-func appServiceTest(data string, t *testing.T) {
+// AppServiceTest testing be service content
+func AppServiceTest(data string, t *testing.T) {
 
 	var service v1.Service
 	helm.UnmarshalK8SYaml(t, data, &service)
@@ -154,8 +154,8 @@ func IgniteCacheServiceTest(data string, t *testing.T) {
 	require.Equal(t, service.Spec.Ports[0].Port, beIgniteCacheServicePort)
 }
 
-// jmxServiceTest testing be jmx service content
-func jmxServiceTest(data string, t *testing.T) {
+// JmxServiceTest testing be jmx service content
+func JmxServiceTest(data string, t *testing.T) {
 
 	var service v1.Service
 	helm.UnmarshalK8SYaml(t, data, &service)
@@ -234,15 +234,4 @@ func ftlIgniteTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 	// ignite url check
 	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "IGNITE_DISCOVER_URL"))
-}
-
-// AppJmxServiceTemplate contains common be app and jmx service related tests
-func AppJmxServiceTemplate(t *testing.T, options *helm.Options, helmChartPath string) {
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	appServiceTest(beServiceOutput, t)
-
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	jmxServiceTest(jmxServiceOutput, t)
 }
