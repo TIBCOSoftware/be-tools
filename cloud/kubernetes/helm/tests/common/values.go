@@ -3,7 +3,8 @@ package common
 const (
 	imageName                      = "s2ifd:01"
 	beServicePort            int32 = 8108
-	beCacheServicePort       int32 = 50000
+	beAS2CacheServicePort    int32 = 50000
+	beIgniteCacheServicePort int32 = 47500
 	beJmxServicePort         int32 = 5555
 	as4GridNameKey                 = "grid_name"
 	as4GridNameVal                 = "fd_store"
@@ -70,6 +71,82 @@ func AS2CacheNoneValues() map[string]string {
 	Values["cmType"] = "AS2"
 	Values["omType"] = "cache"
 	Values["bsType"] = "None"
+
+	return Values
+}
+
+// AS2CacheSNValues returns cluster as2 cache none
+func AS2CacheSNValues() map[string]string {
+	Values["cmType"] = "AS2"
+	Values["omType"] = "cache"
+	Values["bsType"] = "sharedNothing"
+
+	return Values
+}
+
+// FTLCacheNoneValues returns cluster ftl cache none
+func FTLCacheNoneValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["bsType"] = "None"
+	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+
+	return Values
+}
+
+// FTLCacheSNValues returns cluster ftl cache none
+func FTLCacheSNValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["bsType"] = "sharedNothing"
+	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+
+	return Values
+}
+
+// FTLCacheAS4StoreValues returns cluster ftl store topology values
+func FTLCacheAS4StoreValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["storeType"] = "AS4"
+	Values["bsType"] = "store"
+	Values["as4configmap."+as4GridNameKey] = as4GridNameVal
+	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+
+	return Values
+}
+
+// FTLCacheCassandraStoreValues returns cluster ftl store topology values
+func FTLCacheCassandraStoreValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["storeType"] = "Cassandra"
+	Values["bsType"] = "store"
+	Values["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
+	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+
+	return Values
+}
+
+// AS2CacheRDBMSStoreValues returns cluster as2 cache none
+func AS2CacheRDBMSStoreValues() map[string]string {
+	Values["cmType"] = "AS2"
+	Values["omType"] = "cache"
+	Values["storeType"] = "RDBMS"
+	Values["bsType"] = "store"
+	Values["mysql.enabled"] = "true"
+
+	return Values
+}
+
+// FTLCacheMysqlStoreValues returns cluster ftl store topology values
+func FTLCacheMysqlStoreValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["storeType"] = "RDBMS"
+	Values["bsType"] = "store"
+	Values["mysql.enabled"] = "true"
+	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
 
 	return Values
 }

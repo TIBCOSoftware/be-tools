@@ -34,7 +34,7 @@ func TestFTLStoreAS4(t *testing.T) {
 func TestFTLStoreCassandra(t *testing.T) {
 	helmChartPath := "../../"
 	options := &helm.Options{
-		SetValues: common.InmemoryCassandraStoreValues(),
+		SetValues: common.FTLCassandraStoreValues(),
 	}
 
 	// inference agent test

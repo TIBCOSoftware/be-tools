@@ -15,7 +15,7 @@ func TestAS2CacheNone(t *testing.T) {
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceTest(inferenceOutput, t)
+	common.InferenceAS2NoneTest(inferenceOutput, t)
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
@@ -27,7 +27,35 @@ func TestAS2CacheNone(t *testing.T) {
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.CacheServiceTest(beCacheServiceOutput, t)
+	common.AS2CacheServiceTest(beCacheServiceOutput, t)
+
+	// jmx service test
+	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
+	common.JmxServiceTest(jmxServiceOutput, t)
+
+}
+
+func TestFTLCacheNone(t *testing.T) {
+	helmChartPath := "../../"
+	options := &helm.Options{
+		SetValues: common.FTLCacheNoneValues(),
+	}
+
+	// inference agent test
+	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	common.InferenceFTLNoneTest(inferenceOutput, t)
+
+	// cache agent test
+	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
+	common.CacheFTLNoneTest(cacheAppOutput, t)
+
+	// be app service test
+	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
+	common.AppServiceTest(beServiceOutput, t)
+
+	// be cache service test
+	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
+	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// jmx service test
 	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
