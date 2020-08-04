@@ -13,6 +13,8 @@ func TestAS2CacheNone(t *testing.T) {
 		SetValues: common.AS2CacheNoneValues(),
 	}
 
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
+
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceAS2NoneTest(inferenceOutput, t)
@@ -21,18 +23,9 @@ func TestAS2CacheNone(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheAS2NoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.AS2CacheServiceTest(beCacheServiceOutput, t)
-
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 }
 
 func TestFTLCacheNone(t *testing.T) {
@@ -40,6 +33,8 @@ func TestFTLCacheNone(t *testing.T) {
 	options := &helm.Options{
 		SetValues: common.FTLCacheNoneValues(),
 	}
+
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
@@ -49,16 +44,7 @@ func TestFTLCacheNone(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheFTLNoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
-
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 }

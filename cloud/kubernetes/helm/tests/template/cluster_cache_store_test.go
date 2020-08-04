@@ -13,6 +13,8 @@ func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
 		SetValues: common.AS2CacheRDBMSStoreValues(),
 	}
 
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
+
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceTest(inferenceOutput, t)
@@ -21,22 +23,13 @@ func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheAS2NoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.AS2CacheServiceTest(beCacheServiceOutput, t)
 
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
 	common.ConfigMapMysqlTest(configOutPut, t)
-
 }
 
 func TestFTLCacheStoreAS4(t *testing.T) {
@@ -45,6 +38,8 @@ func TestFTLCacheStoreAS4(t *testing.T) {
 		SetValues: common.FTLCacheAS4StoreValues(),
 	}
 
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
+
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceFTLTest(inferenceOutput, t)
@@ -53,22 +48,13 @@ func TestFTLCacheStoreAS4(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheFTLNoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
 	common.ConfigMapAS4Test(configOutPut, t)
-
 }
 
 func TestFTLCacheStoreCassandra(t *testing.T) {
@@ -77,6 +63,8 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 		SetValues: common.FTLCacheCassandraStoreValues(),
 	}
 
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
+
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceFTLTest(inferenceOutput, t)
@@ -85,22 +73,13 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheFTLNoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
 	common.ConfigMapCassandraTest(configOutPut, t)
-
 }
 
 func TestFTLCacheStoreMysql(t *testing.T) {
@@ -109,6 +88,8 @@ func TestFTLCacheStoreMysql(t *testing.T) {
 		SetValues: common.FTLCacheMysqlStoreValues(),
 	}
 
+	common.AppJmxServiceTemplate(t, options, helmChartPath)
+
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
 	common.InferenceFTLTest(inferenceOutput, t)
@@ -117,20 +98,11 @@ func TestFTLCacheStoreMysql(t *testing.T) {
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
 	common.CacheFTLNoneTest(cacheAppOutput, t)
 
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
 	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
-
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
 	common.ConfigMapMysqlTest(configOutPut, t)
-
 }
