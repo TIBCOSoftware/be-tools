@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 #Required parameter to be passed for all cloud providers
-cpType: minikube
+cpType: minikube      #cpType can be minikube, aws, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,AS2,FTL
 omType: inmemory                   #omType can be inmemory,store,cache
@@ -12,7 +12,7 @@ storeType: na                 #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                      #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
-image: ftlsnapp
+image: befdapp:01
 imagePullPolicy: IfNotPresent
 
 # imageCredentials Credentials to pull image from a private registry. Provide these details, if BE docker image is available at private registry.
