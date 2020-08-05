@@ -4,6 +4,6 @@
 
 This chart installs Business Events application deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-# Documentation
+## Documentation
 
-TIBCO BusinessEvents® documentation is available in [github wiki](https://github.com/TIBCOSoftware/be-tools/wiki)
+TIBCO BusinessEvents® documentation is available at [wiki pages](https://github.com/TIBCOSoftware/be-tools/wiki).

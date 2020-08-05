@@ -5,6 +5,6 @@
 
 TIBCO Business Events's S2I support allows users to create a reusable builder image while the developer can provide end application source code (via ear & cdd) to create and run the assembled image.
 
-# Documentation
+## Documentation
 
-TIBCO BusinessEvents® documentation is available in [github wiki](https://github.com/TIBCOSoftware/be-tools/wiki)
+TIBCO BusinessEvents® documentation is available at [wiki pages](https://github.com/TIBCOSoftware/be-tools/wiki).
