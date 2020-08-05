@@ -1,6 +1,7 @@
 package common
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
@@ -8,121 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 )
-
-// InferenceTest testing inference content
-func InferenceTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-}
-
-// InferenceFTLTest testing inference content for ftl cluster and cache type as store
-func InferenceFTLTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-
-	// ftl url check
-	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, ftlServerURLKey), ftlServerURLVal)
-}
-
-// CacheAS2NoneTest testing cache content for AS2 cluster backing store none
-func CacheAS2NoneTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	cacheTestcases(sSet, t)
-
-	// as discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
-}
-
-// CacheAS2SNTest testing cache content for AS2 cluster backing store shared nothing
-func CacheAS2SNTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	cacheTestcases(sSet, t)
-
-	// as discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
-
-	checkVolumeClaims(sSet, t)
-}
-
-// CacheFTLNoneTest testing cache content for FTL cluster backing store none
-func CacheFTLNoneTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
-}
-
-// CacheFTLSNTest testing cache content for FTL cluster backing store shared nothing
-func CacheFTLSNTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
-	checkVolumeClaims(sSet, t)
-}
-
-// InferenceFTLNoneTest testing inference content for FTL cluster backing store none
-func InferenceFTLNoneTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
-}
-
-// InferenceFTLSNTest testing inference content for FTL cluster backing store shared nothing
-func InferenceFTLSNTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
-	checkVolumeClaims(sSet, t)
-}
-
-// InferenceAS2NoneTest testing inference content for AS2 cluster backing store none
-func InferenceAS2NoneTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-
-	// as discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
-}
-
-// InferenceAS2SNTest testing inference content for AS2 cluster shared nothing
-func InferenceAS2SNTest(data string, t *testing.T) {
-
-	var sSet appsv1.StatefulSet
-	helm.UnmarshalK8SYaml(t, data, &sSet)
-
-	inferenceTestcases(sSet, t)
-
-	// as discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
-
-	checkVolumeClaims(sSet, t)
-}
 
 // AppServiceTest testing be service content
 func AppServiceTest(data string, t *testing.T) {
@@ -169,8 +55,9 @@ func ConfigMapAS4Test(data string, t *testing.T) {
 	var configMap v1.ConfigMap
 	helm.UnmarshalK8SYaml(t, data, &configMap)
 
-	// as4 gridname check
 	require.Equal(t, configMap.Data[as4GridNameKey], as4GridNameVal)
+	require.Equal(t, configMap.Data[as4ReamURLKey], as4ReamURLVal)
+	require.Equal(t, configMap.Data[as4SecReamURLKey], as4SecReamURLVal)
 }
 
 // ConfigMapCassandraTest tests config map content
@@ -178,8 +65,10 @@ func ConfigMapCassandraTest(data string, t *testing.T) {
 	var configMap v1.ConfigMap
 	helm.UnmarshalK8SYaml(t, data, &configMap)
 
-	// cassandra  keyspace name check
+	require.Equal(t, configMap.Data[cassandraSerHostNameKey], cassandraSerHostNameVal)
 	require.Equal(t, configMap.Data[cassandraKeyspaceNameKey], cassandraKeyspaceNameVal)
+	require.Equal(t, configMap.Data[cassandraUserNameKey], cassandraUserNameVal)
+	require.Equal(t, configMap.Data[cassandraPasswKey], cassandraPasswVal)
 }
 
 // ConfigMapMysqlTest tests config map content
@@ -187,17 +76,9 @@ func ConfigMapMysqlTest(data string, t *testing.T) {
 	var configMap v1.ConfigMap
 	helm.UnmarshalK8SYaml(t, data, &configMap)
 
-	// dbdriver check
-	require.Equal(t, configMap.Data["dbdriver"], "com.mysql.jdbc.Driver")
-}
-
-func valueFromEnv(data []v1.EnvVar, key string) string {
-	for _, d1 := range data {
-		if d1.Name == key {
-			return d1.Value
-		}
-	}
-	return ""
+	require.Equal(t, configMap.Data[rdbmsDriverKey], rdbmsDriverVal)
+	require.Equal(t, configMap.Data[rdbmsDbUsernameKey], rdbmsDbUsernameVal)
+	require.Equal(t, configMap.Data[rdbmsDbPswdKey], rdbmsDbPswdVal)
 }
 
 func checkVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
@@ -229,9 +110,58 @@ func cacheTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 func ftlIgniteTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
-	// ftl url check
-	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, ftlServerURLKey), ftlServerURLVal)
+	ftlTestcases(sSet, t)
 
 	// ignite url check
 	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "IGNITE_DISCOVER_URL"))
+}
+
+func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	// ftl url check
+	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, ftlServerURLKey), ftlServerURLVal)
+
+	// ftl cluster name check
+	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, ftlClusterNameKey), ftlClusterNameVal)
+}
+
+func asDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	// as discovery url check
+	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
+}
+
+func configMapEnvAS4Testcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(as4GridNameKey)), as4GridNameKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(as4ReamURLKey)), as4ReamURLKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(as4SecReamURLKey)), as4SecReamURLKey)
+}
+
+func configMapEnvCassandraTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraKeyspaceNameKey)), cassandraKeyspaceNameKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraPasswKey)), cassandraPasswKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraSerHostNameKey)), cassandraSerHostNameKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraUserNameKey)), cassandraUserNameKey)
+}
+
+func configMapEnvRDBMSTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_DRIVER"), rdbmsDriverKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_USERNAME"), rdbmsDbUsernameKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_PASSWORD"), rdbmsDbPswdKey)
+}
+
+func valueFromEnv(data []v1.EnvVar, key string) string {
+	for _, d1 := range data {
+		if d1.Name == key {
+			return d1.Value
+		}
+	}
+	return ""
+}
+
+func configMapKeyFromEnv(data []v1.EnvVar, key string) string {
+	for _, d1 := range data {
+		if d1.Name == key {
+			return d1.ValueFrom.ConfigMapKeyRef.Key
+		}
+	}
+	return ""
 }

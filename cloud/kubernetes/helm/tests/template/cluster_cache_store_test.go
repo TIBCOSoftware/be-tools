@@ -17,11 +17,11 @@ func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceTest(inferenceOutput, t)
+	common.InferenceAS2MysqlTest(inferenceOutput, t)
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheAS2NoneTest(cacheAppOutput, t)
+	common.CacheAS2MysqlTest(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
@@ -42,11 +42,11 @@ func TestFTLCacheStoreAS4(t *testing.T) {
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLTest(inferenceOutput, t)
+	common.InferenceFTLAS4Test(inferenceOutput, t)
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLNoneTest(cacheAppOutput, t)
+	common.CacheFTLAS4Test(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
@@ -67,11 +67,11 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLTest(inferenceOutput, t)
+	common.InferenceFTLCassTest(inferenceOutput, t)
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLNoneTest(cacheAppOutput, t)
+	common.CacheFTLCassTest(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
@@ -92,11 +92,11 @@ func TestFTLCacheStoreMysql(t *testing.T) {
 
 	// inference agent test
 	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLTest(inferenceOutput, t)
+	common.InferenceFTLMysqlTest(inferenceOutput, t)
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLNoneTest(cacheAppOutput, t)
+	common.CacheFTLMysqlTest(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})

@@ -17,7 +17,7 @@ func TestFTLStoreAS4(t *testing.T) {
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLTest(output, t)
+	common.InferenceFTLStoreAS4Test(output, t)
 
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
@@ -34,7 +34,7 @@ func TestFTLStoreCassandra(t *testing.T) {
 
 	// inference agent test
 	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLTest(output, t)
+	common.InferenceFTLStoreCassTest(output, t)
 
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})

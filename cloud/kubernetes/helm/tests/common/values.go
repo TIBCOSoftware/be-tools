@@ -6,12 +6,38 @@ const (
 	beAS2CacheServicePort    int32 = 50000
 	beIgniteCacheServicePort int32 = 47500
 	beJmxServicePort         int32 = 5555
-	as4GridNameKey                 = "grid_name"
-	as4GridNameVal                 = "fd_store"
-	cassandraKeyspaceNameKey       = "cass_keyspace_name"
-	cassandraKeyspaceNameVal       = "testDb"
-	ftlServerURLKey                = "FTL_gv_REALM_SERVER"
-	ftlServerURLVal                = "sampleftlurl"
+
+	// as4 constants
+	as4ReamURLKey    = "realm_url"
+	as4ReamURLVal    = "localhost"
+	as4SecReamURLKey = "sec_realm_url"
+	as4SecReamURLVal = "localhost"
+	as4GridNameKey   = "grid_name"
+	as4GridNameVal   = "fd_store"
+
+	// cassandra constants
+	cassandraSerHostNameKey  = "cass_server_hostname"
+	cassandraSerHostNameVal  = "localhost"
+	cassandraUserNameKey     = "cass_username"
+	cassandraUserNameVal     = "cassusername"
+	cassandraPasswKey        = "cass_password"
+	cassandraPasswVal        = "casspassw"
+	cassandraKeyspaceNameKey = "cass_keyspace_name"
+	cassandraKeyspaceNameVal = "testDb"
+
+	// rdbms database constants
+	rdbmsDriverKey     = "dbdriver"
+	rdbmsDriverVal     = "com.mysql.jdbc.Driver"
+	rdbmsDbUsernameKey = "dbusername"
+	rdbmsDbUsernameVal = "mysqldb"
+	rdbmsDbPswdKey     = "dbpwd"
+	rdbmsDbPswdVal     = "mysqldbpwd"
+
+	// FTL constants
+	ftlServerURLKey   = "FTL_gv_REALM_SERVER"
+	ftlServerURLVal   = "sampleftlurl"
+	ftlClusterNameKey = "FTL_gv_CLUSTER_NAME"
+	ftlClusterNameVal = "samplecluster"
 )
 
 // Values is complete default set of values.yaml
@@ -32,7 +58,7 @@ func InmemoryValues() map[string]string {
 func InmemoryAS4StoreValues() map[string]string {
 	Values["omType"] = "store"
 	Values["storeType"] = "AS4"
-	Values["as4configmap."+as4GridNameKey] = as4GridNameVal
+	Values = appendAs4Values(Values)
 	return Values
 }
 
@@ -40,7 +66,7 @@ func InmemoryAS4StoreValues() map[string]string {
 func InmemoryCassandraStoreValues() map[string]string {
 	Values["omType"] = "store"
 	Values["storeType"] = "Cassandra"
-	Values["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
+	Values = appendCassandraValues(Values)
 	return Values
 }
 
@@ -49,8 +75,8 @@ func FTLAS4StoreValues() map[string]string {
 	Values["cmType"] = "FTL"
 	Values["omType"] = "store"
 	Values["storeType"] = "AS4"
-	Values["as4configmap."+as4GridNameKey] = as4GridNameVal
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendAs4Values(Values)
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -60,8 +86,8 @@ func FTLCassandraStoreValues() map[string]string {
 	Values["cmType"] = "FTL"
 	Values["omType"] = "store"
 	Values["storeType"] = "Cassandra"
-	Values["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendCassandraValues(Values)
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -89,7 +115,7 @@ func FTLCacheNoneValues() map[string]string {
 	Values["cmType"] = "FTL"
 	Values["omType"] = "cache"
 	Values["bsType"] = "None"
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -99,7 +125,7 @@ func FTLCacheSNValues() map[string]string {
 	Values["cmType"] = "FTL"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharedNothing"
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -110,8 +136,8 @@ func FTLCacheAS4StoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "AS4"
 	Values["bsType"] = "store"
-	Values["as4configmap."+as4GridNameKey] = as4GridNameVal
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendAs4Values(Values)
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -122,8 +148,8 @@ func FTLCacheCassandraStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "Cassandra"
 	Values["bsType"] = "store"
-	Values["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendCassandraValues(Values)
+	Values = appendFTLValues(Values)
 
 	return Values
 }
@@ -134,7 +160,7 @@ func AS2CacheRDBMSStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "RDBMS"
 	Values["bsType"] = "store"
-	Values["mysql.enabled"] = "true"
+	Values = appendMysqlValues(Values)
 
 	return Values
 }
@@ -145,8 +171,41 @@ func FTLCacheMysqlStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "RDBMS"
 	Values["bsType"] = "store"
-	Values["mysql.enabled"] = "true"
-	Values["ftl."+ftlServerURLKey] = ftlServerURLVal
+	Values = appendMysqlValues(Values)
+	Values = appendFTLValues(Values)
 
 	return Values
+}
+
+func appendCassandraValues(data map[string]string) map[string]string {
+	data["cassconfigmap."+cassandraSerHostNameKey] = cassandraSerHostNameVal
+	data["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
+	data["cassconfigmap."+cassandraUserNameKey] = cassandraUserNameVal
+	data["cassconfigmap."+cassandraPasswKey] = cassandraPasswVal
+
+	return data
+}
+
+func appendAs4Values(data map[string]string) map[string]string {
+	data["as4configmap."+as4ReamURLKey] = as4ReamURLVal
+	data["as4configmap."+as4SecReamURLKey] = as4SecReamURLVal
+	data["as4configmap."+as4GridNameKey] = as4GridNameVal
+
+	return data
+}
+
+func appendMysqlValues(data map[string]string) map[string]string {
+	data["mysql.enabled"] = "true"
+	data["configmap."+rdbmsDriverKey] = rdbmsDriverVal
+	data["configmap."+rdbmsDbPswdKey] = rdbmsDbPswdVal
+	data["configmap."+rdbmsDbUsernameKey] = rdbmsDbUsernameVal
+
+	return data
+}
+
+func appendFTLValues(data map[string]string) map[string]string {
+	data["ftl."+ftlServerURLKey] = ftlServerURLVal
+	data["ftl."+ftlClusterNameKey] = ftlClusterNameVal
+
+	return data
 }
