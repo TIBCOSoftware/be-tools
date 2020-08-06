@@ -1,3 +1,9 @@
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 apiVersion: v2
 name: BE Helm Chart
 description: Helm chart for BE Applications.
