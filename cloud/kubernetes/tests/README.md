@@ -8,11 +8,12 @@ Validations include:
 ## Setup
 * Install [Go](https://golang.org/doc/install) `v1.14` or above
 * Install and set up [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* Install [helm](https://helm.sh/docs/intro/install/)
 
 ## Run Tests
 Make sure that kubectl is properly configured and pointing to a running kubernetes cluster like `minikube`, `EKS`, `AKS`, etc.<br>
 Run tests using `go test` command:
 ```sh
-cd cloud/kubernetes/helm/tests
+cd cloud/kubernetes/tests
 go test -v ./...
 ```
