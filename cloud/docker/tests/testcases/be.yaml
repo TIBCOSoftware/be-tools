@@ -73,8 +73,7 @@ fileExistenceTests:
     path: '/opt/tibco/be/ext/EAR_FILE_NAME_KEY'
     shouldExist: true
 commandTests:
-  - name: "beengine without cdd"
-    command: "/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine"
-    args: ["--propFile","/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra"]
-    expectedOutput: ["Cannot read CDD: default.cdd","CDD not found"]
-    exitCode: 255
+    - name: "beengine without cdd"
+      command: "sh"
+      args: ["-c","/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine --propFile /opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra > /dev/null"]
+      exitCode: 255
