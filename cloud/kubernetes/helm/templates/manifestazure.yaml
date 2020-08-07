@@ -1,5 +1,10 @@
-{{- if and (eq .Values.cloudProvider "azure" ) (eq .Values.omType "cache" ) }}
-  {{- if or (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
+{{- if and (eq .Values.cpType "azure" ) (eq .Values.omType "cache" ) }}
+  {{- if or (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "store" ) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -13,4 +18,5 @@ mountOptions:
 parameters:
   skuName: {{ .Values.volumes.azure.skuName }}
   {{- end }}
+{{- end }}
 {{- end }}

@@ -1,20 +1,20 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
 USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
 USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
-USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]"
-USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]"
+USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]" 
+USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 ARG_INSTALLER_LOCATION="na"
@@ -44,28 +44,28 @@ while [[ $# -gt 0 ]]; do
         -d=*|--docker-file=*)
         ARG_DOCKER_FILE="${key#*=}"
         ;;
-        -l|--installers-location)
+        -l|--installers-location) 
         shift # past the key and to the value
         ARG_INSTALLER_LOCATION="$1"
         ;;
         -l=*|--installers-location=*)
         ARG_INSTALLER_LOCATION="${key#*=}"
         ;;
-         -r|--repo)
+         -r|--repo) 
         shift # past the key and to the value
         ARG_IMAGE_VERSION="$1"
         ;;
         -r=*|--repo=*)
         ARG_IMAGE_VERSION="${key#*=}"
         ;;
-	   -a|--app-location)
+	   -a|--app-location) 
         shift # past the key and to the value
         ARG_APP_LOCATION="$1"
         ;;
         -a=*|--app-location=*)
         ARG_APP_LOCATION="${key#*=}"
         ;;
-        -h|--help)
+        -h|--help) 
         shift # past the key and to the value
         printf "$USAGE"
         exit 0
@@ -84,7 +84,7 @@ FIRST=1
 if [ "$ARG_INSTALLER_LOCATION" = "na" -o "$ARG_INSTALLER_LOCATION" = "nax" -o -z "${ARG_INSTALLER_LOCATION// }" ]
 then
   if [ $FIRST = 1 ]
-  then
+  then 
   	MISSING_ARGS="$MISSING_ARGS Installers Location[-l|--installers-location]"
 	FIRST=0
   else
@@ -142,7 +142,7 @@ result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
 len=$(echo ${result} | wc -l)
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
 	exit 1;
 fi
 
@@ -167,31 +167,32 @@ elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
 	exit 1;
 elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
-	exit 1;
+	exit 1;	
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
 		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
 			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-			break;
+			break;	
 		fi
 	done
-
+	
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
+
 		VERSION_PACKAGE="${beHfPckgs[0]}"
-    hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-    hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
-    if [ $ARG_VERSION == $hfbeversion ];then
-      ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
+		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
+    	if [ $ARG_VERSION == $hfbeversion ];then
+      		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
-		fi
-
+		fi 
+		
 	elif [ $beHfCnt -eq 0 ]; then
 		ARG_BE_HOTFIX="na"
 	fi
@@ -215,20 +216,20 @@ if [ $asPckgsCnt -gt 0 ]; then
 		exit 1;
 	elif [ $asBasePckgsCnt -le 0 ]; then
 		printf "\nERROR :TIBCO Activespaces HF is present but TIBCO Activespaces Base version is not present in the target directory.\n"
-		exit 1;
+		exit 1;	
 	elif [ $asBasePckgsCnt -eq 1 ]; then
 		if [ $asHfPckgsCnt -eq 1 ]; then
 			asHf=$(echo "${asHfPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
 			ARG_AS_HOTFIX=$(echo $asHf| cut -d'-' -f 2)
 		elif [ $asHfPckgsCnt -eq 0 ]; then
 			ARG_AS_HOTFIX="na"
-		fi
-	else
-		ARG_AS_HOTFIX="na"
+		fi	
+	else 
+		ARG_AS_HOTFIX="na"	
 	fi
 fi
 
-if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ]
+if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ] 
 then
 	ARG_IMAGE_VERSION="rms:$ARG_VERSION";
 fi
@@ -256,7 +257,7 @@ echo "INFO:APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
 echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
-echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+echo "INFO:AS Legacy -HF : $ARG_AS_HOTFIX"
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "INFO:JRE VERSION : $ARG_JRE_VERSION"
 echo "----------------------------------------------"
@@ -270,7 +271,7 @@ then
 fi
 
 export PERL5LIB="../lib"
-VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
+VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','na','na','$TEMP_FOLDER');")
 
 if [ "$?" = 0 ]
 then
@@ -345,5 +346,5 @@ fi
  echo "Deleting temporary intermediate image.."
  docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
  echo "Deleteting $TEMP_FOLDER folder"
-
+ 
 rm -rf $TEMP_FOLDER

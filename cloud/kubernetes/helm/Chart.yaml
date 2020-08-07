@@ -1,4 +1,10 @@
-apiVersion: v1
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+apiVersion: v2
 name: BE Helm Chart
 description: Helm chart for BE Applications.
 
@@ -7,3 +13,19 @@ description: Helm chart for BE Applications.
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates.
 version: 1.0.0
+
+dependencies:
+  - name: mysql
+    version: 1.6.2
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    alias: mysql
+    condition: mysql.enabled
+    tags:
+      - database
+  - name: efs-provisioner
+    version: 0.11.0
+    repository: https://kubernetes-charts.storage.googleapis.com/    
+    alias: aws-efs
+    condition: aws-efs.enabled
+    tags:
+      - fileStore 

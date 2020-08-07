@@ -1,31 +1,48 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "beinferenceagent.fullname" . }}
+  name: "{{ include "beinferenceagent.fullname" . }}"
 spec:
   replicas: {{ .Values.inferencenode.replicaCount }}
   selector:
     matchLabels:
-      name: {{ include "beinferenceagent.fullname" . }}
-  serviceName: {{ include "beservice.fullname" . }}
+      name: "{{ include "beinferenceagent.fullname" . }}"
+  serviceName: "{{ include "beservice.fullname" . }}"
   template:
     metadata:
       labels:
         name: {{ include "beinferenceagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets }}    #if required
+        - name: {{ include "beimagepullsecret.fullname" . }}
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
-        - name: {{ .Values.inferencenode.containers.env.PU1name }}
-          value: {{ .Values.inferencenode.containers.env.PU1value }}
-         {{- if eq .Values.omType "cache" }}  
-        - name: {{ .Values.inferencenode.containers.env.PU2name }}
-          value: {{ .Values.inferencenode.containers.env.PU2value }}
+        - name: PU
+          value: default
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
+        - name: AS_DISCOVER_URL
+          value: tcp://{{ include "cacheservice.fullname" . }}:50000
          {{- end }}
-{{ include "sharedAll.configMap" . | indent 8 }}
-{{ include "sharedNothing.volumeMount" . | indent 8 }}
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
+        - name: {{ .Values.ignite.discover_url }}
+          value: {{ include "cacheservice.fullname" . }} 
+         {{- end }}
+         {{- if eq .Values.cmType "FTL" }}   
+        {{ include "ftl.data" . | trim }}  
+        {{- end }} 
+{{ include "store.configMap" . | trim |  indent 8 }}
+{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
+{{- end }}

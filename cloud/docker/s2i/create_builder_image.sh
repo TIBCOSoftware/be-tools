@@ -1,22 +1,22 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
 
 if [ -z "${USAGE}" ]; then
  USAGE="\nUsage: create_builder_image.sh"
 fi
-USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
+USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]"
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
-USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]"
+USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
 if [[ "$*" == *nos2i* ]]; then
 USAGE+="\n\n [-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]"
 USAGE+="\n\n [-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]"
@@ -43,7 +43,16 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 AS_VERSION="na"
+AS_SHORT_VERSION="na"
+FTL_VERSION="na"
+FTL_SHORT_VERSION="na"
+ARG_FTL_HOTFIX="na"
+ACTIVESPACES_VERSION="na"
+ACTIVESPACES_SHORT_VERSION="na"
+ARG_ACTIVESPACES_HOTFIX="na"
 ARG_GVPROVIDERS="na"
+ARG_ACTIVESPACES_VERSION="na"
+ARG_FTL_VERSION="na"
 
 #Parse the arguments
 
@@ -183,10 +192,10 @@ BE_HF_REGEX="${BE_PRODUCT}-hf_*_HF"
 
 #Check for BE Installer  --------------------------------------
 result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(echo ${result} | wc -l)
+len=$(echo ${#result})
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
 	exit 1;
 fi
 
@@ -202,7 +211,6 @@ beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM"
 # Check Single Base version  exist, zero or one HF exist. --------------------------------------
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 
-
 if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR: More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
 	exit 1;
@@ -215,26 +223,26 @@ elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not 
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")
+	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g") 
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
 		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
 			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-			break;
+			break;	
 		fi
 	done
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-    VERSION_PACKAGE="${beHfPckgs[0]}"
-    hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-    hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
-    if [ $ARG_VERSION == $hfbeversion ];then
-      ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
+		VERSION_PACKAGE="${beHfPckgs[0]}"
+		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
+    	if [ $ARG_VERSION == $hfbeversion ];then
+      		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
-		fi
-
+		fi 
+		
 	elif [ $beHfCnt -eq 0 ]; then
 		ARG_BE_HOTFIX="na"
 	fi
@@ -285,7 +293,7 @@ asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_HF-*_linux
 
 if [ $asPckgsCnt -gt 0 ]; then
 	asBasePckgsCnt=$(expr ${asPckgsCnt} - ${asHfPckgsCnt})
-
+	
 	if [ $asBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
 		printf "\nERROR :More than one TIBCO Activespaces base versions are present in the target directory..\n"
 		exit 1;
@@ -307,6 +315,83 @@ if [ $asPckgsCnt -gt 0 ]; then
 	fi
 fi
 
+# check for FTL and AS4 only when BE version is > 6.0.0
+checkForFTLnAS4="false"
+if [ "$ARG_VERSION" != "na" ]; then
+	if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
+		checkForFTLnAS4="true"
+	fi
+fi
+
+if [ $checkForFTLnAS4 == "true" ]; then
+	# Validate and get FTL version
+	ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
+	ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
+	ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip")
+	ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip" |  wc -l)
+	if [ $ftlPckgsCnt -gt 0 ]; then
+		ftlBasePckgsCnt=$(expr ${ftlPckgsCnt} - ${ftlHfPckgsCnt})
+		
+		if [ $ftlBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+			printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory..\n"
+			exit 1;
+		elif [ $ftlHfPckgsCnt -gt 1 ]; then
+			printf "\nERROR :More than one TIBCO FTL HF are present in the target directory.There should be only one.\n"
+			exit 1;
+		elif [ $ftlBasePckgsCnt -le 0 ]; then
+			printf "\nERROR :TIBCO FTL HF is present but TIBCO FTL Base version is not present in the target directory.\n"
+			exit 1;
+		elif [ $ftlBasePckgsCnt -eq 1 ]; then
+			FTL_BASE_PACKAGE="${ftlPckgs[0]}"
+			ARG_FTL_VERSION=$(echo "${FTL_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_ftl_/${BLANK}/g") 
+			if [ "$ARG_FTL_VERSION" = "" ]; then
+				ARG_FTL_VERSION="na"
+			fi
+			if [ $ftlHfPckgsCnt -eq 1 ]; then
+				ftlHf=$(echo "${ftlPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+				ARG_FTL_HOTFIX=$(echo $ftlHf| cut -d'-' -f 2| cut -d' ' -f 1)
+				if [[ "$ARG_FTL_VERSION" != "na" ]]; then
+					ARG_FTL_VERSION=$(echo $ARG_FTL_VERSION | cut -d'_' -f 1)
+				fi
+			fi
+		fi
+	fi
+
+
+	# Validate and get ACTIVESPACES version
+	activespacesPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
+	activespacesPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
+	activespacesHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
+	activespacesHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
+	if [ $activespacesPckgsCnt -gt 0 ]; then
+		activespacesBasePckgsCnt=$(expr ${activespacesPckgsCnt} - ${activespacesHfPckgsCnt})
+		
+		if [ $activespacesBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+			printf "\nERROR :More than one TIBCO AS base versions are present in the target directory..\n"
+			exit 1;
+		elif [ $activespacesHfPckgsCnt -gt 1 ]; then
+			printf "\nERROR :More than one TIBCO AS HF are present in the target directory.There should be only one.\n"
+			exit 1;
+		elif [ $activespacesBasePckgsCnt -le 0 ]; then
+			printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
+			exit 1;
+		elif [ $activespacesBasePckgsCnt -eq 1 ]; then
+			ACTIVESPACES_BASE_PACKAGE="${activespacesPckgs[0]}"
+			ARG_ACTIVESPACES_VERSION=$(echo "${ACTIVESPACES_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
+			if [ "$ARG_ACTIVESPACES_VERSION" = "" ]; then
+				ARG_ACTIVESPACES_VERSION="na"
+			fi
+			if [ $activespacesHfPckgsCnt -eq 1 ]; then
+				activespacesHf=$(echo "${activespacesPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
+				ARG_ACTIVESPACES_HOTFIX=$(echo $activespacesHf| cut -d'-' -f 2| cut -d' ' -f 1)
+				if [[ "$ARG_ACTIVESPACES_VERSION" != "na" ]]; then
+					ARG_ACTIVESPACES_VERSION=$(echo $ARG_ACTIVESPACES_VERSION | cut -d'_' -f 1)
+				fi
+			fi
+		fi
+	fi
+fi
+
 echo "INFO:Supplied Arguments :"
 echo "----------------------------------------------"
 echo "INFO:VERSION : $ARG_VERSION"
@@ -316,10 +401,21 @@ echo "INFO:APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
 echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
-echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+echo "INFO:AS Legacy-HF : $ARG_AS_HOTFIX"
+if [[ $ARG_FTL_VERSION != "na" ]]; then
+	echo "INFO:FTL VERSION : $ARG_FTL_VERSION"
+	if [[ $ARG_FTL_HOTFIX != "na" ]]; then
+		echo "INFO:FTL-HF : $ARG_FTL_HOTFIX"	
+	fi
+fi
+if [[ $ARG_ACTIVESPACES_VERSION != "na" ]]; then
+	echo "INFO:ACTIVESPACES VERSION : $ARG_ACTIVESPACES_VERSION"
+	if [[ $ARG_ACTIVESPACES_HOTFIX != "na" ]]; then
+		echo "INFO:ACTIVESPACES - HF : $ARG_ACTIVESPACES_HOTFIX"
+	fi
+fi
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "----------------------------------------------"
-
 
 mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/installers
@@ -328,7 +424,7 @@ cp -a "../gvproviders" $TEMP_FOLDER/
 
  export PERL5LIB="../lib"
 
- VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
+ VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$ARG_FTL_HOTFIX','$ARG_ACTIVESPACES_HOTFIX','$TEMP_FOLDER');")
 
 if [ "$?" = 0 ]
 then
@@ -344,11 +440,10 @@ CURRENT_DIR=$( cd $(dirname $0) ; pwd -P )
 while read -r line
 do
     name="$line"
-    cp $name $TEMP_FOLDER/installers
+	cp $name $TEMP_FOLDER/installers
     done < "$TEMP_FOLDER/package_files.txt"
 
   AS_VERSION=$(perl -nle 'print $1 if m{.*activespaces.*([\d].[\d].[\d])_linux}' $TEMP_FOLDER/package_files.txt)
-
 
 if [ "$AS_VERSION" = "" ]; then
 	AS_VERSION="na"
@@ -356,6 +451,10 @@ fi
 
 if [[ $strname =~ 3(.+)r ]]; then
     strresult=${BASH_REMATCH[1]}
+fi
+
+if [[ ($AS_VERSION != "na") && ($ARG_FTL_VERSION != "na") ]]; then
+	echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS legacy installers. Removing unused installer improves the docker image size."
 fi
 
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
@@ -387,40 +486,72 @@ if [[ "$AS_VERSION" != "na" ]]
 	fi
 fi
 
-
-if [ "$IS_S2I" = "true" ]; then
-cd ../bin
-cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
-
-cd ../s2i
-
-ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
-
-mkdir -p $TEMP_FOLDER/app
-cd $TEMP_FOLDER/app
-touch dummy.txt
-cd ../..
-
-docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
-
-
-if [ "$?" != 0 ]; then
-  echo "Docker build failed."
-else
-    find . -name \*.zip -delete
-    rm "$ARG_INSTALLER_LOCATION/package_files.txt"
-  echo "DONE: Docker build successful."
+# Evaluate FTL version & short version
+FTL_VERSION=$ARG_FTL_VERSION
+if [[ "$FTL_VERSION" != "na" ]]; then
+	if [[ $FTL_VERSION =~ $VERSION_REGEX ]]; then
+		FTL_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		echo "ERROR:Improper FTL version.Aborting."
+		echo "Deleteting $TEMP_FOLDER folder"
+		rm -rf $TEMP_FOLDER
+		exit 1
+	fi
 fi
 
- echo "Deleting temporary intermediate image.."
- docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
- echo "Deleting $TEMP_FOLDER folder"
- rm -rf $TEMP_FOLDER
+# Evaluate ACTIVESPACES version & short version
+ACTIVESPACES_VERSION=$ARG_ACTIVESPACES_VERSION
+if [[ "$ACTIVESPACES_VERSION" != "na" ]]; then
+	if [[ $ACTIVESPACES_VERSION =~ $VERSION_REGEX ]]; then
+		ACTIVESPACES_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		echo "ERROR:Improper activespaces version.Aborting."
+		echo "Deleteting $TEMP_FOLDER folder"
+		rm -rf $TEMP_FOLDER
+		exit 1
+	fi
+fi
 
-docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
+if [ "$IS_S2I" = "true" ]; then
+	cd ../bin
+	cp $ARG_DOCKER_FILE $CURRENT_DIR/$TEMP_FOLDER
 
-docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+	cd ../s2i
 
-rm -rf app
+	ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
+
+	mkdir -p $TEMP_FOLDER/app
+	cd $TEMP_FOLDER/app
+	touch dummy.txt
+	cd ../..
+
+	docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_VERSION" --build-arg BE_SHORT_VERSION="$SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$AS_VERSION" --build-arg AS_SHORT_VERSION="$AS_SHORT_VERSION" --build-arg FTL_VERSION="$FTL_VERSION" --build-arg FTL_SHORT_VERSION="$FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ACTIVESPACES_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ACTIVESPACES_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_ACTIVESPACES_HOTFIX" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION" $TEMP_FOLDER
+
+	if [ "$?" != 0 ]; then
+		echo "Docker build failed."
+	else
+		find . -name \*.zip -delete
+		rm "$ARG_INSTALLER_LOCATION/package_files.txt"
+		echo "DONE: Docker build successful."
+		BUILD_SUCCESS='true'
+	fi
+
+	echo "Deleting temporary intermediate image.."
+	docker rmi -f  $(docker images -q -f "label=be-intermediate-image=true")
+	echo "Deleting $TEMP_FOLDER folder"
+	rm -rf $TEMP_FOLDER
+
+	docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_VERSION" -t "$ARG_IMAGE_VERSION" .
+
+	docker rmi -f "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+
+	rm -rf app
+
+	if [ $BUILD_SUCCESS == 'true' ]; then
+		cd ../tests
+		EAR_FILE_NAME="dummy.txt"
+		CDD_FILE_NAME="dummy.txt"
+		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
+	fi
 
 fi

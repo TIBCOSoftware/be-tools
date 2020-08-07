@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 kind: Service
 apiVersion: v1
 metadata:
@@ -7,5 +12,6 @@ spec:
     - port: {{ .Values.jmxservice.ports.port }}
       protocol: TCP
   selector:
-    name: {{ include "bediscoverynode.fullname" . }}
+    name: {{ include "beinferenceagent.fullname" . }}
   type: {{ .Values.jmxservice.type }}
+{{- end }}

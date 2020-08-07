@@ -1,3 +1,9 @@
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -13,55 +19,31 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "beinferenceagent.fullname" -}}
-{{- .Values.inferencenode.name -}}
+{{ .Release.Name }}-{{- .Values.inferencenode.name -}}
 {{- end -}}
 
 {{- define "becacheagent.fullname" -}}
-{{- .Values.cachenode.name -}}
-{{- end -}}
-
-{{- define "bediscoverynode.fullname" -}}
-{{- .Values.discoverynode.name -}}
-{{- end -}}
-
-{{- define "mysql.fullname" -}}
-{{- .Values.mysql.name -}}
+{{ .Release.Name }}-{{- .Values.cachenode.name -}}
 {{- end -}}
 
 {{- define "beservice.fullname" -}}
-{{ .Values.beservice.name }}
+{{ .Release.Name }}-{{ .Values.beservice.name }}
 {{- end -}}
 
-{{- define "discoveryservice.fullname" -}}
-{{ .Values.discoveryservice.name }}
+{{- define "cacheservice.fullname" -}}
+{{ .Release.Name }}-{{ .Values.cacheservice.name }}
 {{- end -}}
 
 {{- define "jmxservice.fullname" -}}
-{{ .Values.jmxservice.name }}
+{{ .Release.Name }}-{{ .Values.jmxservice.name }}
 {{- end -}}
 
-{{- define "mysqlservice.fullname" -}}
-{{ .Values.mysqlservice.name }}
-{{- end -}}
-
-{{- define "commonconfigmap.fullname" -}}
-{{ .Values.configmap.name }}
-{{- end -}}
-
-{{- define "eksconfigmap.fullname" -}}
-{{ .Values.persistentvolumes.eks.configmap.name }}
+{{- define "configmapname.fullname" -}}
+{{ .Release.Name }}-{{ .Values.configmapname }}
 {{- end -}}
 
 {{- define "azurestorageclass.fullname" -}}
 {{ .Values.volumes.azure.storageClassName }}
-{{- end -}}
-
-{{- define "eksstorageclass.fullname" -}}
-{{ .Values.persistentvolumes.eks.storageclass.name }}
-{{- end -}}
-
-{{- define "eksdeployment.fullname" -}}
-{{ .Values.persistentvolumes.eks.deployment.name }}
 {{- end -}}
 
 {{- define "openshiftPV.fullname" -}}
@@ -72,7 +54,7 @@ If release name contains chart name it will be used as a full name.
 Create a volume mount and volume claim template for sharedNothing
 */}}
 {{- define "sharedNothing.volumeMount" -}}
-{{- if eq .Values.persistentType "sharedNothing" }}
+{{- if eq .Values.bsType "sharedNothing" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.snmountPath }}
     name: {{ .Values.volumes.snmountVolume }}
@@ -80,11 +62,11 @@ volumeMounts:
 {{- end -}}
 
 {{- define "sharedNothing.volumeClaim" -}}
-{{- if eq .Values.persistentType "sharedNothing" }}
+{{- if eq .Values.bsType "sharedNothing" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
-        {{- if ne .Values.cloudProvider "openshift" }}
+        {{- if ne .Values.cpType "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
@@ -102,61 +84,59 @@ volumeMounts:
 
 
 {{/*
-Create a DB configMap environment details for sharedAll
+Create a DB configMap environment details for store
 */}}
-{{- define "sharedAll.configMap" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
-- name: {{ .Values.database.drivername }}
+{{- define "store.configMap" -}}
+{{- $mapName  :=  include "configmapname.fullname" . -}}
+{{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
+{{- range $key,$val := .Values.database }}
+- name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.driverval }}
-- name: {{ .Values.database.urlname }}
+      name: {{ $mapName }}
+      key: {{ $val }}
+{{- end }}
+{{- end }}
+{{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
+{{- if eq .Values.storeType "Cassandra"  }}
+{{- range $key,$val := .Values.cassdatabase }}
+- name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.urlval }}
-- name: {{ .Values.database.username }}
+      name: {{ $mapName }}
+      key: {{ $val }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.storeType "AS4"  }}
+{{- range $key,$val := .Values.as4database }}
+- name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.userval }}
-- name: {{ .Values.database.pwdname }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.pwdval }}
-- name: {{ .Values.database.poolsizename }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.poolsizeval }}
-- name: {{ .Values.database.logintimeoutname }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ .Values.database.name }}
-      key: {{ .Values.database.logintimeoutval }}
+      name: {{ $mapName }}
+      key: {{ $val }}
+{{- end }}     
+{{- end }}
 {{- end }}
 {{- end -}}
 
 
 {{/*
-Create a volume mount and volume claim template for sharedAll
+Create a volume mount and volume claim template for store
 */}}
-{{- define "sharedAll.volumeMount" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- define "store.volumeMount" -}}
+{{- if eq .Values.bsType "store" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.samountPath }}
     name: {{ .Values.volumes.samountVolume }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedAll.volumeClaim" -}}
-{{- if eq .Values.persistentType "sharedAll" }}
+{{- define "store.volumeClaim" -}}
+{{- if eq .Values.bsType "store" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.samountVolume }}
-        {{- if ne .Values.cloudProvider "openshift" }}
+        {{- if ne .Values.cpType "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
@@ -172,17 +152,46 @@ volumeMounts:
 {{- end }}
 {{- end -}}
 
+
+{{- define "ftl.data" -}}
+{{- range $key, $val := $.Values.ftl }}
+        - name: {{ $key }}
+          value: {{ $val }}
+{{- end }}
+{{- end -}}
+
 {{/*
-Create a common DB configMap data details for sharedAll
+Create a common DB configMap data details for store
 */}}
-{{- define "commonconfigmap.data" -}}
+{{- define "configmap.data" -}}
 data:
-  db_driver: "{{ .Values.configmap.dbdriver }}"
-  db_url: "{{ .Values.configmap.dburl }}"
-  db_username: "{{ .Values.configmap.dbusername }}"
-  db_pwd: "{{ .Values.configmap.dbpwd }}"
-  db_pool_size: "{{ .Values.configmap.dbpoolsize }}"
-  db_login_timeout: "{{ .Values.configmap.dblogintimeout }}"
+  {{- $mysqlenabled := .Values.mysql.enabled }}
+  {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
+  {{- if eq $mysqlenabled true }}
+  dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
+  {{- end }}
+  {{- range $key, $val := $.Values.configmap }}
+  {{- if eq $mysqlenabled true }}
+  {{- if ne "dburl" $key }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- else }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end -}}
+  {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
+  {{- if eq .Values.storeType "Cassandra"  }}
+  {{- range $key, $val := $.Values.cassconfigmap }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end -}}
+  {{- if eq .Values.storeType "AS4" }}
+  {{- range $key, $val := $.Values.as4configmap }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end -}}
+  {{- end -}}
 {{- end -}}
 
 {{/*
@@ -207,7 +216,7 @@ Create a openshift persistent volume details
 {{- end -}}
 
 {{/*
-Create a openshift NFS path details for sharedNothing and sharedAll
+Create a openshift NFS path details for sharedNothing and store
 */}}
 {{- define "openshiftNFSsharedNothing.path" -}}
   nfs:
@@ -215,8 +224,20 @@ Create a openshift NFS path details for sharedNothing and sharedAll
     path: {{ .Values.persistentvolumes.openshift.volume.nfs.snpath }}
 {{- end -}}
 
-{{- define "openshiftNFSsharedAll.path" -}}
+{{- define "openshiftNFSstore.path" -}}
   nfs:
     server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
     path: {{ .Values.persistentvolumes.openshift.volume.nfs.sapath }}
 {{- end -}}
+
+{{- define "beimagepullsecret.fullname" }}
+{{- if .Values.imageCredentials.registry }}
+{{- .Release.Name }}-beimagepullsecret
+{{- end }}
+{{- end }}
+
+{{- define "imagePullSecret" }}
+{{- with .Values.imageCredentials }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}

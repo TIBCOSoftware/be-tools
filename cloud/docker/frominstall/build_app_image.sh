@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
         ;;
         -a=*|--app-location=*)
         ARG_APP_LOCATION="${key#*=}"
-        ;;
+        ;;    
 	-h|--help) 
         shift
         printf "$USAGE"
@@ -133,6 +133,21 @@ EAR_FILE_NAME="$(basename -- ${ears[0]})"
 CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
 ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
+
+# get ftl home
+FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
+FTL_HOME=${FTL_HOME%?}
+if [[ $FTL_HOME == '' ]]; then
+  FTL_HOME="na"
+fi
+
+# get activespaces home
+ACTIVESPACES_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
+ACTIVESPACES_HOME=${ACTIVESPACES_HOME%?}
+if [[ $ACTIVESPACES_HOME == '' ]]; then
+  ACTIVESPACES_HOME="na"
+fi
+
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
@@ -140,6 +155,13 @@ echo "INFO: DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO: IMAGE REPO : $ARG_IMAGE_VERSION"
 echo "INFO: CDD FILE NAME : $CDD_FILE_NAME"
 echo "INFO: EAR FILE NAME : $EAR_FILE_NAME"
+echo "INFO: BE_HOME : $BE_HOME"
+if [[ $FTL_HOME != "na" ]]; then
+  echo "INFO: FTL_HOME : $FTL_HOME"
+fi
+if [[ $ACTIVESPACES_HOME != "na" ]]; then
+  echo "INFO: ACTIVESPACES_HOME : $ACTIVESPACES_HOME"
+fi
 echo "----------------------------------------------"
 
 DOCKER_BIN_DIR="$BE_HOME"/cloud/docker/bin
@@ -152,12 +174,7 @@ cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 
-if [ "$BE_HOME" = "../../.." ]
-then
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
-else
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
-fi
+perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $ACTIVESPACES_HOME
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"
@@ -185,5 +202,32 @@ if [ "$?" != 0 ]; then
 else
   echo "DONE: Docker build successful."
   rm -rf $TEMP_FOLDER
+  
+  ## get ftl version
+  if [ $FTL_HOME != "na" ]; then
+    FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
+  else
+    FTL_SHORT_VERSION=na
+  fi
+
+  ## get as legacy version
+  AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
+  AS_LEG_HOME=${AS_LEG_HOME%?}
+  if [[ $AS_LEG_HOME == '' ]]; then
+    AS_LEGACY_SHORT_VERSION="na"
+  else
+    AS_LEGACY_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
+  fi
+
+  ## get as version
+  if [ $ACTIVESPACES_HOME != "na" ]; then
+    AS_SHORT_VERSION=$( echo ${ACTIVESPACES_HOME}  | rev | cut -d'/' -f1 | rev )
+  else
+    AS_SHORT_VERSION=na
+  fi
+  
+	cd ../tests
+	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_LEGACY_SHORT_VERSION -as $AS_SHORT_VERSION -f $FTL_SHORT_VERSION
+
   exit 0
 fi

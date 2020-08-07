@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,3 +14,4 @@ spec:
   selector:
     name: {{ include "beinferenceagent.fullname" . }}
   type: {{ .Values.beservice.type }}
+{{- end }}

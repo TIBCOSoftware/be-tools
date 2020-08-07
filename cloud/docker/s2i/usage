@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -20,7 +20,7 @@ Lets start off with creating a reusable builder image:
 ./create_builder_image.sh -l <installers-location> -v <BE-version> -i <image-version>
 
 where
-[-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
+[-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]
 [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
 
 

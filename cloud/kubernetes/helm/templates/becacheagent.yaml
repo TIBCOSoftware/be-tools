@@ -1,5 +1,10 @@
-{{- if eq .Values.omType "cache" }}
-  {{- if or (eq .Values.persistentType "None" ) (eq .Values.persistentType "sharedNothing" ) (eq .Values.persistentType "sharedAll" ) }}
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) }}
+  {{- if eq .Values.omType "cache" }}
+    {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "store" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -9,25 +14,37 @@ spec:
   selector:
     matchLabels:
       name: {{ include "becacheagent.fullname" . }}
-  serviceName: {{ include "discoveryservice.fullname" . }}
+  serviceName: {{ include "cacheservice.fullname" . }}
   template:
     metadata:
       labels:
         name: {{ include "becacheagent.fullname" . }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets }}    #if required
+        - name: {{ include "beimagepullsecret.fullname" . }}
       containers:
       - name: {{ .Values.cachenode.containers.name }}
         image: {{ .Values.image }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
-        - name: {{ .Values.cachenode.containers.env.PU1name }}
-          value: {{ .Values.cachenode.containers.env.PU1value }}
-        - name: {{ .Values.cachenode.containers.env.PU2name }}
-          value: {{ .Values.cachenode.containers.env.PU2value }}
-{{ include "sharedAll.configMap" . | indent 8 }}
-{{ include "sharedNothing.volumeMount" . | indent 8 }}
+        - name: PU
+          value: cache
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
+        - name: AS_DISCOVER_URL
+          value: tcp://{{ include "cacheservice.fullname" . }}:50000
+         {{- end }}
+         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
+        - name: {{ .Values.ignite.discover_url }}
+          value: {{ include "cacheservice.fullname" . }}  
+        {{ include "ftl.data" . | trim }}
+       {{- end }}
+{{ include "store.configMap" . | trim | indent 8 }}
+{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}
+    {{- end }}
   {{- end }}
 {{- end }}

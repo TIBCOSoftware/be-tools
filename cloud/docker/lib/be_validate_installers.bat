@@ -1,5 +1,5 @@
 @echo off
-@rem Copyright (c) 2019. TIBCO Software Inc.
+@rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 REM Declaring global constants/varibales
@@ -16,10 +16,21 @@ set GLOBAL_VALID_AS_MAP[5.6.0]=2.3.0
 set GLOBAL_VALID_AS_MAP_MAX[5.6.0]=2.4.0
 set GLOBAL_VALID_AS_MAP[5.6.1]=2.3.0
 set GLOBAL_VALID_AS_MAP_MAX[5.6.1]=2.4.1
+set GLOBAL_VALID_AS_MAP[6.0.0]=2.3.0
+set GLOBAL_VALID_AS_MAP_MAX[6.0.0]=2.4.1
+
+::Valid FTL Version Mapping
+set GLOBAL_VALID_FTL_MAP[6.0.0]=6.2.0
+set GLOBAL_VALID_FTL_MAP_MAX[6.0.0]=6.x.x
+
+::Valid AS3x Version Mapping
+set GLOBAL_VALID_ACTIVESPACES_MAP[6.0.0]=4.2.0
+set GLOBAL_VALID_ACTIVESPACES_MAP_MAX[6.0.0]=4.x.x
 
 ::JRE version
 set GLOBAL_JRE_VERSION_MAP[5.6.0]=1.8.0
 set GLOBAL_JRE_VERSION_MAP[5.6.1]=11
+set GLOBAL_JRE_VERSION_MAP[6.0.0]=11
 
 ::REGEX
 set GLOBAL_AS_PKG_REGEX=*activespaces*
@@ -38,6 +49,11 @@ set "ARG_ADDONS="
 set ARG_HF=na
 set ARG_AS_VERSION=na
 set ARG_AS_HF=na
+
+set ARG_FTL_VERSION=na
+set ARG_FTL_HF=na
+set ARG_ACTIVESPACES_VERSION=na
+set ARG_ACTIVESPACES_HF=na
 
 REM Identify Installers platform (linux, win)
 set ARG_INSTALLERS_PLATFORM=na
@@ -176,6 +192,45 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
   )
 )
 
+call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+if !IS_LESS! EQU 1 (
+  REM Identify ftl version
+  call :IdentifyInstaller "ftl" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_FTL_VERSION=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
+
+  REM Identify activespaces version
+  call :IdentifyInstaller "as" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_ACTIVESPACES_VERSION=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
+
+  REM Identify ftl HF
+  call :IdentifyInstallerHf "ftl" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_FTL_HF=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
+
+  REM Identify activespaces HF
+  call :IdentifyInstallerHf "as" LOCAL_INSTLR_RESULT
+  if !LOCAL_INSTLR_RESULT! NEQ na (
+    set ARG_ACTIVESPACES_HF=!LOCAL_INSTLR_RESULT!
+  )
+  if !LOCAL_INSTLR_RESULT! EQU multiple (
+    GOTO END-withError
+  )
+)
+
 set /A RESULT=0
 set ARG_JRE_VERSION=!GLOBAL_JRE_VERSION_MAP[%ARG_VERSION%]!
 
@@ -193,8 +248,29 @@ if "!RESULT: =!" NEQ "0" (
   GOTO END-withError
 )
 
+call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+if !IS_LESS! EQU 1 (
+  REM Performing ftl validation
+  if !ARG_FTL_VERSION! NEQ na (
+    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
+    if "!RESULT: =!" NEQ "0" (
+      echo Error in validating ftl
+      GOTO END-withError
+    )
+  )
+
+  REM Performing activespaces validation
+  if !ARG_ACTIVESPACES_VERSION! NEQ na (
+    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_ACTIVESPACES_VERSION%" "%ARG_ACTIVESPACES_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
+    if "!RESULT: =!" NEQ "0" (
+      echo Error in validating activespaces
+      GOTO END-withError
+    )
+  )
+)
+
 :END
-ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%
+ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_ACTIVESPACES_VERSION%& SET %~14=%ARG_ACTIVESPACES_HF%
 EXIT /B 0
 
 :END-withError
@@ -247,7 +323,7 @@ REM VALIDATION SUBROUTINES
   (ENDLOCAL & REM -- RETURNING RESULT
     SET %~7=%LOCAL_RESULT%
   )
-  
+
 EXIT /B %LOCAL_RESULT%
 
 
@@ -518,6 +594,151 @@ EXIT /B %LOCAL_RESULT%
 
 EXIT /B %LOCAL_RESULT%
 
+:validateFTLorACTIVESPACES 
+  SETLOCAL
+  set LOCAL_BE_VERSION=%~1
+  set LOCAL_INSTLR_VERSION=%~2
+  set LOCAL_INSTLR_HF=%~3
+  set LOCAL_TARGET_DIR=%~4
+  set LOCAL_INSTLR_TYPE=%~5
+  set /A LOCAL_RESULT=0
+  set ZIPOREXE=zip
+  
+  if "!LOCAL_INSTLR_TYPE!"=="ftl" (
+    set ZIPOREXE=exe
+    if "!GLOBAL_VALID_FTL_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
+      echo ERROR: No FTL version found for base BE version !LOCAL_BE_VERSION!
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+  )
+
+  if "!LOCAL_INSTLR_TYPE!"=="as" (
+    if "!GLOBAL_VALID_ACTIVESPACES_MAP[%LOCAL_BE_VERSION: =%]!"=="" (
+      echo ERROR: No AS3x version found for base BE version !LOCAL_BE_VERSION!
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+  )
+
+    
+  SET INSTLR_REG="^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_linux.*\.zip$"
+  if !ARG_INSTALLERS_PLATFORM! EQU win (
+    SET INSTLR_REG="^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_win.*\.%ZIPOREXE%$"
+  )
+  set /a index = 0
+  for /f %%i in ('dir !LOCAL_TARGET_DIR! /b ^| findstr /I "%INSTLR_REG%"') do (
+    set TEMP_PKG=%%i
+    set TEMP_PKG_SPLIT=!TEMP_PKG:_= !
+    FOR %%k IN (!TEMP_PKG_SPLIT!) DO (
+      if !index! equ 2 (
+        set LOCAL_INSTLR_VERSION=%%k
+        if "!LOCAL_INSTLR_TYPE!"=="ftl" (
+          echo FTL_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+        )
+        if "!LOCAL_INSTLR_TYPE!"=="as" (
+          echo ACTIVESPACES_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+        )
+      )
+      set /a index += 1
+    )
+  )
+  
+  set /A IS_LESS=0
+  set /A IS_GREATER=0
+  
+  if "!LOCAL_INSTLR_TYPE!"=="ftl" (
+    set LOCAL_INSTLR_VERSION_MIN=!GLOBAL_VALID_FTL_MAP[%LOCAL_BE_VERSION: =%]! 
+    set LOCAL_INSTLR_VERSION_MAX=!GLOBAL_VALID_FTL_MAP_MAX[%LOCAL_BE_VERSION: =%]!
+  )
+  if "!LOCAL_INSTLR_TYPE!"=="as" (
+    set LOCAL_INSTLR_VERSION_MIN=!GLOBAL_VALID_ACTIVESPACES_MAP[%LOCAL_BE_VERSION: =%]! 
+    set LOCAL_INSTLR_VERSION_MAX=!GLOBAL_VALID_ACTIVESPACES_MAP_MAX[%LOCAL_BE_VERSION: =%]!
+  )
+  
+  call :isLess !LOCAL_INSTLR_VERSION! !LOCAL_INSTLR_VERSION_MIN! IS_LESS
+  
+  call :isGreater !LOCAL_INSTLR_VERSION! !LOCAL_INSTLR_VERSION_MAX! IS_GREATER
+  
+  IF !IS_LESS! NEQ 1 (
+    echo ERROR: !LOCAL_INSTLR_TYPE! Version:!LOCAL_INSTLR_VERSION! is incompatible with the BE Version:!LOCAL_BE_VERSION!
+	  set /A LOCAL_RESULT=1
+	  GOTO END-validateFTLorACTIVESPACES
+  )
+  
+  IF !IS_GREATER! NEQ 1 (
+    echo ERROR: !LOCAL_INSTLR_TYPE! Version:!LOCAL_INSTLR_VERSION! is incompatible with the BE Version:!LOCAL_BE_VERSION!
+	  set /A LOCAL_RESULT=1
+	  GOTO END-validateFTLorACTIVESPACES
+  )
+  
+  ::Checking for only numberic in installer HF
+  if !LOCAL_INSTLR_HF! NEQ na (
+    for /f "delims=0123456789" %%i in ("!LOCAL_INSTLR_HF!") do set var=%%i
+    if defined var (
+      echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE!_HF : !LOCAL_INSTLR_HF! 
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+    set /A INSTLR_HF_LEN=0
+    call :strLen LOCAL_INSTLR_HF INSTLR_HF_LEN
+    if  !INSTLR_HF_LEN! EQU 0 (
+      echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE! HF : !LOCAL_INSTLR_HF! 
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+
+    if !INSTLR_HF_LEN! GTR 3 (
+      echo ERROR: Invalid value for !LOCAL_INSTLR_TYPE! HF : !LOCAL_INSTLR_HF! 
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+
+    if !INSTLR_HF_LEN! EQU 1 (
+      SET LOCAL_INSTLR_HF=00!LOCAL_INSTLR_HF!
+    )
+
+    if !INSTLR_HF_LEN! EQU 2 (
+      SET LOCAL_INSTLR_HF=0!LOCAL_INSTLR_HF!
+    )
+  
+    for /f %%i in ('dir !LOCAL_TARGET_DIR! /b ^| findstr /I "^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_HF-%LOCAL_INSTLR_HF%_win.*\.zip$"') DO SET /A INSTLR_HF_COUNT+=1
+    if !INSTLR_HF_COUNT! EQU 0 (
+      echo ERROR: No package found for !LOCAL_INSTLR_TYPE! version %LOCAL_INSTLR_VERSION%  HF-!LOCAL_INSTLR_HF! in the installer location.
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+    if !INSTLR_HF_COUNT! GTR 1 (
+      echo ERROR: More than one !LOCAL_INSTLR_TYPE! HF packages are present in the target directory. There should be only one.
+      set /A LOCAL_RESULT=1
+      GOTO END-validateFTLorACTIVESPACES
+    )
+    set /a index = 0
+    if  !INSTLR_HF_COUNT! EQU 1 (
+      for /f %%i in ('dir !LOCAL_TARGET_DIR! /b ^| findstr /I "^TIB_%LOCAL_INSTLR_TYPE%_%LOCAL_INSTLR_VERSION%_HF-%LOCAL_INSTLR_HF%_win.*\.zip$"') do (
+        set TEMP_PKG=%%i
+        set TEMP_PKG_SPLIT=!TEMP_PKG:_= !
+          FOR %%k IN (!TEMP_PKG_SPLIT!) DO (
+            if !index! equ 2 (
+               if "!LOCAL_INSTLR_TYPE!"=="ftl" (
+                 echo FTL_HF_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+               )
+               if "!LOCAL_INSTLR_TYPE!"=="as" (
+                 echo ACTIVESPACES_HF_PKG#!LOCAL_TARGET_DIR!\!TEMP_PKG!>>!ARG_TEMP_FOLDER!/package_files.txt
+               )
+            )
+            set /a index += 1
+          )
+      )
+    )
+  )
+  
+  :END-validateFTLorACTIVESPACES
+  (ENDLOCAL & REM -- RETURNING RESULT
+   SET %~6=%LOCAL_RESULT%
+  )
+EXIT /B 0
+
 :validateCorrectNaming
   SETLOCAL
   set LOCAL_ADDONS=%~1
@@ -632,11 +853,17 @@ EXIT /B 0
   )
   
   FOR /f "tokens=1,2,3 delims=." %%a IN ("!LOCAL_AS_VERSION_MAX!") do (
-    set /A versionMax1=%%a
-	set /A versionMax2=%%b
-	set /A versionMax3=%%c
+    set versionMax1=%%a
+	set versionMax2=%%b
+	set versionMax3=%%c
   )
   
+  FOR %%a in (x X) DO (
+    IF %versionMax1%==%%a set /A versionMax1=%version1%
+    IF %versionMax2%==%%a set /A versionMax2=%version2%
+    IF %versionMax3%==%%a set /A versionMax3=%version3%
+  )
+
   if !versionMax1! GTR !version1! (
     set /a FLAG=1
 	GOTO END-isGreater
@@ -664,3 +891,78 @@ EXIT /B 0
   :END-isGreater
   (endlocal & set %~3=%FLAG%)
 EXIT /B 0
+
+:IdentifyInstaller
+  SETLOCAL
+  set INSTLR_TYPE=%~1
+  set LOCAL_INSTLR_RESULT=na
+  set INSTLR_REG="^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_linux.*\.zip$"
+  set ZIPOREXE=zip
+  if %INSTLR_TYPE% EQU ftl (
+    set ZIPOREXE=exe
+  )
+  if !ARG_INSTALLERS_PLATFORM! EQU win (
+    set INSTLR_REG=^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_win.*\.%ZIPOREXE%$
+  )
+  for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!INSTLR_REG!"') do (
+    if !LOCAL_INSTLR_RESULT! NEQ na (
+      echo ERROR: Multiple %INSTLR_TYPE% installers found at the specified location.
+      set LOCAL_INSTLR_RESULT=multiple
+      GOTO END-IdentifyInstaller
+    )
+    set temp=%%i
+    set /a ind2 = 0
+    set TEMP_PKG_SPLIT_UNDERSCORE=!temp:_= !
+    for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
+      if !ind2! equ 2 (
+        set LOCAL_INSTLR_RESULT=%%j
+      )
+      set /a ind2 += 1
+    )
+  )
+
+  :END-IdentifyInstaller
+  (ENDLOCAL & REM -- RETURNING RESULT
+   SET %~2=%LOCAL_INSTLR_RESULT%
+  )
+EXIT /B %LOCAL_INSTLR_RESULT%
+
+:IdentifyInstallerHf
+  SETLOCAL
+  set INSTLR_TYPE=%~1
+  set LOCAL_INSTLR_RESULT=na
+  set INSTALR_HF_REG="^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_linux.*\.zip$"
+
+  if !ARG_INSTALLERS_PLATFORM! EQU win (
+    SET INSTALR_HF_REG=^TIB_%INSTLR_TYPE%_[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_win.*\.zip$
+  )
+  for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!INSTALR_HF_REG!"') do (
+    if !LOCAL_INSTLR_RESULT! NEQ na (
+      echo ERROR: Multiple %INSTLR_TYPE% HF found at the specified location.
+      set LOCAL_INSTLR_RESULT=multiple
+      GOTO END-IdentifyInstallerHf
+    )
+    set temp=%%i
+    set /a ind3 = 0
+    set TEMP_PKG_SPLIT_UNDERSCORE=!temp:_= !
+    for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
+      if !ind3! equ 3 (
+        set temp2=%%j
+        set /a ind4 = 0   
+        set TEMP_PKG_SPLIT_HYPHEN=!temp2:-= !
+        for %%k in (!TEMP_PKG_SPLIT_HYPHEN!) do (
+          if !ind4! equ 1 (
+            set LOCAL_INSTLR_RESULT=%%k
+          )
+          set /a ind4 += 1
+        )
+      )
+      set /a ind3 += 1
+    )
+  )
+
+  :END-IdentifyInstallerHf
+  (ENDLOCAL & REM -- RETURNING RESULT
+   SET %~2=%LOCAL_INSTLR_RESULT%
+  )
+EXIT /B %LOCAL_INSTLR_RESULT%

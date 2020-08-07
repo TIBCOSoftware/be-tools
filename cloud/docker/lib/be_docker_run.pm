@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -106,6 +106,7 @@ sub updateCddFile {
 
   my $beStoreRegex = "(<backing-store>[\\s\\S]*?<persistence-option>Shared Nothing<\/persistence-option>[\\s\\S]*?)(<data-store-path\/>)([\\s\\S]*?<\/backing-store>)";
   my $beStoreRegex2 = "(<backing-store>[\\s\\S]*?<persistence-option>Shared Nothing<\/persistence-option>[\\s\\S]*?)(<data-store-path>[\\s\\S]*?<\/data-store-path>)([\\s\\S]*?<\/backing-store>)";
+  my $beStoreRegex3 = "(<property[\\s]+?name=\"data-store-path\"[\\s]+?value=\")(.*?)(\"\/>)";
 
   my $logsDirRegex = "(<log-config.*>[\\s\\S]*?<\/enabled>[\\s\\S]*?)(<dir>[\\s\\S]*?<\/dir>)([\\s\\S]*?<\/log-config>)";
   my $logsDirRegex2 = "(<log-config.*>[\\s\\S]*?)(<dir\/>)([\\s\\S]*?<\/log-config>)";
@@ -142,6 +143,7 @@ sub updateCddFile {
   #Replacing be store value
   @lines=replaceCddTokenAll($beStoreTag,$beStoreRegex,\@lines);
   @lines=replaceCddTokenAll($beStoreTag,$beStoreRegex2,\@lines);
+  @lines=replaceCddTokenAll($beStore,$beStoreRegex3,\@lines);
 
   #Replacing Logs store value
   @lines=replaceCddTokenAll($logsStoreTag,$logsDirRegex,\@lines);
