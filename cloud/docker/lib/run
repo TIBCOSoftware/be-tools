@@ -35,9 +35,9 @@ TRA_FILE=$BE_HOME/bin/be-engine.tra
 export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
-if [ ! -z "$CONSUL_SERVER_URL" ]; then
-  ./gvproviders/consul/run.sh
-fi
+
+./gvproviders/utilfunctions.sh ${GVPROVIDER}
+
 /bin/cat $BE_PROPS_FILE
 
 COMPONENT_PARSED="${COMPONENT%\"}"
@@ -159,7 +159,7 @@ else
 	echo "AS Listen URL:"$AS_LISTEN_URL
 
 	UPDATE_CDD_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::updateCddFile('$CDD_FILE','/mnt/tibco/be/data-store','/mnt/tibco/be/logs','$SHORT_VERSION','$BE_HOME/')")
-	
+
 	if [ "$LOG_LEVEL" != "na" ]; then
   		#Putting tra entry for log level
   		LOG_LEVEL=${LOG_LEVEL//:/\\:}
