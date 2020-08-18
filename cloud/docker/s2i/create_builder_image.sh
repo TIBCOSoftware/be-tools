@@ -16,6 +16,7 @@ if [ -z "${USAGE}" ]; then
 fi
 USAGE+="\n\n [-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]"
 USAGE+="\n\n [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
+USAGE+="\n\n [--disable-tests]           :       Disables docker unit tests on created image. [optional]"
 USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
 if [[ "$*" == *nos2i* ]]; then
 USAGE+="\n\n [-a|--app-location]         :       Location where the application ear, cdd and other files are located [required]"
@@ -53,6 +54,7 @@ ARG_ACTIVESPACES_HOTFIX="na"
 ARG_GVPROVIDERS="na"
 ARG_ACTIVESPACES_VERSION="na"
 ARG_FTL_VERSION="na"
+ARG_ENABLE_TESTS="true"
 
 #Parse the arguments
 
@@ -90,6 +92,9 @@ while [[ $# -gt 0 ]]; do
         --nos2i)
         shift # past the key and to the value
         IS_S2I="false"
+		;;
+        --disable-tests)
+        ARG_ENABLE_TESTS="false"
         ;;
         -a|--app-location)
         shift # past the key and to the value
@@ -547,7 +552,7 @@ if [ "$IS_S2I" = "true" ]; then
 
 	rm -rf app
 
-	if [ $BUILD_SUCCESS == 'true' ]; then
+	if [[ ($BUILD_SUCCESS == 'true') && ($ARG_ENABLE_TESTS == "true") ]]; then
 		cd ../tests
 		EAR_FILE_NAME="dummy.txt"
 		CDD_FILE_NAME="dummy.txt"
