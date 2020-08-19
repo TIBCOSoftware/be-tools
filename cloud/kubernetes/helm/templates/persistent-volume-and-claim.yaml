@@ -23,7 +23,7 @@ metadata:
 spec:
   {{ include "openshiftPV.details" . }}
   {{ include "openshiftNFSsharedNothing.path" . }}
-----
+---
 {{- end }}
 {{- end }}
 {{- end }}
