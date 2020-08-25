@@ -56,7 +56,7 @@ data:
   dns.name: "ADD YOUR EFS DNS NAME HERE"
 ---
 kind: Deployment
-apiVersion: extensions/v1
+apiVersion: apps/v1
 metadata:
   name: efs-provisioner
 spec:
