@@ -113,15 +113,13 @@ database:
   BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
 
 cassconfigmap:
-  cass_server_hostname: localhost
-  cass_server_port: 9042
+  cass_server: localhost:9042
   cass_keyspace_name: testdb
   cass_username: cassandra
   cass_password: cassandra
 
 cassdatabase:
-  CASS_SERVER_HOSTNAME: cass_server_hostname
-  CASS_SERVER_PORT: cass_server_port
+  CASS_SERVER: cass_server
   CASS_KEYSPACE_NAME: cass_keyspace_name
   CASS_USERNAME: cass_username
   CASS_PASSWORD: cass_password

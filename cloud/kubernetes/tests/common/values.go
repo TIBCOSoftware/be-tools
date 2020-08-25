@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package common
 
 const (
@@ -20,8 +20,8 @@ const (
 	as4GridNameVal   = "fd_store"
 
 	// cassandra constants
-	cassandraSerHostNameKey  = "cass_server_hostname"
-	cassandraSerHostNameVal  = "localhost"
+	cassandraSerKey          = "cass_server"
+	cassandraSerVal          = "localhost:9042"
 	cassandraUserNameKey     = "cass_username"
 	cassandraUserNameVal     = "cassusername"
 	cassandraPasswKey        = "cass_password"
@@ -182,7 +182,7 @@ func FTLCacheMysqlStoreValues() map[string]string {
 }
 
 func appendCassandraValues(data map[string]string) map[string]string {
-	data["cassconfigmap."+cassandraSerHostNameKey] = cassandraSerHostNameVal
+	data["cassconfigmap."+cassandraSerKey] = cassandraSerVal
 	data["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
 	data["cassconfigmap."+cassandraUserNameKey] = cassandraUserNameVal
 	data["cassconfigmap."+cassandraPasswKey] = cassandraPasswVal
