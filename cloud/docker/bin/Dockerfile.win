@@ -54,7 +54,7 @@ ENV \
     AS_DISCOVER_URL=self \
     AS_PROXY_NODE=false \
     CDD_FILE=c:/tibco/be/application/${CDD_FILE_NAME} \
-    EAR_FILE=c:/tibco/be/application/ear/${EAR_FILE_NAME} 
+    EAR_FILE=c:/tibco/be/application/ear/${EAR_FILE_NAME}
 
 RUN mkdir "c:\working\installer" && mkdir "c:\tibco\be"
 
@@ -70,7 +70,10 @@ RUN copy "c:\working\runbe.bat" "c:\tibco\be"
 RUN c:\working\vcredist_install.bat
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
+RUN c:\tibco\be\gvproviders\setup.bat
+
+RUN if exist c:\tibco\be\gvproviders\%GVPROVIDERS%\setup.bat ( c:\tibco\be\gvproviders\%GVPROVIDERS%\setup.bat )
+
 
 RUN rmdir /S /Q "c:\working"
 
