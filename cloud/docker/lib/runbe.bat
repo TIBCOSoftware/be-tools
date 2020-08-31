@@ -59,9 +59,6 @@ type NUL>%BE_PROPS_FILE%
 
 for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
 
-#if defined CONSUL_SERVER_URL (
-#	call .\gvproviders\consul\run.bat
-#)
 call .\gvproviders\utilfunctions.bat !GVPROVIDER!
 
 echo #BE props file>>%BE_PROPS_FILE%

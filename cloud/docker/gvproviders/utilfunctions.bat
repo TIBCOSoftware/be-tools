@@ -15,7 +15,7 @@ set /p tempkeys=<jsonkeys
 set keys=%tempkeys:"=%
 
 
-set BE_PROPS_FILE="c:\tibco\be\application\beprops_all.props"
+set BE_PROPS_FILE=c:\tibco\be\application\beprops_all.props
 
 echo #Latest GV values>>%BE_PROPS_FILE%
 
@@ -26,7 +26,5 @@ echo #Latest GV values>>%BE_PROPS_FILE%
    set /p value=<values
    echo tibco.clientVar.!key!=!value! >> %BE_PROPS_FILE%
  )
-
- (jq -r 'to_entries[] | "tibco.clientVar.\(.key)=\(.value)"' output.json) >> $BE_PROPS_FILE
 
 del jsonkeys values
