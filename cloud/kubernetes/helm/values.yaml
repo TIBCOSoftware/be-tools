@@ -20,13 +20,15 @@ cacheType: AS2                      #cacheType can be AS2, ignite
 # Image name and pull policy required for be app
 image: befdapp:01
 imagePullPolicy: IfNotPresent
+imagepullsecret:    #if you didnt have a secret name use imagecredentials section to create one
 
 # imageCredentials Credentials to pull image from a private registry. Provide these details, if BE docker image is available at private registry.
-imageCredentials:
+imageCredentials:   #if you have the secret name skip this section and update it in imagepullsecret field
   registry:   #Ex: hub.docker.com
   username:
   password:
   email:
+
 #*************************Agents env varaibles****************************************************
 
 ignite:

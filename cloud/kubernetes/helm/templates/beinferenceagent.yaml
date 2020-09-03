@@ -19,7 +19,11 @@ spec:
         name: {{ include "beinferenceagent.fullname" . }}
     spec:
       imagePullSecrets:
+        {{- if .Values.imagepullsecret }}
+        - name: {{ .Values.imagepullsecret }}
+        {{- else  }}
         - name: {{ include "beimagepullsecret.fullname" . }}
+        {{- end  }}
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}
