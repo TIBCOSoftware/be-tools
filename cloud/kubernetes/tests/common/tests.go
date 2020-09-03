@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package common
 
 import (
@@ -69,7 +69,7 @@ func ConfigMapCassandraTest(data string, t *testing.T) {
 	var configMap v1.ConfigMap
 	helm.UnmarshalK8SYaml(t, data, &configMap)
 
-	require.Equal(t, configMap.Data[cassandraSerHostNameKey], cassandraSerHostNameVal)
+	require.Equal(t, configMap.Data[cassandraSerKey], cassandraSerVal)
 	require.Equal(t, configMap.Data[cassandraKeyspaceNameKey], cassandraKeyspaceNameVal)
 	require.Equal(t, configMap.Data[cassandraUserNameKey], cassandraUserNameVal)
 	require.Equal(t, configMap.Data[cassandraPasswKey], cassandraPasswVal)
@@ -142,7 +142,7 @@ func configMapEnvAS4Testcases(sSet appsv1.StatefulSet, t *testing.T) {
 func configMapEnvCassandraTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraKeyspaceNameKey)), cassandraKeyspaceNameKey)
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraPasswKey)), cassandraPasswKey)
-	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraSerHostNameKey)), cassandraSerHostNameKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraSerKey)), cassandraSerKey)
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraUserNameKey)), cassandraUserNameKey)
 }
 

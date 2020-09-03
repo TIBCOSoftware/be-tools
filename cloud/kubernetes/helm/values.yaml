@@ -113,15 +113,13 @@ database:
   BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
 
 cassconfigmap:
-  cass_server_hostname: localhost
-  cass_server_port: 9042
+  cass_server: localhost:9042
   cass_keyspace_name: testdb
   cass_username: cassandra
   cass_password: cassandra
 
 cassdatabase:
-  CASS_SERVER_HOSTNAME: cass_server_hostname
-  CASS_SERVER_PORT: cass_server_port
+  CASS_SERVER: cass_server
   CASS_KEYSPACE_NAME: cass_keyspace_name
   CASS_USERNAME: cass_username
   CASS_PASSWORD: cass_password
@@ -150,10 +148,8 @@ volumes:
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
   storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
-  snclaimVolume: pv0003                         #Update it for sharedNothing in Openshift
-  saclaimVolume: pv0004                          #Update it for store in Openshift
-  samountPath: "/var/lib/mysql"
-  samountVolume: sastore
+  snclaimVolume: pv0003
+
   #Required for sharedNothing and store in Azure
   azure:
     storageClassName: azurestorageclass
@@ -163,20 +159,6 @@ volumes:
     file_mode: 0777
     uid: 1000
     gid: 1000
-
-persistentvolumes:
-#Required for sharedNothing, store in Openshift.
-  openshift:
-    volume:
-      snvolname: pv0003
-      savolname: pv0004
-      storage: 1Gi
-      accessModes: ReadWriteOnce
-      persistentVolumeReclaimPolicy: Recycle
-      nfs:
-        server: qa.lab.openshift.com       #update the servername
-        snpath: /home/data/pv0003          #Update path for sharedNothing
-        sapath: /home/data/pv0004          #Update path for store
 
 #Required for store in  all cloud providers
 mysql:

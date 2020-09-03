@@ -46,10 +46,6 @@ If release name contains chart name it will be used as a full name.
 {{ .Values.volumes.azure.storageClassName }}
 {{- end -}}
 
-{{- define "openshiftPV.fullname" -}}
-{{ .Values.persistentvolumes.openshift.volume.name }}
-{{- end -}}
-
 {{/*
 Create a volume mount and volume claim template for sharedNothing
 */}}
@@ -66,16 +62,10 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
-        {{- if ne .Values.cpType "openshift" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
-        {{- else }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.snclaimVolume }}
-        {{- end }}
         resources:
           requests:
             storage: {{ .Values.volumes.storage }}
@@ -118,40 +108,6 @@ Create a DB configMap environment details for store
 {{- end }}
 {{- end }}
 {{- end -}}
-
-
-{{/*
-Create a volume mount and volume claim template for store
-*/}}
-{{- define "store.volumeMount" -}}
-{{- if eq .Values.bsType "store" }}
-volumeMounts:
-  - mountPath: {{ .Values.volumes.samountPath }}
-    name: {{ .Values.volumes.samountVolume }}
-{{- end }}
-{{- end -}}
-
-{{- define "store.volumeClaim" -}}
-{{- if eq .Values.bsType "store" }}
-  volumeClaimTemplates:
-    - metadata:
-        name: {{ .Values.volumes.samountVolume }}
-        {{- if ne .Values.cpType "openshift" }}
-        annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        {{- else }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.saclaimVolume }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.volumes.storage }}
-{{- end }}
-{{- end -}}
-
 
 {{- define "ftl.data" -}}
 {{- range $key, $val := $.Values.ftl }}
@@ -202,32 +158,6 @@ data:
   file.system.id: {{ .Values.persistentvolumes.eks.configmap.filesystemid }}
   aws.region: {{ .Values.persistentvolumes.eks.configmap.awsregion }}
   provisioner.name: {{ .Values.persistentvolumes.eks.configmap.provisionername }}
-{{- end -}}
-
-{{/*
-Create a openshift persistent volume details
-*/}}
-{{- define "openshiftPV.details" -}}
-  capacity:
-    storage: {{ .Values.persistentvolumes.openshift.volume.storage }}
-  accessModes:
-    - {{ .Values.persistentvolumes.openshift.volume.accessModes }}
-  persistentVolumeReclaimPolicy: {{ .Values.persistentvolumes.openshift.volume.persistentVolumeReclaimPolicy }}
-{{- end -}}
-
-{{/*
-Create a openshift NFS path details for sharedNothing and store
-*/}}
-{{- define "openshiftNFSsharedNothing.path" -}}
-  nfs:
-    server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
-    path: {{ .Values.persistentvolumes.openshift.volume.nfs.snpath }}
-{{- end -}}
-
-{{- define "openshiftNFSstore.path" -}}
-  nfs:
-    server: {{ .Values.persistentvolumes.openshift.volume.nfs.server }}
-    path: {{ .Values.persistentvolumes.openshift.volume.nfs.sapath }}
 {{- end -}}
 
 {{- define "beimagepullsecret.fullname" }}
