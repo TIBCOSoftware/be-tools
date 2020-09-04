@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package template
 
 import (
@@ -12,43 +12,41 @@ import (
 )
 
 func TestAS2CacheSN(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.AS2CacheSNValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
 	common.InferenceAS2SNTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
+	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
 	common.CacheAS2SNTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
+	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
 	common.AS2CacheServiceTest(beCacheServiceOutput, t)
 }
 
 func TestFTLCacheSN(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.FTLCacheSNValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
 	common.InferenceFTLSNTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
+	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
 	common.CacheFTLSNTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
+	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
 	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
 }

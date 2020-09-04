@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package common
 
 import (
@@ -17,6 +17,7 @@ func CacheAS2NoneTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 }
@@ -27,6 +28,7 @@ func CacheAS2SNTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
@@ -38,6 +40,7 @@ func CacheFTLNoneTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 }
@@ -48,6 +51,7 @@ func CacheFTLSNTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
@@ -59,6 +63,7 @@ func CacheAS2MysqlTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
@@ -70,6 +75,7 @@ func CacheFTLMysqlTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
@@ -81,6 +87,7 @@ func CacheFTLAS4Test(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvAS4Testcases(sSet, t)
@@ -92,6 +99,7 @@ func CacheFTLCassTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)

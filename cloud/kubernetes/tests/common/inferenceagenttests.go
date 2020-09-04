@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package common
 
 import (
@@ -17,7 +17,9 @@ func InferenceTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
+
 }
 
 // InferenceFTLStoreAS4Test testing inference content for ftl cluster and cache type as store as4
@@ -25,6 +27,7 @@ func InferenceFTLStoreAS4Test(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlTestcases(sSet, t)
 	configMapEnvAS4Testcases(sSet, t)
@@ -35,6 +38,7 @@ func InferenceFTLStoreCassTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)
@@ -46,6 +50,7 @@ func InferenceFTLNoneTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 }
@@ -56,6 +61,7 @@ func InferenceFTLSNTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
@@ -67,6 +73,7 @@ func InferenceAS2NoneTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 }
@@ -77,6 +84,7 @@ func InferenceAS2SNTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
@@ -88,6 +96,7 @@ func InferenceAS2MysqlTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
@@ -99,6 +108,7 @@ func InferenceFTLMysqlTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
@@ -110,6 +120,7 @@ func InferenceFTLAS4Test(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvAS4Testcases(sSet, t)
@@ -120,6 +131,7 @@ func InferenceFTLCassTest(data string, t *testing.T) {
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
 
+	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	ftlIgniteTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)

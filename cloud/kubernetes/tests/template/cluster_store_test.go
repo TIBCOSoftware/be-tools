@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package template
 
 import (
@@ -12,35 +12,33 @@ import (
 )
 
 func TestFTLStoreAS4(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.FTLAS4StoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	output := beinferenceagent(t, options, common.HelmChartPath)
 	common.InferenceFTLStoreAS4Test(output, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
+	configOutPut := beconfmap(t, options, common.HelmChartPath)
 	common.ConfigMapAS4Test(configOutPut, t)
 }
 
 func TestFTLStoreCassandra(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.FTLCassandraStoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
+	output := beinferenceagent(t, options, common.HelmChartPath)
 	common.InferenceFTLStoreCassTest(output, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
+	configOutPut := beconfmap(t, options, common.HelmChartPath)
 	common.ConfigMapCassandraTest(configOutPut, t)
 }

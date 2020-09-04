@@ -22,6 +22,7 @@ func AppServiceTest(data string, t *testing.T) {
 
 	// be service port check
 	require.Equal(t, service.Spec.Ports[0].Port, beServicePort)
+	require.Equal(t, service.Spec.Type, v1.ServiceType(infServicePortType))
 }
 
 // AS2CacheServiceTest testing be cache service content
@@ -52,6 +53,7 @@ func JmxServiceTest(data string, t *testing.T) {
 
 	// jmx service port check
 	require.Equal(t, service.Spec.Ports[0].Port, beJmxServicePort)
+	require.Equal(t, service.Spec.Type, v1.ServiceType(jmxServicePortType))
 }
 
 // ConfigMapAS4Test tests config map content
@@ -69,7 +71,7 @@ func ConfigMapCassandraTest(data string, t *testing.T) {
 	var configMap v1.ConfigMap
 	helm.UnmarshalK8SYaml(t, data, &configMap)
 
-	require.Equal(t, configMap.Data[cassandraSerKey], cassandraSerVal)
+	require.Equal(t, configMap.Data[cassandraSerHostNameKey], cassandraSerHostNameVal)
 	require.Equal(t, configMap.Data[cassandraKeyspaceNameKey], cassandraKeyspaceNameVal)
 	require.Equal(t, configMap.Data[cassandraUserNameKey], cassandraUserNameVal)
 	require.Equal(t, configMap.Data[cassandraPasswKey], cassandraPasswVal)
@@ -88,28 +90,46 @@ func ConfigMapMysqlTest(data string, t *testing.T) {
 func checkVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
 
 	// volume mount path test
-	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath, "/mnt/tibco/be/data-store")
+	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath, snpath)
+
+	//  mount volume path name check
+	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name, snmountVolume)
 
 	// volume claim temlate testing annotation volume.beta.kubernetes.io/storage-class as standard
-	require.Equal(t, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Annotations["volume.beta.kubernetes.io/storage-class"], "standard")
+	require.Equal(t, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Annotations["volume.beta.kubernetes.io/storage-class"], storageClass)
+
+	//  claim template mount volume name check
+	require.Equal(t, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Name, snmountVolume)
+
+	//  volume claim access modes
+	require.Equal(t, sSet.Spec.VolumeClaimTemplates[0].Spec.AccessModes, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{accessMode}))
+}
+
+func agentTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	// image name check
+	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].Image, imageName)
+
+	// imagepull policy check
+	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].ImagePullPolicy, v1.PullPolicy(imagePullPolicy))
+
 }
 
 func inferenceTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
-	// image name check
-	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].Image, imageName)
+	// replica count check
+	require.Equal(t, *sSet.Spec.Replicas, infReplicas)
 
 	// PU value check
-	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"), "default")
+	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"), defaultPU)
 }
 
 func cacheTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
-	// image name check
-	require.Equal(t, sSet.Spec.Template.Spec.Containers[0].Image, imageName)
+	// replica count check
+	require.Equal(t, *sSet.Spec.Replicas, cacheReplicas)
 
 	// PU value check
-	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"), "cache")
+	require.Equal(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"), cachePU)
 }
 
 func ftlIgniteTestcases(sSet appsv1.StatefulSet, t *testing.T) {
@@ -117,7 +137,7 @@ func ftlIgniteTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	ftlTestcases(sSet, t)
 
 	// ignite url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "IGNITE_DISCOVER_URL"))
+	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, igniteURL))
 }
 
 func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {
@@ -130,7 +150,7 @@ func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 func asDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	// as discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "AS_DISCOVER_URL"))
+	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, asURL))
 }
 
 func configMapEnvAS4Testcases(sSet appsv1.StatefulSet, t *testing.T) {
@@ -142,7 +162,7 @@ func configMapEnvAS4Testcases(sSet appsv1.StatefulSet, t *testing.T) {
 func configMapEnvCassandraTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraKeyspaceNameKey)), cassandraKeyspaceNameKey)
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraPasswKey)), cassandraPasswKey)
-	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraSerKey)), cassandraSerKey)
+	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraSerHostNameKey)), cassandraSerHostNameKey)
 	require.Equal(t, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, strings.ToUpper(cassandraUserNameKey)), cassandraUserNameKey)
 }
 

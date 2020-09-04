@@ -4,13 +4,51 @@
 //
 package common
 
+// HelmChartPath path to helm chart
+var HelmChartPath = "../../helm"
+
+// Beappservice template file name
+var Beappservice = "templates/beservice.yaml"
+
+// Bejmx template file name
+var Bejmx = "templates/bejmx-service.yaml"
+
+// Beinferenceagent template file name
+var Beinferenceagent = "templates/beinferenceagent.yaml"
+
+// Configmap template file name
+var Configmap = "templates/configmap.yaml"
+
+// Becacheagent template file name
+var Becacheagent = "templates/becacheagent.yaml"
+
+// Becacheservice template file name
+var Becacheservice = "templates/becache-service.yaml"
+
+// ReleaseName is release name for BE App
+var ReleaseName = Values["cpType"] + "-" + "beapp"
+
 const (
 	imageName                      = "s2ifd:01"
 	beServicePort            int32 = 8108
 	beAS2CacheServicePort    int32 = 50000
 	beIgniteCacheServicePort int32 = 47500
 	beJmxServicePort         int32 = 5555
+	infServicePortType             = "NodePort"
+	jmxServicePortType             = "LoadBalancer"
 
+	infReplicas     int32 = 1
+	cacheReplicas   int32 = 1
+	imagePullPolicy       = "IfNotPresent"
+
+	accessMode    = "ReadWriteOnce"
+	snmountVolume = "store"
+	snpath        = "/mnt/tibco/be/data-store"
+	storageClass  = "standard"
+	defaultPU     = "default"
+	cachePU       = "cache"
+	igniteURL     = "IGNITE_DISCOVER_URL"
+	asURL         = "AS_DISCOVER_URL"
 	// as4 constants
 	as4ReamURLKey    = "realm_url"
 	as4ReamURLVal    = "localhost"
@@ -20,8 +58,8 @@ const (
 	as4GridNameVal   = "fd_store"
 
 	// cassandra constants
-	cassandraSerKey          = "cass_server"
-	cassandraSerVal          = "localhost:9042"
+	cassandraSerHostNameKey  = "cass_server"
+	cassandraSerHostNameVal  = "localhost:9042"
 	cassandraUserNameKey     = "cass_username"
 	cassandraUserNameVal     = "cassusername"
 	cassandraPasswKey        = "cass_password"
@@ -182,7 +220,7 @@ func FTLCacheMysqlStoreValues() map[string]string {
 }
 
 func appendCassandraValues(data map[string]string) map[string]string {
-	data["cassconfigmap."+cassandraSerKey] = cassandraSerVal
+	data["cassconfigmap."+cassandraSerHostNameKey] = cassandraSerHostNameVal
 	data["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
 	data["cassconfigmap."+cassandraUserNameKey] = cassandraUserNameVal
 	data["cassconfigmap."+cassandraPasswKey] = cassandraPasswVal
