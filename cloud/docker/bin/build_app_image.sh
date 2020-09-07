@@ -61,7 +61,7 @@ docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
 echo "Deleting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER
 
-if [ $BUILD_SUCCESS == 'true' ]; then
+if [[ ($BUILD_SUCCESS == 'true') && ($ARG_ENABLE_TESTS == "true") ]]; then
 	cd ../tests
 	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
 fi
