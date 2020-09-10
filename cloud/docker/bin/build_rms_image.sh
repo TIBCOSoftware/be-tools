@@ -108,144 +108,18 @@ fi
 #Check App location have ear or not
 if [[ "$ARG_APP_LOCATION" != "na" ]]
 then
-ears=$(find $ARG_APP_LOCATION -name "*.ear")
-earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
-if [ $earCnt -ne 1 ]; then
-	printf "ERROR:The directory - $ARG_APP_LOCATION must have single EAR file\n"
-	exit 1
+	source ../common/cdd_ear.sh
 fi
 
+# check be
+source ../common/check_be.sh
 
-#Check App location have cdd or not
-cdds=$(find $ARG_APP_LOCATION -name "*.cdd")
-cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
-
-if [ $cddCnt -ne 1 ]; then
-	printf "ERROR:The directory - $ARG_APP_LOCATION must have single CDD file\n"
-	exit 1
-
-fi
-fi
-# Different tokens used in the script --------------------------------------
-BLANK=""
-BE_PRODUCT="TIB_businessevents"
-INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
-
-BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-hf_*_HF"
-#AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
-#AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
-
-
-#Check for BE Installer  --------------------------------------
-result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(echo ${result} | wc -l)
-
-if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
-	exit 1;
-fi
-
-# Get all packages(base and hf)  --------------------------------------
-bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$INSTALLER_PLATFORM")
-bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$INSTALLER_PLATFORM" | wc -l)
-
-
-#Get All HF for BE --------------------------------------
-beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "$BE_HF_REGEX*$INSTALLER_PLATFORM")
-beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM" | wc -l)
-
-# Check Single Base version exist, zero or one HF exist. --------------------------------------
-
-beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
-
-if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
-	exit 1;
-elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory.There should be only one.\n"
-	exit 1;
-elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
-	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
-	exit 1;	
-elif [ $bePckgsCnt -eq 1 ]; then
-	#Find BE Version from installer
-	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
-	#Find JER Version for given BE Version
-	length=${#BE_VERSION_AND_JRE_MAP[@]}
-	for (( i = 0; i < length; i++ )); do
-		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
-			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-			break;	
-		fi
-	done
-	
-	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-
-		VERSION_PACKAGE="${beHfPckgs[0]}"
-		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
-    	if [ $ARG_VERSION == $hfbeversion ];then
-      		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
-		else
-			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
-			exit 1;
-		fi 
-		
-	elif [ $beHfCnt -eq 0 ]; then
-		ARG_BE_HOTFIX="na"
-	fi
-else
-	ARG_BE_HOTFIX="na"
-fi
-
-# Validate and get TIBCO Activespaces base and hf versions
-asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip")
-asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip" |  wc -l)
-asHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_HF-*_linux_x86_64.zip")
-asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_HF-*_linux_x86_64.zip" |  wc -l)
-
-if [ $asPckgsCnt -gt 0 ]; then
-	asBasePckgsCnt=$(expr ${asPckgsCnt} - ${asHfPckgsCnt})
-	if [ $asBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO Activespaces base versions are present in the target directory..\n"
-		exit 1;
-	elif [ $asHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO Activespaces HF are present in the target directory.There should be only one.\n"
-		exit 1;
-	elif [ $asBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO Activespaces HF is present but TIBCO Activespaces Base version is not present in the target directory.\n"
-		exit 1;	
-	elif [ $asBasePckgsCnt -eq 1 ]; then
-		if [ $asHfPckgsCnt -eq 1 ]; then
-			asHf=$(echo "${asHfPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
-			ARG_AS_HOTFIX=$(echo $asHf| cut -d'-' -f 2)
-		elif [ $asHfPckgsCnt -eq 0 ]; then
-			ARG_AS_HOTFIX="na"
-		fi	
-	else 
-		ARG_AS_HOTFIX="na"	
-	fi
-fi
+# check as legacy
+source ../common/check_asleg.sh
 
 if [ "$ARG_IMAGE_VERSION" = "na" -o "$ARG_IMAGE_VERSION" = "nax" -o -z "${ARG_IMAGE_VERSION// }" ] 
 then
 	ARG_IMAGE_VERSION="rms:$ARG_VERSION";
-fi
-
-if [ "$ARG_BE_HOTFIX" = "nax" -o -z "${ARG_BE_HOTFIX// }" ]
-then
-  printf "\nERROR:The value for [--hf] is blank.\n"
-  printf "$USAGE"
-  exit 1;
-fi
-
-if [ "$ARG_AS_HOTFIX" = "nax" -o -z "${ARG_AS_HOTFIX// }" ]
-then
-  printf "\nERROR:The value for [--as-hf] is blank.\n"
-  printf "$USAGE"
-  exit 1;
 fi
 
 echo "INFO:Supplied Arguments :"

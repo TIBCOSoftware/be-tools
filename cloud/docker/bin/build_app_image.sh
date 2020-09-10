@@ -8,38 +8,14 @@
 USAGE="\nUsage: build_app_image.sh"
 source ../s2i/create_builder_image.sh $@ --nos2i
 
-
-#Check App location have ear or not
-ears=$(find $ARG_APP_LOCATION -name "*.ear")
-earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
-
- if [ $earCnt -ne 1 ]; then
-	printf "ERROR:The directory - $ARG_APP_LOCATION must have single EAR file\n"
-	exit 1
- fi
-
-#Check App location have cdd or not
-cdds=$(find $ARG_APP_LOCATION -name "*.cdd")
-cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
-
- if [ $cddCnt -ne 1 ]; then
-	printf "ERROR:The directory - $ARG_APP_LOCATION must have single CDD file\n"
-	exit 1
-
- fi
-
-EAR_FILE_NAME="$(basename -- ${ears[0]})"
-CDD_FILE_NAME="$(basename -- ${cdds[0]})"
-
+# cdd and ear check
+source ../common/cdd_ear.sh
 
 mkdir -p $TEMP_FOLDER/app
 
 cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
-
-echo "INFO:CDD FILE NAME : $CDD_FILE_NAME"
-echo "INFO:EAR FILE NAME : $EAR_FILE_NAME"
 
 CURRENT_DIR=$( cd $(dirname $0) ; pwd -P )
 
