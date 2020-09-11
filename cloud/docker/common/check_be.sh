@@ -5,10 +5,6 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-ARG_EDITION="enterprise"
-ARG_VERSION="na"
-ARG_BE_HOTFIX="na"
-
 BLANK=""
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
@@ -47,11 +43,11 @@ elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not 
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
+	ARG_BE_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
 	#Find JER Version for given BE Version
 	length=${#BE_VERSION_AND_JRE_MAP[@]}
 	for (( i = 0; i < length; i++ )); do
-		if [ "$ARG_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
+		if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
 			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
 			break;	
 		fi
@@ -62,7 +58,7 @@ elif [ $bePckgsCnt -eq 1 ]; then
 		VERSION_PACKAGE="${beHfPckgs[0]}"
 		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
 		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
-    	if [ $ARG_VERSION == $hfbeversion ];then
+    	if [ $ARG_BE_VERSION == $hfbeversion ];then
       		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
@@ -74,4 +70,13 @@ elif [ $bePckgsCnt -eq 1 ]; then
 	fi
 else
 	ARG_BE_HOTFIX="na"
+fi
+
+VERSION_REGEX=([0-9]\.[0-9]).*
+if [[ $ARG_BE_VERSION =~ $VERSION_REGEX ]]
+then
+	ARG_BE_SHORT_VERSION=${BASH_REMATCH[1]};
+else
+	echo "ERROR: Improper BE version. Aborting."
+	exit 1
 fi

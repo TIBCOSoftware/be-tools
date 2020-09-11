@@ -5,10 +5,6 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-ARG_AS_VERSION="na"
-ARG_AS_SHORT_VERSION="na"
-ARG_AS_HOTFIX="na"
-
 # Validate and get ACTIVESPACES version
 activespacesPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
 activespacesPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
@@ -40,4 +36,13 @@ if [ $activespacesPckgsCnt -gt 0 ]; then
             fi
         fi
     fi
+fi
+
+VERSION_REGEX=([0-9]\.[0-9]).*
+if [[ $ARG_AS_VERSION =~ $VERSION_REGEX ]]
+then
+	ARG_AS_SHORT_VERSION=${BASH_REMATCH[1]};
+else
+	echo "ERROR: Improper As version. Aborting."
+	exit 1
 fi

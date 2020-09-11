@@ -5,10 +5,6 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-ARG_AS_LEG_VERSION="na"
-AS_LEG_SHORT_VERSION="na"
-ARG_AS_LEG_HOTFIX="na"
-
 # Validate and get TIBCO Activespaces base and hf versions
 asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip")
 asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip" |  wc -l)
@@ -38,4 +34,13 @@ if [ $asPckgsCnt -gt 0 ]; then
 	else 
 		ARG_AS_LEG_HOTFIX="na"	
 	fi
+fi
+
+VERSION_REGEX=([0-9]\.[0-9]).*
+if [[ $ARG_AS_LEG_VERSION =~ $VERSION_REGEX ]]
+then
+	ARG_AS_LEG_SHORT_VERSION=${BASH_REMATCH[1]};
+else
+	echo "ERROR: Improper As legacy version. Aborting."
+	exit 1
 fi

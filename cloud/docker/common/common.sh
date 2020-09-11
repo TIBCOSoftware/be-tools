@@ -23,6 +23,32 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 
+# be related args
+ARG_EDITION="enterprise"
+ARG_BE_VERSION="na"
+ARG_BE_SHORT_VERSION="na"
+ARG_BE_HOTFIX="na"
+ARG_JRE_VERSION="na"
+
+# as legacy related args
+ARG_AS_LEG_VERSION="na"
+ARG_AS_LEG_SHORT_VERSION="na"
+ARG_AS_LEG_HOTFIX="na"
+
+# ftl related args
+ARG_FTL_VERSION="na"
+ARG_FTL_SHORT_VERSION="na"
+ARG_FTL_HOTFIX="na"
+
+# as related args
+ARG_AS_VERSION="na"
+ARG_AS_SHORT_VERSION="na"
+ARG_AS_HOTFIX="na"
+
+# s2i builder related args
+S2I_DOCKER_FILE_APP="Dockerfile"
+BE_TAG="com.tibco.be"
+
 USAGE="\nUsage: $FILE_NAME"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 
@@ -224,8 +250,8 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     source ../common/check_beaddons.sh
 
     # check for FTL and AS4 only when BE version is > 6.0.0
-    if [ "$ARG_VERSION" != "na" ]; then
-        if [ $(echo "${ARG_VERSION//.}") -ge 600 ]; then
+    if [ "$ARG_BE_VERSION" != "na" ]; then
+        if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
             # validate ftl
             source ../common/check_ftl.sh
 
@@ -238,9 +264,9 @@ fi
 # image name check
 if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
     if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-        ARG_IMAGE_VERSION="teagent:$ARG_VERSION";
+        ARG_IMAGE_VERSION="teagent:$ARG_BE_VERSION";
     elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
-        ARG_IMAGE_VERSION="rms:$ARG_VERSION";
+        ARG_IMAGE_VERSION="rms:$ARG_BE_VERSION";
     fi
 fi
 
@@ -254,7 +280,7 @@ if ! [ "$ARG_APP_LOCATION" = "na" ]; then
 fi
 
 echo "INFO: BE EDITION                   : [$ARG_EDITION]"
-echo "INFO: BE VERSION                   : [$ARG_VERSION]"
+echo "INFO: BE VERSION                   : [$ARG_BE_VERSION]"
 
 if ! [ "$ARG_BE_HOTFIX" = "na" -o -z "${ARG_BE_HOTFIX// }" ]; then
     echo "INFO: BE HF                        : [$ARG_BE_HOTFIX]"
@@ -292,8 +318,87 @@ fi
 
 echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE VERSION                : [$ARG_IMAGE_VERSION]"
+echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 
 echo "------------------------------------------------------------------------------"
 
+mkdir $TEMP_FOLDER
+mkdir -p $TEMP_FOLDER/{installers,app}
+cp -a "../lib" $TEMP_FOLDER/
 
-exit 1
+if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+    cp -a "../gvproviders" $TEMP_FOLDER/
+    if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+        cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
+    fi
+
+    if [ [$AS_LEG_VERSION != "na"] -a [$ARG_FTL_VERSION != "na"] ]; then
+	    echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS legacy installers. Removing unused installer improves the docker image size."
+    fi
+else
+    if [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
+        cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
+    fi
+fi
+
+export PERL5LIB="../lib"
+VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_BE_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_LEG_HOTFIX','$ARG_FTL_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
+
+if [ "$?" = 0 ]; then
+  printf "$VALIDATION_RESULT\n"
+  exit 1;
+fi
+
+echo "INFO: Copying Packages ..."
+
+while read -r line ; do
+	cp $line $TEMP_FOLDER/installers
+done < "$TEMP_FOLDER/package_files.txt"
+
+# building docker image
+echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_BE_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
+
+# configurations for s2i builder image
+if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+    cd ../bin
+	cp $ARG_DOCKER_FILE ../s2i/$TEMP_FOLDER
+	cd ../s2i
+	ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
+	cd $TEMP_FOLDER/app
+	touch dummy.txt
+	cd ../..
+    EAR_FILE_NAME="dummy.txt"
+	CDD_FILE_NAME="dummy.txt"
+    FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
+    ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
+else
+    cp $ARG_DOCKER_FILE $TEMP_FOLDER
+    ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
+fi
+
+docker build  --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDERS=$ARG_GVPROVIDERS --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+
+if [ "$?" != 0 ]; then
+    echo "Docker build failed."
+else
+    BUILD_SUCCESS="true"
+    echo "DONE: Docker build successful."
+fi
+
+echo "Deleting temporary intermediate image.."
+docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
+echo "Deleting $TEMP_FOLDER folder"
+rm -rf $TEMP_FOLDER
+
+# additional steps for s2i builder image
+if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+    docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_BE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" .
+	docker rmi -f "$ARG_IMAGE_VERSION"
+    ARG_IMAGE_VERSION=$FINAL_BUILDER_IMAGE_TAG
+fi
+
+# docker unit tests
+if [[ ($BUILD_SUCCESS = "true") && ($ARG_ENABLE_TESTS = "true") && (("$FILE_NAME" = "$BUILDER_IMAGE") || ("$FILE_NAME" = "$APP_IMAGE")) ]]; then
+	cd ../tests
+	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+fi
