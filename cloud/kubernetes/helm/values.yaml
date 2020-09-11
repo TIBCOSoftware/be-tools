@@ -75,7 +75,7 @@ jmxservice:
 #Required for all applications in all cloud providers
 beservice:
   name: beservice
-  type: NodePort              #LoadBalancer for azure, NodePort
+  type: LoadBalancer              #NodePort for minikube
   ports:
     name: port1
     protocol: TCP
@@ -172,7 +172,7 @@ mysql:
   mysqlUser: root
   mysqlPassword: root
   mysqlRootPassword: password
-  mysqlDatabase: BE_DATABASE #datbase name
+  mysqlDatabase: BE_DATABASE #database name
   # persistence: 
   #   storageClass: "-" #Type of persistent volume claim
 
