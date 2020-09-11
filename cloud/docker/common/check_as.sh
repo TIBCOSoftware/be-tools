@@ -5,6 +5,10 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+ARG_AS_VERSION="na"
+ARG_AS_SHORT_VERSION="na"
+ARG_AS_HOTFIX="na"
+
 # Validate and get ACTIVESPACES version
 activespacesPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
 activespacesPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
@@ -23,16 +27,16 @@ if [ $activespacesPckgsCnt -gt 0 ]; then
         printf "\nERROR :TIBCO AS HF is present but TIBCO AS Base version is not present in the target directory.\n"
         exit 1;
     elif [ $activespacesBasePckgsCnt -eq 1 ]; then
-        ACTIVESPACES_BASE_PACKAGE="${activespacesPckgs[0]}"
-        ARG_ACTIVESPACES_VERSION=$(echo "${ACTIVESPACES_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g") 
-        if [ "$ARG_ACTIVESPACES_VERSION" = "" ]; then
-            ARG_ACTIVESPACES_VERSION="na"
+        AS_BASE_PACKAGE="${activespacesPckgs[0]}"
+        ARG_AS_VERSION=$(echo "${AS_BASE_PACKAGE##*/}" | sed -e "s/_linux_x86_64.zip/${BLANK}/g" |  sed -e "s/TIB_as_/${BLANK}/g")
+        if [ "$ARG_AS_VERSION" = "" ]; then
+            ARG_AS_VERSION="na"
         fi
         if [ $activespacesHfPckgsCnt -eq 1 ]; then
             activespacesHf=$(echo "${activespacesPckgs[0]}" | sed -e "s/"_linux_x86_64.zip"/${BLANK}/g")
-            ARG_ACTIVESPACES_HOTFIX=$(echo $activespacesHf| cut -d'-' -f 2| cut -d' ' -f 1)
-            if [[ "$ARG_ACTIVESPACES_VERSION" != "na" ]]; then
-                ARG_ACTIVESPACES_VERSION=$(echo $ARG_ACTIVESPACES_VERSION | cut -d'_' -f 1)
+            ARG_AS_HOTFIX=$(echo $activespacesHf| cut -d'-' -f 2| cut -d' ' -f 1)
+            if [[ "$ARG_AS_VERSION" != "na" ]]; then
+                ARG_AS_VERSION=$(echo $ARG_AS_VERSION | cut -d'_' -f 1)
             fi
         fi
     fi

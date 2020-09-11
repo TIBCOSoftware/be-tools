@@ -5,6 +5,10 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+ARG_FTL_VERSION="na"
+ARG_FTL_HOTFIX="na"
+ARG_FTL_SHORT_VERSION="na"
+
 # Validate and get FTL version
 ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
 ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)

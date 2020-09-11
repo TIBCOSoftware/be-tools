@@ -5,11 +5,9 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-USAGE="\nUsage: build_app_image.sh"
-source ../s2i/create_builder_image.sh $@ --nos2i
+source ../common/common.sh
 
-# cdd and ear check
-source ../common/cdd_ear.sh
+source ../s2i/create_builder_image.sh $@ --nos2i
 
 mkdir -p $TEMP_FOLDER/app
 
