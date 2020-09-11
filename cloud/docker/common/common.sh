@@ -113,7 +113,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            if [ "$FILE_NAME" = "$RMS_IMAGE" -o "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+            if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
                 case "$key" in
                     -a|--app-location) 
                         shift # past the key and to the value
@@ -123,28 +123,42 @@ while [[ $# -gt 0 ]]; do
                         ARG_APP_LOCATION="${key#*=}"
                         ;;
                     *)
-                        if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+                        echo "Invalid Option '$key'"
+                        ;;
+                esac
+            fi
+                        
+            if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+                case "$key" in
+                    --gv-providers)
+                        shift # past the key and to the value
+                        ARG_GVPROVIDERS="$1"
+                        ;;
+                    --gv-providers=*)
+                        ARG_GVPROVIDERS="${key#*=}"
+                        ;;
+                    --disable-tests)
+                        ARG_ENABLE_TESTS="false"
+                        ;;
+                    *)
+                        if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+                            echo "Invalid Option '$key'"
+                        fi
+
+                        if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
                             case "$key" in
-                                --gv-providers)
+                                -a|--app-location) 
                                     shift # past the key and to the value
-                                    ARG_GVPROVIDERS="$1"
+                                    ARG_APP_LOCATION="$1"
                                     ;;
-                                --gv-providers=*)
-                                    ARG_GVPROVIDERS="${key#*=}"
-                                    ;;
-                                --disable-tests)
-                                    ARG_ENABLE_TESTS="false"
+                                -a=*|--app-location=*)
+                                    ARG_APP_LOCATION="${key#*=}"
                                     ;;
                                 *)
                                     echo "Invalid Option '$key'"
                                     ;;
                             esac
                         fi
-
-                        if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
-                            echo "Invalid Option '$key'"
-                        fi
-
                 esac
             fi
 
