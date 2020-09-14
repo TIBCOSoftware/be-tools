@@ -28,6 +28,12 @@ var Becacheservice = "templates/becache-service.yaml"
 // ReleaseName is release name for BE App
 var ReleaseName = Values["cpType"] + "-" + "beapp"
 
+// FTLPATH path to ftl deploy file
+var FTLPATH = "../utils/ftl4be.yml"
+
+// AS4PATH path to as4 deploy file
+var AS4PATH = "../utils/asdg.yml"
+
 const (
 	imageName                      = "s2ifd:01"
 	beServicePort            int32 = 8108
@@ -71,16 +77,46 @@ const (
 	rdbmsDriverKey     = "dbdriver"
 	rdbmsDriverVal     = "com.mysql.jdbc.Driver"
 	rdbmsDbUsernameKey = "dbusername"
-	rdbmsDbUsernameVal = "mysqldb"
+	rdbmsDbUsernameVal = "root"
 	rdbmsDbPswdKey     = "dbpwd"
-	rdbmsDbPswdVal     = "mysqldbpwd"
+	rdbmsDbPswdVal     = "password"
 
 	// FTL constants
 	ftlServerURLKey   = "FTL_gv_REALM_SERVER"
 	ftlServerURLVal   = "sampleftlurl"
 	ftlClusterNameKey = "FTL_gv_CLUSTER_NAME"
 	ftlClusterNameVal = "samplecluster"
+
+	// intergation test constants
+	CassandraChart   = "bitnami/cassandra"
+	CassandraRelease = "release"
+	Ftlrealm         = "http://ftlserver4be-0.ftlservers4be:30080"
+	Casshost         = "release-cassandra:9042"
+	Cassandraun      = "admin"
+	Cassandrapwd     = "password"
+	AS4realm         = "http://ftlserver-0.ftlservers:30080"
+	AS4grid          = "_default"
+
+	UnclInmemory = "unclinmem"
+	Unclas4      = "unclas4"
+	Unclcass     = "unclcass"
+	AS2none      = "as2none"
+	AS2SN        = "as2sn"
+	AS2mysql     = "as2mysql"
+	Ftlnone      = "ftlnone"
+	FtlSN        = "ftlsn"
+	Ftlmysql     = "FTLmysql"
+	FTLCacheCass = "ftlcachecass"
+	FTLCacheAS4  = "ftlcacheas4"
+	FTLStoreCass = "ftlstorecass"
+	FTLStoreAs4  = "ftlstoreas4"
 )
+
+// cassValues cassandra chart values
+var CassChartValues = map[string]string{
+	"dbUser.user":     "admin",
+	"dbUser.password": "password",
+}
 
 // Values is complete default set of values.yaml
 var Values = map[string]string{

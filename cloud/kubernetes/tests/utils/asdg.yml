@@ -1,0 +1,399 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+---
+# This is used to populate the grid configuration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tibdg-conf
+  labels:
+    app: tibdg
+data:
+  ftl.yaml: |
+    globals:
+      core.servers:
+        ftlserver-0: ftlserver-0.ftlservers:30080
+    servers:
+      ftlserver-0:
+      - realm:
+          ftl: ftlserver-0.ftlservers:30083
+          data: /data/ftlserver_0_data
+    services:
+      realm: {}
+  conf.tibdg: |
+    grid create copyset_size=1 proxy_client_listen_port=8888 
+    copyset create cs-01
+    node create --copyset cs-01 --dir /data/cs-01-node-0 cs-01-node-0
+    keeper create --dir /data/keeper-0 keeper-0
+    proxy create proxy-0
+    table create t1 key long
+    column create t1 value string
+    table create row_counts=exact classregistry className string
+    column create classregistry typeId long
+    table create row_counts=exact statemachinetimeout id long
+    column create statemachinetimeout cacheid long propertyName string currentTime long nextTime long closure string ttl long fired long time_created datetime extId string state string
+    table create row_counts=exact classtotable tableName string
+    column create classtotable className string fieldName string
+    table create row_counts=exact cachesequencemanager cachesequencemanager_key string
+    column create cachesequencemanager cachesequencemanager_value opaque
+    table create row_counts=exact cachesequence cachesequence_key string
+    column create cachesequence cachesequence_value long
+    table create row_counts=exact expiration_scan_period=60 default_ttl=86400000000000000 objecttable globalid long
+    column create objecttable siteid long id long extid string classname string isdeleted long timedeleted long
+    table create row_counts=exact workitemtable workkey string
+    column create workitemtable workqueue string scheduledtime long workstatus long work opaque
+    table create row_counts=exact processloopstate loopKey string
+    column create processloopstate jobKey string taskName string counter long maxCounter long isComplete long
+    table create row_counts=exact processmergestate mergeKey string
+    column create processmergestate tokenCount long expectedTokenCount long isComplete long processId long processTime long transitionName string isError long
+    index create objecttable i_objecttable extid
+    index create workitemtable i_workitems workqueue scheduledtime
+    table create row_counts=exact d_getemployee ID long
+    column create d_getemployee cacheId long extid string empid string addressid string phoneid string time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_deleteemployee ID long
+    column create d_deleteemployee cacheId long extid string time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_getmetadata ID long
+    column create d_getmetadata cacheId long extid string time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_performphonetransaction ID long
+    column create d_performphonetransaction cacheId long extid string time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_putemployee ID long
+    column create d_putemployee cacheId long extid string age long ispermanant long salary double name string homephone string mobilephone string address string alternateaddress string departments string time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_queryemployee ID long
+    column create d_queryemployee cacheId long extid string age long time_acknowledged$ datetime time_sent$ datetime time_created$ datetime payload__p opaque state$ string
+    table create row_counts=exact d_address ID long
+    column create d_address parentid$ long rrf$ opaque cacheId long extid string address string addressid long time_created$ datetime time_last_modified$ datetime state$ string
+    table create row_counts=exact d_employee ID long
+    column create d_employee parentid$ long rrf$ opaque cacheId long extid string empid long name string age long joiningdate datetime ispermanant long salary double address opaque phone long departments opaque time_created$ datetime time_last_modified$ datetime state$ string
+    table create row_counts=exact d_phone ID long
+    column create d_phone parentid$ long rrf$ opaque cacheId long extid string home string mobile string phoneid long time_created$ datetime time_last_modified$ datetime state$ string
+    index create d_address i_d_address parentid$
+    index create d_employee i_d_employee parentid$
+    index create d_phone i_d_phone parentid$  
+
+
+...
+---
+# Sets up an in-cluster DNS entry for each ftl-server, and an entry for ftlservers containing all three.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftlservers
+  labels:
+    com.tibco.datagrid.service: ftlservers
+    app: tibdg
+spec:
+  type: "NodePort"
+  ports:
+    - name: http
+      port: 30080
+    - name: ftl
+      port: 30083
+  selector:
+    com.tibco.datagrid.service: ftlservers
+
+...
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ftlserver
+  labels:
+    com.tibco.datagrid.service: ftlservers
+    app: tibdg
+spec:
+  serviceName: ftlservers
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: ftlservers
+  template:
+    metadata:
+      labels:
+        com.tibco.datagrid.service: ftlservers
+        app: tibdg
+    spec:
+      containers:
+        - name: ftlservers
+          image: ftl-tibftlserver:6.4.0
+          args:
+            - '-c'
+            - '/config/ftl.yaml'
+            - '-n'
+            - '$(POD_NAME)'
+          ports:
+            - name: realm-http
+              containerPort: 30080
+            - name: realm-ftl
+              containerPort: 30083
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /config
+              name: config-pv
+            - mountPath: /data
+              name: ftl-server-pv
+      imagePullSecrets:
+        - name: beacrsecret
+      volumes:
+        - name: config-pv
+          configMap:
+            name: tibdg-conf
+  volumeClaimTemplates:
+    - metadata:
+        name: ftl-server-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "1Gi"
+
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tibdgadmind
+  labels:
+    com.tibco.datagrid.service: tibdgadmind
+    app: tibdg
+spec:
+  clusterIP: None
+  selector:
+    com.tibco.datagrid.service: tibdgadmind
+  ports:
+    - name: admind
+      port: 30081
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: admind
+  labels:
+    com.tibco.datagrid.service: tibdgadmind
+    app: tibdg
+spec:
+  serviceName: tibdgadmind
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgadmind
+  template:
+    metadata:
+      name: tibdgadmind
+      labels:
+        com.tibco.datagrid.service: tibdgadmind
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgadmind
+          image: as-tibdgadmind:4.4.0
+          args: 
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-l'
+            - ':30081'
+      imagePullSecrets:
+        - name: beacrsecret
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keeper
+  labels:
+    com.tibco.datagrid.service: tibdgkeeper
+    app: tibdg
+spec:
+  serviceName: tibdgkeeper
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgkeeper
+  template:
+    metadata:
+      name: tibdgkeeper
+      labels:
+        com.tibco.datagrid.service: tibdgkeeper
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgkeeper
+          image: as-tibdgkeeper:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /data
+              name: keeper-pv
+      imagePullSecrets:
+        - name: beacrsecret
+  volumeClaimTemplates:
+    - metadata:
+        name: keeper-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "1Gi"
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cs-01-node
+  labels:
+    com.tibco.datagrid.service: tibdgnode
+    app: tibdg
+spec:
+  serviceName: tibdgnode
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgnode
+      com.tibco.datagrid.node.copyset: cs-01
+  template:
+    metadata:
+      name: tibdgnode
+      labels:
+        com.tibco.datagrid.service: tibdgnode
+        com.tibco.datagrid.node.copyset: cs-01
+        app: tibdg
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: com.tibco.datagrid.node.copyset
+                      operator: In
+                      values: [ cs-01 ]
+            - weight: 50
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: com.tibco.datagrid.service
+                      operator: In
+                      values: [ tibdgnode ]
+      containers:
+        - name: tibdgnode
+          image: as-tibdgnode:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /data
+              name: node-pv
+      imagePullSecrets:
+        - name: beacrsecret
+  volumeClaimTemplates:
+    - metadata:
+        name: node-pv
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "3Gi"
+
+...
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: proxy
+  labels:
+    com.tibco.datagrid.service: tibdgproxy
+    app: tibdg
+spec:
+  serviceName: tibdgproxy
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.datagrid.service: tibdgproxy
+  template:
+    metadata:
+      name: tibdgproxy
+      labels:
+        com.tibco.datagrid.service: tibdgproxy
+        app: tibdg
+    spec:
+      containers:
+        - name: tibdgproxy
+          image: as-tibdgproxy:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '-n'
+            - '$(POD_NAME)'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      imagePullSecrets:
+        - name: beacrsecret
+
+...
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tibdgconfig-job
+  labels:
+    app: tibdg
+spec:
+  template:
+    metadata:
+      name: tibdgconfig
+      labels:
+        app: tibdg
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: tibdgconfig
+          image: as-tibdg:4.4.0
+          args:
+            - '-r'
+            - 'http://ftlserver-0.ftlservers:30080'
+            - '--wait-for-realm'
+            - '60'
+            - '-s'
+            - '/config/conf.tibdg'
+          volumeMounts:
+            - name: config-pv
+              mountPath: /config
+      imagePullSecrets:
+        - name: beacrsecret
+      volumes:
+        - name: config-pv
+          configMap:
+            name: tibdg-conf
+
+...
