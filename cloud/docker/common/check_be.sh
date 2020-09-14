@@ -32,20 +32,29 @@ beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM"
 
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
+	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory. There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory.There should be only one.\n"
+	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory. There should be only one.\n"
 	exit 1;
 elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
 	exit 1;	
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
-	BASE_PACKAGE="${bePckgs[0]}"
-	ARG_BE_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
-	#Find JER Version for given BE Version
-	length=${#BE_VERSION_AND_JRE_MAP[@]}
+	BE_PACKAGE="${bePckgs[0]##*/}"
+	ARG_BE_VERSION=$(echo "$BE_PACKAGE" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
+
+	# validate be version
+	if [[ $ARG_BE_VERSION =~ $VERSION_REGEX ]]; then
+		ARG_BE_SHORT_VERSION=${BASH_REMATCH[1]};
+	else
+		printf "ERROR: Improper BE version: [$ARG_BE_VERSION]. It should be in (x.x.x) format Ex: (5.6.0).\n"
+		exit 1
+	fi
+
+	#Find JRE Version for given BE Version
+	length=${#BE_VERSION_AND_JRE_MAP[@]}	
 	for (( i = 0; i < length; i++ )); do
 		if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
 			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
@@ -53,30 +62,26 @@ elif [ $bePckgsCnt -eq 1 ]; then
 		fi
 	done
 	
+	#add be package to file list and increment index
+	FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BE_PACKAGE"
+	FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
+
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-
-		VERSION_PACKAGE="${beHfPckgs[0]}"
-		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
-    	if [ $ARG_BE_VERSION == $hfbeversion ];then
-      		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
+		BE_HF_PACKAGE="${beHfPckgs[0]##*/}"
+		hfbeversion=$(echo "$BE_HF_PACKAGE"| cut -d'_' -f 3)
+		if [ $ARG_BE_VERSION == $hfbeversion ]; then
+      		ARG_BE_HOTFIX=$(echo "$BE_HF_PACKAGE" | cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
+			#validate hf version
+			if ! [[ $ARG_BE_HOTFIX =~ $HF_VERSION_REGEX ]]; then
+				printf "ERROR: Improper BE hf version: [$ARG_BE_HOTFIX]. It should be in (xxx) format Ex: (002).\n"
+				exit 1
+			fi
+			#add be hf package to file list and increment index
+			FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BE_HF_PACKAGE"
+			FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
 		else
-			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
+			printf "\nERROR: TIBCO BusinessEvents version: [$hfbeversion] in HF installer and TIBCO BusinessEvents Base version: [$ARG_BE_VERSION] is not matching.\n"
 			exit 1;
-		fi 
-		
-	elif [ $beHfCnt -eq 0 ]; then
-		ARG_BE_HOTFIX="na"
+		fi
 	fi
-else
-	ARG_BE_HOTFIX="na"
-fi
-
-VERSION_REGEX=([0-9]\.[0-9]).*
-if [[ $ARG_BE_VERSION =~ $VERSION_REGEX ]]
-then
-	ARG_BE_SHORT_VERSION=${BASH_REMATCH[1]};
-else
-	echo "ERROR: Improper BE version. Aborting."
-	exit 1
 fi

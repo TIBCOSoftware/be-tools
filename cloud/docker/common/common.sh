@@ -23,6 +23,10 @@ ARG_IMAGE_VERSION="na"
 ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 
+#version regex for all products
+VERSION_REGEX=([0-9]\.[0-9]).[0-9]
+HF_VERSION_REGEX=([0-9]\{3\})
+
 # be related args
 ARG_EDITION="enterprise"
 ARG_BE_VERSION="na"
@@ -250,6 +254,11 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 fi
 
+# file list array to hold all installers
+declare -A FILE_LIST
+# file list index
+FILE_LIST_INDEX=0
+
 # check be and its hot fixes
 source ../common/check_be.sh
 
@@ -336,6 +345,10 @@ echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 
 echo "------------------------------------------------------------------------------"
 
+if [ "$FILE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
+        printf "\nWARN: TIBCO Activespaces will not be installed as no package found for activespaces in the installer location.\n\n"
+fi
+
 mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "../lib" $TEMP_FOLDER/
@@ -347,27 +360,16 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     fi
 
     if [ [$AS_LEG_VERSION != "na"] -a [$ARG_FTL_VERSION != "na"] ]; then
-	    echo "WARN: The directory - $ARG_INSTALLER_LOCATION contains both FTL and AS legacy installers. Removing unused installer improves the docker image size."
+	    echo "WARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and AS legacy installers. Removing unused installer improves the docker image size.\n"
     fi
-else
-    if [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
-        cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
-    fi
+elif [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
+    cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 fi
 
-export PERL5LIB="../lib"
-VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_BE_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_LEG_HOTFIX','$ARG_FTL_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
-
-if [ "$?" = 0 ]; then
-  printf "$VALIDATION_RESULT\n"
-  exit 1;
-fi
-
-echo "INFO: Copying Packages ..."
-
-while read -r line ; do
-	cp $line $TEMP_FOLDER/installers
-done < "$TEMP_FOLDER/package_files.txt"
+for i in "${FILE_LIST[@]}" ; do
+    echo "INFO: Copying package: [$i]"
+    cp $i $TEMP_FOLDER/installers 
+done
 
 # building docker image
 echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_BE_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
