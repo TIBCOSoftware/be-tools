@@ -58,13 +58,11 @@ USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEv
 
 if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
     USAGE+="\n\n [-r/--repo]                 :       The teagent image Repository (example - repo:tag) [optional]"
-    USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-teagent) [optional]"
 
     ARG_DOCKER_FILE="Dockerfile-teagent"
 elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
     USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
     USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
-    USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - Dockerfile-rms) [optional]"
 
     ARG_DOCKER_FILE="Dockerfile-rms"
 elif [ "$FILE_NAME" = "$APP_IMAGE" ]; then
@@ -74,8 +72,9 @@ elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     USAGE+="\n\n [-r/--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]"
 fi
 
+USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
+
 if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-    USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
     USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
     USAGE+="\n\n [--disable-tests]           :       Disables docker unit tests on created image. [optional]"
 
@@ -196,7 +195,7 @@ fi
 if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
         if [ $FIRST = 1 ]; then
-            MISSING_ARGS="Image version[-r/--repo]"image-version
+            MISSING_ARGS="Image version[-r/--repo]"
 	        FIRST=0
         else
             MISSING_ARGS="$MISSING_ARGS , Image version[-r/--repo]"
@@ -205,14 +204,14 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
 fi
 
 if [ "$MISSING_ARGS" != "" ]; then
-    printf "\nERROR:Missing mandatory argument(s) : $MISSING_ARGS\n"
+    printf "\nERROR: Missing mandatory argument(s) : $MISSING_ARGS\n"
     printf "$USAGE"
     exit 1; 
 fi
 
 # check installer location exist or not
 if [ ! -d "$ARG_INSTALLER_LOCATION" ]; then
-    printf "ERROR:The directory - $ARG_INSTALLER_LOCATION is not a valid directory.Enter a valid directory and try again.\n"
+    printf "ERROR: The directory - $ARG_INSTALLER_LOCATION is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
 fi
 
@@ -221,11 +220,11 @@ if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     # incase of builder image app location is not needed
     ARG_APP_LOCATION="na"
 elif [ "$FILE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR:The directory - $ARG_APP_LOCATION is not a valid directory.Enter a valid directory and try again.\n"
+    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
 # other cases if app location provided checking the directory exist or not
 elif [ "$ARG_APP_LOCATION" != "na" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR:The directory - $ARG_APP_LOCATION is not a valid directory. Ignoring app location.\n"
+    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Ignoring app location.\n"
     ARG_APP_LOCATION="na"
 fi
 
@@ -236,7 +235,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
 
     if [ $earCnt -ne 1 ]; then
-        printf "ERROR:The directory - $ARG_APP_LOCATION must have single EAR file\n"
+        printf "ERROR: The directory - $ARG_APP_LOCATION must have single EAR file\n"
         exit 1
     fi
 
@@ -245,7 +244,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
 
     if [ $cddCnt -ne 1 ]; then
-        printf "ERROR:The directory - $ARG_APP_LOCATION must have single CDD file\n"
+        printf "ERROR: The directory - $ARG_APP_LOCATION must have single CDD file\n"
         exit 1
 
     fi
@@ -372,7 +371,7 @@ for i in "${FILE_LIST[@]}" ; do
 done
 
 # building docker image
-echo "INFO:Building docker image for TIBCO BusinessEvents Version:$ARG_BE_VERSION and Image Version:$ARG_IMAGE_VERSION and Docker file:$ARG_DOCKER_FILE"
+echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE].\n"
 
 # configurations for s2i builder image
 if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
