@@ -246,7 +246,6 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     if [ $cddCnt -ne 1 ]; then
         printf "ERROR: The directory - $ARG_APP_LOCATION must have single CDD file\n"
         exit 1
-
     fi
 
     EAR_FILE_NAME="$(basename -- ${ears[0]})"
@@ -358,7 +357,7 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
         cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
     fi
 
-    if [ [$AS_LEG_VERSION != "na"] -a [$ARG_FTL_VERSION != "na"] ]; then
+    if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
 	    echo "WARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and AS legacy installers. Removing unused installer improves the docker image size.\n"
     fi
 elif [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then

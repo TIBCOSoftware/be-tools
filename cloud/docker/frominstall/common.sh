@@ -17,7 +17,7 @@ ARG_DOCKER_FILE="Dockerfile_fromtar"
 TEMP_FOLDER="tmp_$RANDOM"
 
 # be related args
-BE_HOME="../../.."
+BE_HOME="na"
 ARG_BE_VERSION="na"
 ARG_BE_SHORT_VERSION="na"
 
@@ -34,7 +34,6 @@ AS_HOME="na"
 ARG_AS_SHORT_VERSION="na"
 
 VERSION_REGEX=([0-9]\.[0-9]).*
-SHORT_VERSION_REGEX=([0-9]\.[0-9])*
 
 USAGE="\nUsage: $FILE_NAME"
 
@@ -193,14 +192,28 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     if [ $cddCnt -ne 1 ]; then
         printf "ERROR: The directory - $ARG_APP_LOCATION must have single CDD file\n"
         exit 1
-
     fi
 
     EAR_FILE_NAME="$(basename -- ${ears[0]})"
     CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 fi
 
-# TO DO check be home
+if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
+    echo "ERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper be-home."
+    exit 1
+elif [ "$BE_HOME" = "na" ]; then
+    BE_HOME=$( readlink -e ../../.. )
+fi
+
+BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
+if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
+    echo "ERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6)."
+    exit 1
+else
+    BE_HOME_BASE=${BASH_REMATCH[1]}
+    BE_DIR=${BASH_REMATCH[2]}
+fi
+
 ARG_BE_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
 ARG_BE_VERSION=$(echo $ARG_BE_VERSION | sed -e 's/\r//g')
 
@@ -218,11 +231,14 @@ if [ "$FILE_NAME" != "$TEA_IMAGE" ]; then
     if [ "$AS_LEG_HOME" = "" ]; then
         AS_LEG_HOME="na"
     else
-        ARG_AS_LEG_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
-        if ! [[ $ARG_AS_LEG_SHORT_VERSION =~ $SHORT_VERSION_REGEX ]]; then
-            echo "ERROR: Improper As legacy version: [$ARG_AS_LEG_SHORT_VERSION]. Aborting."
+        AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+        if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
+            echo "ERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>)."
             exit 1
         fi
+        AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
+        AS_LEG_DIR=${BASH_REMATCH[2]}
+        ARG_AS_LEG_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
     fi
 fi
 
@@ -230,17 +246,18 @@ if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
     # get ftl home
     FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
     FTL_HOME=${FTL_HOME%?}
-    echo [$FTL_HOME]
     if [ "$FTL_HOME" = "" ]; then
         FTL_HOME="na"
     else
-        ARG_FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
-        if ! [[ $ARG_FTL_SHORT_VERSION =~ $SHORT_VERSION_REGEX ]]; then
-            echo "ERROR: Improper FTL version: [$ARG_FTL_SHORT_VERSION]. Aborting."
+        FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
+        if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
+            echo "ERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>)."
             exit 1
         fi
+        FTL_HOME_BASE=${BASH_REMATCH[1]}
+        FTL_DIR=${BASH_REMATCH[2]}
+        ARG_FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
     fi
-    echo ARG_FTL_SHORT_VERSION:[$ARG_FTL_SHORT_VERSION]
 
     # get activespaces home
     AS_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
@@ -248,11 +265,14 @@ if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
     if [ "$AS_HOME" = "" ]; then
         AS_HOME="na"
     else
-        ARG_AS_SHORT_VERSION=$( echo ${AS_HOME}  | rev | cut -d'/' -f1 | rev )
-        if ! [[ $ARG_AS_SHORT_VERSION =~ $SHORT_VERSION_REGEX ]]; then
-            echo "ERROR: Improper As version: [$ARG_AS_SHORT_VERSION]. Aborting."
+        AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+        if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
+            echo "ERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>)."
             exit 1
         fi
+        AS_HOME_BASE=${BASH_REMATCH[1]}
+        AS_DIR=${BASH_REMATCH[2]}
+        ARG_AS_SHORT_VERSION=$( echo ${AS_HOME}  | rev | cut -d'/' -f1 | rev )
     fi
 fi
 
@@ -299,6 +319,10 @@ echo "INFO: IMAGE VERSION                : [$ARG_IMAGE_VERSION]"
 
 echo "------------------------------------------------------------------------------"
 
+if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
+    echo "WARN: Local machine contains both FTL and AS legacy installations. Removing unused installation improves the docker image size."
+fi
+
 mkdir $TEMP_FOLDER
 cp -a "../lib" $TEMP_FOLDER/
 
@@ -310,13 +334,109 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 fi
 
-perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $AS_HOME
-
-if [ "$?" != 0 ]; then
-    echo "ERROR: Creating BE archive failed"
-    rm -rf $TEMP_FOLDER
-    exit $?
+#tar command for be package
+BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar tibcojre64 $BE_DIR/lib $BE_DIR/bin "
+if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
+elif [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+    BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
 fi
+if [ -d "$BE_HOME/hotfix" ]; then
+    BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/hotfix "
+fi
+
+#execute be tar command
+$BE_TAR_CMD
+
+# check as leg if exist add it to be tar file
+if [ "$AS_LEG_HOME" != "na" ]; then
+    tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/bin $AS_LEG_DIR/lib
+    if [ -d "$AS_LEG_DIR/hotfix" ]; then
+        tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/hotfix
+    fi
+fi
+
+# check as if exist add it to be tar file
+if [ "$AS_HOME" != "na" ]; then
+    tar -C $AS_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_DIR/bin $AS_DIR/lib
+fi
+
+# check ftl if exist add it to be tar file
+if [ "$FTL_HOME" != "na" ]; then
+    tar -C $FTL_HOME_BASE -rf $TEMP_FOLDER/be.tar $FTL_DIR/bin $FTL_DIR/lib
+fi
+
+# create another temp folder and replace be_home to /opt/tibco
+RANDM_FOLDER="tmp$RANDOM"
+mkdir $TEMP_FOLDER/$RANDM_FOLDER
+
+# Exract it
+tar -C $TEMP_FOLDER/$RANDM_FOLDER -xf $TEMP_FOLDER/be.tar
+
+OPT_TIBCO="/opt/tibco"
+# Replace be home in tra files with opt/tibco
+echo "Replacing base directory in the files from [$BE_HOME_BASE] to /opt/tibco"
+
+find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+
+# Replace in props files
+find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+
+# Replace in log4j files
+find $TEMP_FOLDER/$RANDM_FOLDER -name 'log4j*.properties' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+
+# Remove the annotations file
+if [ -e "$TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin/_annotations.idx" ]; then
+    rm "$TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin/_annotations.idx"
+fi
+# TODO: generate annotations idx.
+
+REGEX_CUSTOM_CP="tibco\.env\.CUSTOM_EXT_PREPEND_CP=.*"
+VALUE_CUSTOM_CP="tibco.env.CUSTOM_EXT_PREPEND_CP=/opt/tibco/be/ext"
+find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$REGEX_CUSTOM_CP~$VALUE_CUSTOM_CP~g"
+
+if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/rms/bin -name '*.cdd' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+fi
+
+if [ -e "$TEMP_FOLDER/app/$CDD_FILE_NAME" ]; then
+    find $TEMP_FOLDER/app -name '*.cdd' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+fi
+
+if [ "$FTL_HOME" != "na" ]; then
+    FTL_HOME_KEY="tibco.env.FTL_HOME=.*"
+    FTL_HOME_VAL="tibco.env.FTL_HOME=$OPT_TIBCO/$FTL_DIR"
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$FTL_HOME_KEY~$FTL_HOME_VAL~g"
+fi
+
+if [ "$AS_HOME" != "na" ]; then
+    AS_HOME_KEY="tibco.env.ACTIVESPACES_HOME=.*"
+    AS_HOME_VAL="tibco.env.ACTIVESPACES_HOME=$OPT_TIBCO/$AS_DIR"
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$AS_HOME_KEY~$AS_HOME_VAL~g"
+fi
+
+if [ "$AS_LEG_HOME" != "na" ]; then
+    AS_LEG_HOME_KEY="tibco.env.AS_HOME=.*"
+    AS_LEG_HOME_VAL="tibco.env.AS_HOME=$OPT_TIBCO/$AS_LEG_DIR"
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$AS_LEG_HOME_KEY~$AS_LEG_HOME_VAL~g"
+fi
+
+# re create be.tar
+TAR_CMD="tar -C $TEMP_FOLDER/$RANDM_FOLDER -cf $TEMP_FOLDER/be.tar be tibcojre64 "
+
+if [ "$FTL_HOME" != "na" ]; then
+    TAR_CMD="$TAR_CMD ftl"
+fi
+
+if [ "$AS_HOME" != "na" -o "$AS_LEG_HOME" != "na" ]; then
+    TAR_CMD="$TAR_CMD as"
+fi
+
+# execute tar cmnd
+$TAR_CMD
+
+# remove random folder
+rm -rf $TEMP_FOLDER/$RANDM_FOLDER
 
 # building docker image
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
