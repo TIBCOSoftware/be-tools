@@ -100,7 +100,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-                echo "Invalid Option '$key'"
+                echo "Invalid Option: [$key]"
             else
                 case "$key" in
                     -a|--app-location) 
@@ -124,11 +124,11 @@ while [[ $# -gt 0 ]]; do
                                     ARG_ENABLE_TESTS="false"
                                     ;;
                                 *)
-                                    echo "Invalid Option '$key'"
+                                    echo "Invalid Option: [$key]"
                                     ;;
                             esac
                         else
-                            echo "Invalid Option '$key'"
+                            echo "Invalid Option: [$key]"
                         fi
                 esac
             fi
@@ -167,10 +167,10 @@ if [ "$MISSING_ARGS" != "" ]; then
 fi
 
 if [ "$FILE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Enter a valid directory and try again.\n"
+    printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
 elif [ "$ARG_APP_LOCATION" != "na" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Ignoring app location.\n"
+    printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Ignoring app location.\n"
     ARG_APP_LOCATION="na"
 fi
 
@@ -181,7 +181,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
 
     if [ $earCnt -ne 1 ]; then
-        printf "ERROR: The directory - $ARG_APP_LOCATION must have single EAR file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file\n"
         exit 1
     fi
 
@@ -190,7 +190,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
 
     if [ $cddCnt -ne 1 ]; then
-        printf "ERROR: The directory - $ARG_APP_LOCATION must have single CDD file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file\n"
         exit 1
     fi
 
@@ -225,7 +225,7 @@ else
 fi
 
 if [ "$FILE_NAME" != "$TEA_IMAGE" ]; then
-    ## get as legacy version
+    ## get as legacy details
     AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
     AS_LEG_HOME=${AS_LEG_HOME%?}
     if [ "$AS_LEG_HOME" = "" ]; then
@@ -243,7 +243,7 @@ if [ "$FILE_NAME" != "$TEA_IMAGE" ]; then
 fi
 
 if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
-    # get ftl home
+    # get ftl details
     FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
     FTL_HOME=${FTL_HOME%?}
     if [ "$FTL_HOME" = "" ]; then
@@ -259,7 +259,7 @@ if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
         ARG_FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
     fi
 
-    # get activespaces home
+    # get as details
     AS_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
     AS_HOME=${AS_HOME%?}
     if [ "$AS_HOME" = "" ]; then
@@ -379,11 +379,13 @@ echo "Replacing base directory in the files from [$BE_HOME_BASE] to /opt/tibco"
 
 find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
-# Replace in props files
-find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+    # Replace in props files
+    find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
-# Replace in log4j files
-find $TEMP_FOLDER/$RANDM_FOLDER -name 'log4j*.properties' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+    # Replace in log4j files
+    find $TEMP_FOLDER/$RANDM_FOLDER -name 'log4j*.properties' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+fi
 
 # Remove the annotations file
 if [ -e "$TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin/_annotations.idx" ]; then
@@ -420,6 +422,9 @@ if [ "$AS_LEG_HOME" != "na" ]; then
     AS_LEG_HOME_VAL="tibco.env.AS_HOME=$OPT_TIBCO/$AS_LEG_DIR"
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$AS_LEG_HOME_KEY~$AS_LEG_HOME_VAL~g"
 fi
+
+# removing all .bak files
+find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
 # re create be.tar
 TAR_CMD="tar -C $TEMP_FOLDER/$RANDM_FOLDER -cf $TEMP_FOLDER/be.tar be tibcojre64 "

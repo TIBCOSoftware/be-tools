@@ -126,7 +126,7 @@ while [[ $# -gt 0 ]]; do
                         ARG_APP_LOCATION="${key#*=}"
                         ;;
                     *)
-                        echo "Invalid Option '$key'"
+                        echo "Invalid Option: [$key]"
                         ;;
                 esac
             fi
@@ -145,7 +145,7 @@ while [[ $# -gt 0 ]]; do
                         ;;
                     *)
                         if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-                            echo "Invalid Option '$key'"
+                            echo "Invalid Option: [$key]"
                         fi
 
                         if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
@@ -158,7 +158,7 @@ while [[ $# -gt 0 ]]; do
                                     ARG_APP_LOCATION="${key#*=}"
                                     ;;
                                 *)
-                                    echo "Invalid Option '$key'"
+                                    echo "Invalid Option: [$key]"
                                     ;;
                             esac
                         fi
@@ -166,7 +166,7 @@ while [[ $# -gt 0 ]]; do
             fi
 
             if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-                echo "Invalid Option '$key'"
+                echo "Invalid Option: [$key]"
             fi
     esac
     shift
@@ -211,7 +211,7 @@ fi
 
 # check installer location exist or not
 if [ ! -d "$ARG_INSTALLER_LOCATION" ]; then
-    printf "ERROR: The directory - $ARG_INSTALLER_LOCATION is not a valid directory. Enter a valid directory and try again.\n"
+    printf "ERROR: The directory: [$ARG_INSTALLER_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
 fi
 
@@ -220,11 +220,11 @@ if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     # incase of builder image app location is not needed
     ARG_APP_LOCATION="na"
 elif [ "$FILE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Enter a valid directory and try again.\n"
+    printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
 # other cases if app location provided checking the directory exist or not
 elif [ "$ARG_APP_LOCATION" != "na" -a ! -d "$ARG_APP_LOCATION" ]; then
-    printf "ERROR: The directory - $ARG_APP_LOCATION is not a valid directory. Ignoring app location.\n"
+    printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Ignoring app location.\n"
     ARG_APP_LOCATION="na"
 fi
 
@@ -235,7 +235,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
 
     if [ $earCnt -ne 1 ]; then
-        printf "ERROR: The directory - $ARG_APP_LOCATION must have single EAR file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file\n"
         exit 1
     fi
 
@@ -244,7 +244,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
 
     if [ $cddCnt -ne 1 ]; then
-        printf "ERROR: The directory - $ARG_APP_LOCATION must have single CDD file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file\n"
         exit 1
     fi
 
@@ -358,7 +358,7 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     fi
 
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-	    echo "WARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and AS legacy installers. Removing unused installer improves the docker image size.\n"
+	    echo "WARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and AS legacy installers. Removing unused installer improves the docker image size."
     fi
 elif [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
@@ -370,7 +370,7 @@ for i in "${FILE_LIST[@]}" ; do
 done
 
 # building docker image
-echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE].\n"
+echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 
 # configurations for s2i builder image
 if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
