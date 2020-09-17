@@ -1,10 +1,3 @@
-#!/bin/bash
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 ARG_ADDONS="na"
 BE_PROCESS_ADDON_REGEX="${BE_PRODUCT}-process_${ARG_BE_VERSION}${INSTALLER_PLATFORM}"
 BE_VIEWS_ADDON_REGEX="${BE_PRODUCT}-views_${ARG_BE_VERSION}${INSTALLER_PLATFORM}"

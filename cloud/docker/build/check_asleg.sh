@@ -1,10 +1,3 @@
-#!/bin/bash
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 #supported Activespaces(legacy) versions for be version
 declare -A AS_LEG_VERSION_MAP_MIN=(["5.6.0"]="2.3.0" ["5.6.1"]="2.3.0" ["6.0.0"]="2.3.0" )
 declare -A AS_LEG_VERSION_MAP_MAX=(["5.6.0"]="2.4.0" ["5.6.1"]="2.4.1" ["6.0.0"]="2.4.1" )

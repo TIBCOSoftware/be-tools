@@ -1,10 +1,3 @@
-#!/bin/bash
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 #supported As versions for be version
 declare -A AS_VERSION_MAP_MIN=(["6.0.0"]="4.2.0" )
 declare -A AS_VERSION_MAP_MAX=(["6.0.0"]="4.x.x" )

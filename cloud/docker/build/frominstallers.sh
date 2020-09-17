@@ -381,7 +381,7 @@ for i in "${FILE_LIST[@]}" ; do
     echo "INFO: Copying package: [$i]"
     cp $i $TEMP_FOLDER/installers 
 done
-exit 1
+
 # building docker image
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 

@@ -455,7 +455,7 @@ $TAR_CMD
 
 # remove random folder
 rm -rf $TEMP_FOLDER/$RANDM_FOLDER
-exit 1
+
 # building docker image
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 
