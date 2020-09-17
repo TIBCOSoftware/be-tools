@@ -7,11 +7,9 @@ os:
   - linux
 
 before_script:
-  - curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-  - sudo apt-get install apt-transport-https --yes
-  - echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-  - sudo apt-get update
-  - sudo apt-get install helm
+  - wget https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz
+  - tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
+  - sudo mv linux-amd64/helm /usr/local/bin/helm
 
 script:
   - pushd cloud/kubernetes/helm
