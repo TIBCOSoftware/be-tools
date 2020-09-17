@@ -9,8 +9,9 @@
 declare -a BE_VERSION_AND_JRE_MAP
 BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
-FILE_NAME=$(basename $0)
-SOURCE_DIR=$(basename $(pwd))
+if [ -z "${FILE_NAME}" ]; then
+    FILE_NAME=$(basename $0)
+fi
 
 APP_IMAGE="build_app_image.sh"
 RMS_IMAGE="build_rms_image.sh"
@@ -53,7 +54,9 @@ ARG_AS_HOTFIX="na"
 S2I_DOCKER_FILE_APP="Dockerfile"
 BE_TAG="com.tibco.be"
 
-USAGE="\nUsage: $FILE_NAME"
+if [ -z "${USAGE}" ]; then
+    USAGE="\nUsage: $FILE_NAME"
+fi
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 
 if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
@@ -72,6 +75,11 @@ elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
     USAGE+="\n\n [-r/--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]"
 fi
 
+if [ "$SOURCE_DIR" = "build" ]; then
+    ARG_DOCKER_FILE="$RELATIVE_DIR$ARG_DOCKER_FILE"
+    S2I_DOCKER_FILE_APP="../s2i/Dockerfile"
+fi
+
 USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
 
 if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
@@ -80,6 +88,11 @@ if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
 
     ARG_GVPROVIDERS="na"
     ARG_ENABLE_TESTS="true"
+fi
+
+if [ "$SOURCE_DIR" = "build" ]; then
+    USAGE+="\n\n [-s/--source]               :       Image Source (example: frominstallers,frombelocal) (default: frombelocal) [optional]"
+    USAGE+="\n\n [-t/--type]                 :       Image Type (example: app,rms,tea,builder) (default: app) [optional]"
 fi
 
 USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
@@ -368,7 +381,7 @@ for i in "${FILE_LIST[@]}" ; do
     echo "INFO: Copying package: [$i]"
     cp $i $TEMP_FOLDER/installers 
 done
-
+exit 1
 # building docker image
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 

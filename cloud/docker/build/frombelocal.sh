@@ -5,7 +5,9 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-FILE_NAME=$(basename $0)
+if [ -z "${FILE_NAME}" ]; then
+    FILE_NAME=$(basename $0)
+fi
 
 APP_IMAGE="build_app_image.sh"
 RMS_IMAGE="build_rms_image.sh"
@@ -35,7 +37,9 @@ ARG_AS_SHORT_VERSION="na"
 
 VERSION_REGEX=([0-9]\.[0-9]).*
 
-USAGE="\nUsage: $FILE_NAME"
+if [ -z "${USAGE}" ]; then
+    USAGE="\nUsage: $FILE_NAME"
+fi
 
 if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
     USAGE+="\n\n [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]"
@@ -55,6 +59,10 @@ elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
     ARG_DOCKER_FILE="Dockerfile-rms_fromtar"
 fi
 
+if [ "$SOURCE_DIR" = "build" ]; then
+    ARG_DOCKER_FILE="$RELATIVE_DIR$ARG_DOCKER_FILE"
+fi
+
 USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
 
 if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
@@ -63,6 +71,11 @@ if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
 
     ARG_GVPROVIDERS="na"
     ARG_ENABLE_TESTS="true"
+fi
+
+if [ "$SOURCE_DIR" = "build" ]; then
+    USAGE+="\n\n [-s/--source]               :       Image Source (example: frominstallers,frombelocal) (default: frombelocal) [optional]"
+    USAGE+="\n\n [-t/--type]                 :       Image Type (example: app,rms,tea,builder) (default: app) [optional]"
 fi
 
 USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
@@ -442,7 +455,7 @@ $TAR_CMD
 
 # remove random folder
 rm -rf $TEMP_FOLDER/$RANDM_FOLDER
-
+exit 1
 # building docker image
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 
