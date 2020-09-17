@@ -4,90 +4,79 @@
 //
 package common
 
-// HelmChartPath path to helm chart
-var HelmChartPath = "../../helm"
-
-// Beappservice template file name
-var Beappservice = "templates/beservice.yaml"
-
-// Bejmx template file name
-var Bejmx = "templates/bejmx-service.yaml"
-
-// Beinferenceagent template file name
-var Beinferenceagent = "templates/beinferenceagent.yaml"
-
-// Configmap template file name
-var Configmap = "templates/configmap.yaml"
-
-// Becacheagent template file name
-var Becacheagent = "templates/becacheagent.yaml"
-
-// Becacheservice template file name
-var Becacheservice = "templates/becache-service.yaml"
-
-// ReleaseName is release name for BE App
 var ReleaseName = Values["cpType"] + "-" + "beapp"
-
-// FTLPATH path to ftl deploy file
-var FTLPATH = "../utils/ftl4be.yml"
-
-// AS4PATH path to as4 deploy file
-var AS4PATH = "../utils/asdg.yml"
+var BeserviceName = ReleaseName + "-" + "beservice"
+var InferenceSelectorName = ReleaseName + "-" + "beinferenceagent"
+var JMXserviceName = ReleaseName + "-" + "jmx-service"
+var CacheserviceName = ReleaseName + "-" + "becache-service"
+var CacheSelectorName = ReleaseName + "-" + "becacheagent"
+var ConfigmapName = ReleaseName + "-" + "storeconfig"
+var SecretName = ReleaseName + "-" + "beimagepullsecret"
 
 const (
-	imageName                      = "s2ifd:01"
-	beServicePort            int32 = 8108
-	beAS2CacheServicePort    int32 = 50000
-	beIgniteCacheServicePort int32 = 47500
-	beJmxServicePort         int32 = 5555
-	infServicePortType             = "NodePort"
-	jmxServicePortType             = "LoadBalancer"
+	HelmChartPath                  = "../../helm"
+	Bejmx                          = "templates/bejmx-service.yaml"
+	Beappservice                   = "templates/beservice.yaml"
+	Beinferenceagent               = "templates/beinferenceagent.yaml"
+	Configmap                      = "templates/configmap.yaml"
+	Becacheagent                   = "templates/becacheagent.yaml"
+	Becacheservice                 = "templates/becache-service.yaml"
+	SecretFile                     = "templates/imagepullsecret.yaml"
+	FTLPATH                        = "../utils/ftl4be.yml"
+	AS4PATH                        = "../utils/asdg.yml"
+	SecretType                     = "kubernetes.io/dockerconfigjson"
+	ImgPullSecret                  = "besecret"
+	ImageName                      = "s2ifd:01"
+	BeServicePort            int32 = 8108
+	BeAS2CacheServicePort    int32 = 50000
+	BeIgniteCacheServicePort int32 = 47500
+	BeJmxServicePort         int32 = 5555
+	InfServicePortType             = "NodePort"
+	JmxServicePortType             = "LoadBalancer"
+	InfReplicas              int32 = 1
+	CacheReplicas            int32 = 1
+	ImagePullPolicy                = "IfNotPresent"
+	AccessMode                     = "ReadWriteOnce"
+	SnmountVolume                  = "store"
+	Snpath                         = "/mnt/tibco/be/data-store"
+	StorageClass                   = "standard"
+	DefaultPU                      = "default"
+	CachePU                        = "cache"
+	IgniteURL                      = "IGNITE_DISCOVER_URL"
+	AsURL                          = "AS_DISCOVER_URL"
+	// As4ReamURLKey constants
+	As4ReamURLKey    = "realm_url"
+	As4ReamURLVal    = "localhost"
+	As4SecReamURLKey = "sec_realm_url"
+	As4SecReamURLVal = "localhost"
+	As4GridNameKey   = "grid_name"
+	As4GridNameVal   = "fd_store"
 
-	infReplicas     int32 = 1
-	cacheReplicas   int32 = 1
-	imagePullPolicy       = "IfNotPresent"
+	// CassandraSerHostNameKey constants
+	CassandraSerHostNameKey  = "cass_server"
+	CassandraSerHostNameVal  = "localhost:9042"
+	CassandraUserNameKey     = "cass_username"
+	CassandraUserNameVal     = "cassusername"
+	CassandraPasswKey        = "cass_password"
+	CassandraPasswVal        = "casspassw"
+	CassandraKeyspaceNameKey = "cass_keyspace_name"
+	CassandraKeyspaceNameVal = "testDb"
 
-	accessMode    = "ReadWriteOnce"
-	snmountVolume = "store"
-	snpath        = "/mnt/tibco/be/data-store"
-	storageClass  = "standard"
-	defaultPU     = "default"
-	cachePU       = "cache"
-	igniteURL     = "IGNITE_DISCOVER_URL"
-	asURL         = "AS_DISCOVER_URL"
-	// as4 constants
-	as4ReamURLKey    = "realm_url"
-	as4ReamURLVal    = "localhost"
-	as4SecReamURLKey = "sec_realm_url"
-	as4SecReamURLVal = "localhost"
-	as4GridNameKey   = "grid_name"
-	as4GridNameVal   = "fd_store"
+	// RdbmsDriverKey database constants
+	RdbmsDriverKey     = "dbdriver"
+	RdbmsDriverVal     = "com.mysql.jdbc.Driver"
+	RdbmsDbUsernameKey = "dbusername"
+	RdbmsDbUsernameVal = "root"
+	RdbmsDbPswdKey     = "dbpwd"
+	RdbmsDbPswdVal     = "password"
 
-	// cassandra constants
-	cassandraSerHostNameKey  = "cass_server"
-	cassandraSerHostNameVal  = "localhost:9042"
-	cassandraUserNameKey     = "cass_username"
-	cassandraUserNameVal     = "cassusername"
-	cassandraPasswKey        = "cass_password"
-	cassandraPasswVal        = "casspassw"
-	cassandraKeyspaceNameKey = "cass_keyspace_name"
-	cassandraKeyspaceNameVal = "testDb"
+	// FtlServerURLKey constants
+	FtlServerURLKey   = "FTL_gv_REALM_SERVER"
+	FtlServerURLVal   = "sampleftlurl"
+	FtlClusterNameKey = "FTL_gv_CLUSTER_NAME"
+	FtlClusterNameVal = "samplecluster"
 
-	// rdbms database constants
-	rdbmsDriverKey     = "dbdriver"
-	rdbmsDriverVal     = "com.mysql.jdbc.Driver"
-	rdbmsDbUsernameKey = "dbusername"
-	rdbmsDbUsernameVal = "root"
-	rdbmsDbPswdKey     = "dbpwd"
-	rdbmsDbPswdVal     = "password"
-
-	// FTL constants
-	ftlServerURLKey   = "FTL_gv_REALM_SERVER"
-	ftlServerURLVal   = "sampleftlurl"
-	ftlClusterNameKey = "FTL_gv_CLUSTER_NAME"
-	ftlClusterNameVal = "samplecluster"
-
-	// intergation test constants
+	// CassandraChart test constants
 	CassandraChart   = "bitnami/cassandra"
 	CassandraRelease = "release"
 	Ftlrealm         = "http://ftlserver4be-0.ftlservers4be:30080"
@@ -97,6 +86,7 @@ const (
 	AS4realm         = "http://ftlserver-0.ftlservers:30080"
 	AS4grid          = "_default"
 
+	// imagename for Integration tests
 	UnclInmemory = "unclinmem"
 	Unclas4      = "unclas4"
 	Unclcass     = "unclcass"
@@ -123,7 +113,7 @@ var Values = map[string]string{
 	"cpType":          "minikube",
 	"cmType":          "unclustered",
 	"omType":          "inmemory",
-	"image":           imageName,
+	"image":           ImageName,
 	"imagePullPolicy": "IfNotPresent",
 }
 
@@ -256,34 +246,34 @@ func FTLCacheMysqlStoreValues() map[string]string {
 }
 
 func appendCassandraValues(data map[string]string) map[string]string {
-	data["cassconfigmap."+cassandraSerHostNameKey] = cassandraSerHostNameVal
-	data["cassconfigmap."+cassandraKeyspaceNameKey] = cassandraKeyspaceNameVal
-	data["cassconfigmap."+cassandraUserNameKey] = cassandraUserNameVal
-	data["cassconfigmap."+cassandraPasswKey] = cassandraPasswVal
+	data["cassconfigmap."+CassandraSerHostNameKey] = CassandraSerHostNameVal
+	data["cassconfigmap."+CassandraKeyspaceNameKey] = CassandraKeyspaceNameVal
+	data["cassconfigmap."+CassandraUserNameKey] = CassandraUserNameVal
+	data["cassconfigmap."+CassandraPasswKey] = CassandraPasswVal
 
 	return data
 }
 
 func appendAs4Values(data map[string]string) map[string]string {
-	data["as4configmap."+as4ReamURLKey] = as4ReamURLVal
-	data["as4configmap."+as4SecReamURLKey] = as4SecReamURLVal
-	data["as4configmap."+as4GridNameKey] = as4GridNameVal
+	data["as4configmap."+As4ReamURLKey] = As4ReamURLVal
+	data["as4configmap."+As4SecReamURLKey] = As4SecReamURLVal
+	data["as4configmap."+As4GridNameKey] = As4GridNameVal
 
 	return data
 }
 
 func appendMysqlValues(data map[string]string) map[string]string {
 	data["mysql.enabled"] = "true"
-	data["configmap."+rdbmsDriverKey] = rdbmsDriverVal
-	data["configmap."+rdbmsDbPswdKey] = rdbmsDbPswdVal
-	data["configmap."+rdbmsDbUsernameKey] = rdbmsDbUsernameVal
+	data["configmap."+RdbmsDriverKey] = RdbmsDriverVal
+	data["configmap."+RdbmsDbPswdKey] = RdbmsDbPswdVal
+	data["configmap."+RdbmsDbUsernameKey] = RdbmsDbUsernameVal
 
 	return data
 }
 
 func appendFTLValues(data map[string]string) map[string]string {
-	data["ftl."+ftlServerURLKey] = ftlServerURLVal
-	data["ftl."+ftlClusterNameKey] = ftlClusterNameVal
+	data["ftl."+FtlServerURLKey] = FtlServerURLVal
+	data["ftl."+FtlClusterNameKey] = FtlClusterNameVal
 
 	return data
 }

@@ -12,6 +12,7 @@ import (
 )
 
 func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
+	common.Values["imagepullsecret"] = common.ImgPullSecret
 	options := &helm.Options{
 		SetValues: common.AS2CacheRDBMSStoreValues(),
 	}
@@ -19,23 +20,29 @@ func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceAS2MysqlTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceAS2MysqlTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheAS2MysqlTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheAS2MysqlTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.AS2CacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	aS2CacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapMysqlTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapMysqlTest(configOutPut, t)
+
+	delete(common.Values, "imagepullsecret")
 }
 
 func TestFTLCacheStoreAS4(t *testing.T) {
+	common.Values["imageCredentials.registry"] = "hub.docker.com"
+	common.Values["imageCredentials.username"] = "test1234"
+	common.Values["imageCredentials.password"] = "test1234"
+	common.Values["imageCredentials.email"] = "test@test1.com"
 	options := &helm.Options{
 		SetValues: common.FTLCacheAS4StoreValues(),
 	}
@@ -43,20 +50,26 @@ func TestFTLCacheStoreAS4(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceFTLAS4Test(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLAS4Test(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheFTLAS4Test(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLAS4Test(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapAS4Test(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapAS4Test(configOutPut, t)
+
+	// image pull secret test
+	secretOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.SecretFile})
+	secret(secretOutput, t)
+
+	delete(common.Values, "imageCredentials.registry")
 }
 
 func TestFTLCacheStoreCassandra(t *testing.T) {
@@ -67,20 +80,20 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceFTLCassTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLCassTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheFTLCassTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLCassTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapCassandraTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapCassandraTest(configOutPut, t)
 }
 
 func TestFTLCacheStoreMysql(t *testing.T) {
@@ -91,18 +104,18 @@ func TestFTLCacheStoreMysql(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceFTLMysqlTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLMysqlTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheFTLMysqlTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLMysqlTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapMysqlTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapMysqlTest(configOutPut, t)
 }

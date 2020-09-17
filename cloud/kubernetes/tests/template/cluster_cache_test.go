@@ -19,16 +19,16 @@ func TestAS2CacheNone(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceAS2NoneTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceAS2NoneTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheAS2NoneTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheAS2NoneTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.AS2CacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	aS2CacheServiceTest(beCacheServiceOutput, t)
 }
 
 func TestFTLCacheNone(t *testing.T) {
@@ -39,14 +39,14 @@ func TestFTLCacheNone(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceFTLNoneTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLNoneTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := cacheagent(t, options, common.HelmChartPath)
-	common.CacheFTLNoneTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLNoneTestt(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := cacheservice(t, options, common.HelmChartPath)
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 }

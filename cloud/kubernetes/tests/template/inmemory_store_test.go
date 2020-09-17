@@ -19,12 +19,12 @@ func TestInmemoryStoreAS4(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	output := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceTest(output, t)
+	output := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceTest(output, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapAS4Test(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapAS4Test(configOutPut, t)
 }
 
 func TestInmemoryStoreCassandra(t *testing.T) {
@@ -35,10 +35,10 @@ func TestInmemoryStoreCassandra(t *testing.T) {
 	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	output := beinferenceagent(t, options, common.HelmChartPath)
-	common.InferenceTest(output, t)
+	output := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceTest(output, t)
 
 	// configmap test
-	configOutPut := beconfmap(t, options, common.HelmChartPath)
-	common.ConfigMapCassandraTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapCassandraTest(configOutPut, t)
 }
