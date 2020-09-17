@@ -1,0 +1,26 @@
+language: go 
+
+go:
+- "1.14"
+
+os:
+  - linux
+
+services:
+  - docker
+
+script:
+  - pushd cloud/kubernetes/tests/template
+  - export GO111MODULE=on
+  - go test ./... 
+  - popd
+  
+notifications:
+  email:
+    on_failure: always
+    on_success: always
+    recipients:
+      - rpolishe@tibco.com
+      - lmekala@tibco.com
+      - nthota@tibco.com
+      - ykalidin@tibco.com  
