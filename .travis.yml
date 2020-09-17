@@ -25,7 +25,11 @@ notifications:
     on_failure: always
     on_success: always
     recipients:
+      - vpatil@tibco.com
       - rpolishe@tibco.com
       - lmekala@tibco.com
       - nthota@tibco.com
-      - ykalidin@tibco.com  
+      - ykalidin@tibco.com
+      - ggrigore@tibco.com
+      - vshende@tibco.com
+      - vshelar@tibco.com
