@@ -1,1 +1,1 @@
-source ./common.sh
+source ../build/frombelocal.sh

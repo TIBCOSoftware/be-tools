@@ -1,1 +1,1 @@
-source ../common/common.sh
+source ../build/frominstallers.sh
