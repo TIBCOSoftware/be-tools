@@ -16,7 +16,8 @@ before_script:
 script:
   - pushd cloud/kubernetes/helm
   - helm dep update
-  - pushd cloud/kubernetes/tests/template
+  - helm lint
+  - pushd ../tests/template
   - export GO111MODULE=on
   - go test ./... 
   - popd
