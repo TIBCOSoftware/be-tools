@@ -45,7 +45,8 @@ spec:
          {{- end }}
          {{- if eq .Values.cmType "FTL" }}   
         {{ include "ftl.data" . | trim }}  
-        {{- end }} 
+        {{- end }}
+{{ include "influx-grafana.data" . | trim | indent 8 }}        
 {{ include "store.configMap" . | trim |  indent 8 }}
 {{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharedNothing.volumeClaim" . }}

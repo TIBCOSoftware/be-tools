@@ -171,3 +171,40 @@ data:
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
+
+# metrics configmap metadata name
+{{- define "metricsname.fullname" -}}
+{{ .Release.Name }}-{{ .Values.metricsType }}
+{{- end -}}
+
+# influx and grafana configmaps
+{{- define "metrics-configmap.data" -}}
+data:
+  {{- $metrics := .Values.tags.metrics }}
+  {{- if eq $metrics true }}
+  dburl: "http://{{ .Release.Name }}-influxdb:8086"
+  {{- end }}
+  {{- range $key, $val := $.Values.influxconfigmap }}
+  {{- if eq $metrics true }}
+  {{- if ne "dburl" $key }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- else }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end }}
+{{- end -}}
+
+# influx and grafana env for agent yaml files
+{{- define "influx-grafana.data" -}}
+{{- if eq .Values.metricsType "influx" }}
+{{- $mapName  :=  include "metricsname.fullname" . -}}
+{{- range $key,$val := .Values.influxdatabase }}
+- name: {{ $key }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ $mapName }}
+      key: {{ $val }}
+{{- end }}
+{{- end }}
+{{- end -}}

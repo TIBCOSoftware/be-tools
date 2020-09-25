@@ -5,5 +5,11 @@ dependencies:
 - name: efs-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.11.0
-digest: sha256:ca43ada66a487d9adc76152a41fb53dead95e3f7388bf67d9fb428c621084a8e
-generated: "2020-04-21T13:06:40.777934288+05:30"
+- name: influxdb
+  repository: https://helm.influxdata.com/
+  version: 4.8.4
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 5.6.7
+digest: sha256:c519cf47f331b9e9c9fbc7581446f7f1b91e92029b11767871f16ec20a7e7ad4
+generated: "2020-09-22T19:49:10.952534313+05:30"

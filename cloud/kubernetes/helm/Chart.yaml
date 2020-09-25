@@ -28,4 +28,20 @@ dependencies:
     alias: aws-efs
     condition: aws-efs.enabled
     tags:
-      - fileStore 
+      - fileStore
+  - name: influxdb
+    version: 4.8.4
+    repository: https://helm.influxdata.com/   
+    alias: influxdb
+    condition: influxdata.enabled
+    tags:
+      - influxdb
+      - metrics
+  - name: grafana
+    version: 5.6.7
+    repository: https://grafana.github.io/helm-charts   
+    alias: grafana
+    condition: grafana.enabled
+    tags:
+      - grafana 
+      - metrics          
