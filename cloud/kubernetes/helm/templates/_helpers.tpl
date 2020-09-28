@@ -180,6 +180,7 @@ data:
 # influx and grafana configmaps
 {{- define "metrics-configmap.data" -}}
 data:
+  {{- if eq .Values.metricsType "influx" }}
   {{- $metrics := .Values.tags.metrics }}
   {{- if eq $metrics true }}
   dburl: "http://{{ .Release.Name }}-influxdb:8086"
@@ -193,13 +194,28 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- end }}
+  {{- end }}
+  {{- if eq .Values.metricsType "liveview" }}
+  {{- range $key, $val := $.Values.sbconfigmap }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+{{- end }}
 {{- end -}}
 
 # influx and grafana env for agent yaml files
 {{- define "influx-grafana.data" -}}
-{{- if eq .Values.metricsType "influx" }}
 {{- $mapName  :=  include "metricsname.fullname" . -}}
+{{- if eq .Values.metricsType "influx" }}
 {{- range $key,$val := .Values.influxdatabase }}
+- name: {{ $key }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ $mapName }}
+      key: {{ $val }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.metricsType "liveview" }}
+{{- range $key, $val := $.Values.streambase }}
 - name: {{ $key }}
   valueFrom:
     configMapKeyRef:

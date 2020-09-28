@@ -213,3 +213,11 @@ grafana:
   # enabled: false
   service:
     type: NodePort
+
+# --------- Streambase and liveview information ------
+
+sbconfigmap:
+  ldmurl: lv://localhost:10080
+
+streambase:
+  LDM_URL: ldmurl
