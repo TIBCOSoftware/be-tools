@@ -4,7 +4,7 @@
 #
 {{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
 {{- if eq .Values.omType "cache" }}
-  {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharedNothing" ) (eq .Values.bsType "store" ) }}
+  {{- if or (eq .Values.bsType "None" ) (eq .Values.bsType "sharednothing" ) (eq .Values.bsType "store" ) }}
 apiVersion: v1
 kind: Service
 metadata:
