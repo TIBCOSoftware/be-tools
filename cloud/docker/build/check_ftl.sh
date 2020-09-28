@@ -3,28 +3,20 @@ declare -A FTL_VERSION_MAP_MIN=(["6.0.0"]="6.2.0" )
 declare -A FTL_VERSION_MAP_MAX=(["6.0.0"]="6.x.x" )
 
 # Validate and get TIBCO FTL base and hf versions
-ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip")
-ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_linux_x86_64.zip" |  wc -l)
-ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip")
-ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_*_HF-*_linux_x86_64.zip" |  wc -l)
+ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip")
+ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" |  wc -l)
+ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip")
+ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" |  wc -l)
 
 if [ $ftlPckgsCnt -gt 0 ]; then
-	ftlBasePckgsCnt=$(expr ${ftlPckgsCnt} - ${ftlHfPckgsCnt})
-	if [ $ftlBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+	if [ $ftlPckgsCnt -gt 1 ]; then # If more than one base versions are present
 		printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $ftlHfPckgsCnt -gt 1 ]; then
 		printf "\nERROR :More than one TIBCO FTL HF are present in the target directory. There should be only one.\n"
 		exit 1;
-	elif [ $ftlBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO FTL HF is present but TIBCO FTL Base version is not present in the target directory.\n"
-		exit 1;	
-	elif [ $ftlBasePckgsCnt -eq 1 ]; then
-		if [ $ftlHfPckgsCnt -eq 0 ]; then
-			FTL_PACKAGE="$(basename ${ftlPckgs[0]} )"
-		else
-			FTL_PACKAGE="$(basename $( echo "${ftlPckgs[0]}" | sed -e "s~${ftlHfPckgs[0]}~~g") )"
-		fi
+	elif [ $ftlPckgsCnt -eq 1 ]; then
+		FTL_PACKAGE="$(basename ${ftlPckgs[0]} )"
 		ARG_FTL_VERSION=$(echo $FTL_PACKAGE | cut -d'_' -f 3)
 
 		# validate ftl version
@@ -60,6 +52,7 @@ if [ $ftlPckgsCnt -gt 0 ]; then
 					printf "ERROR: Improper ftl hf version: [$ARG_FTL_HOTFIX]. It should be in (xxx) format Ex: (002).\n"
 					exit 1
 				fi
+				
                 #add ftl hf package to file list and increment index
                 FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$FTL_HF_PACKAGE"
                 FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`

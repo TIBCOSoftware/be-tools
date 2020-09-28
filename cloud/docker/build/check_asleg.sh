@@ -3,35 +3,27 @@ declare -A AS_LEG_VERSION_MAP_MIN=(["5.6.0"]="2.3.0" ["5.6.1"]="2.3.0" ["6.0.0"]
 declare -A AS_LEG_VERSION_MAP_MAX=(["5.6.0"]="2.4.0" ["5.6.1"]="2.4.1" ["6.0.0"]="2.4.1" )
 
 # Validate and get TIBCO Activespaces(legacy) base and hf versions
-asLegPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip")
-asLegPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_linux_x86_64.zip" |  wc -l)
-asLegHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_HF-*_linux_x86_64.zip")
-asLegHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_*_HF-*_linux_x86_64.zip" |  wc -l)
+asLegPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip")
+asLegPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" |  wc -l)
+asLegHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip")
+asLegHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" |  wc -l)
 
 if [ $asLegPckgsCnt -gt 0 ]; then
-	asBasePckgsCnt=$(expr ${asLegPckgsCnt} - ${asLegHfPckgsCnt})
-	if [ $asBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+	if [ $asLegPckgsCnt -gt 1 ]; then # If more than one base versions are present
 		printf "\nERROR :More than one TIBCO Activespaces(legacy) base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asLegHfPckgsCnt -gt 1 ]; then
 		printf "\nERROR :More than one TIBCO Activespaces(legacy) HF are present in the target directory. There should be only one.\n"
 		exit 1;
-	elif [ $asBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO Activespaces(legacy) HF is present but TIBCO Activespaces(legacy) Base version is not present in the target directory.\n"
-		exit 1;	
-	elif [ $asBasePckgsCnt -eq 1 ]; then
-		if [ $asLegHfPckgsCnt -eq 0 ]; then
-			AS_LEG_PACKAGE="$(basename ${asLegPckgs[0]} )"
-		else
-			AS_LEG_PACKAGE="$(basename $( echo "${asLegPckgs[0]}" | sed -e "s~${asLegHfPckgs[0]}~~g") )"
-		fi
+	elif [ $asLegPckgsCnt -eq 1 ]; then
+		AS_LEG_PACKAGE="$(basename ${asLegPckgs[0]} )"
 		ARG_AS_LEG_VERSION=$(echo $AS_LEG_PACKAGE | cut -d'_' -f 3)
 
 		# validate as legacy version
 		if [[ $ARG_AS_LEG_VERSION =~ $VERSION_REGEX ]]; then
 			ARG_AS_LEG_SHORT_VERSION=${BASH_REMATCH[1]};
 		else
-			printf "ERROR: Improper As legacy version: [$ARG_AS_LEG_VERSION]. It should be in (x.x.x) format Ex: (2.4.0).\n"
+			printf "ERROR: Improper Activespaces(legacy) version: [$ARG_AS_LEG_VERSION]. It should be in (x.x.x) format Ex: (2.4.0).\n"
 			exit 1
 		fi
 

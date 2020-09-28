@@ -3,28 +3,20 @@ declare -A AS_VERSION_MAP_MIN=(["6.0.0"]="4.2.0" )
 declare -A AS_VERSION_MAP_MAX=(["6.0.0"]="4.x.x" )
 
 # Validate and get TIBCO As base and hf versions
-asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip")
-asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_linux_x86_64.zip" |  wc -l)
-asHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip")
-asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_*_HF-*_linux_x86_64.zip" |  wc -l)
+asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip")
+asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" |  wc -l)
+asHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip")
+asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" |  wc -l)
 
 if [ $asPckgsCnt -gt 0 ]; then
-	asBasePckgsCnt=$(expr ${asPckgsCnt} - ${asHfPckgsCnt})
-	if [ $asBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+	if [ $asPckgsCnt -gt 1 ]; then # If more than one base versions are present
 		printf "\nERROR :More than one TIBCO As base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asHfPckgsCnt -gt 1 ]; then
 		printf "\nERROR :More than one TIBCO As HF are present in the target directory. There should be only one.\n"
 		exit 1;
-	elif [ $asBasePckgsCnt -le 0 ]; then
-		printf "\nERROR :TIBCO As HF is present but TIBCO As Base version is not present in the target directory.\n"
-		exit 1;	
-	elif [ $asBasePckgsCnt -eq 1 ]; then
-		if [ $asHfPckgsCnt -eq 0 ]; then
-			AS_PACKAGE="$(basename ${asPckgs[0]} )"
-		else
-			AS_PACKAGE="$(basename $( echo "${asPckgs[0]}" | sed -e "s~${asHfPckgs[0]}~~g") )"
-		fi
+	elif [ $asPckgsCnt -eq 1 ]; then
+		AS_PACKAGE="$(basename ${asPckgs[0]} )"
 		ARG_AS_VERSION=$(echo $AS_PACKAGE | cut -d'_' -f 3)
 
 		# validate as version
@@ -60,6 +52,7 @@ if [ $asPckgsCnt -gt 0 ]; then
 					printf "ERROR: Improper As hf version: [$ARG_AS_HOTFIX]. It should be in (xxx) format Ex: (002).\n"
 					exit 1
 				fi
+				
                 #add as hf package to file list and increment index
                 FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$AS_HF_PACKAGE"
                 FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`

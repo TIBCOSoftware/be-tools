@@ -59,10 +59,6 @@ elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
     ARG_DOCKER_FILE="Dockerfile-rms_fromtar"
 fi
 
-if [ "$SOURCE_DIR" = "build" ]; then
-    ARG_DOCKER_FILE="$RELATIVE_DIR$ARG_DOCKER_FILE"
-fi
-
 USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
 
 if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
@@ -71,11 +67,6 @@ if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
 
     ARG_GVPROVIDERS="na"
     ARG_ENABLE_TESTS="true"
-fi
-
-if [ "$SOURCE_DIR" = "build" ]; then
-    USAGE+="\n\n [-s/--source]               :       Image Source (example: frominstallers,frombelocal) (default: frombelocal) [optional]"
-    USAGE+="\n\n [-t/--type]                 :       Image Type (example: app,rms,tea,builder) (default: app) [optional]"
 fi
 
 USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
@@ -460,7 +451,11 @@ rm -rf $TEMP_FOLDER/$RANDM_FOLDER
 echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER/
-docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+if [ "$FILE_NAME" = "$TEA_IMAGE" -o "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+else
+    docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+fi
 
 if [ "$?" != 0 ]; then
     echo "Docker build failed."
