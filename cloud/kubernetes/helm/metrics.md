@@ -4,7 +4,7 @@
 
 ## Both InfluxDB and Grafana deployment 
 
-* To deploy helm chart for metrics, Set metricsType to influx
+* To deploy helm chart for metrics, Set metricsType to `influx`
     
     * Using InfluxDB and Grafana dependency charts
         ```
@@ -41,3 +41,11 @@
 ## Database creation and Testing
 
 * Please refer to example html file
+
+## TIBCO Streaming with dashboards in TIBCO LiveViewWeb
+
+* If you want to deploy BE application with TIBCO streaming with dashboard in TIBCO LiveViewWeb, set metricsType to `liveview`
+
+    ```
+    helm install my-release ./helm --set metricsType=liveview
+    ```
