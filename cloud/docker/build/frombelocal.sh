@@ -324,7 +324,7 @@ echo "INFO: IMAGE VERSION                : [$ARG_IMAGE_VERSION]"
 echo "------------------------------------------------------------------------------"
 
 if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-    echo "WARN: Local machine contains both FTL and AS legacy installations. Removing unused installation improves the docker image size."
+    echo "WARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size."
 fi
 
 mkdir $TEMP_FOLDER
@@ -391,12 +391,6 @@ if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
     find $TEMP_FOLDER/$RANDM_FOLDER -name 'log4j*.properties' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 fi
 
-# Remove the annotations file
-if [ -e "$TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin/_annotations.idx" ]; then
-    rm "$TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin/_annotations.idx"
-fi
-# TODO: generate annotations idx.
-
 REGEX_CUSTOM_CP="tibco\.env\.CUSTOM_EXT_PREPEND_CP=.*"
 VALUE_CUSTOM_CP="tibco.env.CUSTOM_EXT_PREPEND_CP=/opt/tibco/be/ext"
 find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$REGEX_CUSTOM_CP~$VALUE_CUSTOM_CP~g"
@@ -426,6 +420,12 @@ if [ "$AS_LEG_HOME" != "na" ]; then
     AS_LEG_HOME_VAL="tibco.env.AS_HOME=$OPT_TIBCO/$AS_LEG_DIR"
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$AS_LEG_HOME_KEY~$AS_LEG_HOME_VAL~g"
 fi
+
+#remove unecessary files from bin folder
+CURR_DIR=$PWD
+cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
+ls | grep -v "be-engine*" | xargs rm
+cd $CURR_DIR
 
 # removing all .bak files
 find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
