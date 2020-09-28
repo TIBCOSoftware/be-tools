@@ -79,7 +79,7 @@ beservice:
   ports:
     name: port1
     protocol: TCP
-    port: 8110
+    port: 8108
 
 ignitePort:
   dis0: 47500
@@ -186,11 +186,11 @@ aws-efs:
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 
-metricsType: influx           # metricsType value is strict to "influx","liveview"
+metricsType: na           # metricsType value is strict to "influx","liveview"
 
 # Setting tags.metrics to true enables influx and grafana dependency chart deployment
 tags:
-  metrics: true
+  metrics: false
 
 influxconfigmap:
   dburl: http://influxDB:8086
