@@ -9,19 +9,13 @@
 declare -a BE_VERSION_AND_JRE_MAP
 BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
-if [ -z "${FILE_NAME}" ]; then
-    FILE_NAME=$(basename $0)
-fi
+SOURCE_DIR=$(basename $(pwd))
 
 APP_IMAGE="build_app_image.sh"
 RMS_IMAGE="build_rms_image.sh"
 TEA_IMAGE="build_teagent_image.sh"
 BUILDER_IMAGE="create_builder_image.sh"
 
-ARG_INSTALLER_LOCATION="na"
-ARG_APP_LOCATION="na"
-ARG_IMAGE_VERSION="na"
-ARG_DOCKER_FILE="Dockerfile"
 TEMP_FOLDER="tmp_$RANDOM"
 
 #version regex for all products
@@ -51,165 +45,173 @@ ARG_AS_SHORT_VERSION="na"
 ARG_AS_HOTFIX="na"
 
 # s2i builder related args
-S2I_DOCKER_FILE_APP="Dockerfile"
 BE_TAG="com.tibco.be"
 
-if [ -z "${USAGE}" ]; then
+if [ "$SOURCE_DIR" != "build" ]; then
+
+    FILE_NAME=$(basename $0)
+
+    ARG_DOCKER_FILE="Dockerfile"
+    ARG_INSTALLER_LOCATION="na"
+    ARG_APP_LOCATION="na"
+    ARG_IMAGE_VERSION="na"
+    S2I_DOCKER_FILE_APP="Dockerfile"
+
     USAGE="\nUsage: $FILE_NAME"
-fi
-USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
+    USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
 
-if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-    USAGE+="\n\n [-r/--repo]                 :       The teagent image Repository (example - repo:tag) [optional]"
+    if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+        USAGE+="\n\n [-r/--repo]                 :       The teagent image Repository (example - repo:tag) [optional]"
 
-    ARG_DOCKER_FILE="Dockerfile-teagent"
-elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
-    USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
-    USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
+        ARG_DOCKER_FILE="Dockerfile-teagent"
+    elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+        USAGE+="\n\n [-a/--app-location]         :       Location where the RMS ear, cdd are located [optional]"
+        USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - repo:tag) [optional]"
 
-    ARG_DOCKER_FILE="Dockerfile-rms"
-elif [ "$FILE_NAME" = "$APP_IMAGE" ]; then
-    USAGE+="\n\n [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]"
-    USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - fdc:latest) [required]"
-elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-    USAGE+="\n\n [-r/--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]"
-fi
+        ARG_DOCKER_FILE="Dockerfile-rms"
+    elif [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+        USAGE+="\n\n [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]"
+        USAGE+="\n\n [-r/--repo]                 :       The app image Repository (example - fdc:latest) [required]"
+    elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+        USAGE+="\n\n [-r/--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]"
+    fi
 
-USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
+    USAGE+="\n\n [-d/--docker-file]          :       Dockerfile to be used for generating image (default - $ARG_DOCKER_FILE) [optional]"
 
-if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-    USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
-    USAGE+="\n\n [--disable-tests]           :       Disables docker unit tests on created image. [optional]"
+    if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+        USAGE+="\n\n [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]" 
+        USAGE+="\n\n [--disable-tests]           :       Disables docker unit tests on created image. [optional]"
 
-    ARG_GVPROVIDERS="na"
-    ARG_ENABLE_TESTS="true"
-fi
+        ARG_GVPROVIDERS="na"
+        ARG_ENABLE_TESTS="true"
+    fi
 
-USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
-USAGE+="\n\n NOTE : supply long options with '=' \n"
+    USAGE+="\n\n [-h/--help]           	     :       Print the usage of script [optional]" 
+    USAGE+="\n\n NOTE : supply long options with '=' \n"
 
-#Parse the arguments
-while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-        -l|--installers-location) 
-            shift # past the key and to the value
-            ARG_INSTALLER_LOCATION="$1"
-            ;;
-        -l=*|--installers-location=*)
-            ARG_INSTALLER_LOCATION="${key#*=}"
-            ;;
-        -r|--repo) 
-            shift # past the key and to the value
-            ARG_IMAGE_VERSION="$1"
-            ;;
-        -r=*|--repo=*)
-            ARG_IMAGE_VERSION="${key#*=}"
-	        ;;
-        -d|--docker-file)
-            shift # past the key and to the value
-            ARG_DOCKER_FILE="$1"
-            ;;
-        -d=*|--docker-file=*)
-            ARG_DOCKER_FILE="${key#*=}"
-            ;;
-        -h|--help) 
-            shift # past the key and to the value
-            printf "$USAGE"
-            exit 0
-            ;;
-        *)
-            if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
-                case "$key" in
-                    -a|--app-location) 
-                        shift # past the key and to the value
-                        ARG_APP_LOCATION="$1"
-                        ;;
-                    -a=*|--app-location=*)
-                        ARG_APP_LOCATION="${key#*=}"
-                        ;;
-                    *)
-                        echo "Invalid Option: [$key]"
-                        ;;
-                esac
-            fi
-                        
-            if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-                case "$key" in
-                    --gv-providers)
-                        shift # past the key and to the value
-                        ARG_GVPROVIDERS="$1"
-                        ;;
-                    --gv-providers=*)
-                        ARG_GVPROVIDERS="${key#*=}"
-                        ;;
-                    --disable-tests)
-                        ARG_ENABLE_TESTS="false"
-                        ;;
-                    *)
-                        if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+    #Parse the arguments
+    while [[ $# -gt 0 ]]; do
+        key="$1"
+        case "$key" in
+            -l|--installers-location) 
+                shift # past the key and to the value
+                ARG_INSTALLER_LOCATION="$1"
+                ;;
+            -l=*|--installers-location=*)
+                ARG_INSTALLER_LOCATION="${key#*=}"
+                ;;
+            -r|--repo) 
+                shift # past the key and to the value
+                ARG_IMAGE_VERSION="$1"
+                ;;
+            -r=*|--repo=*)
+                ARG_IMAGE_VERSION="${key#*=}"
+                ;;
+            -d|--docker-file)
+                shift # past the key and to the value
+                ARG_DOCKER_FILE="$1"
+                ;;
+            -d=*|--docker-file=*)
+                ARG_DOCKER_FILE="${key#*=}"
+                ;;
+            -h|--help) 
+                shift # past the key and to the value
+                printf "$USAGE"
+                exit 0
+                ;;
+            *)
+                if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+                    case "$key" in
+                        -a|--app-location) 
+                            shift # past the key and to the value
+                            ARG_APP_LOCATION="$1"
+                            ;;
+                        -a=*|--app-location=*)
+                            ARG_APP_LOCATION="${key#*=}"
+                            ;;
+                        *)
                             echo "Invalid Option: [$key]"
-                        fi
+                            ;;
+                    esac
+                fi
+                            
+                if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+                    case "$key" in
+                        --gv-providers)
+                            shift # past the key and to the value
+                            ARG_GVPROVIDERS="$1"
+                            ;;
+                        --gv-providers=*)
+                            ARG_GVPROVIDERS="${key#*=}"
+                            ;;
+                        --disable-tests)
+                            ARG_ENABLE_TESTS="false"
+                            ;;
+                        *)
+                            if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+                                echo "Invalid Option: [$key]"
+                            fi
 
-                        if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
-                            case "$key" in
-                                -a|--app-location) 
-                                    shift # past the key and to the value
-                                    ARG_APP_LOCATION="$1"
-                                    ;;
-                                -a=*|--app-location=*)
-                                    ARG_APP_LOCATION="${key#*=}"
-                                    ;;
-                                *)
-                                    echo "Invalid Option: [$key]"
-                                    ;;
-                            esac
-                        fi
-                esac
+                            if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+                                case "$key" in
+                                    -a|--app-location) 
+                                        shift # past the key and to the value
+                                        ARG_APP_LOCATION="$1"
+                                        ;;
+                                    -a=*|--app-location=*)
+                                        ARG_APP_LOCATION="${key#*=}"
+                                        ;;
+                                    *)
+                                        echo "Invalid Option: [$key]"
+                                        ;;
+                                esac
+                            fi
+                    esac
+                fi
+
+                if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+                    echo "Invalid Option: [$key]"
+                fi
+        esac
+        shift
+    done
+
+    # missing arguments check
+    MISSING_ARGS=""
+    FIRST=1
+
+    if [ "$ARG_INSTALLER_LOCATION" = "na" -o -z "${ARG_INSTALLER_LOCATION// }" ]; then
+        MISSING_ARGS="Installers Location[-l/--installers-location]"
+        FIRST=0
+    fi
+
+    if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+        if [ "$ARG_APP_LOCATION" = "na" -o -z "${ARG_APP_LOCATION// }" ]; then
+            if [ $FIRST = 1 ]; then
+                MISSING_ARGS="Application Location[-a/--app-location]"
+                FIRST=0
+            else
+                MISSING_ARGS="$MISSING_ARGS , Application Location[-a/--app-location]"
             fi
-
-            if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-                echo "Invalid Option: [$key]"
-            fi
-    esac
-    shift
-done
-
-# missing arguments check
-MISSING_ARGS=""
-FIRST=1
-
-if [ "$ARG_INSTALLER_LOCATION" = "na" -o -z "${ARG_INSTALLER_LOCATION// }" ]; then
-    MISSING_ARGS="Installers Location[-l/--installers-location]"
-    FIRST=0
-fi
-
-if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
-    if [ "$ARG_APP_LOCATION" = "na" -o -z "${ARG_APP_LOCATION// }" ]; then
-        if [ $FIRST = 1 ]; then
-  	        MISSING_ARGS="Application Location[-a/--app-location]"
-	        FIRST=0
-        else
-            MISSING_ARGS="$MISSING_ARGS , Application Location[-a/--app-location]"
         fi
     fi
-fi
 
-if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-    if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
-        if [ $FIRST = 1 ]; then
-            MISSING_ARGS="Image version[-r/--repo]"
-	        FIRST=0
-        else
-            MISSING_ARGS="$MISSING_ARGS , Image version[-r/--repo]"
+    if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+        if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
+            if [ $FIRST = 1 ]; then
+                MISSING_ARGS="Image version[-r/--repo]"
+                FIRST=0
+            else
+                MISSING_ARGS="$MISSING_ARGS , Image version[-r/--repo]"
+            fi
         fi
     fi
-fi
 
-if [ "$MISSING_ARGS" != "" ]; then
-    printf "\nERROR: Missing mandatory argument(s) : $MISSING_ARGS\n"
-    printf "$USAGE"
-    exit 1; 
+    if [ "$MISSING_ARGS" != "" ]; then
+        printf "\nERROR: Missing mandatory argument(s) : $MISSING_ARGS\n"
+        printf "$USAGE"
+        exit 1; 
+    fi
 fi
 
 # check installer location exist or not
@@ -291,6 +293,10 @@ if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
         ARG_IMAGE_VERSION="teagent:$ARG_BE_VERSION";
     elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
         ARG_IMAGE_VERSION="rms:$ARG_BE_VERSION";
+    elif [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+        ARG_IMAGE_VERSION="app:$ARG_BE_VERSION";
+    elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+        ARG_IMAGE_VERSION="builder:$ARG_BE_VERSION";
     fi
 fi
 
