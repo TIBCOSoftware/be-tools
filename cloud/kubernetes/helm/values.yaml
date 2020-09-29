@@ -203,16 +203,14 @@ influxdatabase:
 
 # Custom values for InfluxDB chart
 influxdb:
-  # enabled: false
   persistence:
     enabled: false            # Set to true for persistence
 
 
 # Custom values for Grafana chart
 grafana:
-  # enabled: false
   service:
-    type: NodePort
+    type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
 
 # --------- Streambase and liveview information ------
 

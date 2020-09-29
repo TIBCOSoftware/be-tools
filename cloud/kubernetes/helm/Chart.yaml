@@ -33,7 +33,7 @@ dependencies:
     version: 4.8.4
     repository: https://helm.influxdata.com/   
     alias: influxdb
-    condition: influxdata.enabled
+    condition: influxdb.enabled
     tags:
       - influxdb
       - metrics
