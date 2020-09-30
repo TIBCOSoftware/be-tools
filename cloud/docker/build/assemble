@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+
+cp -R /tmp/src/*.cdd /opt/tibco/be/application
+cp -R /tmp/src/* /opt/tibco/be/application
+cp -R /tmp/src/* /opt/tibco/be/ext
+mkdir -p /opt/tibco/be/application/ear
+
+cp -R /tmp/src/*.ear /opt/tibco/be/application/ear
+rm /opt/tibco/be/application/*.ear

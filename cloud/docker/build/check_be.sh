@@ -1,22 +1,9 @@
 BLANK=""
-BE_PRODUCT="TIB_businessevents"
-INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
-
-BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_PLATFORM}"
 BE_HF_REGEX="${BE_PRODUCT}-hf_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]${INSTALLER_PLATFORM}"
 
-#Check for BE Installer  --------------------------------------
-result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
-len=$(echo ${result} | wc -l)
-
-if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
-	exit 1;
-fi
-
 # Get all be packages
-bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_VERSION_REGEX}")
-bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_VERSION_REGEX}" | wc -l)
+bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}")
+bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}" | wc -l)
 
 #Get all be hf packages
 beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_HF_REGEX}")
@@ -40,15 +27,6 @@ elif [ $bePckgsCnt -eq 1 ]; then
 		printf "ERROR: Improper BE version: [$ARG_BE_VERSION]. It should be in (x.x.x) format Ex: (5.6.0).\n"
 		exit 1
 	fi
-
-	#Find JRE Version for given BE Version
-	length=${#BE_VERSION_AND_JRE_MAP[@]}	
-	for (( i = 0; i < length; i++ )); do
-		if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
-			ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-			break;	
-		fi
-	done
 	
 	#add be package to file list and increment index
 	FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BE_PACKAGE"
