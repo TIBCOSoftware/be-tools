@@ -79,6 +79,9 @@ COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/examples/standard/Web
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/studio /opt/tibco/be/${BE_SHORT_VERSION}/studio
 COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/eclipse-platform /opt/tibco/be/${BE_SHORT_VERSION}/eclipse-platform
 
+COPY app/* /opt/tibco/be/ext/
+COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
+
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
 COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
 

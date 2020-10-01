@@ -23,7 +23,6 @@ RUN apt-get update -y \
 
 ADD be.tar /opt/tibco
 COPY app/* /opt/tibco/be/ext/
-
 COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/

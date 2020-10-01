@@ -7,8 +7,8 @@
 
 FILE_NAME=$(basename $0)
 
+# image type variables
 IMAGE_NAME=""
-
 APP_IMAGE="app"
 RMS_IMAGE="rms"
 TEA_IMAGE="teagent"
@@ -16,6 +16,7 @@ BUILDER_IMAGE="s2ibuilder"
 
 TEMP_FOLDER="tmp_$RANDOM"
 
+# input variables
 ARG_SOURCE="na"
 ARG_TYPE="na"
 ARG_APP_LOCATION="na"
@@ -25,6 +26,7 @@ ARG_GVPROVIDERS="na"
 ARG_ENABLE_TESTS="true"
 
 # be related args
+BE_HOME="na"
 ARG_INSTALLER_LOCATION="na"
 ARG_EDITION="enterprise"
 ARG_BE_VERSION="na"
@@ -62,11 +64,13 @@ ARG_AS_HOTFIX="na"
 BE_TAG="com.tibco.be"
 S2I_DOCKER_FILE_APP="Dockerfiles2i"
 
+# default installation type fromlocal
 INSTALLATION_TYPE="fromlocal"
 
 USAGE="\nUsage: $FILE_NAME"
 
-USAGE+="\n\n [-i/--image-type]    :    Type of image. Values must be($APP_IMAGE/$RMS_IMAGE/$TEA_IMAGE/$BUILDER_IMAGE). (example: $APP_IMAGE) [required]"
+USAGE+="\n\n [-i/--image-type]    :    Type of image. Values must be($APP_IMAGE/$RMS_IMAGE/$TEA_IMAGE/$BUILDER_IMAGE). (example: $APP_IMAGE) [required]\n"
+USAGE+="                           Note: $BUILDER_IMAGE image has prerequisite. Check the documentation in be-tools wiki."
 USAGE+="\n\n [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is $APP_IMAGE]"
 USAGE+="\n\n [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]\n"
 USAGE+="                           Note: No need to specify be-home if script is executed from <BE_HOME>/cloud/docker/build folder."
@@ -219,9 +223,10 @@ case "$ARG_TYPE" in
         ;;
 esac
 
+# check be-home/installer location
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
-        echo "ERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper be-home."
+        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper be-home.\n"
         exit 1
     elif [ "$BE_HOME" = "na" ]; then
         BE_HOME=$( readlink -e ../../.. )
@@ -229,34 +234,32 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
-        echo "ERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6)."
+        printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6).\n"
         exit 1
     else
         BE_HOME_BASE=${BASH_REMATCH[1]}
         BE_DIR=${BASH_REMATCH[2]}
     fi
 else
-    # check installer location exist or not
     if [ ! -d "$ARG_INSTALLER_LOCATION" ]; then
         printf "ERROR: The directory: [$ARG_INSTALLER_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
         exit 1;
     fi
 fi
 
-# app location directory check
-if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+# check app location
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     # incase of builder image app location is not needed
     ARG_APP_LOCATION="na"
-elif [ "$FILE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
+elif [ "$IMAGE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
     printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
     exit 1;
-# other cases if app location provided checking the directory exist or not
 elif [ "$ARG_APP_LOCATION" != "na" -a ! -d "$ARG_APP_LOCATION" ]; then
     printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Ignoring app location.\n"
     ARG_APP_LOCATION="na"
 fi
 
-# count cdd and ear in app location
+# count cdd and ear in app location if exist
 if [ "$ARG_APP_LOCATION" != "na" ]; then
     #Check App location have ear or not
     ears=$(find $ARG_APP_LOCATION -name "*.ear")
@@ -280,8 +283,10 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 fi
 
+# assign image tag to ARG_IMAGE_VERSION variable
 ARG_IMAGE_VERSION="$ARG_TAG"
 
+# get product details for both fromlocal and frominstallers
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     VERSION_REGEX=([0-9]\.[0-9]).*
 
@@ -291,11 +296,11 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ $ARG_BE_VERSION =~ $VERSION_REGEX ]]; then
         ARG_BE_SHORT_VERSION=${BASH_REMATCH[1]};
     else
-        echo "ERROR: Improper Be version: [$ARG_BE_VERSION]. Aborting."
+        printf "\nERROR: Improper Be version: [$ARG_BE_VERSION]. Aborting.\n"
         exit 1
     fi
 
-    if [ "$FILE_NAME" != "$TEA_IMAGE" ]; then
+    if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         ## get as legacy details
         AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
         AS_LEG_HOME=${AS_LEG_HOME%?}
@@ -304,7 +309,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         else
             AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
             if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
-                echo "ERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>)."
+                printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
                 exit 1
             fi
             AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
@@ -313,7 +318,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
-    if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
         # get ftl details
         FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
         FTL_HOME=${FTL_HOME%?}
@@ -322,7 +327,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         else
             FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
             if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
-                echo "ERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>)."
+                printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>).\n"
                 exit 1
             fi
             FTL_HOME_BASE=${BASH_REMATCH[1]}
@@ -338,7 +343,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         else
             AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
             if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
-                echo "ERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>)."
+                printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
                 exit 1
             fi
             AS_HOME_BASE=${BASH_REMATCH[1]}
@@ -359,12 +364,12 @@ else
     # check be and its hot fixes
     source ../build/check_be.sh
 
-    if [ "$FILE_NAME" != "$TEA_IMAGE" ]; then
+    if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
         source ../build/check_asleg.sh
     fi
 
-    if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # check be addons
         source ../build/check_beaddons.sh
 
@@ -390,17 +395,9 @@ for (( i = 0; i < length; i++ )); do
     fi
 done
 
-# image name check
+# assign image name if not provided
 if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
-    if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
-        ARG_IMAGE_VERSION="teagent:$ARG_BE_VERSION";
-    elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
-        ARG_IMAGE_VERSION="rms:$ARG_BE_VERSION";
-    elif [ "$FILE_NAME" = "$APP_IMAGE" ]; then
-        ARG_IMAGE_VERSION="app:$ARG_BE_VERSION";
-    elif [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
-        ARG_IMAGE_VERSION="builder:$ARG_BE_VERSION";
-    fi
+    ARG_IMAGE_VERSION="$IMAGE_NAME:$ARG_BE_VERSION";
 fi
 
 # information display
@@ -473,21 +470,21 @@ echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 
 echo "------------------------------------------------------------------------------"
 
-if [ "$FILE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
+if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
     printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
     exit 1
 fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-        echo "WARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size."
+        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n"
     fi
 else
-    if [ "$FILE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
+    if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
         printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
     fi
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-        echo "WARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size."
+        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n"
     fi
 fi
 
@@ -495,25 +492,26 @@ mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "../lib" $TEMP_FOLDER/
 
-if [ "$FILE_NAME" = "$APP_IMAGE" -o "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "../gvproviders" $TEMP_FOLDER/
-    if [ "$FILE_NAME" = "$APP_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
         cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
     fi
-elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
     if [ "$ARG_APP_LOCATION" != "na" ]; then
         cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
     else
-        touch $TEMP_FOLDER/app/dummy.txt
+        touch $TEMP_FOLDER/app/dummyrms.txt
     fi
 fi
 
+# create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
     BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar tibcojre64 $BE_DIR/lib $BE_DIR/bin "
-    if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
-    elif [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+    elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi
     if [ -d "$BE_HOME/hotfix" ]; then
@@ -554,7 +552,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
-    if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         # Replace in props files
         find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
@@ -566,7 +564,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     VALUE_CUSTOM_CP="tibco.env.CUSTOM_EXT_PREPEND_CP=/opt/tibco/be/ext"
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$REGEX_CUSTOM_CP~$VALUE_CUSTOM_CP~g"
 
-    if [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/rms/bin -name '*.cdd' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
     fi
 
@@ -631,7 +629,7 @@ cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
 
 # configurations for s2i builder image
-if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
 	touch $TEMP_FOLDER/app/dummy.txt
     EAR_FILE_NAME="dummy.txt"
 	CDD_FILE_NAME="dummy.txt"
@@ -640,15 +638,15 @@ if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
 fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-    if [ "$FILE_NAME" = "$TEA_IMAGE" -o "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$TEA_IMAGE" -o "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
     else
         docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDERS=$ARG_GVPROVIDERS -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
     fi
 else
-    if [ "$FILE_NAME" = "$TEA_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
-    elif [ "$FILE_NAME" = "$RMS_IMAGE" ]; then
+    elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
     else
         docker build  --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDERS=$ARG_GVPROVIDERS --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
@@ -663,19 +661,21 @@ else
 fi
 
 echo "Deleting temporary intermediate image.."
-docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
+if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+    docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
+fi
 echo "Deleting $TEMP_FOLDER folder"
 rm -rf $TEMP_FOLDER
 
 # additional steps for s2i builder image
-if [ "$FILE_NAME" = "$BUILDER_IMAGE" ]; then
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_BE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" .
 	docker rmi -f "$ARG_IMAGE_VERSION"
     ARG_IMAGE_VERSION=$FINAL_BUILDER_IMAGE_TAG
 fi
 
 # docker unit tests
-if [[ ($BUILD_SUCCESS = "true") && ($ARG_ENABLE_TESTS = "true") && (("$FILE_NAME" = "$BUILDER_IMAGE") || ("$FILE_NAME" = "$APP_IMAGE")) ]]; then
+if [[ ($BUILD_SUCCESS = "true") && ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
 	cd ../tests
 	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
 fi
