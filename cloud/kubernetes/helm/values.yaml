@@ -18,7 +18,7 @@ storeType: na                           #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                          #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
-image: influxdbapp
+image: befdapp:01
 imagePullPolicy: IfNotPresent
 # imagepullsecret Provide image pull secret name, If the image is available in a private registry. You can create image pull secret manually OR use imageCredentials section to create it. 
 imagepullsecret:
