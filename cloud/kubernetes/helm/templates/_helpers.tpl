@@ -181,7 +181,7 @@ data:
 {{- define "metrics-configmap.data" -}}
 data:
   {{- if eq .Values.metricsType "influx" }}
-  {{- $metrics := .Values.tags.metrics }}
+  {{- $metrics := .Values.influxdb.enabled }}
   {{- if eq $metrics true }}
   dburl: "http://{{ .Release.Name }}-influxdb:8086"
   {{- end }}
@@ -221,6 +221,12 @@ data:
     configMapKeyRef:
       name: {{ $mapName }}
       key: {{ $val }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.metricsType "custom" }}
+{{- range $key, $val := $.Values.metricdetails }}
+- name: {{ $key }}
+  value: {{ $val }}
 {{- end }}
 {{- end }}
 {{- end -}}

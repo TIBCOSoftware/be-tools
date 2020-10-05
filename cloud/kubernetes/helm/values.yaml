@@ -186,11 +186,7 @@ aws-efs:
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 
-metricsType: na           # metricsType value is strict to "influx","liveview"
-
-# Setting tags.metrics to true enables influx and grafana dependency chart deployment
-tags:
-  metrics: false
+metricsType: na           # metricsType value is strict to "influx","liveview","custom"
 
 influxconfigmap:
   dburl: http://influxDB:8086
@@ -201,14 +197,16 @@ influxdatabase:
   INFLUXDBNAME: dbname  
 
 
-# Custom values for InfluxDB chart
+# Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
 influxdb:
+  enabled: false
   persistence:
     enabled: false            # Set to true for persistence
 
 
-# Custom values for Grafana chart
+# Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
 grafana:
+  enabled: false
   service:
     type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
 
@@ -219,3 +217,8 @@ sbconfigmap:
 
 streambase:
   LDM_URL: ldmurl
+
+# custom metrics(ex:elastic, prometheus etc.,)
+
+metricdetails:
+  URL: http://localhost:1234

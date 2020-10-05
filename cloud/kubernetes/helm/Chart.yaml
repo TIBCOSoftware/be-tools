@@ -34,14 +34,8 @@ dependencies:
     repository: https://helm.influxdata.com/   
     alias: influxdb
     condition: influxdb.enabled
-    tags:
-      - influxdb
-      - metrics
   - name: grafana
     version: 5.6.7
     repository: https://grafana.github.io/helm-charts   
     alias: grafana
     condition: grafana.enabled
-    tags:
-      - grafana 
-      - metrics          
