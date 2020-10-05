@@ -164,7 +164,7 @@ if [ "$MISSING_ARGS" != "" ]; then
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" | wc -l)
+    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" 2>/dev/null | wc -l) 
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -226,7 +226,7 @@ esac
 # check be-home/installer location
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
-        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper be-home.\n"
+        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home/installers.\n"
         exit 1
     elif [ "$BE_HOME" = "na" ]; then
         BE_HOME=$( readlink -e ../../.. )
@@ -234,16 +234,11 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
-        printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6).\n"
+        printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6). OR Path to installers location.\n"
         exit 1
     else
         BE_HOME_BASE=${BASH_REMATCH[1]}
         BE_DIR=${BASH_REMATCH[2]}
-    fi
-else
-    if [ ! -d "$ARG_INSTALLER_LOCATION" ]; then
-        printf "ERROR: The directory: [$ARG_INSTALLER_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
-        exit 1;
     fi
 fi
 
@@ -318,7 +313,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # get ftl details
         FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
         FTL_HOME=${FTL_HOME%?}
@@ -362,25 +357,25 @@ else
     FILE_LIST_INDEX=0
 
     # check be and its hot fixes
-    source ../build/check_be.sh
+    source ./check_be.sh
 
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
-        source ../build/check_asleg.sh
+        source ./check_asleg.sh
     fi
 
     if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # check be addons
-        source ../build/check_beaddons.sh
+        source ./check_beaddons.sh
 
         # check for FTL and AS4 only when BE version is > 6.0.0
         if [ "$ARG_BE_VERSION" != "na" ]; then
             if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
                 # validate ftl
-                source ../build/check_ftl.sh
+                source ./check_ftl.sh
 
                 # validate as
-                source ../build/check_as.sh
+                source ./check_as.sh
             fi
         fi
     fi
@@ -477,14 +472,14 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n"
+        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
     fi
 else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
         printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
     fi
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n"
+        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n\n"
     fi
 fi
 
@@ -523,7 +518,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     # check as leg if exist add it to be tar file
     if [ "$AS_LEG_HOME" != "na" ]; then
-        tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/bin $AS_LEG_DIR/lib
+        tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/lib #$AS_LEG_DIR/bin
         if [ -d "$AS_LEG_DIR/hotfix" ]; then
             tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/hotfix
         fi
@@ -531,12 +526,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     # check as if exist add it to be tar file
     if [ "$AS_HOME" != "na" ]; then
-        tar -C $AS_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_DIR/bin $AS_DIR/lib
+        tar -C $AS_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_DIR/lib #$AS_DIR/bin
     fi
 
     # check ftl if exist add it to be tar file
     if [ "$FTL_HOME" != "na" ]; then
-        tar -C $FTL_HOME_BASE -rf $TEMP_FOLDER/be.tar $FTL_DIR/bin $FTL_DIR/lib
+        tar -C $FTL_HOME_BASE -rf $TEMP_FOLDER/be.tar $FTL_DIR/lib #$FTL_DIR/bin
     fi
 
     # create another temp folder and replace be_home to /opt/tibco
@@ -569,7 +564,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     if [ -e "$TEMP_FOLDER/app/$CDD_FILE_NAME" ]; then
-        find $TEMP_FOLDER/app -name '*.cdd' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+        find $TEMP_FOLDER/app -name '*.cdd' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g" 2>/dev/null
     fi
 
     if [ "$FTL_HOME" != "na" ]; then
@@ -599,6 +594,16 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
+    #removing tomsawyer and gwt
+    if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer
+    fi
+
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws
+    fi
+
     # re create be.tar
     TAR_CMD="tar -C $TEMP_FOLDER/$RANDM_FOLDER -cf $TEMP_FOLDER/be.tar be tibcojre64 "
 
@@ -623,7 +628,7 @@ else
 fi
 
 # building docker image
-echo "INFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE]."
+printf "\nINFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE].\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"

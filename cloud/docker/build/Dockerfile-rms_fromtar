@@ -18,9 +18,6 @@ ARG JRE_VERSION
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
 
-RUN apt-get update -y \
- && apt-get install -y apt-utils perl unzip procps findutils
-
 ADD be.tar /opt/tibco
 COPY app/* /opt/tibco/be/ext/
 COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
