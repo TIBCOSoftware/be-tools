@@ -396,7 +396,7 @@ if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
 fi
 
 # information display
-echo "INFO: Detailed Information   :"
+echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
 
 if ! [ "$ARG_INSTALLER_LOCATION" = "na" ]; then
