@@ -10,10 +10,10 @@ beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_HF_REGEX}")
 beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "${BE_HF_REGEX}" | wc -l)
 
 if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory. There should be only one.\n"
+	printf "\nERROR: More than one TIBCO BusinessEvents base versions are present in the target directory. There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
-	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory. There should be only one.\n"
+	printf "\nERROR: More than one TIBCO BusinessEvents HF are present in the target directory. There should be only one.\n"
 	exit 1;
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer

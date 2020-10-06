@@ -513,11 +513,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/hotfix "
     fi
 
+    echo "INFO: Adding [$BE_DIR] to tar file."
     #execute be tar command
     $BE_TAR_CMD
 
     # check as leg if exist add it to be tar file
     if [ "$AS_LEG_HOME" != "na" ]; then
+        echo "INFO: Adding [$AS_LEG_DIR] to tar file."
         tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/lib #$AS_LEG_DIR/bin
         if [ -d "$AS_LEG_DIR/hotfix" ]; then
             tar -C $AS_LEG_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_LEG_DIR/hotfix
@@ -526,11 +528,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     # check as if exist add it to be tar file
     if [ "$AS_HOME" != "na" ]; then
+        echo "INFO: Adding [$AS_DIR] to tar file."
         tar -C $AS_HOME_BASE -rf $TEMP_FOLDER/be.tar $AS_DIR/lib #$AS_DIR/bin
     fi
 
     # check ftl if exist add it to be tar file
     if [ "$FTL_HOME" != "na" ]; then
+        echo "INFO: Adding [$FTL_DIR] to tar file."
         tar -C $FTL_HOME_BASE -rf $TEMP_FOLDER/be.tar $FTL_DIR/lib #$FTL_DIR/bin
     fi
 
@@ -543,7 +547,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     OPT_TIBCO="/opt/tibco"
     # Replace be home in tra files with opt/tibco
-    echo "Replacing base directory in the files from [$BE_HOME_BASE] to /opt/tibco"
+    echo "INFO: Replacing base directory in the files from [$BE_HOME_BASE] to [/opt/tibco]."
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 

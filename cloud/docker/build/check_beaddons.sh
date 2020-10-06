@@ -13,7 +13,7 @@ if [ $processAddonCnt -eq 1 ]; then
 	FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BE_ADDON_PROCESS_PACKAGE"
 	FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
 elif [ $processAddonCnt -gt 1 ]; then
-	printf "\nERROR :More than one TIBCO BusinessEvents process addon are present in the target directory.There should be none or only one.\n"
+	printf "\nERROR: More than one TIBCO BusinessEvents process addon are present in the target directory.There should be none or only one.\n"
 	exit 1;
 fi
 
@@ -28,6 +28,6 @@ if [ $viewsAddonCnt -eq 1 ]; then
 	FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BE_ADDON_VIEWS_PACKAGE"
 	FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
 elif [ $viewsAddonCnt -gt 1 ]; then
-	printf "\nERROR :More than one TIBCO BusinessEvents views addon are present in the target directory.There should be none or only one.\n"
+	printf "\nERROR: More than one TIBCO BusinessEvents views addon are present in the target directory.There should be none or only one.\n"
 	exit 1;
 fi

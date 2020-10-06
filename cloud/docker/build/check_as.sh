@@ -10,10 +10,10 @@ asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF
 
 if [ $asPckgsCnt -gt 0 ]; then
 	if [ $asPckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO As base versions are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO As base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO As HF are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO As HF are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asPckgsCnt -eq 1 ]; then
 		AS_PACKAGE="$(basename ${asPckgs[0]} )"

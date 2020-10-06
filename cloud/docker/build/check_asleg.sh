@@ -10,10 +10,10 @@ asLegHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0
 
 if [ $asLegPckgsCnt -gt 0 ]; then
 	if [ $asLegPckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO Activespaces(legacy) base versions are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO Activespaces(legacy) base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asLegHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO Activespaces(legacy) HF are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO Activespaces(legacy) HF are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $asLegPckgsCnt -eq 1 ]; then
 		AS_LEG_PACKAGE="$(basename ${asLegPckgs[0]} )"

@@ -10,10 +10,10 @@ ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_
 
 if [ $ftlPckgsCnt -gt 0 ]; then
 	if [ $ftlPckgsCnt -gt 1 ]; then # If more than one base versions are present
-		printf "\nERROR :More than one TIBCO FTL base versions are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO FTL base versions are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $ftlHfPckgsCnt -gt 1 ]; then
-		printf "\nERROR :More than one TIBCO FTL HF are present in the target directory. There should be only one.\n"
+		printf "\nERROR: More than one TIBCO FTL HF are present in the target directory. There should be only one.\n"
 		exit 1;
 	elif [ $ftlPckgsCnt -eq 1 ]; then
 		FTL_PACKAGE="$(basename ${ftlPckgs[0]} )"
