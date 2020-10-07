@@ -24,13 +24,13 @@ if [ -z "${USAGE}" ]; then
   USAGE="\nUsage: run_tests.sh"
 fi
 
-USAGE+="\n\n [ -i|--image-name]           : Be app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
-USAGE+="\n\n [ -b|--be-version]           : Be version in x.x format ex(5.6) [required]"
+USAGE+="\n\n [ -i|--image-name]           : BE app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
+USAGE+="\n\n [ -b|--be-version]           : BE version in x.x format ex(5.6) [required]"
 USAGE+="\n\n [ -c|--cdd-filename]         : CDD file name ex(fd.cdd) [required]"
 USAGE+="\n\n [ -e|--ear-filename]         : EAR file name ex(fd.ear) [required]"
-USAGE+="\n\n [-al|--as-legacy-version]    : Activespaces legacy version in x.x format ex(2.4) [optional]"
-USAGE+="\n\n [-as|--as-version]           : Activespaces version in x.x format ex(4.4) [optional]"
-USAGE+="\n\n [ -f|--ftl-version]          : Ftl version in x.x format ex(6.4) [optional]"
+USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2.4) [optional]"
+USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.4) [optional]"
+USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.4) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
