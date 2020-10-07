@@ -39,7 +39,7 @@ set GLOBAL_BE_TAG="com.tibco.be"
 ::----------------------------------------------------------
 
 REM Initializing variables
-set ARG_VERSION=na
+set ARG_BE_VERSION=na
 set ARG_INSTALLER_LOCATION=%~2
 set ARG_TEMP_FOLDER=%~3
 set VALIDATE_ADDONS=%~4
@@ -74,7 +74,7 @@ if !ARG_INSTALLERS_PLATFORM! EQU win (
   SET BE_REG=^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_win.*\.zip$
 )
 for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!BE_REG!"') do (
-  if !ARG_VERSION! NEQ na (
+  if !ARG_BE_VERSION! NEQ na (
     echo ERROR: Multiple BusinessEvents Enterprise installers found at the specified location.
     GOTO END-withError
   )
@@ -83,7 +83,7 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!BE_REG!"') do (
   set TEMP_PKG_SPLIT_UNDERSCORE=!temp:_= !
   for %%j in (!TEMP_PKG_SPLIT_UNDERSCORE!) do (
 	if !ind2! equ 2 (
-	  set ARG_VERSION=%%j
+	  set ARG_BE_VERSION=%%j
 	)
 	set /a ind2 += 1
   )
@@ -192,7 +192,7 @@ for /f %%i in ('dir /b !ARG_INSTALLER_LOCATION! ^| findstr /I "!AS_HF_REG!"') do
   )
 )
 
-call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+call :isLess !ARG_BE_VERSION! "6.0.0" IS_LESS
 if !IS_LESS! EQU 1 (
   REM Identify ftl version
   call :IdentifyInstaller "ftl" LOCAL_INSTLR_RESULT
@@ -232,7 +232,7 @@ if !IS_LESS! EQU 1 (
 )
 
 set /A RESULT=0
-set ARG_JRE_VERSION=!GLOBAL_JRE_VERSION_MAP[%ARG_VERSION%]!
+set ARG_JRE_VERSION=!GLOBAL_JRE_VERSION_MAP[%ARG_BE_VERSION%]!
 
 if !VALIDATE_ADDONS! NEQ true ( set "ARG_ADDONS=")
 if !VALIDATE_AS! NEQ true (
@@ -241,18 +241,18 @@ if !VALIDATE_AS! NEQ true (
 )
 
 REM Performing validation
-call :validate "!ARG_INSTALLER_LOCATION!" "!ARG_VERSION!" "!ARG_ADDONS!" "!ARG_HF!" "!ARG_AS_VERSION!" "!ARG_AS_HF!" RESULT
+call :validate "!ARG_INSTALLER_LOCATION!" "!ARG_BE_VERSION!" "!ARG_ADDONS!" "!ARG_HF!" "!ARG_AS_VERSION!" "!ARG_AS_HF!" RESULT
 
 if "!RESULT: =!" NEQ "0" (
   echo Error Occurred, aborting.
   GOTO END-withError
 )
 
-call :isLess !ARG_VERSION! "6.0.0" IS_LESS
+call :isLess !ARG_BE_VERSION! "6.0.0" IS_LESS
 if !IS_LESS! EQU 1 (
   REM Performing ftl validation
   if !ARG_FTL_VERSION! NEQ na (
-    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
+    call :validateFTLorACTIVESPACES "%ARG_BE_VERSION%" "%ARG_FTL_VERSION%" "%ARG_FTL_HF%" "%ARG_INSTALLER_LOCATION%" "ftl" RESULT
     if "!RESULT: =!" NEQ "0" (
       echo Error in validating ftl
       GOTO END-withError
@@ -261,7 +261,7 @@ if !IS_LESS! EQU 1 (
 
   REM Performing activespaces validation
   if !ARG_ACTIVESPACES_VERSION! NEQ na (
-    call :validateFTLorACTIVESPACES "%ARG_VERSION%" "%ARG_ACTIVESPACES_VERSION%" "%ARG_ACTIVESPACES_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
+    call :validateFTLorACTIVESPACES "%ARG_BE_VERSION%" "%ARG_ACTIVESPACES_VERSION%" "%ARG_ACTIVESPACES_HF%" "%ARG_INSTALLER_LOCATION%" "as" RESULT
     if "!RESULT: =!" NEQ "0" (
       echo Error in validating activespaces
       GOTO END-withError
@@ -270,13 +270,13 @@ if !IS_LESS! EQU 1 (
 )
 
 :END
-ENDLOCAL & SET %~1=%ARG_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_ACTIVESPACES_VERSION%& SET %~14=%ARG_ACTIVESPACES_HF%
+ENDLOCAL & SET %~1=%ARG_BE_VERSION%& SET %~6=%ARG_HF%& SET %~7=%ARG_ADDONS%& SET %~8=%ARG_AS_VERSION%& SET %~9=%ARG_AS_HF%& SET %~10=%ARG_JRE_VERSION%& SET %~11=%ARG_FTL_VERSION%& SET %~12=%ARG_FTL_HF%& SET %~13=%ARG_ACTIVESPACES_VERSION%& SET %~14=%ARG_ACTIVESPACES_HF%
 EXIT /B 0
 
 :END-withError
-ENDLOCAL
-if %ERRORLEVEL% NEQ 0 ( EXIT /B %ERRORLEVEL% )
-EXIT /B 1
+set "ERROR=1"
+( ENDLOCAL & SET %~15=%ERROR% )
+EXIT /B %ERROR%
 
 ::----------------------------------------------------------------------------------------------------
 REM VALIDATION SUBROUTINES

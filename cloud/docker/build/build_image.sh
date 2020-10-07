@@ -73,7 +73,7 @@ USAGE+="\n\n [-i/--image-type]    :    Type of image. Values must be($APP_IMAGE/
 USAGE+="                           Note: $BUILDER_IMAGE image has prerequisite. Check the documentation in be-tools wiki."
 USAGE+="\n\n [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is $APP_IMAGE]"
 USAGE+="\n\n [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]\n"
-USAGE+="                           Note: No need to specify be-home if script is executed from <BE_HOME>/cloud/docker/build folder."
+USAGE+="                           Note: No need to specify be-home if script is executed from BE_HOME/cloud/docker/build folder."
 USAGE+="\n\n [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]"
 USAGE+="\n\n [--gv-providers]     :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]\n"
@@ -176,46 +176,20 @@ else
 fi
 
 # assign image type and docker files to variables
+IMAGE_NAME="$ARG_TYPE"
+DOCKER_FILE=""
 case "$ARG_TYPE" in
     "$APP_IMAGE")
-        IMAGE_NAME="$APP_IMAGE"
-        if [ "$ARG_DOCKER_FILE" = "na" ]; then
-            if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-                ARG_DOCKER_FILE="Dockerfile_fromtar"
-            else
-                ARG_DOCKER_FILE="Dockerfile"
-            fi
-        fi
+        DOCKER_FILE="Dockerfile"
         ;;
     "$RMS_IMAGE")
-        IMAGE_NAME="$RMS_IMAGE"
-        if [ "$ARG_DOCKER_FILE" = "na" ]; then
-            if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-                ARG_DOCKER_FILE="Dockerfile-rms_fromtar"
-            else
-                ARG_DOCKER_FILE="Dockerfile-rms"
-            fi
-        fi
+        DOCKER_FILE="Dockerfile-rms"
         ;;
     "$TEA_IMAGE")
-        IMAGE_NAME="$TEA_IMAGE"
-        if [ "$ARG_DOCKER_FILE" = "na" ]; then
-            if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-                ARG_DOCKER_FILE="Dockerfile-teagent_fromtar"
-            else
-                ARG_DOCKER_FILE="Dockerfile-teagent"
-            fi
-        fi
+        DOCKER_FILE="Dockerfile-teagent"
         ;;
     "$BUILDER_IMAGE")
-        IMAGE_NAME="$BUILDER_IMAGE"
-        if [ "$ARG_DOCKER_FILE" = "na" ]; then
-            if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-                ARG_DOCKER_FILE="Dockerfile_fromtar"
-            else
-                ARG_DOCKER_FILE="Dockerfile"
-            fi
-        fi
+        DOCKER_FILE="Dockerfile"
         ;;
     *)
         printf "\nERROR: Invalid image type provided. Image type must be either of $APP_IMAGE,$RMS_IMAGE,$TEA_IMAGE or $BUILDER_IMAGE.\n"
@@ -223,10 +197,25 @@ case "$ARG_TYPE" in
         ;;
 esac
 
+# assign proper docker file to ARG_DOCKER_FILE variable
+if [ "$ARG_DOCKER_FILE" = "na" ]; then
+    if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
+        ARG_DOCKER_FILE="$DOCKER_FILE"_fromtar
+    else
+        ARG_DOCKER_FILE="$DOCKER_FILE"
+    fi
+fi
+
+# check the docker file existance
+if ! [ -e $ARG_DOCKER_FILE ]; then
+    printf "\nERROR: Dockerfile: [$ARG_DOCKER_FILE] not exist. Please provide proper dockerfile.\n"
+    exit 1
+fi
+
 # check be-home/installer location
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
-        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home/installers.\n"
+        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home or installers location.\n"
         exit 1
     elif [ "$BE_HOME" = "na" ]; then
         BE_HOME=$( readlink -e ../../.. )
@@ -261,7 +250,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
 
     if [ $earCnt -ne 1 ]; then
-        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file.\n"
         exit 1
     fi
 
@@ -270,7 +259,7 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
 
     if [ $cddCnt -ne 1 ]; then
-        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file\n"
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file.\n"
         exit 1
     fi
 
