@@ -15,6 +15,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// appAndJmxServices contains common be app and jmx service related tests
+func appAndJmxServices(t *testing.T, options *helm.Options, HelmChartPath string) {
+	// be app service test
+	beServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beappservice})
+	appServiceTest(beServiceOutput, t)
+
+	// jmx service test
+	jmxServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Bejmx})
+	jmxServiceTest(jmxServiceOutput, t)
+}
+
 // appServiceTest testing be service content
 func appServiceTest(data string, t *testing.T) {
 

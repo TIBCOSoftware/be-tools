@@ -23,14 +23,3 @@ func TestInmemory(t *testing.T) {
 	output := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
 	inferenceTest(output, t)
 }
-
-// appAndJmxServices contains common be app and jmx service related tests
-func appAndJmxServices(t *testing.T, options *helm.Options, HelmChartPath string) {
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beappservice})
-	appServiceTest(beServiceOutput, t)
-
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Bejmx})
-	jmxServiceTest(jmxServiceOutput, t)
-}
