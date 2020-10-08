@@ -4,6 +4,14 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-REM setup the gv providers
-set gvproviders=%1
-powershell -Command "if ('%gvproviders%'.Contains(\"consul\")) { c:\tibco\be\gvproviders\consul\setup.bat }"
+REM setup the prerequisites for gv providers
+#set gvproviders=%1
+#powershell -Command "if ('%gvproviders%'.Contains(\"consul\")) { c:\tibco\be\gvproviders\consul\setup.bat }"
+
+echo Installing Chocolatey Package Manager for Windows
+powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) | out-null"
+REM Upgrade Chocolatey Package Manager, if needed
+powershell -Command "c:\ProgramData\chocolatey\bin\choco upgrade chocolatey | out-null"
+
+powershell -Command "c:\ProgramData\chocolatey\bin\choco install jq --force -version 1.5 -y"
+powershell -Command "c:\ProgramData\chocolatey\bin\choco install curl -y"

@@ -8,6 +8,8 @@
 echo "INFO: Reading GV values from Consul.."
 
 BE_PROPS_FILE=/home/tibco/be/beprops_all.props
+touch /home/tibco/be/gvproviders/output.json
+JSON_FILE=/home/tibco/be/gvproviders/output.json
 if [[ -z "$APP_CONFIG_PROFILE" ]]; then
   APP_CONFIG_PROFILE=default
 fi
@@ -30,9 +32,15 @@ prefix_len=$((prefix_len + 1))
 
 echo "INFO: Reading GV values from Consul.. ($BE_APP_NAME/$APP_CONFIG_PROFILE/)"
 echo "# GV values from Consul">>$BE_PROPS_FILE
-prop_keys="$(/home/tibco/be/gvproviders/consul/consul kv export -http-addr=$CONSUL_SERVER_URL $BE_APP_NAME/$APP_CONFIG_PROFILE | /home/tibco/be/gvproviders/consul/jq -r '.[] | .key')";
+prop_keys="$(/home/tibco/be/gvproviders/consul/consul kv export -http-addr=$CONSUL_SERVER_URL $BE_APP_NAME/$APP_CONFIG_PROFILE | /home/tibco/be/gvproviders/jq -r '.[] | .key')";
+
+echo {  > temp.json
 for prop in $prop_keys
 do
-  echo tibco.clientVar.${prop:prefix_len}=$(/home/tibco/be/gvproviders/consul/consul kv get -http-addr=$CONSUL_SERVER_URL $prop)>>$BE_PROPS_FILE
+echo \"${prop:prefix_len}\":\"$(/home/tibco/be/gvproviders/consul/consul kv get -http-addr=$CONSUL_SERVER_URL $prop)\", >> temp.json
+
 done
+
+cat temp.json | sed '$ s/,/ }/' > $JSON_FILE
+
 echo ""

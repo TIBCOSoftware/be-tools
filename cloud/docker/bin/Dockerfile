@@ -83,7 +83,10 @@ RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_V
 RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
 
 # Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+#RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh
+RUN chmod +x /home/tibco/be/gvproviders/${GVPROVIDERS}/*.sh
+RUN if [ -f /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh; fi
 
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
@@ -133,6 +136,9 @@ COPY --from=intermediate /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /opt/ti
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+RUN apt-get update \
+ && apt-get install -y curl
 
 ENV PU=default \
  ENGINE_NAME=be-engine \
