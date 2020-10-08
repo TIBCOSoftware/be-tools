@@ -62,7 +62,7 @@ ARG_AS_HOTFIX="na"
 
 # s2i builder related args
 BE_TAG="com.tibco.be"
-S2I_DOCKER_FILE_APP="Dockerfiles2i"
+S2I_DOCKER_FILE_APP="./dockerfiles/Dockerfiles2i"
 
 # default installation type fromlocal
 INSTALLATION_TYPE="fromlocal"
@@ -180,16 +180,16 @@ IMAGE_NAME="$ARG_TYPE"
 DOCKER_FILE=""
 case "$ARG_TYPE" in
     "$APP_IMAGE")
-        DOCKER_FILE="Dockerfile"
+        DOCKER_FILE="./dockerfiles/Dockerfile"
         ;;
     "$RMS_IMAGE")
-        DOCKER_FILE="Dockerfile-rms"
+        DOCKER_FILE="./dockerfiles/Dockerfile-rms"
         ;;
     "$TEA_IMAGE")
-        DOCKER_FILE="Dockerfile-teagent"
+        DOCKER_FILE="./dockerfiles/Dockerfile-teagent"
         ;;
     "$BUILDER_IMAGE")
-        DOCKER_FILE="Dockerfile"
+        DOCKER_FILE="./dockerfiles/Dockerfile"
         ;;
     *)
         printf "\nERROR: Invalid image type provided. Image type must be either of $APP_IMAGE,$RMS_IMAGE,$TEA_IMAGE or $BUILDER_IMAGE.\n"
@@ -291,14 +291,20 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         if [ "$AS_LEG_HOME" = "" ]; then
             AS_LEG_HOME="na"
         else
-            AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
-            if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
-                printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
-                exit 1
+            # check directory exist
+            if ! [ -d "$AS_LEG_HOME" ]; then
+                printf "\nERROR: The directory: [$AS_LEG_HOME] not exist. Ignoring Activespaces(legacy) installation.\n"
+                AS_LEG_HOME="na"
+            else
+                AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
+                    printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    exit 1
+                fi
+                AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
+                AS_LEG_DIR=${BASH_REMATCH[2]}
+                ARG_AS_LEG_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
             fi
-            AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
-            AS_LEG_DIR=${BASH_REMATCH[2]}
-            ARG_AS_LEG_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
         fi
     fi
 
@@ -309,14 +315,20 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         if [ "$FTL_HOME" = "" ]; then
             FTL_HOME="na"
         else
-            FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
-            if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
-                printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>).\n"
-                exit 1
+            # check directory exist
+            if ! [ -d "$FTL_HOME" ]; then
+                printf "\nERROR: The directory: [$FTL_HOME] not exist. Ignoring FTL installation.\n"
+                FTL_HOME="na"
+            else
+                FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
+                if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
+                    printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>).\n"
+                    exit 1
+                fi
+                FTL_HOME_BASE=${BASH_REMATCH[1]}
+                FTL_DIR=${BASH_REMATCH[2]}
+                ARG_FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
             fi
-            FTL_HOME_BASE=${BASH_REMATCH[1]}
-            FTL_DIR=${BASH_REMATCH[2]}
-            ARG_FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
         fi
 
         # get as details
@@ -325,14 +337,20 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         if [ "$AS_HOME" = "" ]; then
             AS_HOME="na"
         else
-            AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
-            if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
-                printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
-                exit 1
+            # check directory exist
+            if ! [ -d "$AS_HOME" ]; then
+                printf "\nERROR: The directory: [$AS_HOME] not exist. Ignoring Activespaces installation.\n"
+                AS_HOME="na"
+            else
+                AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
+                    printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    exit 1
+                fi
+                AS_HOME_BASE=${BASH_REMATCH[1]}
+                AS_DIR=${BASH_REMATCH[2]}
+                ARG_AS_SHORT_VERSION=$( echo ${AS_HOME}  | rev | cut -d'/' -f1 | rev )
             fi
-            AS_HOME_BASE=${BASH_REMATCH[1]}
-            AS_DIR=${BASH_REMATCH[2]}
-            ARG_AS_SHORT_VERSION=$( echo ${AS_HOME}  | rev | cut -d'/' -f1 | rev )
         fi
     fi
 else
@@ -346,25 +364,25 @@ else
     FILE_LIST_INDEX=0
 
     # check be and its hot fixes
-    source ./check_be.sh
+    source ./common/be.sh
 
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
-        source ./check_asleg.sh
+        source ./common/asleg.sh
     fi
 
     if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # check be addons
-        source ./check_beaddons.sh
+        source ./common/beaddons.sh
 
         # check for FTL and AS4 only when BE version is > 6.0.0
         if [ "$ARG_BE_VERSION" != "na" ]; then
             if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
                 # validate ftl
-                source ./check_ftl.sh
+                source ./common/ftl.sh
 
                 # validate as
-                source ./check_as.sh
+                source ./common/as.sh
             fi
         fi
     fi
@@ -633,6 +651,8 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
 	CDD_FILE_NAME="dummy.txt"
     FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
     ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
+    # copy s2i artifacts
+    cp ./common/assemble ./common/usage $TEMP_FOLDER
 fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
@@ -662,15 +682,16 @@ echo "Deleting temporary intermediate image.."
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
     docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
 fi
-echo "Deleting $TEMP_FOLDER folder"
-rm -rf $TEMP_FOLDER
 
 # additional steps for s2i builder image
 if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
-    docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_BE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" .
+    docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_BE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" $TEMP_FOLDER
 	docker rmi -f "$ARG_IMAGE_VERSION"
     ARG_IMAGE_VERSION=$FINAL_BUILDER_IMAGE_TAG
 fi
+
+echo "Deleting $TEMP_FOLDER folder"
+rm -rf $TEMP_FOLDER
 
 # docker unit tests
 if [[ ($BUILD_SUCCESS = "true") && ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
