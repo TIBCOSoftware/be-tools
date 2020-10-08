@@ -13,32 +13,39 @@ TIBCO Business Events's S2I support allows users to create a reusable builder im
 Follow the given steps to use S2I for deploying applications:
 
 Clone https://github.com/TIBCOSoftware/be-tools.git using git clone command on your local machine.
-Open terminal and go to folder cloud/docker/s2i
+Open terminal and go to folder cloud/docker/build
 
 
 Lets start off with creating a reusable builder image:
 
-./create_builder_image.sh -h
+./build_image.sh -h
 
-Usage: create_builder_image.sh
+Usage: build_image.sh
 
- [-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]
+ [-i/--image-type]    :    Type of image. Values must be(app/rms/teagent/s2ibuilder). (example: app) [required]
+                           Note: s2ibuilder image has prerequisite. Check the documentation in be-tools wiki.
 
- [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]
+ [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is app]
 
- [--disable-tests]           :       Disables docker unit tests on created image. [optional]
+ [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]
+                           Note: No need to specify be-home if script is executed from <BE_HOME>/cloud/docker/build folder.
 
- [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]
+ [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]
 
- [-r|--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]
+ [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
 
- [-h|--help]                 :       Print the usage of script [optional]
+ [--gv-providers]     :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
+                           Note: Use this flag only if -i/--image-type is app/s2ibuilder.
 
- NOTE : supply long options with '='
+ [--disable-tests]    :    Disables docker unit tests on created image. [optional]
+                           Note: Use this flag only if -i/--image-type is app/s2ibuilder.
 
+ [-h/--help]          :    Print the usage of script. [optional]
+
+ NOTE : supply long options with '=' 
 
 For example:
-./create_builder_image.sh -l /Users/test/BE_Installers -r s2ibuilder:v1
+./build_image.sh -i s2ibuilder -s /Users/test/BE_Installers -t s2ibuilder:v1
 
 Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
@@ -48,6 +55,6 @@ Using FraudDetection application for this example,
 s2i build /Users/test/Applications/FraudDetection/source s2ibuilder:v1 fdapps2i:01
 
 Finally run the application,
-docker run -p 8108:8108 <app-image>
+docker run -p 8108:8108 <name of the application image created in prev step(fdapps2i:01)>
 
 EOF
