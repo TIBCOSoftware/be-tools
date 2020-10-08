@@ -6,4 +6,4 @@
 
 ## Documentation
 
-TIBCO BusinessEvents® documentation is available at [wiki pages](https://github.com/TIBCOSoftware/be-tools/wiki).
+TIBCO BusinessEvents® documentation related to kubernetes setup is available at [be tools wiki kubernetes](https://github.com/TIBCOSoftware/be-tools/wiki/Kubernetes).
