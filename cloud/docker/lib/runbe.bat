@@ -59,7 +59,7 @@ type NUL>%BE_PROPS_FILE%
 
 for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
 
-call .\gvproviders\utilfunctions.bat !GVPROVIDER!
+call .\gvproviders\run.bat
 
 echo #BE props file>>%BE_PROPS_FILE%
 
