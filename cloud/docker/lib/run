@@ -36,7 +36,7 @@ export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
 
-./gvproviders/utilfunctions.sh ${GVPROVIDER}
+./gvproviders/utilfunctions.sh
 
 /bin/cat $BE_PROPS_FILE
 

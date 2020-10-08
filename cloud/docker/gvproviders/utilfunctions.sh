@@ -5,8 +5,14 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+# Its value gets updated during image build time
+GVPROVIDER=na
 
-GVPROVIDER=$1
+if [ $GVPROVIDER == na ]
+then
+  # gv provider is not configured. exit with 0.
+  exit 0;
+fi
 
 chmod +x ./gvproviders/${GVPROVIDER}/run.sh
 source ./gvproviders/${GVPROVIDER}/run.sh
