@@ -4,7 +4,6 @@
 #
 #
 # TIBCO BusinessEvents Dockerfile_fromtar.rhel
-# To be used for creation with the frominstall/build_app_image script
 #
 ARG BASE_IMAGE=<RHEL_IMAGE>
 

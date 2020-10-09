@@ -4,7 +4,7 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 #
-# BusinessEvents Dockerfile
+# BusinessEvents Dockerfile.rhel
 #
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION

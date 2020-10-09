@@ -481,6 +481,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
         printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
     fi
+    if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
+        printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
+    fi
 else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
         printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
@@ -494,17 +497,14 @@ mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "./lib" $TEMP_FOLDER/
 
+if [ "$ARG_APP_LOCATION" != "na" ]; then
+    cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
+fi
+
 if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./gvproviders" $TEMP_FOLDER/
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
-        cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
-    fi
-elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-    if [ "$ARG_APP_LOCATION" != "na" ]; then
-        cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
-    else
-        touch $TEMP_FOLDER/app/dummyrms.txt
-    fi
+elif [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
+    touch $TEMP_FOLDER/app/dummyrms.txt
 fi
 
 # create be tar/ copy installers to temp folder

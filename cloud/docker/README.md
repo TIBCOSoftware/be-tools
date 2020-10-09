@@ -112,3 +112,183 @@ Using FraudDetection application for this example.
 s2i build /home/user/tibco/be/6.0/examples/standard/FraudDetection s2ibuilder:6.0.0 fdapps2i:01
 ```
 NOTE: s2i can be downloaded from [here](https://github.com/openshift/source-to-image).
+
+### Script Usage for Platform Specific Matrix
+
+
+<table>
+   <tr>
+      <th colspan="6"> LINUX PLATFORM </th>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td>SCRIPT NAME</td>
+     <td>[-i/--image-type]</td>
+     <td>[-s/--source]</td>
+     <td>[-a/--app-location]</td>
+   </tr>
+   <tr>
+      <td rowspan="4">from local installation</td>
+     <td> TIBCO BusinessEvents Application </td>
+     <td rowspan="8"> build_image.sh </td>
+     <td> app </td>
+     <td rowspan="4"> (path to be-home) OR <br>(ignore if script executed from <br> behome/cloud/docker) </td>
+      <td> (path to application location) </td>
+   </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+     <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Enterprise Administrator Agent </td>
+    <td> teagent </td>
+    <td rowspan="2"> NA </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents S2I Builder Image </td>
+    <td> s2ibuilder </td>
+  </tr>
+  <tr>
+      <td rowspan="4">software installers(linux files)</td>
+     <td> TIBCO BusinessEvents Application </td>
+     <td> app </td>
+     <td rowspan="4"> (path to installers) </td>
+      <td> (path to application location) </td>
+   </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+    <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Enterprise Administrator Agent </td>
+    <td> teagent </td>
+    <td rowspan="2"> NA </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents S2I Builder Image </td>
+    <td> s2ibuilder </td>
+  </tr>
+</table>
+
+<br>
+<br>
+
+<table>
+   <tr>
+      <th colspan="6"> MACOS PLATFORM </th>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td>SCRIPT NAME</td>
+     <td>[-i/--image-type]</td>
+     <td>[-s/--source]</td>
+     <td>[-a/--app-location]</td>
+   </tr>
+  <tr>
+      <td rowspan="4">software installers(linux files)</td>
+     <td> TIBCO BusinessEvents Application </td>
+  <td rowspan="4"> build_image.sh </td>
+     <td> app </td>
+     <td rowspan="4"> (path to installers) </td>
+      <td> (path to application location) </td>
+   </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+    <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Enterprise Administrator Agent </td>
+    <td> teagent </td>
+    <td rowspan="2"> NA </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents S2I Builder Image </td>
+    <td> s2ibuilder </td>
+  </tr>
+</table>
+
+<br>
+<br>
+
+<table>
+   <tr>
+      <th colspan="6"> WINDOWS PLATFORM – LINUX CONTAINER </th>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td>SCRIPT NAME</td>
+     <td>[-i/--image-type]</td>
+     <td>[-s/--source]</td>
+     <td>[-a/--app-location]</td>
+   </tr>
+  <tr>
+      <td rowspan="4">software installers(linux files)</td>
+     <td> TIBCO BusinessEvents Application </td>
+  <td rowspan="4"> build_image.bat </td>
+     <td> app </td>
+     <td rowspan="4"> (path to installers) </td>
+      <td> (path to application location) </td>
+   </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+    <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Enterprise Administrator Agent </td>
+    <td> teagent </td>
+    <td rowspan="2"> NA </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents S2I Builder Image </td>
+    <td> s2ibuilder </td>
+  </tr>
+</table>
+
+<br>
+<br>
+
+<table>
+   <tr>
+      <th colspan="6"> WINDOWS PLATFORM – WINDOWS CONTAINER </th>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td>SCRIPT NAME</td>
+     <td>[-i/--image-type]</td>
+     <td>[-s/--source]</td>
+     <td>[-a/--app-location]</td>
+   </tr>
+  <tr>
+      <td rowspan="2">from local installation</td>
+     <td> TIBCO BusinessEvents Application </td>
+  <td rowspan="4"> build_image.bat </td>
+     <td> app </td>
+    <td rowspan="2"> (path to be-home) OR <br>(ignore if script executed from <br> behome/cloud/docker) </td>
+     <td> (path to application location) </td>
+   </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+    <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+  <tr>
+    <td rowspan="2">software installers(windows files)</td>
+    <td> TIBCO BusinessEvents Application </td>
+    <td> app </td>
+  <td rowspan="2"> (path to installers) </td>
+    <td> (path to application location) </td>
+  </tr>
+  <tr>
+    <td> TIBCO BusinessEvents Rule Management Server </td>
+    <td> rms </td>
+    <td> (optional) </td>
+  </tr>
+</table>

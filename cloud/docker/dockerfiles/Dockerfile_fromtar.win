@@ -4,7 +4,6 @@
 #
 #
 # TIBCO BusinessEvents Dockerfile For Windows Platform - Dockerfile_fromtar.win
-# To be used for creation with the frominstall/build_app_image script
 #
 
 FROM mcr.microsoft.com/windows/servercore:ltsc2019

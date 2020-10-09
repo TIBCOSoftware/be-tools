@@ -4,7 +4,6 @@
 #
 #
 # TIBCO BusinessEvents Dockerfile-rms_fromtar
-# To be used for creation with the frominstall/build_rms_image script
 #
 FROM ubuntu:20.10
 MAINTAINER Tibco Software Inc tsi@tibco.com
