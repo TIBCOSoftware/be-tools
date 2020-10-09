@@ -32,6 +32,17 @@ imageCredentials:
 
 #*************************Agents env varaibles****************************************************
 
+env:
+  # Consul GV provider specific environment variables
+  CONSUL_SERVER_URL: http://192.168.0.1:8500
+  BE_APP_NAME: fd
+  APP_CONFIG_PROFILE: test
+  # HTTP GV provider specific environment variables
+  # GVP_HTTP_SERVER_URL: URL
+  # GVP_HTTP_HEADERS: "Content-Type:application/json"
+  # custom gv provider specific environment variables
+  # other environment variables
+
 ignite:
   discover_url: IGNITE_DISCOVER_URL
 

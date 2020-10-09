@@ -31,6 +31,10 @@ spec:
         env:
         - name: PU
           value: default
+        {{- range $key,$val := .Values.env }}
+        - name: {{ $key }}
+          value: {{ $val }}
+        {{- end}}
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
