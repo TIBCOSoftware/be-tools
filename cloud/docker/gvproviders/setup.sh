@@ -30,9 +30,9 @@ chmod +x jq
 chmod +x /home/tibco/be/gvproviders/${GVPROVIDERS}/*.sh
 if [ -f /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh; fi
 
-# update utilfunction.sh with selected gvprovider
+# update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders
-sed -i "s/GVPROVIDER=na/GVPROVIDER=$GVPROVIDER/g" utilfunctions.sh
+sed -i "s/GVPROVIDER=na/GVPROVIDER=$GVPROVIDER/g" run.sh
 
 # clean up i.e. remove other gv provider artefacts
 for gv in "${SUPPORTED_GV_PROVIDERS[@]}"

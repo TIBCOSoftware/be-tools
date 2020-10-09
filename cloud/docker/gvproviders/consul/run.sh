@@ -5,6 +5,10 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+if [ -z "$CONSUL_SERVER_URL" ]; then
+  return 0;
+fi
+
 echo "INFO: Reading GV values from Consul.."
 
 BE_PROPS_FILE=/home/tibco/be/beprops_all.props

@@ -1,12 +1,12 @@
 # GV Configuration Framework
 
-This framework allows customers to configure and pull GV values from various end-stores (also referred as GV provider) when running the BE application in container mode. Framework supports following types of GV providers:
+This framework allows customers to configure and pull GV values from various end-stores (also referred as GV provider in this document) when running the BE application in container mode. Framework supports following types of GV providers:
 
 1. HTTP - Use this type when end-store has an http based API to access it. Example: AWS S3, Azure Blob, github, etc...
 2. Consul - Use this type when end-store is Consul
 3. Custom - Use this type to provide custom implemetation to pull GV values from an end-store of user choice
 
-While building the BE application image, use --gv-providers flag to select GV provider type i.e. http, consul OR custom. More details are described in respective sections below.
+While building the BE application image, use `--gv-providers` flag to select GV provider type - `http`, `consul` OR `custom`. More details are available in their respective sections below.
 
 ## HTTP
 
@@ -24,8 +24,8 @@ Sample:
 
 ### Run
 This provider type expects following environment variables to be supplied while running:
-* HTTP_SERVER_URL - end-store URL
-* HEADER_VALUES - Header values to access the end-store API
+* GVP_HTTP_SERVER_URL - end-store URL
+* GVP_HTTP_HEADERS - Header values to access the end-store API
 
 ### Examples
 
@@ -34,8 +34,8 @@ This provider type expects following environment variables to be supplied while 
 Sample run:
 ```sh
 docker run \
--e HTTP_SERVER_URL="<SERVER_URL>" \
--e HEADER_VALUES="Authorization:token 9222c5cf6e380ba1395e9d8acce8764265f85933,Content-Type:application/json" \
+-e GVP_HTTP_SERVER_URL="<SERVER_URL>" \
+-e GVP_HTTP_HEADERS="Authorization:token 9222c5cf6e380ba1395e9d8acce8764265f85933,Content-Type:application/json" \
 -p 8108:8108 --name=fdhttpgit fdapp:latest
 ```
 
@@ -44,8 +44,8 @@ docker run \
 Sample run:
 ```sh
 docker run \
--e HTTP_SERVER_URL="<SERVER_URL>" \
--e HEADER_VALUES="x-ms-date: $(date -u)" \
+-e GVP_HTTP_SERVER_URL="<SERVER_URL>" \
+-e GVP_HTTP_HEADERS="x-ms-date: $(date -u)" \
 -p 8108:8108 --name=fdhttpazure fdapp:latest
 ```
 
