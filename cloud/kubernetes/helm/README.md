@@ -6,4 +6,4 @@ This chart installs Business Events application deployment on a [Kubernetes](htt
 
 ## Documentation
 
-`How to deploy TIBCO BusinessEvents® application` in kuberenetes using `helm` is available at [wiki pages](https://github.com/TIBCOSoftware/be-tools/wiki/Helm%20Chart).
+`How to deploy TIBCO BusinessEvents® application` in kuberenetes using `helm` is available at [Helm Chart](https://github.com/TIBCOSoftware/be-tools/wiki/Helm%20Chart).
