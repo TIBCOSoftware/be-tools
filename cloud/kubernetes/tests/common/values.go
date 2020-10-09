@@ -31,7 +31,7 @@ const (
 	BeAS2CacheServicePort    int32 = 50000
 	BeIgniteCacheServicePort int32 = 47500
 	BeJmxServicePort         int32 = 5555
-	InfServicePortType             = "NodePort"
+	InfServicePortType             = "LoadBalancer"
 	JmxServicePortType             = "LoadBalancer"
 	InfReplicas              int32 = 1
 	CacheReplicas            int32 = 1
