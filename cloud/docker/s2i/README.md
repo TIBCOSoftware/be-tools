@@ -7,4 +7,4 @@ TIBCO Business Events's S2I support allows users to create a reusable builder im
 
 ## Documentation
 
-TIBCO BusinessEvents® documentation is available at [wiki pages](https://github.com/TIBCOSoftware/be-tools/wiki).
+TIBCO BusinessEvents® documentation is available at [s2i wiki docs](https://github.com/TIBCOSoftware/be-tools/wiki/Building%20TIBCO%20BusinessEvents%20Application%20Docker%20Image).
