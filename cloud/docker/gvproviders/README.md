@@ -1,49 +1,98 @@
 # GV Configuration Framework
 
-This framework will allow customers to use any server to configure GV values when running BE applications in container mode.
+This framework allows customers to configure and pull GV values from various end-stores (also referred as GV provider) when running the BE application in container mode. Framework supports following types of GV providers:
 
-While builder application image, we need to pass --gv-providers parameter with required provider value i.e. http, consul or custom.
+1. HTTP - Use this type when end-store has an http based API to access it. Example: AWS S3, Azure Blob, github, etc...
+2. Consul - Use this type when end-store is Consul
+3. Custom - Use this type to provide custom implemetation to pull GV values from an end-store of user choice
 
-There are three options to configure GV values:
-1. HTTP
-2. Consul
-3. Custom
+While building the BE application image, use --gv-providers flag to select GV provider type i.e. http, consul OR custom. More details are described in respective sections below.
 
-I) HTTP:
+## HTTP
 
-HEADER_VALUES, HTTP_SERVER_URL and GVPROVIDER are passed as Environment variables while running docker image.
+### Build
+To select this provider type, pass `http` to --gv-providers flag while building the BE application image.
 
-For example:
+Sample:
+```sh
+./build_app_image.sh \
+-l /home/user/tibco/installers \
+-a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
+-r fdapp:latest \
+--gv-providers "http"
+```
 
-i) Using github:
+### Run
+This provider type expects following environment variables to be supplied while running:
+* HTTP_SERVER_URL - end-store URL
+* HEADER_VALUES - Header values to access the end-store API
 
-To build app image, run following command:
+### Examples
 
-./build_app_image.sh -l /Users/shrikant/Downloads/installationzipfiles/5.6 -a /Users/shrikant/Downloads/Installationfiles/fd -r fdhttpgit --gv-providers http -d Dockerfile
+#### github
 
-To run the application, run following command:
+Sample run:
+```sh
+docker run \
+-e HTTP_SERVER_URL="<SERVER_URL>" \
+-e HEADER_VALUES="Authorization:token 9222c5cf6e380ba1395e9d8acce8764265f85933,Content-Type:application/json" \
+-p 8108:8108 --name=fdhttpgit fdapp:latest
+```
 
-docker run -e HEADER_VALUES="Authorization:token 9222c5cf6e380ba1395e9d8acce8764265f85933,Content-Type:application/json" -e HTTP_SERVER_URL="<SERVER_URL>" -e GVPROVIDER=http -p 8108:8108 --name=fdhttpgit fdhttpgit:latest
+#### azure storage
 
-ii) Using azure storage:
+Sample run:
+```sh
+docker run \
+-e HTTP_SERVER_URL="<SERVER_URL>" \
+-e HEADER_VALUES="x-ms-date: $(date -u)" \
+-p 8108:8108 --name=fdhttpazure fdapp:latest
+```
 
-For example:
+## Consul
 
-docker run -e HEADER_VALUES="x-ms-date: $(date -u)" -e HTTP_SERVER_URL="<SERVER_URL>" -e GVPROVIDER=http -p 8108:8108 --name=fdhttpazure fdhttpazure:latest
+### Build
+To select this provider type, pass `consul` to --gv-providers flag while building the BE application image.
+Sample:
+```sh
+./build_app_image.sh \
+-l /home/user/tibco/installers \
+-a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
+-r fdapp:latest \
+--gv-providers "consul"
+```
 
+### Run
+This provider type expects following environment variables to be supplied while running:
+* CONSUL_SERVER_URL - Consul URL
+* BE_APP_NAME - App name created in the Consul
+* APP_CONFIG_PROFILE - Profile created in the Consul
 
-II) Consul:
+Sample run:
+```sh
+docker run \
+-e CONSUL_SERVER_URL=<SERVER_URL> \
+-e BE_APP_NAME=FraudDetection \
+-e APP_CONFIG_PROFILE=default \
+-p 8108:8108 --name=fdconsul fdconsul:latest
+```
 
-CONSUL_SERVER_URL, GVPROVIDER, APP_CONFIG_PROFILE and BE_APP_NAME are passed as Environment variables while running docker image.
+## Custom
 
-To build app image, run following command:
+### Implementation
+Provide custom implementation in the following files:
+* be-tools/cloud/docker/gvproviders/custom/setup.sh - This gets invoked during docker build time. Provide instructions to install required packages in the docker image.
+* be-tools/cloud/docker/gvproviders/custom/setup.bat - Windows version of setup.sh
+* be-tools/cloud/docker/gvproviders/custom/run.sh - This gets invoked during run time. Provide logic to pull GV values from end-server.
+* be-tools/cloud/docker/gvproviders/custom/run.bat - Windows version of run.sh
 
-./build_app_image.sh -l /Users/shrikant/Downloads/installationzipfiles/5.6 -a /Users/shrikant/Downloads/Installationfiles/fd -r fdconsul--gv-providers consul -d Dockerfile
-
-To run the application, run following command:
-
-docker run -e CONSUL_SERVER_URL=<SERVER_URL> -e GVPROVIDER=consul -e APP_CONFIG_PROFILE=default -e BE_APP_NAME=FraudDetection -p 8108:8108 --name=fdconsul fdconsul:latest
-
-III) Using custom:
-
-It provides an option to the customer to add an approach for getting the required json file.
+### Build
+To select this provider type, pass `custom` to --gv-providers flag while building the BE application image.
+Sample:
+```sh
+./build_app_image.sh \
+-l /home/user/tibco/installers \
+-a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
+-r fdapp:latest \
+--gv-providers "custom"
+```
