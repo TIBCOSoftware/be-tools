@@ -109,6 +109,14 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+DOCKER_CONTEXT_TLS=$(docker context inspect -f="{{.TLSMaterial.docker}}")
+DOCKER_HOST=$(docker context inspect -f="{{.Endpoints.docker.Host}}")
+
+if [[ $DOCKER_CONTEXT_TLS =~ pem  && $DOCKER_HOST =~ tcp:// ]]; then
+  echo "Skipping docker container structure tests, as docker context is not pointing to local docker daemon"
+  exit 0
+fi
+
 echo ""
 echo "=================RUNNING CONTAINER STRUCTURE TESTS================="
 echo ""
@@ -216,7 +224,7 @@ done
 ## docker test command
 docker run -i --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ${PWD}:/test gcr.io/gcp-runtimes/container-structure-test:latest \
+  -v ${PWD}:/test gcr.io/gcp-runtimes/container-structure-test:v1.9.1 \
     test \
     --image ${ARG_IMAGE_NAME} \
     ${CONFIG_FILE_ARGS}
