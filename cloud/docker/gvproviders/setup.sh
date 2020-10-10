@@ -19,7 +19,7 @@ fi
 
 # install tools common for all gv providers
 cd /home/tibco/be/gvproviders
-apt-get install -y wget
+apt-get update -y && apt-get install -y wget
 
 # Download jq.
 wget "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"
@@ -42,3 +42,6 @@ do
     rm -rf $gv;
   fi
 done
+
+apt-get remove -y wget
+apt-get autoremove -y

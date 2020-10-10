@@ -10,10 +10,13 @@ echo "Setting up consul gv provider.."
 
 cd /home/tibco/be/gvproviders/consul
 
-apt-get install -y wget
+apt-get install -y unzip
 
 
 # Download consul cli and extract it.
 wget "https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip"
 unzip consul_1.6.1_linux_amd64.zip
-rm consul_1.6.1_linux_amd64.zip
+
+# clean up
+rm -f consul_1.6.1_linux_amd64.zip
+apt-get remove -y unzip

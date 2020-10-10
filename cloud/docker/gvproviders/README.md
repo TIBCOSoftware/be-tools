@@ -96,3 +96,66 @@ Sample:
 -r fdapp:latest \
 --gv-providers "custom"
 ```
+
+### Example
+This example shows how to provide custom implementation to pull GV values from `AWS Secrets Manager`.
+* Add follwing source to setup.sh & run.sh
+
+be-tools/cloud/docker/gvproviders/custom/setup.sh:
+```sh
+# install aws cli
+apt-get install -y curl unzip less groff
+
+cd /home/tibco/be/gvproviders/custom
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+./aws/install
+aws --version
+
+# clean up
+rm -f awscliv2.zip
+rm -rf aws
+apt-get remove -y curl unzip
+```
+
+be-tools/cloud/docker/gvproviders/custom/run.sh:
+```sh
+echo "INFO: Reading GV values from AWS Secrets Manager.."
+
+BE_PROPS_FILE=/home/tibco/be/beprops_all.props
+touch /home/tibco/be/gvproviders/output.json
+JSON_FILE=/home/tibco/be/gvproviders/output.json
+
+# configure aws cli
+PROFILE_NAME="beuser"
+printf "%s\n%s\n%s\njson" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" | aws configure --profile $PROFILE_NAME
+if [ ! -z "$AWS_ROLE_ARN" ]; then
+  aws configure set role_arn $AWS_ROLE_ARN --profile $PROFILE_NAME
+  aws configure set source_profile $PROFILE_NAME --profile $PROFILE_NAME
+fi
+
+# read GV values and write into JSON_FILE
+aws secretsmanager get-secret-value --secret-id $AWS_SM_SECRET_ID --output text --query 'SecretString' --profile $PROFILE_NAME >> $JSON_FILE
+```
+
+* Build
+
+```sh
+./build_app_image.sh \
+-l /home/user/tibco/installers \
+-a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
+-r fdapp:custom \
+--gv-providers "custom"
+```
+
+* Run
+
+```sh
+docker run \
+-e AWS_ACCESS_KEY_ID=<AWS ACCESS ID> \
+-e AWS_SECRET_ACCESS_KEY=<AWS SECRET> \
+-e AWS_DEFAULT_REGION=<REGION> \
+-e AWS_ROLE_ARN=<ASSUMED ROLE> \
+-e AWS_SM_SECRET_ID=<AWS SECRETS MANAGER - SECRET ID> \
+-p 8108:8108 fdapp:custom
+```

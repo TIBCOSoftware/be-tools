@@ -42,7 +42,6 @@ ARG TEMP_FOLDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
-ARG GVPROVIDERS
 
 LABEL be-intermediate-image=true
 
@@ -82,9 +81,6 @@ RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_V
 #set activespaces home in tra file
 RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
 
-# Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
-
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
     && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
@@ -110,6 +106,7 @@ ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
+ARG GVPROVIDERS
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
@@ -134,9 +131,6 @@ COPY --from=intermediate /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /opt/ti
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
 
-RUN apt-get update \
- && apt-get install -y curl
-
 ENV PU=default \
  ENGINE_NAME=be-engine \
  LOG_LEVEL=na \
@@ -151,6 +145,9 @@ ENV PU=default \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
+
+# Setup gv providers
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store
