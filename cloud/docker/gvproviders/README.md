@@ -18,12 +18,12 @@ Sample:
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
--r fdapp:latest \
+-r fdhttp:latest \
 --gv-providers "http"
 ```
 
 ### Run
-This provider type expects following environment variables to be supplied while running:
+Following environment variables are applicable for this GV provider type:
 * GVP_HTTP_SERVER_URL - end-store URL
 * GVP_HTTP_HEADERS - Header values to access the end-store API
 
@@ -36,7 +36,7 @@ Sample run:
 docker run \
 -e GVP_HTTP_SERVER_URL="<SERVER_URL>" \
 -e GVP_HTTP_HEADERS="Authorization:token 9222c5cf6e380ba1395e9d8acce8764265f85933,Content-Type:application/json" \
--p 8108:8108 --name=fdhttpgit fdapp:latest
+-p 8108:8108 --name=fdhttpgit fdhttp:latest
 ```
 
 #### azure storage
@@ -46,7 +46,7 @@ Sample run:
 docker run \
 -e GVP_HTTP_SERVER_URL="<SERVER_URL>" \
 -e GVP_HTTP_HEADERS="x-ms-date: $(date -u)" \
--p 8108:8108 --name=fdhttpazure fdapp:latest
+-p 8108:8108 --name=fdhttpazure fdhttp:latest
 ```
 
 ## Consul
@@ -58,12 +58,12 @@ Sample:
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
--r fdapp:latest \
+-r fdconsul:latest \
 --gv-providers "consul"
 ```
 
 ### Run
-This provider type expects following environment variables to be supplied while running:
+Following environment variables are applicable for this GV provider type:
 * CONSUL_SERVER_URL - Consul URL
 * BE_APP_NAME - App name created in the Consul
 * APP_CONFIG_PROFILE - Profile created in the Consul
@@ -80,10 +80,10 @@ docker run \
 ## Custom
 
 ### Implementation
-Provide custom implementation in the following files:
-* be-tools/cloud/docker/gvproviders/custom/setup.sh - This gets invoked during docker build time. Provide instructions to install required packages in the docker image.
+Provide custom implementation to the following files:
+* be-tools/cloud/docker/gvproviders/custom/setup.sh - This gets invoked by the framework during docker build. Provide logic to setup required packages & environment in the docker image which gets used by run.sh during run time.
 * be-tools/cloud/docker/gvproviders/custom/setup.bat - Windows version of setup.sh
-* be-tools/cloud/docker/gvproviders/custom/run.sh - This gets invoked during run time. Provide logic to pull GV values from end-server.
+* be-tools/cloud/docker/gvproviders/custom/run.sh - This gets invoked by the framework during run time. Provide logic to pull GV values from an end-store.
 * be-tools/cloud/docker/gvproviders/custom/run.bat - Windows version of run.sh
 
 ### Build
@@ -93,13 +93,15 @@ Sample:
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
--r fdapp:latest \
+-r fdcustom:latest \
 --gv-providers "custom"
 ```
 
 ### Example
 This example shows how to provide custom implementation to pull GV values from `AWS Secrets Manager`.
-* Add follwing source to setup.sh & run.sh
+* Step 1: Create a secret store on AWS Secrets Manager console and add few secrets (key value pairs). Refer [Getting Started with AWS Secrets Manager](https://aws.amazon.com/secrets-manager/getting-started/)
+
+* Step 2: Update setup.sh & run.sh files as mentioned below:
 
 be-tools/cloud/docker/gvproviders/custom/setup.sh:
 ```sh
@@ -120,6 +122,30 @@ apt-get remove -y curl unzip
 
 be-tools/cloud/docker/gvproviders/custom/run.sh:
 ```sh
+if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_ACCESS_KEY_ID"
+  exit 1;
+fi
+
+if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_SECRET_ACCESS_KEY"
+  exit 1;
+fi
+
+if [[ -z "$AWS_DEFAULT_REGION" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_DEFAULT_REGION"
+  exit 1;
+fi
+
+if [[ -z "$AWS_SM_SECRET_ID" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_SM_SECRET_ID"
+  exit 1;
+fi
+
 echo "INFO: Reading GV values from AWS Secrets Manager.."
 
 BE_PROPS_FILE=/home/tibco/be/beprops_all.props
@@ -138,17 +164,17 @@ fi
 aws secretsmanager get-secret-value --secret-id $AWS_SM_SECRET_ID --output text --query 'SecretString' --profile $PROFILE_NAME >> $JSON_FILE
 ```
 
-* Build
+* Step 3: Build
 
 ```sh
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
--r fdapp:custom \
+-r fdcustom:latest \
 --gv-providers "custom"
 ```
 
-* Run
+* Step 4: Run
 
 ```sh
 docker run \
@@ -157,5 +183,5 @@ docker run \
 -e AWS_DEFAULT_REGION=<REGION> \
 -e AWS_ROLE_ARN=<ASSUMED ROLE> \
 -e AWS_SM_SECRET_ID=<AWS SECRETS MANAGER - SECRET ID> \
--p 8108:8108 fdapp:custom
+-p 8108:8108 --name=fdcustom fdcustom:latest
 ```
