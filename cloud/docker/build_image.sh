@@ -651,8 +651,7 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
 	CDD_FILE_NAME="dummy.txt"
     FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
     ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
-    # copy s2i artifacts
-    cp ./s2i/assemble ./s2i/usage $TEMP_FOLDER
+    cp -a "./s2i" $TEMP_FOLDER/
 fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
@@ -672,29 +671,30 @@ else
 fi
 
 if [ "$?" != 0 ]; then
-    echo "Docker build failed."
+    echo "ERROR: Docker build failed."
 else
     BUILD_SUCCESS="true"
-    echo "DONE: Docker build successful."
+    # additional steps for s2i builder image
+    if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
+        docker build -f $S2I_DOCKER_FILE_APP --build-arg ARG_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" $TEMP_FOLDER/s2i
+        docker rmi -f "$ARG_IMAGE_VERSION"
+        ARG_IMAGE_VERSION=$FINAL_BUILDER_IMAGE_TAG
+    fi
 fi
 
-echo "Deleting temporary intermediate image.."
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+    echo "INFO: Deleting temporary intermediate image."
     docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
 fi
 
-# additional steps for s2i builder image
-if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
-    docker build -f $S2I_DOCKER_FILE_APP --build-arg BE_TAG="$BE_TAG" --build-arg ARG_VERSION="$ARG_BE_VERSION" -t "$FINAL_BUILDER_IMAGE_TAG" $TEMP_FOLDER
-	docker rmi -f "$ARG_IMAGE_VERSION"
-    ARG_IMAGE_VERSION=$FINAL_BUILDER_IMAGE_TAG
-fi
-
-echo "Deleting $TEMP_FOLDER folder"
+echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
-# docker unit tests
-if [[ ($BUILD_SUCCESS = "true") && ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
-	cd ./tests
-	source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+if [ $BUILD_SUCCESS = "true" ]; then
+    # docker unit tests
+    if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
+        cd ./tests
+        source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+    fi
+    echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
 fi

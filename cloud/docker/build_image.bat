@@ -387,14 +387,22 @@ if !INSTALLATION_TYPE! EQU fromlocal (
     set "ARG_ADDONS="
     set "ERROR=0"
     
-    mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders
+    mkdir !TEMP_FOLDER!
+
+    REM send image information with ARG_BE_VERSION var
+    set "ARG_BE_VERSION=!IMAGE_NAME!"
 
     REM Performing validation
-    call .\lib\be_validate_installers.bat ARG_BE_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_BE_HOTFIX ARG_ADDONS ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HOTFIX ARG_AS_VERSION ARG_AS_HOTFIX ERROR
+    call .\scripts\be_validate_installers.bat !ARG_BE_VERSION! !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_BE_HOTFIX ARG_ADDONS ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HOTFIX ARG_AS_VERSION ARG_AS_HOTFIX ERROR
     if !ERROR! NEQ 0 (
         echo "Docker build failed."
         GOTO END-withError
     )
+
+    if !ARG_BE_VERSION! NEQ na set ARG_BE_SHORT_VERSION=!ARG_BE_VERSION:~0,3!
+    if !ARG_AS_LEG_VERSION! NEQ na set ARG_AS_LEG_SHORT_VERSION=!ARG_AS_LEG_VERSION:~0,3!
+    if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+    if !ARG_AS_VERSION! NEQ na set ARG_AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
 )
 
 REM assign image name if not provided
@@ -420,7 +428,7 @@ if !BE_HOME! NEQ na (
 
 echo INFO: BE VERSION                   : [!ARG_BE_VERSION!]
 
-if !ARG_BE_VERSION! NEQ na (
+if !ARG_BE_HOTFIX! NEQ na (
     echo INFO: BE HF                        : [!ARG_BE_HOTFIX!]
 )
 
@@ -478,6 +486,107 @@ if !ARG_JRE_VERSION! NEQ na (
 echo ------------------------------------------------------------------------------
 echo.
 
+if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
+    echo "ERROR:  TIBCO Activespaces(legacy) Required for RMS."
+    GOTO END-withError
+)
+
+if !INSTALLATION_TYPE! EQU fromlocal if !FTL_HOME! NEQ na if !AS_LEG_HOME! NEQ na echo "WARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size."
+
+if !INSTALLATION_TYPE! EQU fromlocal if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME not defined in be-engine.tra"
+
+if !INSTALLATION_TYPE! EQU frominstallers if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location."
+
+if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS_LEG_VERSION! NEQ na echo "WARN: The directory: [!ARG_INSTALLER_LOCATION!] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size."
+
+if !INSTALLATION_TYPE! EQU fromlocal mkdir !TEMP_FOLDER!
+
+mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
+xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
+
+set "APP_OR_BUILDER_IMAGE=na"
+if !IMAGE_NAME! EQU !APP_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
+if !IMAGE_NAME! EQU !BUILDER_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
+
+if !APP_OR_BUILDER_IMAGE! EQU true (
+    mkdir !TEMP_FOLDER!\gvproviders
+    xcopy /Q /C /R /Y /E .\gvproviders !TEMP_FOLDER!\gvproviders > NUL
+)
+
+if !ARG_APP_LOCATION! NEQ na xcopy /Q /C /R /Y /E !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app > NUL
+
+if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
+    cd !TEMP_FOLDER!\app
+    type NUL > dummyrms.txt
+    cd ../..
+)
+
+if !INSTALLATION_TYPE! EQU frominstallers (
+    echo.
+    for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
+        set FILE=%%f
+        SET FILE_PATH=!FILE:*#=!
+        xcopy /Q /C /R /Y !FILE_PATH! !TEMP_FOLDER!\installers > NUL
+        echo INFO: Copying package: [!FILE_PATH!]
+    )
+    echo.
+)
+
+REM Building dockerimage
+echo INFO: Building docker image for TIBCO BusinessEvents Version: [!ARG_BE_VERSION!], Image Version: [!ARG_IMAGE_VERSION!] and Dockerfile: [!ARG_DOCKER_FILE!].
+
+REM configurations for s2i image
+if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
+    type NUL > !TEMP_FOLDER!\app\dummy.txt
+    set "EAR_FILE_NAME=dummy.txt"
+	set "CDD_FILE_NAME=dummy.txt"
+    set "FINAL_BUILDER_IMAGE_TAG=!ARG_IMAGE_VERSION!"
+    set "ARG_IMAGE_VERSION=!BE_TAG!:!ARG_BE_VERSION!-!ARG_BE_VERSION!"
+    REM copy s2i artifacts
+    mkdir !TEMP_FOLDER!\s2i
+    xcopy /Q /C /R /Y /E .\s2i  !TEMP_FOLDER!\s2i > NUL
+)
+
+copy !ARG_DOCKER_FILE! !TEMP_FOLDER! > NUL
+for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
+
+if !INSTALLATION_TYPE! EQU frominstallers (
+    if !IMAGE_NAME! EQU !RMS_IMAGE! (
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    ) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    ) else (
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    )
+)
+
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Docker build failed.
+    GOTO END-withError
+)
+
+REM Remove temporary intermediate images if any.
+if !INSTALLATION_TYPE! EQU frominstallers (
+    echo INFO: Deleting temporary intermediate image.
+    for /f "tokens=*" %%i IN ('docker images -q -f "label=be-intermediate-image=true"') do (
+        docker rmi %%i
+    )
+)
+
+if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
+    docker build -f !S2I_DOCKER_FILE_APP! --build-arg ARG_IMAGE_VERSION="!ARG_IMAGE_VERSION!" -t "!FINAL_BUILDER_IMAGE_TAG!" !TEMP_FOLDER!\s2i
+	docker rmi -f "!ARG_IMAGE_VERSION!"
+    set "ARG_IMAGE_VERSION=!FINAL_BUILDER_IMAGE_TAG!"
+)
+
+echo INFO: Deleting folder: [!TEMP_FOLDER!].
+rmdir /S /Q "!TEMP_FOLDER!"
+
+echo INFO: Docker build successful. Image Name: [!ARG_IMAGE_VERSION!].
+
+:END
+    if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
+    ENDLOCAL
 
 EXIT /B 0
 

@@ -6,10 +6,9 @@
 # Dockerfile for s2i builder image
 #
 
-ARG BE_TAG
-ARG ARG_VERSION
+ARG ARG_IMAGE_VERSION
 
-FROM "$BE_TAG":"$ARG_VERSION"-"$ARG_VERSION"
+FROM "$ARG_IMAGE_VERSION"
 
 # Defines the location of the S2I
 LABEL io.openshift.s2i.scripts-url=image:///usr/local/s2i
