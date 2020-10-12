@@ -47,18 +47,18 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
-Create a volume mount and volume claim template for sharedNothing
+Create a volume mount and volume claim template for sharednothing
 */}}
-{{- define "sharedNothing.volumeMount" -}}
-{{- if eq .Values.bsType "sharedNothing" }}
+{{- define "sharednothing.volumeMount" -}}
+{{- if eq .Values.bsType "sharednothing" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.snmountPath }}
     name: {{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- end -}}
 
-{{- define "sharedNothing.volumeClaim" -}}
-{{- if eq .Values.bsType "sharedNothing" }}
+{{- define "sharednothing.volumeClaim" -}}
+{{- if eq .Values.bsType "sharednothing" }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}

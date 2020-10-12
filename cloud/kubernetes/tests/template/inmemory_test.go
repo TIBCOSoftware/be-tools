@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package template
 
 import (
@@ -12,25 +12,14 @@ import (
 )
 
 func TestInmemory(t *testing.T) {
-	helmChartPath := "../../helm"
+
 	options := &helm.Options{
 		SetValues: common.InmemoryValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	output := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceTest(output, t)
-}
-
-// appAndJmxServices contains common be app and jmx service related tests
-func appAndJmxServices(t *testing.T, options *helm.Options, helmChartPath string) {
-	// be app service test
-	beServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "beappservice", []string{"templates/beservice.yaml"})
-	common.AppServiceTest(beServiceOutput, t)
-
-	// jmx service test
-	jmxServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "bejmx", []string{"templates/bejmx-service.yaml"})
-	common.JmxServiceTest(jmxServiceOutput, t)
+	output := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceTest(output, t)
 }

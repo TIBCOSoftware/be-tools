@@ -1,0 +1,39 @@
+language: go 
+
+go:
+- "1.14"
+
+os:
+  - linux
+
+branches:
+  only:
+    - master
+
+before_script:
+  - wget https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz
+  - tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
+  - sudo mv linux-amd64/helm /usr/local/bin/helm
+
+script:
+  - pushd cloud/kubernetes/helm
+  - helm dep update
+  - helm lint
+  - pushd ../tests/template
+  - export GO111MODULE=on
+  - go test ./... 
+  - popd
+  
+notifications:
+  email:
+    on_failure: always
+    on_success: always
+    recipients:
+      - vpatil@tibco.com
+      - rpolishe@tibco.com
+      - lmekala@tibco.com
+      - nthota@tibco.com
+      - ykalidin@tibco.com
+      - ggrigore@tibco.com
+      - vshende@tibco.com
+      - vshelar@tibco.com
