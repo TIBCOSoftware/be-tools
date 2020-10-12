@@ -10,8 +10,8 @@ GVPROVIDER=na
 
 if [ $GVPROVIDER == na ]
 then
-  # gv provider is not configured. exit with 0.
-  exit 0;
+  # gv provider is not configured.
+  return
 fi
 
 chmod +x ./gvproviders/${GVPROVIDER}/run.sh

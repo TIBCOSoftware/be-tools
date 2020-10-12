@@ -8,6 +8,12 @@
 GVPROVIDER=$1
 SUPPORTED_GV_PROVIDERS=(consul http custom)
 
+if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
+	echo "Skipping gv provider setup"
+  rm -rf /home/tibco/be/gvproviders/*
+  exit 0
+fi
+
 # check whether the gvprovider is supported or not
 if [[ ${SUPPORTED_GV_PROVIDERS[@]} =~ $GVPROVIDER ]]
 then
