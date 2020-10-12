@@ -75,7 +75,7 @@ jmxservice:
 #Required for all applications in all cloud providers
 beservice:
   name: beservice
-  type: NodePort              #LoadBalancer for azure, NodePort
+  type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP
   ports:
     name: port1
     protocol: TCP
