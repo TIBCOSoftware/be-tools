@@ -173,7 +173,7 @@ func AS2CacheNoneValues() map[string]string {
 func AS2CacheSNValues() map[string]string {
 	Values["cmType"] = "AS2"
 	Values["omType"] = "cache"
-	Values["bsType"] = "sharedNothing"
+	Values["bsType"] = "sharednothing"
 
 	return Values
 }
@@ -192,7 +192,7 @@ func FTLCacheNoneValues() map[string]string {
 func FTLCacheSNValues() map[string]string {
 	Values["cmType"] = "FTL"
 	Values["omType"] = "cache"
-	Values["bsType"] = "sharedNothing"
+	Values["bsType"] = "sharednothing"
 	Values = appendFTLValues(Values)
 
 	return Values
