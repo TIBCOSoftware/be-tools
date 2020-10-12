@@ -13,7 +13,7 @@ cpType: minikube      #cpType can be minikube, aws, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,AS2,FTL
 omType: inmemory                   #omType can be inmemory,store,cache
-bsType: na         #BackingStore can be None sharedNothing, store
+bsType: na         #BackingStore can be None sharednothing, store
 storeType: na                 #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                      #cacheType can be AS2, ignite
 
@@ -41,7 +41,7 @@ ftl:
 
 #*************************Agents Part****************************************************
 
-#Required for cache, sharedNothing, store in  all cloud providers
+#Required for cache, sharednothing, store in  all cloud providers
 cachenode:
   name: becacheagent
   replicaCount: 1
@@ -56,7 +56,7 @@ inferencenode:
     name: inferencenode
 
 #*************************Service Part****************************************************
-#Required for cache, sharedNothing, store in all cloud providers
+#Required for cache, sharednothing, store in all cloud providers
 cacheservice:
   name: becache-service
   ports:
@@ -145,7 +145,7 @@ as4database:
 
 #*************************Volumes Part****************************************************
 volumes:
-  #Required for sharedNothing and store in all cloud providers
+  #Required for sharednothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store
   accessModes: ["ReadWriteOnce"]
@@ -153,7 +153,7 @@ volumes:
   storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
   snclaimVolume: pv0003
 
-  #Required for sharedNothing and store in Azure
+  #Required for sharednothing and store in Azure
   azure:
     storageClassName: azurestorageclass
     skuName: Standard_LRS
@@ -172,11 +172,11 @@ mysql:
   mysqlUser: root
   mysqlPassword: root
   mysqlRootPassword: password
-  mysqlDatabase: BE_DATABASE #datbase name
+  mysqlDatabase: BE_DATABASE #database name
   # persistence: 
   #   storageClass: "-" #Type of persistent volume claim
 
-# Required for sharedNothing and store in AWS
+# Required for sharednothing and store in AWS
 aws-efs:
   enabled: false #use true for aws 
   replicaCount: 1
