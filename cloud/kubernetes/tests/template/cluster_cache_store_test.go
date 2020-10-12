@@ -1,7 +1,7 @@
-// 
+//
 //  Copyright (c) 2019-2020. TIBCO Software Inc.
 //  This file is subject to the license terms contained in the license file that is distributed with this file.
-// 
+//
 package template
 
 import (
@@ -12,101 +12,110 @@ import (
 )
 
 func TestAS2CacheRDBMSMysqlStore(t *testing.T) {
-	helmChartPath := "../../helm"
+	common.Values["imagepullsecret"] = common.ImgPullSecret
 	options := &helm.Options{
 		SetValues: common.AS2CacheRDBMSStoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceAS2MysqlTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceAS2MysqlTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheAS2MysqlTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheAS2MysqlTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.AS2CacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	aS2CacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
-	common.ConfigMapMysqlTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapMysqlTest(configOutPut, t)
+
+	delete(common.Values, "imagepullsecret")
 }
 
 func TestFTLCacheStoreAS4(t *testing.T) {
-	helmChartPath := "../../helm"
+	common.Values["imageCredentials.registry"] = "hub.docker.com"
+	common.Values["imageCredentials.username"] = "test1234"
+	common.Values["imageCredentials.password"] = "test1234"
+	common.Values["imageCredentials.email"] = "test@test1.com"
 	options := &helm.Options{
 		SetValues: common.FTLCacheAS4StoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLAS4Test(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLAS4Test(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLAS4Test(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLAS4Test(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
-	common.ConfigMapAS4Test(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapAS4Test(configOutPut, t)
+
+	// image pull secret test
+	secretOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.SecretFile})
+	secret(secretOutput, t)
+
+	delete(common.Values, "imageCredentials.registry")
 }
 
 func TestFTLCacheStoreCassandra(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.FTLCacheCassandraStoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLCassTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLCassTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLCassTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLCassTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
-	common.ConfigMapCassandraTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapCassandraTest(configOutPut, t)
 }
 
 func TestFTLCacheStoreMysql(t *testing.T) {
-	helmChartPath := "../../helm"
 	options := &helm.Options{
 		SetValues: common.FTLCacheMysqlStoreValues(),
 	}
 
-	appAndJmxServices(t, options, helmChartPath)
+	appAndJmxServices(t, options, common.HelmChartPath)
 
 	// inference agent test
-	inferenceOutput := helm.RenderTemplate(t, options, helmChartPath, "beinferenceagent", []string{"templates/beinferenceagent.yaml"})
-	common.InferenceFTLMysqlTest(inferenceOutput, t)
+	inferenceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferenceagent})
+	inferenceFTLMysqlTest(inferenceOutput, t)
 
 	// cache agent test
-	cacheAppOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheagent", []string{"templates/becacheagent.yaml"})
-	common.CacheFTLMysqlTest(cacheAppOutput, t)
+	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
+	cacheFTLMysqlTest(cacheAppOutput, t)
 
 	// be cache service test
-	beCacheServiceOutput := helm.RenderTemplate(t, options, helmChartPath, "becacheservice", []string{"templates/becache-service.yaml"})
-	common.IgniteCacheServiceTest(beCacheServiceOutput, t)
+	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
+	igniteCacheServiceTest(beCacheServiceOutput, t)
 
 	// configmap test
-	configOutPut := helm.RenderTemplate(t, options, helmChartPath, "configmap", []string{"templates/configmap.yaml"})
-	common.ConfigMapMysqlTest(configOutPut, t)
+	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
+	configMapMysqlTest(configOutPut, t)
 }
