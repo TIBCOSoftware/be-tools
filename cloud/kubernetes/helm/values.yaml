@@ -13,7 +13,7 @@ cpType: minikube      #cpType can be minikube, aws, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,AS2,FTL
 omType: inmemory                        #omType can be inmemory,store,cache
-bsType: na                              #BackingStore can be None sharedNothing, store
+bsType: na                              #BackingStore can be None sharednothing, store
 storeType: na                           #storeType can be RDBMS, AS4, Cassandra
 cacheType: AS2                          #cacheType can be AS2, ignite
 
