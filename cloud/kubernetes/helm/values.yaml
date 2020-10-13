@@ -41,7 +41,7 @@ ftl:
 
 #*************************Agents Part****************************************************
 
-#Required for cache, sharedNothing, store in  all cloud providers
+#Required for cache, sharednothing, store in  all cloud providers
 cachenode:
   name: becacheagent
   replicaCount: 1
@@ -56,7 +56,7 @@ inferencenode:
     name: inferencenode
 
 #*************************Service Part****************************************************
-#Required for cache, sharedNothing, store in all cloud providers
+#Required for cache, sharednothing, store in all cloud providers
 cacheservice:
   name: becache-service
   ports:
@@ -75,7 +75,7 @@ jmxservice:
 #Required for all applications in all cloud providers
 beservice:
   name: beservice
-  type: LoadBalancer              #NodePort for minikube
+  type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP
   ports:
     name: port1
     protocol: TCP
@@ -145,7 +145,7 @@ as4database:
 
 #*************************Volumes Part****************************************************
 volumes:
-  #Required for sharedNothing and store in all cloud providers
+  #Required for sharednothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store
   accessModes: ["ReadWriteOnce"]
@@ -153,7 +153,7 @@ volumes:
   storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
   snclaimVolume: pv0003
 
-  #Required for sharedNothing and store in Azure
+  #Required for sharednothing and store in Azure
   azure:
     storageClassName: azurestorageclass
     skuName: Standard_LRS
@@ -176,7 +176,7 @@ mysql:
   # persistence: 
   #   storageClass: "-"       #Type of persistent volume claim
 
-# Required for sharedNothing and store in AWS
+# Required for sharednothing and store in AWS
 aws-efs:
   enabled: false              #use true for aws 
   replicaCount: 1

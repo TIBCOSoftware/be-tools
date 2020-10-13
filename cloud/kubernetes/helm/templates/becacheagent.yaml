@@ -48,8 +48,8 @@ spec:
        {{- end }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}
 {{ include "store.configMap" . | trim | indent 8 }}
-{{ include "sharedNothing.volumeMount" . | trim | indent 8 }}
-{{ include "sharedNothing.volumeClaim" . }}
+{{ include "sharednothing.volumeMount" . | trim | indent 8 }}
+{{ include "sharednothing.volumeClaim" . }}
     {{- end }}
   {{- end }}
 {{- end }}
