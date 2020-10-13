@@ -7,4 +7,5 @@
 @rem for
 @rem User
 
-endlocal
+REM Installing curl util
+powershell -Command "c:\ProgramData\chocolatey\bin\choco install curl -y"

@@ -7,7 +7,4 @@
 #
 #
 # Implementation space for User
-#
-#
-#
-#
+# should prepare /home/tibco/be/gvproviders/output.json with key/value pairs

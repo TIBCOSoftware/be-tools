@@ -70,10 +70,7 @@ RUN copy "c:\working\runbe.bat" "c:\tibco\be"
 RUN c:\working\vcredist_install.bat
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat
-
-RUN if exist c:\tibco\be\gvproviders\%GVPROVIDERS%\setup.bat ( c:\tibco\be\gvproviders\%GVPROVIDERS%\setup.bat )
-
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
 
 RUN rmdir /S /Q "c:\working"
 

@@ -6,36 +6,29 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 echo INFO: Reading GV values..
 
-type NUL > c:\tibco\be\output.json
-set JSON_FILE=c:\tibco\be\output.json
+type NUL > c:\tibco\be\gvproviders\output.json
+set JSON_FILE=c:\tibco\be\gvproviders\output.json
 
-if not defined HTTP_SERVER_URL (
-  echo ERROR: Cannot read GVs from Consul..
-  echo ERROR: Specify env variable HTTP_SERVER_URL
+if not defined GVP_HTTP_SERVER_URL (
+  echo ERROR: Cannot read GVs from http url
+  echo ERROR: Specify env variable GVP_HTTP_SERVER_URL
   EXIT /B 1
 )
 
-rem set HTTP_SERVER_URL=%2
-echo INFO: HTTP_SERVER_URL = %HTTP_SERVER_URL%
+echo INFO: GVP_HTTP_SERVER_URL = %GVP_HTTP_SERVER_URL%
 
+set HEADER_VALUE=
 
-if not defined HEADER_VALUES (
-  echo ERROR: Cannot read GVs from Consul..
-  echo ERROR: Specify env variable HEADER_VALUES
-  EXIT /B 1
+if not defined GVP_HTTP_HEADERS (
+  echo WARN: GVP_HTTP_HEADERS not specified.
+) else (
+  echo INFO: GVP_HTTP_HEADERS = %GVP_HTTP_HEADERS%
+  set HEADER_VAL=%GVP_HTTP_HEADERS:"=%
+  for %%i in ("!HEADER_VAL!") do (
+      set HEADER_VALUE=!HEADER_VALUE! -H %%i
+  )
 )
-
-rem set HEADER_VALUES=%1
-echo INFO: HEADER_VALUES = %HEADER_VALUES%
-
-set HEADER=
-
-set HEADER_VAL=%HEADER_VALUES:"=%
-
-for %%i in ("%HEADER_VAL:,=" "%") do (
-    set HEADER=!HEADER! -H %%i
-)
-
-curl -X GET %HEADER% %HTTP_SERVER_URL% -o %JSON_FILE% 
+echo curlcommand[ -X GET %HEADER_VALUE% %GVP_HTTP_SERVER_URL% -o %JSON_FILE% ]
+curl -X GET %HEADER_VALUE% %GVP_HTTP_SERVER_URL% -o %JSON_FILE% 
 
 endlocal

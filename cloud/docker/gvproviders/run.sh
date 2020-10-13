@@ -17,6 +17,8 @@ fi
 chmod +x ./gvproviders/${GVPROVIDER}/run.sh
 source ./gvproviders/${GVPROVIDER}/run.sh
 
+JSON_FILE=/home/tibco/be/gvproviders/output.json
+
 prop_keys="$(/home/tibco/be/gvproviders/jq -r keys[] $JSON_FILE)"
 
 

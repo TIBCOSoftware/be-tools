@@ -49,5 +49,8 @@ do
   fi
 done
 
+#remove all bat files
+rm /home/tibco/be/gvproviders/*.bat
+
 apt-get remove -y wget
 apt-get autoremove -y

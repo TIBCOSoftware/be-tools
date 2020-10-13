@@ -6,8 +6,4 @@
 @rem space
 @rem for
 @rem User
-
-
-set JSON_FILE=c:\tibco\be\output.json
-
-endlocal
+@rem should prepare c:\tibco\be\gvproviders\output.json with key/value pairs

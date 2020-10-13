@@ -8,6 +8,3 @@
 #
 # Implementation space for User
 #
-#
-#
-#

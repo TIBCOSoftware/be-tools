@@ -3,8 +3,8 @@
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 set BE_PROPS_FILE=c:\tibco\be\beprops_all.props
-type NUL > c:\tibco\be\output.json
-set JSON_FILE=c:\tibco\be\output.json
+type NUL > c:\tibco\be\gvproviders\output.json
+set JSON_FILE=c:\tibco\be\gvproviders\output.json
 type NUL > c:\tibco\be\temp.json
 set TEMP_FILE=c:\tibco\be\temp.json
 

@@ -6,5 +6,3 @@
 @rem space
 @rem for
 @rem User
-
-endlocal
