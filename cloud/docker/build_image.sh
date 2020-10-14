@@ -503,7 +503,41 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
 fi
 
 if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
-    cp -a "./gvproviders" $TEMP_FOLDER/
+    mkdir -p $TEMP_FOLDER/gvproviders
+    cp ./gvproviders/*.sh $TEMP_FOLDER/gvproviders
+    if [ "$ARG_GVPROVIDERS" = "na" -o -z "${ARG_GVPROVIDERS//}" ]; then
+        ARG_GVPROVIDERS="na"
+    elif [ "$ARG_GVPROVIDERS" = "http" -o "$ARG_GVPROVIDERS" = "consul" ]; then
+        mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDERS
+        cp -a ./gvproviders/$ARG_GVPROVIDERS/*.sh $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDERS
+    else
+        if [ -d "./gvproviders/custom/$ARG_GVPROVIDERS" ]; then
+            # check for setup.sh & run.sh
+            if ! [ -f "./gvproviders/custom/$ARG_GVPROVIDERS/setup.sh" ]; then
+                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDERS] under the directory - [./gvproviders/custom/$ARG_GVPROVIDERS/]"
+                exit 1;
+            elif ! [ -f "./gvproviders/custom/$ARG_GVPROVIDERS/run.sh" ]; then
+                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDERS] under the directory - [./gvproviders/custom/$ARG_GVPROVIDERS/]"
+                exit 1;
+            fi
+            mkdir -p $TEMP_FOLDER/gvproviders/custom/$ARG_GVPROVIDERS
+            cp -a ./gvproviders/custom/$ARG_GVPROVIDERS/* $TEMP_FOLDER/gvproviders/custom/$ARG_GVPROVIDERS
+        elif [ -d "./gvproviders/$ARG_GVPROVIDERS" ]; then
+            # check for setup.sh & run.sh
+            if ! [ -f "./gvproviders/$ARG_GVPROVIDERS/setup.sh" ]; then
+                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDERS] under the directory - [./gvproviders/$ARG_GVPROVIDERS/]"
+                exit 1;
+            elif ! [ -f "./gvproviders/$ARG_GVPROVIDERS/run.sh" ]; then
+                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDERS] under the directory - [./gvproviders/$ARG_GVPROVIDERS/]"
+                exit 1;
+            fi
+            mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDERS
+            cp -a ./gvproviders/$ARG_GVPROVIDERS/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDERS
+        else
+            echo "ERROR: GV provider[$ARG_GVPROVIDERS] is not supported."
+            exit 1;
+        fi
+    fi 
 elif [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
