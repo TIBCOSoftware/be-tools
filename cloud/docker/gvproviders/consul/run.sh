@@ -11,7 +11,6 @@ fi
 
 echo "INFO: Reading GV values from Consul.."
 
-BE_PROPS_FILE=/home/tibco/be/beprops_all.props
 touch /home/tibco/be/gvproviders/output.json
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 if [[ -z "$APP_CONFIG_PROFILE" ]]; then
@@ -35,7 +34,6 @@ prefix_len=$((prefix_len + ${#APP_CONFIG_PROFILE}))
 prefix_len=$((prefix_len + 1))
 
 echo "INFO: Reading GV values from Consul.. ($BE_APP_NAME/$APP_CONFIG_PROFILE/)"
-echo "# GV values from Consul">>$BE_PROPS_FILE
 prop_keys="$(/home/tibco/be/gvproviders/consul/consul kv export -http-addr=$CONSUL_SERVER_URL $BE_APP_NAME/$APP_CONFIG_PROFILE | /home/tibco/be/gvproviders/jq -r '.[] | .key')";
 
 echo {  > temp.json

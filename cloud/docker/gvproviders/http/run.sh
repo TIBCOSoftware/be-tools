@@ -13,13 +13,10 @@ fi
 
 echo "INFO: Reading GV values from HTTP server.."
 
-BE_PROPS_FILE=/home/tibco/be/beprops_all.props
 touch /home/tibco/be/gvproviders/output.json
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 
 echo "INFO: GVP_HTTP_SERVER_URL = $GVP_HTTP_SERVER_URL"
-
-echo "# GV values from HTTP server">>$BE_PROPS_FILE
 
 declare -a HEADER_VALUE
 

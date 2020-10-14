@@ -17,15 +17,16 @@ fi
 chmod +x ./gvproviders/${GVPROVIDER}/run.sh
 source ./gvproviders/${GVPROVIDER}/run.sh
 
+BE_PROPS_FILE=/home/tibco/be/beprops_all.props
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 
-prop_keys="$(/home/tibco/be/gvproviders/jq -r keys[] $JSON_FILE)"
 
-
-if [ -f /home/tibco/be/gvproviders/output.json ]; then
-for prop in $prop_keys
-do
-  echo "Prop: $prop"
-  echo tibco.clientVar.${prop}=$(/home/tibco/be/gvproviders/jq -r .$prop $JSON_FILE)>>$BE_PROPS_FILE
-done
+if [ -f $JSON_FILE ]; then
+  prop_keys="$(/home/tibco/be/gvproviders/jq -r keys[] $JSON_FILE)"
+  echo "# GV values from $GVPROVIDER">>$BE_PROPS_FILE
+  for prop in $prop_keys
+  do
+    echo "Prop: $prop"
+    echo tibco.clientVar.${prop}=$(/home/tibco/be/gvproviders/jq -r .$prop $JSON_FILE)>>$BE_PROPS_FILE
+  done
 fi

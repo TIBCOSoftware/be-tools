@@ -6,22 +6,13 @@
 #
 
 GVPROVIDER=$1
-SUPPORTED_GV_PROVIDERS=(consul http custom)
 
 if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
 	echo "Skipping gv provider setup"
-  rm -rf /home/tibco/be/gvproviders/*
   exit 0
 fi
 
-# check whether the gvprovider is supported or not
-if [[ ${SUPPORTED_GV_PROVIDERS[@]} =~ $GVPROVIDER ]]
-then
-  echo "Setting up '$GVPROVIDER' gv provider..."
-else
-  echo "gv provider '$GVPROVIDER' is not supported"
-  exit 1
-fi
+echo "Setting up '$GVPROVIDER' gv provider..."
 
 # install tools common for all gv providers
 cd /home/tibco/be/gvproviders
@@ -40,17 +31,6 @@ if [ -f /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh ]; then /home/tibco/b
 cd /home/tibco/be/gvproviders
 sed -i "s/GVPROVIDER=na/GVPROVIDER=$GVPROVIDER/g" run.sh
 
-# clean up i.e. remove other gv provider artefacts
-for gv in "${SUPPORTED_GV_PROVIDERS[@]}"
-do
-  if [ $gv != $GVPROVIDER ]
-  then
-    rm -rf $gv;
-  fi
-done
-
-#remove all bat files
-rm /home/tibco/be/gvproviders/*.bat
-
+# clean up
 apt-get remove -y wget
 apt-get autoremove -y
