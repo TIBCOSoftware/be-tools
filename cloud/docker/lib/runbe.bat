@@ -60,6 +60,9 @@ type NUL>%BE_PROPS_FILE%
 for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
 
 call .\gvproviders\run.bat
+if %ERRORLEVEL% NEQ 0 (
+  exit /b 1
+)
 
 echo #BE props file>>%BE_PROPS_FILE%
 
