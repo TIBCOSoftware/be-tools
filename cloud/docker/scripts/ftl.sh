@@ -3,10 +3,10 @@ declare -A FTL_VERSION_MAP_MIN=(["6.0.0"]="6.2.0" )
 declare -A FTL_VERSION_MAP_MAX=(["6.0.0"]="6.x.x" )
 
 # Validate and get TIBCO FTL base and hf versions
-ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip")
-ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" |  wc -l)
-ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip")
-ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" |  wc -l)
+ftlPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 )
+ftlPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
+ftlHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 )
+ftlHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
 
 if [ $ftlPckgsCnt -gt 0 ]; then
 	if [ $ftlPckgsCnt -gt 1 ]; then # If more than one base versions are present

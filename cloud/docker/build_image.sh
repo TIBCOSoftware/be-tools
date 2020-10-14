@@ -164,7 +164,7 @@ if [ "$MISSING_ARGS" != "" ]; then
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" 2>/dev/null | wc -l) 
+    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l) 
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -599,7 +599,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #remove unecessary files from bin folder
     CURR_DIR=$PWD
     cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
-    ls | grep -v "be-engine*" | xargs rm
+    ls | grep -v "be-engine*" | xargs rm 2>/dev/null
     cd $CURR_DIR
 
     # removing all .bak files
@@ -607,12 +607,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     #removing tomsawyer and gwt
     if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt 2>/dev/null
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer 2>/dev/null
     fi
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws
+        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws 2>/dev/null
     fi
 
     # re create be.tar
@@ -630,7 +630,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     $TAR_CMD
 
     # remove random folder
-    rm -rf $TEMP_FOLDER/$RANDM_FOLDER
+    rm -rf $TEMP_FOLDER/$RANDM_FOLDER 2>/dev/null
 else
     for i in "${FILE_LIST[@]}" ; do
         echo "INFO: Copying package: [$i]"
@@ -691,10 +691,10 @@ echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
 if [ $BUILD_SUCCESS = "true" ]; then
+    echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
     if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
         cd ./tests
         source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
     fi
-    echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
 fi

@@ -2,12 +2,12 @@ BLANK=""
 BE_HF_REGEX="${BE_PRODUCT}-hf_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]${INSTALLER_PLATFORM}"
 
 # Get all be packages
-bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}")
-bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}" | wc -l)
+bePckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 )
+bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 | wc -l)
 
 #Get all be hf packages
-beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_HF_REGEX}")
-beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "${BE_HF_REGEX}" | wc -l)
+beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "${BE_HF_REGEX}" -maxdepth 1 )
+beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "${BE_HF_REGEX}" -maxdepth 1 | wc -l)
 
 if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR: More than one TIBCO BusinessEvents base versions are present in the target directory. There should be only one.\n"

@@ -3,10 +3,10 @@ declare -A AS_VERSION_MAP_MIN=(["6.0.0"]="4.2.0" )
 declare -A AS_VERSION_MAP_MAX=(["6.0.0"]="4.x.x" )
 
 # Validate and get TIBCO As base and hf versions
-asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip")
-asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" |  wc -l)
-asHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip")
-asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" |  wc -l)
+asPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 )
+asPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
+asHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 )
+asHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_as_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
 
 if [ $asPckgsCnt -gt 0 ]; then
 	if [ $asPckgsCnt -gt 1 ]; then # If more than one base versions are present
