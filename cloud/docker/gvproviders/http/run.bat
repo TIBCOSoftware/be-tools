@@ -28,7 +28,7 @@ if not defined GVP_HTTP_HEADERS (
       set HEADER_VALUE=!HEADER_VALUE! -H %%i
   )
 )
-echo curlcommand[ -X GET %HEADER_VALUE% %GVP_HTTP_SERVER_URL% -o %JSON_FILE% ]
+
 curl -X GET %HEADER_VALUE% %GVP_HTTP_SERVER_URL% -o %JSON_FILE% 
 
 endlocal
