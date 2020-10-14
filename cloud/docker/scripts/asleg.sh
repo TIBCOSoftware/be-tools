@@ -3,10 +3,10 @@ declare -A AS_LEG_VERSION_MAP_MIN=(["5.6.0"]="2.3.0" ["5.6.1"]="2.3.0" ["6.0.0"]
 declare -A AS_LEG_VERSION_MAP_MAX=(["5.6.0"]="2.4.0" ["5.6.1"]="2.4.1" ["6.0.0"]="2.4.1" )
 
 # Validate and get TIBCO Activespaces(legacy) base and hf versions
-asLegPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 )
-asLegPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
-asLegHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 )
-asLegHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip" -maxdepth 1 |  wc -l)
+asLegPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
+asLegPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  |  wc -l)
+asLegHfPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  )
+asLegHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  |  wc -l)
 
 if [ $asLegPckgsCnt -gt 0 ]; then
 	if [ $asLegPckgsCnt -gt 1 ]; then # If more than one base versions are present
