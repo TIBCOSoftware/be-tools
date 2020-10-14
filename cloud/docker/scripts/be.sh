@@ -17,7 +17,7 @@ elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
 	exit 1;
 elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
-	BE_PACKAGE="${bePckgs[0]##*/}"
+	BE_PACKAGE="$(basename ${bePckgs[0]})"
 	ARG_BE_VERSION=$(echo "$BE_PACKAGE" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
 
 	# validate be version
@@ -33,7 +33,7 @@ elif [ $bePckgsCnt -eq 1 ]; then
 	FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
 
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-		BE_HF_PACKAGE="${beHfPckgs[0]##*/}"
+		BE_HF_PACKAGE="$(basename ${beHfPckgs[0]})"
 		hfbeversion=$(echo "$BE_HF_PACKAGE"| cut -d'_' -f 3)
 		if [ $ARG_BE_VERSION == $hfbeversion ]; then
       		ARG_BE_HOTFIX=$(echo "$BE_HF_PACKAGE" | cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")

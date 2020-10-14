@@ -5,6 +5,7 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+source ./scripts/utils.sh
 FILE_NAME=$(basename $0)
 
 # image type variables
@@ -359,7 +360,7 @@ else
     HF_VERSION_REGEX=([0-9]\{3\})
 
     # file list array to hold all installers
-    declare -A FILE_LIST
+    FILE_LIST=()
     # file list index
     FILE_LIST_INDEX=0
 

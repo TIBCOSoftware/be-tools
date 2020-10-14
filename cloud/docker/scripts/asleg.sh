@@ -1,6 +1,6 @@
 #supported Activespaces(legacy) versions for be version
-declare -A AS_LEG_VERSION_MAP_MIN=(["5.6.0"]="2.3.0" ["5.6.1"]="2.3.0" ["6.0.0"]="2.3.0" )
-declare -A AS_LEG_VERSION_MAP_MAX=(["5.6.0"]="2.4.0" ["5.6.1"]="2.4.1" ["6.0.0"]="2.4.1" )
+AS_LEG_VERSION_MAP_MIN=( "5.6.0:2.3.0" "5.6.1:2.3.0" "6.0.0:2.3.0" )
+AS_LEG_VERSION_MAP_MAX=( "5.6.0:2.4.0" "5.6.1:2.4.1" "6.0.0:2.4.1" )
 
 # Validate and get TIBCO Activespaces(legacy) base and hf versions
 asLegPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_activespaces_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
@@ -29,9 +29,9 @@ if [ $asLegPckgsCnt -gt 0 ]; then
 
 		# validate as leg version with be base version
 		DOT="\."
-		asLegMinVersion=$(echo "${AS_LEG_VERSION_MAP_MIN[$ARG_BE_VERSION]}" | sed -e "s/${DOT}/${BLANK}/g" )
+		asLegMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_LEG_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 		asLegVersion=$(echo "${ARG_AS_LEG_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
-		asLegMaxVersion=$(echo "${AS_LEG_VERSION_MAP_MAX[$ARG_BE_VERSION]}" | sed -e "s/${DOT}/${BLANK}/g" )
+		asLegMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_LEG_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 
 		if ! [ $asLegMinVersion -le $asLegVersion -a $asLegVersion -le $asLegMaxVersion ]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with Activespaces(legacy) version: [$ARG_AS_LEG_VERSION].\n";
@@ -43,7 +43,7 @@ if [ $asLegPckgsCnt -gt 0 ]; then
 		FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
 
 		if [ $asLegHfPckgsCnt -eq 1 ]; then
-			AS_LEG_HF_PACKAGE="${asLegHfPckgs[0]##*/}"
+			AS_LEG_HF_PACKAGE="$(basename ${asLegHfPckgs[0]})"
 			asHfBaseVersion=$(echo $AS_LEG_HF_PACKAGE | cut -d'_' -f 3)
 			if [ "$ARG_AS_LEG_VERSION" = "$asHfBaseVersion" ]; then
 				ARG_AS_LEG_HOTFIX=$(echo $AS_LEG_HF_PACKAGE | cut -d'_' -f 4 | cut -d'-' -f 2)
