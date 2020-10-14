@@ -35,9 +35,8 @@ TRA_FILE=$BE_HOME/bin/be-engine.tra
 export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
-if [ ! -z "$CONSUL_SERVER_URL" ]; then
-  ./gvproviders/consul/run.sh
-fi
+./gvproviders/run.sh
+
 /bin/cat $BE_PROPS_FILE
 
 COMPONENT_PARSED="${COMPONENT%\"}"

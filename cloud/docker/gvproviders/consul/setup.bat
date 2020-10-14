@@ -4,8 +4,6 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-echo Setting up consul gv provider..
-
 cd c:\tibco\be\gvproviders\consul
 
 REM Download Consul cli and extract it.

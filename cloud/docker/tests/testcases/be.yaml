@@ -51,12 +51,6 @@ fileExistenceTests:
   - name: 'Gvproviders File'
     path: '/home/tibco/be/gvproviders/setup.sh'
     shouldExist: true
-  - name: 'Gvproviders Consul'
-    path: '/home/tibco/be/gvproviders/consul/'
-    shouldExist: true
-  - name: 'Gvproviders Consul File'
-    path: '/home/tibco/be/gvproviders/consul/run.sh'
-    shouldExist: true
   - name: 'Docker Run File'
     path: '/home/tibco/be/run'
     shouldExist: true
