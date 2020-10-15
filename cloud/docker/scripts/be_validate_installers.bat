@@ -35,7 +35,6 @@ set GLOBAL_JRE_VERSION_MAP[6.0.0]=11
 ::REGEX
 set GLOBAL_AS_PKG_REGEX=*activespaces*
 set GLOBAL_HF_PKG_REGEX=*businessevents-hf*
-set GLOBAL_BE_TAG="com.tibco.be"
 ::----------------------------------------------------------
 
 REM Initializing variables

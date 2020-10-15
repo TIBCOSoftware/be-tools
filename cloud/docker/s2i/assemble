@@ -5,7 +5,6 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-
 cp -R /tmp/src/*.cdd /opt/tibco/be/application
 cp -R /tmp/src/* /opt/tibco/be/application
 cp -R /tmp/src/* /opt/tibco/be/ext

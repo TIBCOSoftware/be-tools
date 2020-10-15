@@ -12,7 +12,3 @@
   fi
 
 $1/teagent/bin/be-teagent --propFile $2
-
-
-
-

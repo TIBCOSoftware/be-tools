@@ -29,6 +29,7 @@ ARG JRE_VERSION
 ARG TEMP_FOLDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+ARG GVPROVIDERS
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -69,7 +70,7 @@ RUN copy "c:\working\runbe.bat" "c:\tibco\be"
 RUN c:\working\vcredist_install.bat
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
 
 RUN rmdir /S /Q "c:\working"
 

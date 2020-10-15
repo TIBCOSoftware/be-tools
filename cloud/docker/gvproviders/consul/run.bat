@@ -2,7 +2,6 @@
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
-set BE_PROPS_FILE=c:\tibco\be\beprops_all.props
 type NUL > c:\tibco\be\gvproviders\output.json
 set JSON_FILE=c:\tibco\be\gvproviders\output.json
 type NUL > c:\tibco\be\temp.json
@@ -20,16 +19,13 @@ if not defined BE_APP_NAME (
 )
 
 echo INFO: CONSUL_SERVER_URL = %CONSUL_SERVER_URL%
-REM echo INFO: BE_PROPS_FILE = %BE_PROPS_FILE%
 echo INFO: BE_APP_NAME = %BE_APP_NAME%
 echo INFO: APP_CONFIG_PROFILE = %APP_CONFIG_PROFILE%
 
-REM skip prefix ($BE_APP_NAME/$APP_CONFIG_PROFILE/) from key
 set PREFIX="%BE_APP_NAME%/%APP_CONFIG_PROFILE%/"
 set CONSUL_EXECUTABLE=c:\tibco\be\gvproviders\consul\consul.exe
 
 echo INFO: Reading GV values from Consul.. (%PREFIX%)
-echo # GV values from Consul>>%BE_PROPS_FILE%
 
 type NUL > c:\tibco\be\consulval.json
 set CONSUL_RESULT=c:\tibco\be\consulval.json

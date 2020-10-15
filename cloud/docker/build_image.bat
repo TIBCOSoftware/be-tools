@@ -29,6 +29,7 @@ set "ARG_BE_VERSION=na"
 set "ARG_BE_SHORT_VERSION=na"
 set "ARG_BE_HOTFIX=na"
 set "ARG_JRE_VERSION=na"
+set "BE6=na"
 
 set "BE_REGX=^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_.*\.zip$"
 set "ARG_INSTALLERS_PLATFORM=win"
@@ -313,6 +314,10 @@ if !ARG_APP_LOCATION! NEQ na (
     )
 )
 
+set "APP_OR_BUILDER_IMAGE=na"
+if !IMAGE_NAME! EQU !APP_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
+if !IMAGE_NAME! EQU !BUILDER_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
+
 REM assign image tag to ARG_IMAGE_VERSION variable
 set "ARG_IMAGE_VERSION=!ARG_TAG!"
 
@@ -350,35 +355,37 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         )
     )
 
-    REM Check ACTIVESPACES_HOME from tra file it is as home
-    for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.ACTIVESPACES_HOME=" !BE_HOME!\bin\be-engine.tra') do (
-        for %%f in (%%i) do (
-            set AS_HOME=%%~f
-            set ARG_AS_SHORT_VERSION=%%~nxf
+    if !APP_OR_BUILDER_IMAGE! EQU true (
+        REM Check ACTIVESPACES_HOME from tra file it is as home
+        for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.ACTIVESPACES_HOME=" !BE_HOME!\bin\be-engine.tra') do (
+            for %%f in (%%i) do (
+                set AS_HOME=%%~f
+                set ARG_AS_SHORT_VERSION=%%~nxf
+            )
         )
-    )
 
-    REM Check AS_HOME exist or not if it present
-    if !AS_HOME! NEQ na (
-        if NOT EXIST !AS_HOME! (
-            echo ERROR: The directory: [!AS_HOME!] is not a valid directory. Skipping as installation.
-            set "AS_HOME=na"
+        REM Check AS_HOME exist or not if it present
+        if !AS_HOME! NEQ na (
+            if NOT EXIST !AS_HOME! (
+                echo ERROR: The directory: [!AS_HOME!] is not a valid directory. Skipping as installation.
+                set "AS_HOME=na"
+            )
         )
-    )
 
-    REM Check FTL_HOME from tra file it is ftl home
-    for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.FTL_HOME=" !BE_HOME!\bin\be-engine.tra') do (
-        for %%f in (%%i) do (
-            set FTL_HOME=%%~f
-            set ARG_FTL_SHORT_VERSION=%%~nxf
+        REM Check FTL_HOME from tra file it is ftl home
+        for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.FTL_HOME=" !BE_HOME!\bin\be-engine.tra') do (
+            for %%f in (%%i) do (
+                set FTL_HOME=%%~f
+                set ARG_FTL_SHORT_VERSION=%%~nxf
+            )
         )
-    )
 
-    REM Check FTL_HOME exist or not if it present
-    if !FTL_HOME! NEQ na (
-        if NOT EXIST !FTL_HOME! (
-            echo ERROR: The directory: [!FTL_HOME!] is not a valid directory. Skipping ftl installation.
-            set "FTL_HOME=na"
+        REM Check FTL_HOME exist or not if it present
+        if !FTL_HOME! NEQ na (
+            if NOT EXIST !FTL_HOME! (
+                echo ERROR: The directory: [!FTL_HOME!] is not a valid directory. Skipping ftl installation.
+                set "FTL_HOME=na"
+            )
         )
     )
 
@@ -504,13 +511,44 @@ if !INSTALLATION_TYPE! EQU fromlocal mkdir !TEMP_FOLDER!
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
 
-set "APP_OR_BUILDER_IMAGE=na"
-if !IMAGE_NAME! EQU !APP_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
-if !IMAGE_NAME! EQU !BUILDER_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
-
 if !APP_OR_BUILDER_IMAGE! EQU true (
     mkdir !TEMP_FOLDER!\gvproviders
-    xcopy /Q /C /R /Y /E .\gvproviders !TEMP_FOLDER!\gvproviders > NUL
+    xcopy /Q /C /R /Y /E .\gvproviders\*.bat !TEMP_FOLDER!\gvproviders > NUL
+    if "!ARG_GVPROVIDERS!" EQU "" set "ARG_GVPROVIDERS=na"
+    if "!ARG_GVPROVIDERS!" EQU "http" (
+        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
+        xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
+    ) else if "!ARG_GVPROVIDERS!" EQU "consul" (
+        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
+        xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
+    ) else (
+        if EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!" (
+            if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!\setup.bat" (
+                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDERS!\]
+                exit END-withError
+            ) else if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!\run.bat" (
+                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDERS!\]
+                exit END-withError
+            ) else (
+                 mkdir !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDERS!
+                 xcopy /Q /C /R /Y /E .\gvproviders\custom\!ARG_GVPROVIDERS!\* !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDERS! > NUL
+            )
+        ) else if EXIST ".\gvproviders\!ARG_GVPROVIDERS!" (
+            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDERS!\setup.bat" (
+                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\!ARG_GVPROVIDERS!\]
+                exit END-withError
+            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDERS!\run.bat" (
+                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\!ARG_GVPROVIDERS!\]
+                exit END-withError
+            ) else (
+                 mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
+                 xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\* !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
+            )
+        ) else (
+            echo ERROR: GV provider[!ARG_GVPROVIDERS!] is not supported.
+            exit END-withError
+        )
+    )
 )
 
 if !ARG_APP_LOCATION! NEQ na xcopy /Q /C /R /Y /E !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app > NUL
@@ -521,6 +559,10 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+REM check be6 or not
+set /a BE6VAL=!ARG_BE_VERSION:.=!
+if !BE6VAL! GTR 599 set "BE6=true"
+
 if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
@@ -529,6 +571,103 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         xcopy /Q /C /R /Y !FILE_PATH! !TEMP_FOLDER!\installers > NUL
         echo INFO: Copying package: [!FILE_PATH!]
     )
+    echo.
+) else (
+    echo.
+    powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION! | out-null"
+
+    echo INFO: Adding [be\!ARG_BE_SHORT_VERSION!] to tibcohome.
+    powershell -Command "Copy-Item '!BE_HOME!\..\..\tibcojre64' -Destination '!TEMP_FOLDER!\tibcoHome' -Recurse | out-null"
+    powershell -Command "Copy-Item '!BE_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+    powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+
+    REM remove logs folder from be-home\bin
+    powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\logs' -ErrorAction Ignore | out-null"
+
+    REM replace tibco home path
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
+
+    echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+    echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+    echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+    echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+
+    if !IMAGE_NAME! EQU !RMS_IMAGE! (
+        powershell -Command "Copy-Item '!BE_HOME!\rms' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\studio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\eclipse-platform' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
+        powershell -Command "Copy-Item '!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard\WebStudio' -Recurse | out-null"
+
+        if !BE6! NEQ true (
+            powershell -Command "Copy-Item '!BE_HOME!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+        )
+
+        powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\shared\*' -ErrorAction Ignore | out-null"
+
+        :: Replace user TIBCO_HOME path with container's tra files
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra'"
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
+
+        echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-rms.tra
+    )
+
+    if EXIST !BE_HOME!\hotfix (
+        powershell -Command "Copy-Item '!BE_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+    )
+
+    if !AS_LEG_HOME! NEQ na (
+        echo INFO: Adding [as\!ARG_AS_LEG_SHORT_VERSION!] to tibcohome.
+
+        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION! | out-null"
+
+        powershell -Command "Copy-Item '!AS_LEG_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!AS_LEG_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
+
+        if EXIST !AS_LEG_HOME!\hotfix (
+            powershell -Command "Copy-Item '!AS_LEG_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
+        )
+
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.AS_HOME').Line.Substring(18), 'c:/tibco/as/!ARG_AS_LEG_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
+    )
+
+    if !FTL_HOME! NEQ na (
+        echo INFO: Adding [ftl\!ARG_FTL_SHORT_VERSION!] to tibcohome.
+
+        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION! | out-null"
+
+        powershell -Command "Copy-Item '!FTL_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!FTL_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!' -Recurse | out-null"
+
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.FTL_HOME').Line.Substring(19), 'c:/tibco/ftl/!ARG_FTL_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
+    )
+
+    if !AS_HOME! NEQ na (
+        echo INFO: Adding [as\!ARG_AS_SHORT_VERSION!] to tibcohome.
+
+        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION! | out-null"
+
+        powershell -Command "Copy-Item '!AS_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!AS_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!' -Recurse | out-null"
+
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.ACTIVESPACES_HOME').Line.Substring(28), 'c:/tibco/as/!ARG_AS_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
+    )
+
+    echo.
+    echo INFO: Generating annotation indexes.
+    if EXIST !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
+        powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx' -ErrorAction Ignore | out-null"
+    )
+    cd !TEMP_FOLDER!
+    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
+    tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
+    if EXIST tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
+        powershell -Command "(Get-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx'"
+    )
+    cd ..
+
+    powershell -Command "Copy-Item '.\lib\runbe.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
     echo.
 )
 
@@ -557,6 +696,12 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    )
+) else (
+    if !IMAGE_NAME! EQU !RMS_IMAGE! (
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    ) else (
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 )
 

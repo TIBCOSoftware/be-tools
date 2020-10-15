@@ -2,9 +2,13 @@
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
+if "%AS_VERSION%" EQU "" set AS_VERSION=na
+if "%FTL_VERSION%" EQU "" set FTL_VERSION=na
+if "%ACTIVESPACES_VERSION%" EQU "" set ACTIVESPACES_VERSION=na
+
 powershell -Command "mkdir c:\tibco -ErrorAction Ignore | out-null; mkdir c:\tibco\be\application -ErrorAction Ignore | out-null"
 :: if AS is available extract and install it.
-if %AS_VERSION% NEQ na (
+if "%AS_VERSION%" NEQ "na" (
 	echo Extracting ActiveSpaces Legacy
 	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_activespaces_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 	cd /d c:/working/installer
@@ -16,7 +20,7 @@ if %AS_VERSION% NEQ na (
 	REM Install AS HF
 	cd /d c:/working
 	powershell -Command "Get-ChildItem -Path 'c:\working\installer' -exclude TIBCOUniversalInstaller-x86-64.exe | Remove-Item -Recurse -force"
-	if %AS_VERSION% NEQ na (
+	if "%AS_VERSION%" NEQ "na" (
 		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_activespaces_.*[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 		if exist c:/working/installer/TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent (
 			echo Extracting ActiveSpaces Legacy HF
@@ -37,7 +41,7 @@ echo Extracting BusinessEvents
 powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-.*_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 cd /d c:/working/installer
 :: If AS is not available disable DataGrid.
-if %AS_VERSION% EQU na (
+if "%AS_VERSION%" EQU "na" (
 	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent') -replace '(.*)TIBCO BusinessEvents DataGrid(.*)true(.*)', '$1TIBCO BusinessEvents DataGrid$2false$3' | Set-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent'"
 )
 echo Installing BusinessEvents..
@@ -62,20 +66,20 @@ if exist c:/working/installer/TIBCOUniversalInstaller.silent (
 )
 
 :: if FTL is available extract and install it.
-if %FTL_VERSION% NEQ na (
-	call :InstallFTLorAS %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
+if "%FTL_VERSION%" NEQ "na" (
+	call :InstallFTLorAS "%FTL_VERSION%" "%FTL_SHORT_VERSION%" "ftl"
 	:: if ftl hf present install it.
-	if %FTL_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %FTL_VERSION% %FTL_SHORT_VERSION% "ftl"
+	if "%FTL_PRODUCT_HOTFIX%" NEQ "na" (
+		call :InstallFtlorASHf "%FTL_VERSION%" "%FTL_SHORT_VERSION%" "ftl"
 	)
 )
 
 :: if ACTIVESPACES is available extract and install it.
-if %ACTIVESPACES_VERSION% NEQ na (
-	call :InstallFTLorAS %ACTIVESPACES_VERSION% %ACTIVESPACES_SHORT_VERSION% "as"
+if "%ACTIVESPACES_VERSION%" NEQ "na" (
+	call :InstallFTLorAS "%ACTIVESPACES_VERSION%" "%ACTIVESPACES_SHORT_VERSION%" "as"
 	:: if activespaces hf present install it.
-	if %ACTIVESPACES_PRODUCT_HOTFIX% NEQ na (
-		call :InstallFtlorASHf %ACTIVESPACES_VERSION% %ACTIVESPACES_SHORT_VERSION% "as"
+	if "%ACTIVESPACES_PRODUCT_HOTFIX%" NEQ "na" (
+		call :InstallFtlorASHf "%ACTIVESPACES_VERSION%" "%ACTIVESPACES_SHORT_VERSION%" "as"
 	)
 )
 
@@ -84,7 +88,7 @@ cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"
 
 :: If AS is available append relevent properties to tra.
-if %AS_VERSION% NEQ na (
+if "%AS_VERSION%" NEQ "na" (
 	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%\bin\be-engine.tra
 	echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
 	echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra

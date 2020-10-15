@@ -22,5 +22,8 @@ powershell -Command "c:\ProgramData\chocolatey\bin\choco upgrade chocolatey | ou
 REM Installing jq
 powershell -Command "c:\ProgramData\chocolatey\bin\choco install jq --force -version 1.5 -y"
 
+REM update gvprovider name in run.bat file	
+powershell -Command "(Get-Content 'c:\tibco\be\gvproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\gvproviders\run.bat' -Pattern '^set GVPROVIDER=na').Line.Substring(4), 'GVPROVIDER=%GVPROVIDER%' | Set-Content 'c:\tibco\be\gvproviders\run.bat'"
+
 REM calling gv provider setup.bat file
 c:\tibco\be\gvproviders\!GVPROVIDER!\setup.bat

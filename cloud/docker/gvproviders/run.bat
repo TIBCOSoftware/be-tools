@@ -16,6 +16,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 set JSON_FILE=c:\tibco\be\gvproviders\output.json
+set BE_PROPS_FILE=c:\tibco\be\application\beprops_all.props
 
 if EXIST !JSON_FILE! (
   (jq -r "keys | @csv" !JSON_FILE!) > jsonkeys
@@ -23,8 +24,7 @@ if EXIST !JSON_FILE! (
   set /p tempkeys=<jsonkeys
   set keys=!tempkeys:"=!
   
-  set BE_PROPS_FILE=c:\tibco\be\application\beprops_all.props
-  echo #Latest GV values>>!BE_PROPS_FILE!
+  echo # GV values from !GVPROVIDER!>>!BE_PROPS_FILE!
   
   for %%a in (!keys!) do (
     set key=%%~a

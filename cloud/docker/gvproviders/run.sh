@@ -20,7 +20,6 @@ source ./gvproviders/${GVPROVIDER}/run.sh
 BE_PROPS_FILE=/home/tibco/be/beprops_all.props
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 
-
 if [ -f $JSON_FILE ]; then
   prop_keys="$(/home/tibco/be/gvproviders/jq -r keys[] $JSON_FILE)"
   echo "# GV values from $GVPROVIDER">>$BE_PROPS_FILE
