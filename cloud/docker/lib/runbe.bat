@@ -55,16 +55,20 @@ if NOT "%LOG_LEVEL%" == "na" echo java.property.be.trace.roles=%LOG_LEVEL%>> %TR
 
 ::beprops_all.props file
 cd /d c:\\tibco\be
+if NOT EXIST "c:\tibco\be\application" (
+	mkdir "c:\tibco\be\application"
+)
 type NUL>%BE_PROPS_FILE%
 
-for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
-
-call .\gvproviders\run.bat
-if %ERRORLEVEL% NEQ 0 (
-  exit /b 1
+if EXIST .\gvproviders\run.bat (
+	REM update gvprovider gvs in props file
+	call .\gvproviders\run.bat
 )
 
 echo #BE props file>>%BE_PROPS_FILE%
+type %BE_PROPS_FILE%
+
+for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
 
 ::Append env variables starting with tra. to the current tra file and others to beprops file.
 powershell -Command "Get-ChildItem Env: | Foreach-Object { if ($_.Name -like 'tra.*') {Add-Content -Path %TRA_FILE% -NoNewLine -Value $_.Name.Substring(1),=,$_.Value,`r`n} else {Add-Content -Path %BE_PROPS_FILE% -NoNewLine -Value tibco.clientVar.,$_.Name,=,$_.Value,`r`n} }"

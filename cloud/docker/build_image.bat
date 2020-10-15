@@ -59,79 +59,74 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
-REM Getting argument count
-set argCount=0
-for %%x in (%*) do set /A argCount+=1
-
-REM Looping over all arguments and assigning variables
-set /A counter=0
-for /l %%x in (1, 1, %argCount%) do (
+REM parsing arguments
+for %%x in (%*) do (
     set /A counter=!counter!+1
     call set currentArg=%%!counter!
 
     if !currentArg! EQU -i (
-        set /a inCounter=!counter!+1
-        call set "ARG_TYPE=%%!inCounter!"
+        shift
+        call set "ARG_TYPE=%%!counter!"
         set "ARG_TYPE=!ARG_TYPE:"=!"
     )
-
+    
     if !currentArg! EQU --image-type (
-        set /a inCounter=!counter!+1
-        call set "ARG_TYPE=%%!inCounter!"
+        shift
+        call set "ARG_TYPE=%%!counter!"
         set "ARG_TYPE=!ARG_TYPE:"=!"
     )
 
     if !currentArg! EQU -s (
-        set /a inCounter=!counter!+1
-        call set "ARG_SOURCE=%%!inCounter!"
+        shift
+        call set "ARG_SOURCE=%%!counter!"
         set "ARG_SOURCE=!ARG_SOURCE:"=!"
     )
 
     if !currentArg! EQU --source (
-        set /a inCounter=!counter!+1
-        call set "ARG_SOURCE=%%!inCounter!"
+        shift
+        call set "ARG_SOURCE=%%!counter!"
         set "ARG_SOURCE=!ARG_SOURCE:"=!"
     )
 
     if !currentArg! EQU -a (
-        set /a inCounter=!counter!+1
-        call set "ARG_APP_LOCATION=%%!inCounter!"
+        shift
+        call set "ARG_APP_LOCATION=%%!counter!"
         set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
     )
 
     if !currentArg! EQU --app-location (
-        set /a inCounter=!counter!+1
-        call set "ARG_APP_LOCATION=%%!inCounter!"
+        shift
+        call set "ARG_APP_LOCATION=%%!counter!"
         set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
     )
 
     if !currentArg! EQU -t (
-        set /a inCounter=!counter!+1
-        call set "ARG_TAG=%%!inCounter!"
+        shift
+        call set "ARG_TAG=%%!counter!"
         set "ARG_TAG=!ARG_TAG:"=!"
     )
 
     if !currentArg! EQU --tag (
-        set /a inCounter=!counter!+1
-        call set "ARG_TAG=%%!inCounter!"
+        shift
+        call set "ARG_TAG=%%!counter!"
         set "ARG_TAG=!ARG_TAG:"=!"
     )
 
     if !currentArg! EQU -d (
-        set /a inCounter=!counter!+1
-        call set "ARG_DOCKER_FILE=%%!inCounter!"
+        shift
+        call set "ARG_DOCKER_FILE=%%!counter!"
         set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
     )
 
     if !currentArg! EQU --docker-file (
-        set /a inCounter=!counter!+1
-        call set "ARG_DOCKER_FILE=%%!inCounter!"
+        shift
+        call set "ARG_DOCKER_FILE=%%!counter!"
         set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
     )
 
     if !currentArg! EQU --gv-provider (
-        set /a inCounter=!counter!+1
-        call set "ARG_GVPROVIDER=%%!inCounter!"
+        shift
+        call set "ARG_GVPROVIDER=%%!counter!"
         if "!ARG_GVPROVIDER!" NEQ "" (
             set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
             set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
@@ -526,34 +521,40 @@ mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
 
 if "!APP_OR_BUILDER_IMAGE!" EQU "true" (
+    if !ARG_INSTALLERS_PLATFORM! EQU win (
+        set "SCRIPT_EXTN=.bat"
+    ) else (
+        set "SCRIPT_EXTN=.sh"
+    )
     mkdir !TEMP_FOLDER!\gvproviders
-    xcopy /Q /C /Y .\gvproviders\*.bat !TEMP_FOLDER!\gvproviders > NUL
+    xcopy /Q /C /Y .\gvproviders\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders > NUL
     if "!ARG_GVPROVIDER!" EQU "na" (
         set "ARG_GVPROVIDER=na"
     ) else if "!ARG_GVPROVIDER!" EQU "http" (
         mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
-        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
+        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
     ) else if "!ARG_GVPROVIDER!" EQU "consul" (
         mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
-        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
+        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
     ) else (
         if EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!" (
-            if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\setup.bat" (
-                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
+            if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\setup!SCRIPT_EXTN!" (
+                echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
                 GOTO END-withError
-            ) else if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\run.bat" (
-                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
+            ) else if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\run!SCRIPT_EXTN!" (
+                echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
                 GOTO END-withError
             ) else (
                  mkdir !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDER!
                  xcopy /Q /C /R /Y /E .\gvproviders\custom\!ARG_GVPROVIDER!\* !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDER! > NUL
             )
+            set "ARG_GVPROVIDER=custom\!ARG_GVPROVIDER!"
         ) else if EXIST ".\gvproviders\!ARG_GVPROVIDER!" (
-            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\setup.bat" (
-                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
+            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\setup!SCRIPT_EXTN!" (
+                echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
                 GOTO END-withError
-            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\run.bat" (
-                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
+            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\run!SCRIPT_EXTN!" (
+                echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
                 GOTO END-withError
             ) else (
                  mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
@@ -682,7 +683,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     )
     cd ..
 
-    powershell -Command "Copy-Item '.\lib\runbe.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
+    powershell -Command "Copy-Item '.\lib\runbe!SCRIPT_EXTN!' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
     echo.
 )
 
@@ -766,7 +767,7 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
     echo.
-    echo  [--gv-provider]      :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
+    echo  [--gv-provider]      :    Name of GV provider to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
     echo                            Note: Use this flag only if -i/--image-type is !APP_IMAGE!/!BUILDER_IMAGE!.
     echo.
     echo  [-h/--help]          :    Print the usage of script. [optional]

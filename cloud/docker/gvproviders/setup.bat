@@ -4,7 +4,7 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-set GVPROVIDER=na
+set GVPROVIDER=%1
 
 if "!GVPROVIDER!" EQU "na" (
     echo INFO: Skipping gv provider setup
@@ -23,7 +23,7 @@ REM Installing jq
 powershell -Command "c:\ProgramData\chocolatey\bin\choco install jq --force -version 1.5 -y"
 
 REM update gvprovider name in run.bat file	
-powershell -Command "(Get-Content 'c:\tibco\be\gvproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\gvproviders\run.bat' -Pattern '^set GVPROVIDER=na').Line.Substring(4), 'GVPROVIDER=%GVPROVIDER%' | Set-Content 'c:\tibco\be\gvproviders\run.bat'"
+powershell -Command "(Get-Content 'c:\tibco\be\gvproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\gvproviders\run.bat' -Pattern '^set GVPROVIDER=na').Line.Substring(4), 'GVPROVIDER=!GVPROVIDER!' | Set-Content 'c:\tibco\be\gvproviders\run.bat'"
 
 REM calling gv provider setup.bat file
 c:\tibco\be\gvproviders\!GVPROVIDER!\setup.bat

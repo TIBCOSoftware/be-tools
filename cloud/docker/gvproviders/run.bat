@@ -24,6 +24,7 @@ if EXIST !JSON_FILE! (
   set /p tempkeys=<jsonkeys
   set keys=!tempkeys:"=!
   
+  echo # >>!BE_PROPS_FILE!
   echo # GV values from !GVPROVIDER!>>!BE_PROPS_FILE!
   
   for %%a in (!keys!) do (
