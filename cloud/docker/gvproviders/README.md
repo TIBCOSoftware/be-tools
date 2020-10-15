@@ -6,12 +6,12 @@ This framework allows customers to configure and pull GV values from various end
 2. Consul - Use this type when end-store is Consul
 3. Custom - Use this type to provide custom implemetation to pull GV values from an end-store of user choice
 
-While building the BE application image, use `--gv-providers` flag to select GV provider type - `http`, `consul` OR `custom`. More details are available in their respective sections below.
+While building the BE application image, use `--gv-provider` flag to select GV provider type - `http`, `consul` OR `custom`. More details are available in their respective sections below.
 
 ## HTTP
 
 ### Build
-To select this provider type, pass `http` to --gv-providers flag while building the BE application image.
+To select this provider type, pass `http` to --gv-provider flag while building the BE application image.
 
 Sample:
 ```sh
@@ -19,7 +19,7 @@ Sample:
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
 -r fdhttp:latest \
---gv-providers "http"
+--gv-provider "http"
 ```
 
 ### Run
@@ -52,14 +52,14 @@ docker run \
 ## Consul
 
 ### Build
-To select this provider type, pass `consul` to --gv-providers flag while building the BE application image.
+To select this provider type, pass `consul` to --gv-provider flag while building the BE application image.
 Sample:
 ```sh
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
 -r fdconsul:latest \
---gv-providers "consul"
+--gv-provider "consul"
 ```
 
 ### Run
@@ -87,14 +87,14 @@ Provide custom implementation to the following files:
 * be-tools/cloud/docker/gvproviders/custom/run.bat - Windows version of run.sh
 
 ### Build
-To select this provider type, pass `custom` to --gv-providers flag while building the BE application image.
+To select this provider type, pass `custom` to --gv-provider flag while building the BE application image.
 Sample:
 ```sh
 ./build_app_image.sh \
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
 -r fdcustom:latest \
---gv-providers "custom"
+--gv-provider "custom"
 ```
 
 ### Example
@@ -171,7 +171,7 @@ aws secretsmanager get-secret-value --secret-id $AWS_SM_SECRET_ID --output text 
 -l /home/user/tibco/installers \
 -a /home/user/tibco/be/5.6/examples/standard/FraudDetection \
 -r fdcustom:latest \
---gv-providers "custom"
+--gv-provider "custom"
 ```
 
 * Step 4: Run

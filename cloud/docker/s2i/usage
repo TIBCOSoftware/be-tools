@@ -34,7 +34,7 @@ Usage: build_image.sh
 
  [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
 
- [--gv-providers]     :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
+ [--gv-provider]      :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
                            Note: Use this flag only if -i/--image-type is app/s2ibuilder.
 
  [--disable-tests]    :    Disables docker unit tests on created image. [optional]

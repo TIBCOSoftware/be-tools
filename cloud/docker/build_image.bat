@@ -19,7 +19,7 @@ set "ARG_TYPE=na"
 set "ARG_APP_LOCATION=na"
 set "ARG_TAG=na"
 set "ARG_DOCKER_FILE=na"
-set "ARG_GVPROVIDERS=na"
+set "ARG_GVPROVIDER=na"
 
 REM be related args
 set "BE_HOME=na"
@@ -129,10 +129,15 @@ for /l %%x in (1, 1, %argCount%) do (
         set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
     )
 
-    if !currentArg! EQU --gv-providers (
+    if !currentArg! EQU --gv-provider (
         set /a inCounter=!counter!+1
-        call set "ARG_GVPROVIDERS=%%!inCounter!"
-        set "ARG_GVPROVIDERS=!ARG_GVPROVIDERS:"=!"
+        call set "ARG_GVPROVIDER=%%!inCounter!"
+        if "!ARG_GVPROVIDER!" NEQ "" (
+            set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
+            set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+        ) else (
+            set "ARG_GVPROVIDER=na"
+        )
     )
 
     if !currentArg! EQU -h (
@@ -417,6 +422,11 @@ if !ARG_IMAGE_VERSION! EQU na (
     set "ARG_IMAGE_VERSION=!IMAGE_NAME!:!ARG_BE_VERSION!"
 )
 
+REM gv provider check
+if "!ARG_GVPROVIDER!" EQU "" (
+    set "ARG_GVPROVIDER=na"
+)
+
 REM information display
 echo INFO: Supplied/Derived Data:
 echo ------------------------------------------------------------------------------
@@ -487,6 +497,10 @@ if "!EAR_FILE_NAME!" NEQ "" (
 echo INFO: DOCKERFILE                   : [!ARG_DOCKER_FILE!]
 echo INFO: IMAGE VERSION                : [!ARG_IMAGE_VERSION!]
 
+if !ARG_GVPROVIDER! NEQ na (
+    echo INFO: GV Provider                  : [!ARG_GVPROVIDER!]
+)
+
 if !ARG_JRE_VERSION! NEQ na (
     echo INFO: JRE VERSION                  : [!ARG_JRE_VERSION!]
 )
@@ -511,42 +525,43 @@ if !INSTALLATION_TYPE! EQU fromlocal mkdir !TEMP_FOLDER!
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
 
-if !APP_OR_BUILDER_IMAGE! EQU true (
+if "!APP_OR_BUILDER_IMAGE!" EQU "true" (
     mkdir !TEMP_FOLDER!\gvproviders
-    xcopy /Q /C /R /Y /E .\gvproviders\*.bat !TEMP_FOLDER!\gvproviders > NUL
-    if "!ARG_GVPROVIDERS!" EQU "" set "ARG_GVPROVIDERS=na"
-    if "!ARG_GVPROVIDERS!" EQU "http" (
-        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
-        xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
-    ) else if "!ARG_GVPROVIDERS!" EQU "consul" (
-        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
-        xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
+    xcopy /Q /C /Y .\gvproviders\*.bat !TEMP_FOLDER!\gvproviders > NUL
+    if "!ARG_GVPROVIDER!" EQU "na" (
+        set "ARG_GVPROVIDER=na"
+    ) else if "!ARG_GVPROVIDER!" EQU "http" (
+        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
+        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
+    ) else if "!ARG_GVPROVIDER!" EQU "consul" (
+        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
+        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*.bat !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
     ) else (
-        if EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!" (
-            if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!\setup.bat" (
-                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDERS!\]
-                exit END-withError
-            ) else if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDERS!\run.bat" (
-                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDERS!\]
-                exit END-withError
+        if EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!" (
+            if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\setup.bat" (
+                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
+                GOTO END-withError
+            ) else if NOT EXIST ".\gvproviders\custom\!ARG_GVPROVIDER!\run.bat" (
+                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\custom\!ARG_GVPROVIDER!\]
+                GOTO END-withError
             ) else (
-                 mkdir !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDERS!
-                 xcopy /Q /C /R /Y /E .\gvproviders\custom\!ARG_GVPROVIDERS!\* !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDERS! > NUL
+                 mkdir !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDER!
+                 xcopy /Q /C /R /Y /E .\gvproviders\custom\!ARG_GVPROVIDER!\* !TEMP_FOLDER!\gvproviders\custom\!ARG_GVPROVIDER! > NUL
             )
-        ) else if EXIST ".\gvproviders\!ARG_GVPROVIDERS!" (
-            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDERS!\setup.bat" (
-                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\!ARG_GVPROVIDERS!\]
-                exit END-withError
-            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDERS!\run.bat" (
-                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDERS!] under the directory - [.\gvproviders\!ARG_GVPROVIDERS!\]
-                exit END-withError
+        ) else if EXIST ".\gvproviders\!ARG_GVPROVIDER!" (
+            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\setup.bat" (
+                echo ERROR: setup.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
+                GOTO END-withError
+            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER!\run.bat" (
+                echo ERROR: run.bat is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER!\]
+                GOTO END-withError
             ) else (
-                 mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS!
-                 xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDERS!\* !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDERS! > NUL
+                 mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
+                 xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDER!\* !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
             )
         ) else (
-            echo ERROR: GV provider[!ARG_GVPROVIDERS!] is not supported.
-            exit END-withError
+            echo ERROR: GV provider[!ARG_GVPROVIDER!] is not supported.
+            GOTO END-withError
         )
     )
 )
@@ -695,13 +710,13 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     ) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDERS="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 )
 
@@ -751,7 +766,7 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
     echo.
-    echo  [--gv-providers]     :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
+    echo  [--gv-provider]      :    Names of GV providers to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
     echo                            Note: Use this flag only if -i/--image-type is !APP_IMAGE!/!BUILDER_IMAGE!.
     echo.
     echo  [-h/--help]          :    Print the usage of script. [optional]
