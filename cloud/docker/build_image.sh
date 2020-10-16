@@ -78,7 +78,7 @@ USAGE+="                           Note: No need to specify be-home if script is
 USAGE+="\n\n [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]"
 USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]\n"
-USAGE+="                           Note: Use this flag only if -i/--image-type is $APP_IMAGE/$BUILDER_IMAGE."
+USAGE+="                           Note: This flag can be ignored if -i/--image-type is $TEA_IMAGE"
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image. [optional]\n"
 USAGE+="                           Note: Use this flag only if -i/--image-type is $APP_IMAGE/$BUILDER_IMAGE."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script. [optional]" 
@@ -555,6 +555,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
+    fi
+    if [ -d "$BE_HOME/decisionmanager" ]; then
+        BE_TAR_CMD="$BE_DIR/decisionmanager "
     fi
     if [ -d "$BE_HOME/hotfix" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/hotfix "

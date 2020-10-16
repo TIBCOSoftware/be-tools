@@ -21,6 +21,7 @@ ARG AS_SHORT_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
+ARG GVPROVIDERS
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -48,12 +49,17 @@ ENV \
 RUN mkdir "c:\working\installer" && mkdir "c:\tibco\be"
 
 COPY lib/be_docker_install.bat lib/runbe.bat lib/vcredist_install.bat installers/* "c:\working/"
+COPY gvproviders "c:\tibco\be\gvproviders"
 COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
 
 # Remove unnecessary files and folders after successful installation and configuration
 RUN "c:\working\be_docker_install.bat"
 RUN copy "c:\working\runbe.bat" "c:\tibco\be"
 RUN "c:\working\vcredist_install.bat"
+
+# Setup gv providers
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
+
 RUN rmdir /S /Q "c:\working"
 
 # The following is the list of data, log and RMS Volumes
