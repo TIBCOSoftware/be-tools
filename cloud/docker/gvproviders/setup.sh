@@ -29,7 +29,8 @@ if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be
 
 # update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders
-sed -i "s/GVPROVIDER=na/GVPROVIDER=$GVPROVIDER/g" run.sh
+ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
+sed -i "s/GVPROVIDER=na/GVPROVIDER=$ESCAPED_GVPROVIDER/g" run.sh
 
 # clean up
 apt-get remove -y wget

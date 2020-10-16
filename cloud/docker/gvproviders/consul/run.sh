@@ -6,7 +6,9 @@
 #
 
 if [ -z "$CONSUL_SERVER_URL" ]; then
-  return 0;
+  echo "WARN: GV provider[consul] is configured but env variable CONSUL_SERVER_URL is empry OR not supplied."
+  echo "WARN: Skip fetching GV values from Consul."
+  exit 0
 fi
 
 echo "INFO: Reading GV values from Consul.."

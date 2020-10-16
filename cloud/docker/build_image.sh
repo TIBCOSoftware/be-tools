@@ -542,8 +542,6 @@ if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
 
-exit 1
-
 # create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
