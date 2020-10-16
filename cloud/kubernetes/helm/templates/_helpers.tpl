@@ -62,16 +62,34 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
+        {{- if ne .Values.cpType "eks-fargate" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
+        {{- else }}
+      spec:
+        accessModes: {{ .Values.volumes.accessModes }}
+        volumeName: {{ .Values.volumes.snclaimVolume }}
+        {{- end }}
         resources:
           requests:
             storage: {{ .Values.volumes.storage }}
 {{- end }}
 {{- end -}}
 
+
+{{- define "fargate-resource-memory" -}}
+{{- if eq .Values.cpType "eks-fargate" }}
+resources:
+  requests:
+    memory: "{{ .Values.resources.memory }}"
+    cpu: "{{ .Values.resources.cpu }}"
+  limits:
+    memory: "{{ .Values.resources.memory }}"
+    cpu: "{{ .Values.resources.cpu }}"
+{{- end -}}
+{{- end -}}
 
 {{/*
 Create a DB configMap environment details for store
