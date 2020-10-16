@@ -17,7 +17,7 @@ ARG DOCKERFILE_NAME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG JRE_VERSION
-ARG GVPROVIDERS
+ARG GVPROVIDER
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -67,7 +67,7 @@ VOLUME /mnt/tibco/be/logs \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared
 
 # Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 # These will always be the listen port for AS and AS Remote URL
 EXPOSE 50000 50001

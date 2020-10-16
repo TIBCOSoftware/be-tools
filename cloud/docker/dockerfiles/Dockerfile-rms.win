@@ -21,7 +21,7 @@ ARG AS_SHORT_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
-ARG GVPROVIDERS
+ARG GVPROVIDER
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -58,7 +58,7 @@ RUN copy "c:\working\runbe.bat" "c:\tibco\be"
 RUN "c:\working\vcredist_install.bat"
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
 
 RUN rmdir /S /Q "c:\working"
 

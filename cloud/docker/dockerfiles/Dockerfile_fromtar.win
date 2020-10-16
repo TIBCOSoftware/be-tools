@@ -17,7 +17,7 @@ ARG JRE_VERSION
 ARG DOCKERFILE_NAME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
-ARG GVPROVIDERS
+ARG GVPROVIDER
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -60,7 +60,7 @@ VOLUME \
     "${BE_HOME}\rms\shared"
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
 
 # The following is the list of communication ports that need to be open-n-available
 # # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port

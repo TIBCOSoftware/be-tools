@@ -24,8 +24,8 @@ mv jq-linux64 jq
 chmod +x jq
 
 # invoke provider specific setup
-chmod +x /home/tibco/be/gvproviders/${GVPROVIDERS}/*.sh
-if [ -f /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDERS}/setup.sh; fi
+chmod +x /home/tibco/be/gvproviders/${GVPROVIDER}/*.sh
+if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh; fi
 
 # update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders

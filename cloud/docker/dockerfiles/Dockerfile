@@ -106,7 +106,7 @@ ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
-ARG GVPROVIDERS
+ARG GVPROVIDER
 
 COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
 COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
@@ -147,7 +147,7 @@ ENV PU=default \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
 # Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store

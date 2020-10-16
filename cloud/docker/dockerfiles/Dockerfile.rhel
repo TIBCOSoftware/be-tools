@@ -43,7 +43,7 @@ ARG TEMP_FOLDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
-ARG GVPROVIDERS
+ARG GVPROVIDER
 
 LABEL be-intermediate-image=true
 RUN yum update -y \
@@ -83,7 +83,7 @@ RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_V
 RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
 
 # Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDERS}
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 # Cleanup.
 RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
