@@ -462,7 +462,7 @@ if ! [ "$ARG_AS_VERSION" = "na" -o -z "${ARG_AS_VERSION// }" ]; then
     fi
 fi
 
-if ! [ -z "${EAR_FILE_NAME//}" -o -z "${CDD_FILE_NAME//}" ]; then
+if ! [ -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" ]; then
     echo "INFO: CDD FILE NAME                : [$CDD_FILE_NAME]"
     echo "INFO: EAR FILE NAME                : [$EAR_FILE_NAME]"    
 fi
@@ -470,7 +470,7 @@ fi
 echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE VERSION                : [$ARG_IMAGE_VERSION]"
 
-if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER//}" ]; then
+if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
     echo "INFO: GV Provider                  : [$ARG_GVPROVIDER]"
 fi
 
@@ -507,45 +507,42 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 fi
 
-if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
+if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     mkdir -p $TEMP_FOLDER/gvproviders
     cp ./gvproviders/*.sh $TEMP_FOLDER/gvproviders
-    if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER//}" ]; then
+    if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
         ARG_GVPROVIDER="na"
     elif [ "$ARG_GVPROVIDER" = "http" -o "$ARG_GVPROVIDER" = "consul" ]; then
         mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
         cp -a ./gvproviders/$ARG_GVPROVIDER/*.sh $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
     else
-        if [ -d "./gvproviders/custom/$ARG_GVPROVIDER" ]; then
+        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER/custom\//}
+        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER_TEMP/custom\\/}
+        ARG_GVPROVIDER_TEMP="custom/$ARG_GVPROVIDER_TEMP"
+        if [ -d "./gvproviders/$ARG_GVPROVIDER_TEMP" ]; then
             # check for setup.sh & run.sh
-            if ! [ -f "./gvproviders/custom/$ARG_GVPROVIDER/setup.sh" ]; then
-                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/custom/$ARG_GVPROVIDER/]"
+            if ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/setup.sh" ]; then
+                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
                 exit 1;
-            elif ! [ -f "./gvproviders/custom/$ARG_GVPROVIDER/run.sh" ]; then
-                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/custom/$ARG_GVPROVIDER/]"
+            elif ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/run.sh" ]; then
+                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
                 exit 1;
             fi
-            mkdir -p $TEMP_FOLDER/gvproviders/custom/$ARG_GVPROVIDER
-            cp -a ./gvproviders/custom/$ARG_GVPROVIDER/* $TEMP_FOLDER/gvproviders/custom/$ARG_GVPROVIDER
-        elif [ -d "./gvproviders/$ARG_GVPROVIDER" ]; then
-            # check for setup.sh & run.sh
-            if ! [ -f "./gvproviders/$ARG_GVPROVIDER/setup.sh" ]; then
-                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER/]"
-                exit 1;
-            elif ! [ -f "./gvproviders/$ARG_GVPROVIDER/run.sh" ]; then
-                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER/]"
-                exit 1;
-            fi
-            mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
-            cp -a ./gvproviders/$ARG_GVPROVIDER/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
+            mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
+            cp -a ./gvproviders/$ARG_GVPROVIDER_TEMP/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
+            ARG_GVPROVIDER=$ARG_GVPROVIDER_TEMP
         else
             echo "ERROR: GV provider[$ARG_GVPROVIDER] is not supported."
             exit 1;
         fi
-    fi 
-elif [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
+    fi
+fi
+
+if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
+
+exit 1
 
 # create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
