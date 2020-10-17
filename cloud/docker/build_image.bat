@@ -550,6 +550,9 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
             GOTO END-withError
         )
         set "ARG_GVPROVIDER=!ARG_GVPROVIDER_TEMP!"
+        if "!SCRIPT_EXTN!" EQU ".sh" (
+            set "ARG_GVPROVIDER=!ARG_GVPROVIDER_TEMP:custom\=custom/!"
+        )
     )
 )
 
