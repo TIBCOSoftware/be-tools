@@ -14,6 +14,8 @@ then
   exit 0
 fi
 
+echo "INFO: Reading GV values from [${GVPROVIDER}]"
+
 chmod +x ./gvproviders/${GVPROVIDER}/run.sh
 ./gvproviders/${GVPROVIDER}/run.sh
 

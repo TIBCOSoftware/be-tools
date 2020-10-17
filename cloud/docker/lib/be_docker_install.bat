@@ -87,14 +87,6 @@ if "%ACTIVESPACES_VERSION%" NEQ "na" (
 cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"
 
-:: If AS is available append relevent properties to tra.
-if "%AS_VERSION%" NEQ "na" (
-	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%\bin\be-engine.tra
-	echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
-	echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
-)
-echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> %BE_HOME%\bin\be-engine.tra
-
 :: Perform annotations processing (_annotations.idx)
 cd %BE_HOME%/bin
 set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aws/*;%BE_HOME%/lib/ext/tpcl/gwt/*;%BE_HOME%/lib/ext/tpcl/apache/*;%BE_HOME%/lib/ext/tpcl/emf/*;%BE_HOME%/lib/ext/tpcl/tomsawyer/*;%BE_HOME%/lib/ext/tibco/*;%BE_HOME%/lib/eclipse/plugins/*;%BE_HOME%/rms/lib/*;%BE_HOME%/mm/lib/*;%JRE_HOME%/lib/*;%JRE_HOME%/lib/ext/*;

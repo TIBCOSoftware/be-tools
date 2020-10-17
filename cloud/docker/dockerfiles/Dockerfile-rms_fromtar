@@ -13,6 +13,7 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
+ARG GVPROVIDER
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -20,6 +21,7 @@ LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
 ADD be.tar /opt/tibco
 COPY app/* /opt/tibco/be/ext/
 COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
+COPY gvproviders /home/tibco/be/gvproviders
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
 COPY lib/*.pm lib/*.pl lib/*.sh /home/tibco/be/
@@ -62,6 +64,9 @@ VOLUME /mnt/tibco/be/logs \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/notify \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/locale
+
+# Setup gv providers
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 # These will always be the listen port for AS and AS Remote URL
 EXPOSE 50000 50001

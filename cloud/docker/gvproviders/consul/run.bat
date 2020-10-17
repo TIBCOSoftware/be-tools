@@ -2,6 +2,12 @@
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
+if not defined CONSUL_SERVER_URL (
+  echo WARN: GV provider[consul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied.
+  echo WARN: Skip fetching GV values from Consul.
+  EXIT /B 0
+)
+
 type NUL > c:\tibco\be\gvproviders\output.json
 set JSON_FILE=c:\tibco\be\gvproviders\output.json
 type NUL > c:\tibco\be\temp.json

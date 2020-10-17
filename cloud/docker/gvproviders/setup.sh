@@ -8,11 +8,11 @@
 GVPROVIDER=$1
 
 if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
-	echo "Skipping gv provider setup"
+	echo "INFO: Skipping gv provider setup"
   exit 0
 fi
 
-echo "Setting up '$GVPROVIDER' gv provider..."
+echo "INFO: Setting up '$GVPROVIDER' gv provider..."
 
 # install tools common for all gv providers
 cd /home/tibco/be/gvproviders
@@ -29,8 +29,8 @@ if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be
 
 # update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders
-ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
-sed -i "s/GVPROVIDER=na/GVPROVIDER=$ESCAPED_GVPROVIDER/g" run.sh
+sed "s,"GVPROVIDER=na","GVPROVIDER=$GVPROVIDER",g" run.sh > temprun.sh
+rm -f run.sh; mv temprun.sh run.sh;
 
 # clean up
 apt-get remove -y wget

@@ -31,6 +31,7 @@ RUN apt-get update \
  && apt-get install -y unzip procps findutils
 
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
+COPY gvproviders /home/tibco/be/gvproviders
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
@@ -66,6 +67,7 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG AS_VERSION
 ARG AS_SHORT_VERSION
 ARG JRE_VERSION
+ARG GVPROVIDER
 
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
@@ -103,6 +105,9 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
  EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
  COMPONENT=rms
+
+# Setup gv providers
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store

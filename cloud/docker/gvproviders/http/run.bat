@@ -4,15 +4,13 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-echo INFO: Reading GV values..
-
 type NUL > c:\tibco\be\gvproviders\output.json
 set JSON_FILE=c:\tibco\be\gvproviders\output.json
 
 if not defined GVP_HTTP_SERVER_URL (
-  echo ERROR: Cannot read GVs from http url
-  echo ERROR: Specify env variable GVP_HTTP_SERVER_URL
-  EXIT /B 1
+  echo WARN: GV provider[http] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied.
+  echo WARN: Skip fetching GV values from http end-store.
+  EXIT /B 0
 )
 
 echo INFO: GVP_HTTP_SERVER_URL = %GVP_HTTP_SERVER_URL%

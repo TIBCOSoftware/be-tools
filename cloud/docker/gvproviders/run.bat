@@ -10,6 +10,8 @@ if !GVPROVIDER! EQU na (
   exit /b 0
 )
 
+echo INFO: Reading GV values from [!GVPROVIDER!]
+
 call .\gvproviders\!GVPROVIDER!\run.bat
 if %ERRORLEVEL% NEQ 0 (
   exit /b 1
@@ -35,4 +37,7 @@ if EXIST !JSON_FILE! (
   )
 
   del jsonkeys values
+) else (
+  echo WARN: 0[zero] GV values fetched from the GV provider[!GVPROVIDER!]
+  echo.
 )

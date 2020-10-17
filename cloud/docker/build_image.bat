@@ -24,7 +24,6 @@ set "ARG_GVPROVIDER=na"
 REM be related args
 set "BE_HOME=na"
 set "ARG_INSTALLER_LOCATION=na"
-set "ARG_EDITION=enterprise"
 set "ARG_BE_VERSION=na"
 set "ARG_BE_SHORT_VERSION=na"
 set "ARG_BE_HOTFIX=na"
@@ -417,11 +416,6 @@ if !ARG_IMAGE_VERSION! EQU na (
     set "ARG_IMAGE_VERSION=!IMAGE_NAME!:!ARG_BE_VERSION!"
 )
 
-REM gv provider check
-if "!ARG_GVPROVIDER!" EQU "" (
-    set "ARG_GVPROVIDER=na"
-)
-
 REM information display
 echo INFO: Supplied/Derived Data:
 echo ------------------------------------------------------------------------------
@@ -493,7 +487,7 @@ echo INFO: DOCKERFILE                   : [!ARG_DOCKER_FILE!]
 echo INFO: IMAGE VERSION                : [!ARG_IMAGE_VERSION!]
 
 if !ARG_GVPROVIDER! NEQ na (
-    echo INFO: GV Provider                  : [!ARG_GVPROVIDER!]
+    echo INFO: GV PROVIDER                  : [!ARG_GVPROVIDER!]
 )
 
 if !ARG_JRE_VERSION! NEQ na (
@@ -538,7 +532,7 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
         xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
     ) else (
         set "ARG_GVPROVIDER_TEMP=!ARG_GVPROVIDER:custom\=!"
-        set "ARG_GVPROVIDER_TEMP=!ARG_GVPROVIDER:custom/=!"
+        set "ARG_GVPROVIDER_TEMP=!ARG_GVPROVIDER_TEMP:custom/=!"
         set "ARG_GVPROVIDER_TEMP=custom\!ARG_GVPROVIDER_TEMP!"
         if EXIST ".\gvproviders\!ARG_GVPROVIDER_TEMP!" (
             if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER_TEMP!\setup!SCRIPT_EXTN!" (
@@ -595,11 +589,6 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     REM replace tibco home path
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
 
-    echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
-    echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
-    echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
-    echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
-
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
         powershell -Command "Copy-Item '!BE_HOME!\rms' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
         powershell -Command "Copy-Item '!BE_HOME!\studio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
@@ -617,8 +606,6 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
-
-        echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>>!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-rms.tra
     )
 
     if EXIST !BE_HOME!\hotfix (
