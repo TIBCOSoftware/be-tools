@@ -83,7 +83,7 @@ docker run \
 To add a custom GV provider, create a new folder under `be-tools/cloud/docker/gvproviders/custom/` and name it as per your choice - lets say `CUSTOM_PROVIDER`. Provide implementation as per below instructions:
 
 1. Add `be-tools/cloud/docker/gvproviders/custom/CUSTOM_PROVIDER/setup.sh` (setup.bat for windows). This gets invoked by the framework during BE application docker build. Provide logic to download required packages & setup environment needed for the config provider.
-2. Add `be-tools/cloud/docker/gvproviders/custom/CUSTOM_PROVIDER/run.sh` (run.bat for windows). This gets invoked by the framework during run time. Provide logic to pull GV values from the end-store, parse and write them into a JSON file at `be-tools/cloud/docker/gvproviders/output.json`
+2. Add `be-tools/cloud/docker/gvproviders/custom/CUSTOM_PROVIDER/run.sh` (run.bat for windows). This gets invoked by the framework during run time. Provide logic to pull GV values from the end-store, parse and write them into a JSON file at `/home/tibco/be/gvproviders/output.json`
 
 ### Build
 To select this provider type, pass `CUSTOM_PROVIDER` to --gv-provider flag while building the BE application image.
