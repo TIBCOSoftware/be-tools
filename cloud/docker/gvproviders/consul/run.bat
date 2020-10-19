@@ -5,7 +5,7 @@
 if not defined CONSUL_SERVER_URL (
   echo WARN: GV provider[consul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied.
   echo WARN: Skip fetching GV values from Consul.
-  EXIT /B 0
+  EXIT /B 1
 )
 
 type NUL > c:\tibco\be\gvproviders\output.json

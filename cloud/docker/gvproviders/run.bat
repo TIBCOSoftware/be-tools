@@ -29,6 +29,12 @@ if EXIST !JSON_FILE! (
   echo # >>!BE_PROPS_FILE!
   echo # GV values from !GVPROVIDER!>>!BE_PROPS_FILE!
   
+  if "!keys!" EQU "" (
+    echo WARN: 0[zero] GV values fetched from the GV provider[!GVPROVIDER!]
+    echo.
+    exit /b 0
+  )
+
   for %%a in (!keys!) do (
     set key=%%~a
     (jq -r .%%~a !JSON_FILE!) > values
