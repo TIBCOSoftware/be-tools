@@ -6,7 +6,7 @@
 #
 
 # install aws cli
-apt-get install -y curl unzip less groff
+package-manager install -y curl unzip less groff
 
 cd /home/tibco/be/gvproviders/custom/aws
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -17,4 +17,4 @@ aws --version
 # clean up
 rm -f awscliv2.zip
 rm -rf aws
-apt-get remove -y curl unzip
+package-manager remove -y curl unzip

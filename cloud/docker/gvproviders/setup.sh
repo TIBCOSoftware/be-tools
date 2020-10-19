@@ -14,9 +14,15 @@ fi
 
 echo "INFO: Setting up '$GVPROVIDER' gv provider..."
 
+if [ -f /usr/bin/apt-get ]; then
+  ln -s /usr/bin/apt-get /usr/bin/package-manager
+elif [ -f /usr/bin/yum ]; then
+  ln -s /usr/bin/yum /usr/bin/package-manager
+fi
+
 # install tools common for all gv providers
 cd /home/tibco/be/gvproviders
-apt-get update -y && apt-get install -y wget
+package-manager update -y && package-manager install -y wget
 
 # Download jq.
 wget "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"
@@ -33,5 +39,5 @@ ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
 sed -i "s/GVPROVIDER=na/GVPROVIDER=$ESCAPED_GVPROVIDER/g" run.sh
 
 # clean up
-apt-get remove -y wget
-apt-get autoremove -y
+package-manager remove -y wget
+package-manager autoremove -y
