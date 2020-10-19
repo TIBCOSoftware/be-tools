@@ -62,7 +62,7 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
-        {{- if ne .Values.cpType "eks-fargate" }}
+        {{- if ne .Values.cpType "awsfargate" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
@@ -80,7 +80,7 @@ volumeMounts:
 
 
 {{- define "fargate-resource-memory" -}}
-{{- if eq .Values.cpType "eks-fargate" }}
+{{- if eq .Values.cpType "awsfargate" }}
 resources:
   requests:
     memory: "{{ .Values.resources.memory }}"
