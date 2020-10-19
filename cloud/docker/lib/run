@@ -36,7 +36,8 @@ export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
 if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
-  chmod u+x /home/tibco/be/gvproviders/run.sh; /home/tibco/be/gvproviders/run.sh
+  chmod +x /home/tibco/be/gvproviders/run.sh
+  /home/tibco/be/gvproviders/run.sh
 fi
 
 /bin/cat $BE_PROPS_FILE
