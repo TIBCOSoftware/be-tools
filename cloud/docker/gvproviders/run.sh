@@ -24,7 +24,7 @@ JSON_FILE=/home/tibco/be/gvproviders/output.json
 
 if [ -f $JSON_FILE ]; then
   prop_keys="$(/home/tibco/be/gvproviders/jq -r keys[] $JSON_FILE)"
-  if [ -z $prop_keys ]; then
+  if [ -z "$prop_keys" ]; then
     echo "WARN: 0[zero] GV values fetched from the GV provider[$GVPROVIDER]"
   else
     echo "# GV values from $GVPROVIDER">>$BE_PROPS_FILE
