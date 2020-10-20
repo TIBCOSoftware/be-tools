@@ -59,6 +59,8 @@ inferencenode:
 resources:
   memory: 1.2Gi
   cpu: 1
+fargate:
+  efsFileSystemId: fs-1234
 
 #*************************Service Part****************************************************
 #Required for cache, sharednothing, store in all cloud providers

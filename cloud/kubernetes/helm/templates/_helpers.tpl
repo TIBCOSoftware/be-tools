@@ -248,3 +248,8 @@ data:
 {{- end }}
 {{- end }}
 {{- end -}}
+
+
+{{- define "volumes.storageClass" -}}
+{{ .Values.volumes.storageClass }}
+{{- end -}}

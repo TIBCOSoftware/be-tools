@@ -1,0 +1,48 @@
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+
+{{- if and (eq .Values.cpType "awsfargate" ) (eq .Values.bsType "sharednothing" ) }}
+apiVersion: storage.k8s.io/v1beta1
+kind: CSIDriver
+metadata:
+  name: efs.csi.aws.com
+spec:
+  attachRequired: false
+{{- end }}
+
+---
+
+{{- if and (eq .Values.cpType "awsfargate" ) (eq .Values.bsType "sharednothing" ) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: "{{ .Values.volumes.storageClass }}"
+provisioner: efs.csi.aws.com
+{{- end }}
+
+---
+
+{{- if and (eq .Values.cpType "awsfargate" ) (eq .Values.bsType "sharednothing" ) }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Values.volumes.snmountVolume }}"
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: "{{ .Values.fargate.efsFileSystemId }}"
+{{- end }}
+
+---
+
