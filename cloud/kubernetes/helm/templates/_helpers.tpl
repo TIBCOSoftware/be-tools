@@ -68,6 +68,8 @@ volumeMounts:
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
         {{- else }}
+        annotations:
+          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
         volumeName: {{ .Values.volumes.snclaimVolume }}

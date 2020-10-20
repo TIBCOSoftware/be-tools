@@ -30,7 +30,7 @@ provisioner: efs.csi.aws.com
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "{{ .Values.volumes.snmountVolume }}"
+  name: "{{ .Values.volumes.snclaimVolume }}"
 spec:
   capacity:
     storage: 5Gi
