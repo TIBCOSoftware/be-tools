@@ -389,26 +389,48 @@ if !INSTALLATION_TYPE! EQU fromlocal (
     )
 
 ) else (
-    set /A RESULT=0
-    set "ARG_ADDONS="
-    set "ERROR=0"
-    
+
     mkdir !TEMP_FOLDER!
 
-    REM send image information with ARG_BE_VERSION var
-    set "ARG_BE_VERSION=!IMAGE_NAME!"
+    REM Creating an empty file
+    break>"!TEMP_FOLDER!/package_files.txt"
 
-    REM Performing validation
-    call .\scripts\be_validate_installers.bat !ARG_BE_VERSION! !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_BE_HOTFIX ARG_ADDONS ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HOTFIX ARG_AS_VERSION ARG_AS_HOTFIX ERROR
-    if !ERROR! NEQ 0 (
-        echo "Docker build failed."
+    set "ERROR_VAL=false"
+
+    call .\scripts\be.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! ARG_BE_VERSION ARG_BE_HOTFIX ARG_JRE_VERSION ERROR_VAL
+    if !ERROR_VAL! EQU true GOTO END-withError
+
+    if "!ARG_BE_VERSION!" EQU "na" (
+        echo ERROR: Unable to identify TIBCO BusinessEvents.
         GOTO END-withError
     )
+    
+    SET ARG_BE_SHORT_VERSION=!ARG_BE_VERSION:~0,3!
 
-    if !ARG_BE_VERSION! NEQ na set ARG_BE_SHORT_VERSION=!ARG_BE_VERSION:~0,3!
-    if !ARG_AS_LEG_VERSION! NEQ na set ARG_AS_LEG_SHORT_VERSION=!ARG_AS_LEG_VERSION:~0,3!
-    if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
-    if !ARG_AS_VERSION! NEQ na set ARG_AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
+    if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
+        call .\scripts\asleg.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ERROR_VAL
+        if !ERROR_VAL! EQU true GOTO END-withError
+
+        if !ARG_AS_LEG_VERSION! NEQ na set ARG_AS_LEG_SHORT_VERSION=!ARG_AS_LEG_VERSION:~0,3!
+    )
+
+    if "!APP_OR_BUILDER_IMAGE!" EQU "true" (
+        call .\scripts\beaddons.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_ADDONS ERROR_VAL
+        if !ERROR_VAL! EQU true GOTO END-withError
+
+        set /a BE6VAL=!ARG_BE_VERSION:.=!
+        if !BE6VAL! GEQ 600 (
+            call .\scripts\as.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_AS_VERSION ARG_AS_HOTFIX ERROR_VAL
+            if !ERROR_VAL! EQU true GOTO END-withError
+
+            if !ARG_AS_VERSION! NEQ na set ARG_AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
+
+            call .\scripts\ftl.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_FTL_VERSION ARG_FTL_HOTFIX ERROR_VAL
+            if !ERROR_VAL! EQU true GOTO END-withError
+
+            if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+        )
+    )
 )
 
 REM assign image name if not provided
@@ -566,14 +588,14 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
 
 REM check be6 or not
 set /a BE6VAL=!ARG_BE_VERSION:.=!
-if !BE6VAL! GTR 599 set "BE6=true"
+if !BE6VAL! GEQ 600 set "BE6=true"
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
         set FILE=%%f
         SET FILE_PATH=!FILE:*#=!
-        xcopy /Q /C /R /Y !FILE_PATH! !TEMP_FOLDER!\installers > NUL
+        xcopy /Q /C /R /Y !ARG_INSTALLER_LOCATION!\!FILE_PATH! !TEMP_FOLDER!\installers > NUL
         echo INFO: Copying package: [!FILE_PATH!]
     )
     echo.

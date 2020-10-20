@@ -367,6 +367,11 @@ else
     # check be and its hot fixes
     source ./scripts/be.sh
 
+    if [ "$ARG_BE_VERSION" = "na" ]; then
+        echo "ERROR: Unable to identify TIBCO BusinessEvents."
+        exit 1
+    fi
+
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
         source ./scripts/asleg.sh
@@ -377,14 +382,12 @@ else
         source ./scripts/beaddons.sh
 
         # check for FTL and AS4 only when BE version is > 6.0.0
-        if [ "$ARG_BE_VERSION" != "na" ]; then
-            if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
-                # validate ftl
-                source ./scripts/ftl.sh
+        if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+            # validate ftl
+            source ./scripts/ftl.sh
 
-                # validate as
-                source ./scripts/as.sh
-            fi
+            # validate as
+            source ./scripts/as.sh
         fi
     fi
 fi
