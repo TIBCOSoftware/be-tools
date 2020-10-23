@@ -62,18 +62,10 @@ volumeMounts:
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
-        {{- if ne .Values.cpType "awsfargate" }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
         accessModes: {{ .Values.volumes.accessModes }}
-        {{- else }}
-        annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
-      spec:
-        accessModes: {{ .Values.volumes.accessModes }}
-        volumeName: {{ .Values.volumes.snclaimVolume }}
-        {{- end }}
         resources:
           requests:
             storage: {{ .Values.volumes.storage }}
