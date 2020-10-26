@@ -9,10 +9,10 @@ if "%ACTIVESPACES_VERSION%" EQU "" set ACTIVESPACES_VERSION=na
 powershell -Command "mkdir c:\tibco -ErrorAction Ignore | out-null; mkdir c:\tibco\be\application -ErrorAction Ignore | out-null"
 :: if AS is available extract and install it.
 if "%AS_VERSION%" NEQ "na" (
-	echo Extracting ActiveSpaces Legacy
+	echo Extracting ActiveSpaces Legacy %AS_VERSION%
 	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_activespaces_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 	cd /d c:/working/installer
-	echo Installing ActiveSpaces Legacy..
+	echo Installing ActiveSpaces Legacy %AS_VERSION% ...
 	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent') -replace '<entry key=\"installationRoot\">c:\\TIBCO</entry>', '<entry key=\"installationRoot\">c:\tibco</entry>' | Set-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent'"
 	TIBCOUniversalInstaller-x86-64.exe -silent
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -25,7 +25,7 @@ if "%AS_VERSION%" NEQ "na" (
 		if exist c:/working/installer/TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent (
 			echo Extracting ActiveSpaces Legacy HF
 			cd /d c:/working/installer
-			echo Installing ActiveSpaces Legacy HF..
+			echo Installing ActiveSpaces Legacy HF ...
 			powershell -Command "(Get-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent') -replace '<entry key=\"installationRoot\">c:\\TIBCO</entry>', '<entry key=\"installationRoot\">c:\tibco</entry>' | Set-Content 'TIBCOUniversalInstaller_activespaces_%AS_VERSION%.silent'"
 			TIBCOUniversalInstaller-x86-64.exe -silent
 			powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -37,14 +37,14 @@ cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
 
 :: Extract and install BE and addons (if any)
-echo Extracting BusinessEvents
+echo Extracting BusinessEvents %BE_PRODUCT_VERSION%
 powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-.*_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 cd /d c:/working/installer
 :: If AS is not available disable DataGrid.
 if "%AS_VERSION%" EQU "na" (
 	powershell -Command "(Get-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent') -replace '(.*)TIBCO BusinessEvents DataGrid(.*)true(.*)', '$1TIBCO BusinessEvents DataGrid$2false$3' | Set-Content 'TIBCOUniversalInstaller_businessevents-enterprise_%BE_PRODUCT_VERSION%.silent'"
 )
-echo Installing BusinessEvents..
+echo Installing BusinessEvents %BE_PRODUCT_VERSION% ...
 TIBCOUniversalInstaller-x86-64.exe -silent
 :: Wait for installation to complete, check every 2sec.
 powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
@@ -60,7 +60,7 @@ powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_busin
 if exist c:/working/installer/TIBCOUniversalInstaller.silent (
 	echo Extracting BusinessEvents HF
 	cd /d c:/working/installer
-	echo Installing BusinessEvents HF..
+	echo Installing BusinessEvents HF ...
 	TIBCOUniversalInstaller-x86-64.exe -silent
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
 )
@@ -104,14 +104,14 @@ REM INSTALLERS SUBROUTINES
 	set InstallerType=%~3
 
 	if %InstallerType% EQU as (
-		echo Extracting Activespaces
+		echo Extracting Activespaces %VERSION%
 		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 		cd /d c:/working/installer
-		echo Installing Activespaces..
+		echo Installing Activespaces %VERSION% ...
 	)
 	if %InstallerType% EQU ftl (
 		cd /d c:/working
-		echo Installing FTL..
+		echo Installing FTL %VERSION% ...
 	)
 
 	powershell -Command "mkdir c:/tibco/%InstallerType%/%SHORT_VERSION% | out-null"
@@ -139,7 +139,7 @@ Exit /B 0
 	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 	cd /d c:/working/installer
 	if exist c:/working/installer/%InstallerType%/%SHORT_VERSION% (
-		echo Copying %InstallerType% hf
+		echo Copying %InstallerType% hf ...
 		if exist c:/working/installer/%InstallerType%/%SHORT_VERSION%/bin powershell -Command "copy-item -path c:\working\installer\%InstallerType%\%SHORT_VERSION%\bin\* –destination c:\tibco\%InstallerType%\%SHORT_VERSION%\bin -Force"
 		if exist c:/working/installer/%InstallerType%/%SHORT_VERSION%/lib powershell -Command "copy-item -path c:\working\installer\%InstallerType%\%SHORT_VERSION%\lib\* –destination c:\tibco\%InstallerType%\%SHORT_VERSION%\lib -Force"
 		echo Completed

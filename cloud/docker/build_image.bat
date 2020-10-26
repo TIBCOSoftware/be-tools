@@ -57,6 +57,7 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
+set "CONTAINER_TYPE=windows"
 
 REM parsing arguments
 for %%x in (%*) do (
@@ -319,6 +320,21 @@ if !IMAGE_NAME! EQU !BUILDER_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
 
 REM assign image tag to ARG_IMAGE_VERSION variable
 set "ARG_IMAGE_VERSION=!ARG_TAG!"
+
+REM check container type
+for /f "delims=" %%i in ('docker version --format {{.Server.Os}}') do (
+    if "!ARG_INSTALLERS_PLATFORM!" EQU "linux" (
+        if "%%i" EQU "windows" (
+            echo ERROR: Trying to install linux variant in windows container. Switch docker to linux container and try again.
+            GOTO END-withError
+        )
+    ) else if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
+        if "%%i" EQU "linux" (
+            echo ERROR: Trying to install windows variant in linux container. Switch docker to windows container and try again.
+            GOTO END-withError
+        )
+    )
+)
 
 if !INSTALLATION_TYPE! EQU fromlocal (
     REM Identify BE version
