@@ -471,7 +471,7 @@ if ! [ -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" ]; then
 fi
 
 echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
-echo "INFO: IMAGE VERSION                : [$ARG_IMAGE_VERSION]"
+echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
@@ -491,11 +491,15 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
-        printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
+        if ![ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
+        fi
     fi
 else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
-        printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
+        if ![ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
+        fi
     fi
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
         printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n\n"
@@ -680,7 +684,7 @@ else
 fi
 
 # building docker image
-printf "\nINFO: Building docker image for TIBCO BusinessEvents Version: [$ARG_BE_VERSION], Image Version: [$ARG_IMAGE_VERSION] and Dockerfile: [$ARG_DOCKER_FILE].\n\n\n"
+printf "\nINFO: Building docker image.\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"

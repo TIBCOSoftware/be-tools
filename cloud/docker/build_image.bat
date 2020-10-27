@@ -28,7 +28,7 @@ set "ARG_BE_VERSION=na"
 set "ARG_BE_SHORT_VERSION=na"
 set "ARG_BE_HOTFIX=na"
 set "ARG_JRE_VERSION=na"
-set "BE6=na"
+set "BE6=false"
 
 set "BE_REGX=^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_.*\.zip$"
 set "ARG_INSTALLERS_PLATFORM=win"
@@ -522,7 +522,7 @@ if "!EAR_FILE_NAME!" NEQ "" (
 )
 
 echo INFO: DOCKERFILE                   : [!ARG_DOCKER_FILE!]
-echo INFO: IMAGE VERSION                : [!ARG_IMAGE_VERSION!]
+echo INFO: IMAGE TAG                    : [!ARG_IMAGE_VERSION!]
 
 if !ARG_GVPROVIDER! NEQ na (
     echo INFO: GV PROVIDER                  : [!ARG_GVPROVIDER!]
@@ -534,6 +534,10 @@ if !ARG_JRE_VERSION! NEQ na (
 echo ------------------------------------------------------------------------------
 echo.
 
+REM check be6 or not
+set /a BE6VAL=!ARG_BE_VERSION:.=!
+if !BE6VAL! GEQ 600 set "BE6=true"
+
 if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
     echo "ERROR:  TIBCO Activespaces(legacy) Required for RMS."
     GOTO END-withError
@@ -541,9 +545,9 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
 
 if !INSTALLATION_TYPE! EQU fromlocal if !FTL_HOME! NEQ na if !AS_LEG_HOME! NEQ na echo "WARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size."
 
-if !INSTALLATION_TYPE! EQU fromlocal if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME not defined in be-engine.tra"
+if !INSTALLATION_TYPE! EQU fromlocal if "!BE6!" EQU "false" if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME not defined in be-engine.tra"
 
-if !INSTALLATION_TYPE! EQU frominstallers if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location."
+if !INSTALLATION_TYPE! EQU frominstallers if "!BE6!" EQU "false" if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location."
 
 if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS_LEG_VERSION! NEQ na echo "WARN: The directory: [!ARG_INSTALLER_LOCATION!] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size."
 
@@ -601,10 +605,6 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     type NUL > dummyrms.txt
     cd ../..
 )
-
-REM check be6 or not
-set /a BE6VAL=!ARG_BE_VERSION:.=!
-if !BE6VAL! GEQ 600 set "BE6=true"
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
@@ -708,7 +708,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 )
 
 REM Building dockerimage
-echo INFO: Building docker image for TIBCO BusinessEvents Version: [!ARG_BE_VERSION!], Image Version: [!ARG_IMAGE_VERSION!] and Dockerfile: [!ARG_DOCKER_FILE!].
+echo INFO: Building docker image.
 
 REM configurations for s2i image
 if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
