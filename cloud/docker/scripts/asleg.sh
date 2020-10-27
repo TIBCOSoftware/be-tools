@@ -33,7 +33,7 @@ if [ $asLegPckgsCnt -gt 0 ]; then
 		asLegVersion=$(echo "${ARG_AS_LEG_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
 		asLegMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_LEG_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 
-		if ! [ $asLegMinVersion -le $asLegVersion -a $asLegVersion -le $asLegMaxVersion ]; then
+		if ! [[ (( $asLegMinVersion -le $asLegVersion ))  && (( $asLegVersion -le $asLegMaxVersion )) ]]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with Activespaces(legacy) version: [$ARG_AS_LEG_VERSION].\n";
 			exit 1
 		fi

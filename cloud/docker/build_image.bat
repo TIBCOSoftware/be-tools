@@ -57,7 +57,6 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
-set "CONTAINER_TYPE=windows"
 
 REM parsing arguments
 for %%x in (%*) do (
@@ -476,7 +475,7 @@ if !ARG_BE_HOTFIX! NEQ na (
     echo INFO: BE HF                        : [!ARG_BE_HOTFIX!]
 )
 
-if "!ARG_ADDONS!" NEQ "" (
+if "!ARG_ADDONS!" NEQ "na" (
     echo INFO: BE ADDONS                    : [!ARG_ADDONS!]
 )
 

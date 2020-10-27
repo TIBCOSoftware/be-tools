@@ -33,7 +33,7 @@ if [ $asPckgsCnt -gt 0 ]; then
 		asVersion=$(echo "${ARG_AS_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
 		asMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
 
-		if ! [ $asMinVersion -le $asVersion -a $asVersion -le $asMaxVersion ]; then
+		if ! [[ (( $asMinVersion -le $asVersion )) && (( $asVersion -le $asMaxVersion )) ]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with As version: [$ARG_AS_VERSION].\n";
 			exit 1
 		fi

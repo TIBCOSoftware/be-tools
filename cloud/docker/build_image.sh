@@ -406,6 +406,12 @@ if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
     ARG_IMAGE_VERSION="$IMAGE_NAME:$ARG_BE_VERSION";
 fi
 
+OS_NAME=$(docker version --format {{.Server.Os}})
+if [ "$OS_NAME" = "darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
+    echo "ERROR: fromlocal installation is supported on mac."
+    exit 1
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"

@@ -33,7 +33,7 @@ if [ $ftlPckgsCnt -gt 0 ]; then
 		ftlVersion=$(echo "${ARG_FTL_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
 		ftlMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
 
-		if ! [ $ftlMinVersion -le $ftlVersion -a $ftlVersion -le $ftlMaxVersion ]; then
+		if ! [[ (( $ftlMinVersion -le $ftlVersion )) && (( $ftlVersion -le $ftlMaxVersion )) ]]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with FTL version: [$ARG_FTL_VERSION].\n";
 			exit 1
 		fi
