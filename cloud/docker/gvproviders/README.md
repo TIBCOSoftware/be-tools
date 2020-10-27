@@ -137,13 +137,4 @@ docker run \
 -p 8108:8108 --name=fdcustom fdcustom:latest
 ```
 
-Sample run command to pull GVs from AWS S3:
-```sh
-docker run \
--e AWS_ACCESS_KEY_ID=<AWS ACCESS ID> \
--e AWS_SECRET_ACCESS_KEY=<AWS SECRET> \
--e AWS_DEFAULT_REGION=<REGION> \
--e AWS_ROLE_ARN=<ASSUMED ROLE> \
--e AWS_S3_FILE_URI=<AWS S3 FILE URI> \
--p 8108:8108 --name=fdcustom fdcustom:latest
-```
+Note: This GV provider can be easily updated to pull GVs from `S3`. Uncomment the section "Read GV values from AWS S3 into JSON_FILE" and comment "Read GV values from AWS Secrets Manager into JSON_FILE" in `be-tools/cloud/docker/gvproviders/custom/aws/run.sh`.
