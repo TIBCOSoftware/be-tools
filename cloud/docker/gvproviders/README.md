@@ -105,7 +105,7 @@ Sample:
 ```
 
 ### Example - custom/aws
-There is a custom GV provider `aws` added a reference example. This GV provider uses [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/getting-started/) as an end-store, however it can easily updated to use other AWS end-stores options like `s3`.
+There is a custom GV provider `aws` added as a reference example. This GV provider can pull GVs from [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/getting-started/) or [AWS S3](https://aws.amazon.com/s3/getting-started/).
 
 Refer to following files at `be-tools/cloud/docker/gvproviders/custom/aws` for the implementation logic:
 ```sh
@@ -126,6 +126,7 @@ Sample command to build BE app image which uses `aws` GV provider:
 
 #### Run
 
+Sample run command to pull GVs from AWS Secrets Manager:
 ```sh
 docker run \
 -e AWS_ACCESS_KEY_ID=<AWS ACCESS ID> \
@@ -133,5 +134,16 @@ docker run \
 -e AWS_DEFAULT_REGION=<REGION> \
 -e AWS_ROLE_ARN=<ASSUMED ROLE> \
 -e AWS_SM_SECRET_ID=<AWS SECRETS MANAGER - SECRET ID> \
+-p 8108:8108 --name=fdcustom fdcustom:latest
+```
+
+Sample run command to pull GVs from AWS S3:
+```sh
+docker run \
+-e AWS_ACCESS_KEY_ID=<AWS ACCESS ID> \
+-e AWS_SECRET_ACCESS_KEY=<AWS SECRET> \
+-e AWS_DEFAULT_REGION=<REGION> \
+-e AWS_ROLE_ARN=<ASSUMED ROLE> \
+-e AWS_S3_FILE_URI=<AWS S3 FILE URI> \
 -p 8108:8108 --name=fdcustom fdcustom:latest
 ```
