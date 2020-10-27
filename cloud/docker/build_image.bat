@@ -59,6 +59,7 @@ REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
 REM parsing arguments
+set /A counter=0
 for %%x in (%*) do (
     set /A counter=!counter!+1
     call set currentArg=%%!counter!
@@ -774,22 +775,21 @@ EXIT /B 0
     echo.
     echo Usage: build_image.bat
     echo.
-    echo  [-i/--image-type]    :    Type of image. Values must be(!APP_IMAGE!/!RMS_IMAGE!/!TEA_IMAGE!/!BUILDER_IMAGE!). (example: !APP_IMAGE!) [required]
-    echo                            Note: !BUILDER_IMAGE! image has prerequisite. Check the documentation in be-tools wiki.
+    echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
+    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki.
     echo.
-    echo  [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is !APP_IMAGE!]
+    echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present [required if --image-type is "!APP_IMAGE!"]
     echo.
-    echo  [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]
-    echo                            Note: No need to specify be-home if script is executed from BE_HOME\cloud\docker folder.
+    echo  [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
     echo.
-    echo  [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]
+    echo  [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]
     echo.
-    echo  [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
+    echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
-    echo  [--gv-provider]      :    Name of GV provider to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
-    echo                            Note: This flag can be ignored if -i/--image-type is !TEA_IMAGE!
+    echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"custom") [optional]
+    echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
-    echo  [-h/--help]          :    Print the usage of script. [optional]
+    echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
     echo  NOTE: Encapsulate all the arguments between double quotes.
     echo.
