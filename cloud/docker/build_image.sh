@@ -70,18 +70,16 @@ INSTALLATION_TYPE="fromlocal"
 
 USAGE="\nUsage: $FILE_NAME"
 
-USAGE+="\n\n [-i/--image-type]    :    Type of image. Values must be($APP_IMAGE/$RMS_IMAGE/$TEA_IMAGE/$BUILDER_IMAGE). (example: $APP_IMAGE) [required]\n"
-USAGE+="                           Note: $BUILDER_IMAGE image has prerequisite. Check the documentation in be-tools wiki."
-USAGE+="\n\n [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is $APP_IMAGE]"
-USAGE+="\n\n [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]\n"
-USAGE+="                           Note: No need to specify be-home if script is executed from BE_HOME/cloud/docker folder."
-USAGE+="\n\n [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]"
-USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]"
-USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]\n"
-USAGE+="                           Note: This flag can be ignored if -i/--image-type is $TEA_IMAGE"
-USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image. [optional]\n"
-USAGE+="                           Note: Use this flag only if -i/--image-type is $APP_IMAGE/$BUILDER_IMAGE."
-USAGE+="\n\n [-h/--help]          :    Print the usage of script. [optional]" 
+USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
+USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki."
+USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present [required if --image-type is \"$APP_IMAGE\"]"
+USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
+USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
+USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
+USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"custom\") [optional]\n"
+USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
+USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
+USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]" 
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 #Parse the arguments
@@ -406,9 +404,9 @@ if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
     ARG_IMAGE_VERSION="$IMAGE_NAME:$ARG_BE_VERSION";
 fi
 
-OS_NAME=$(docker version --format {{.Server.Os}})
-if [ "$OS_NAME" = "darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
-    echo "ERROR: fromlocal installation is supported on mac."
+OS_NAME=$(uname -s)
+if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
+    echo "ERROR: Building image using local installtion is not supported on MAC."
     exit 1
 fi
 

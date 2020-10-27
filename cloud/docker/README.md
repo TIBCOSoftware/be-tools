@@ -26,25 +26,23 @@ Open terminal and go to folder cloud/docker
 
 Usage: build_image.sh
 
- [-i/--image-type]    :    Type of image. Values must be(app/rms/teagent/s2ibuilder). (example: app) [required]
-                           Note: s2ibuilder image has prerequisite. Check the documentation in be-tools wiki.
+ [-i/--image-type]    :    Type of the image to build ("app"|"rms"|"teagent"|"s2ibuilder") [required]
+                           Note: For s2ibuilder image usage refer to be-tools wiki.
 
- [-a/--app-location]  :    Location where the ear, cdd are located. [required only if -i/--image-type is app]
+ [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present [required if --image-type is "app"]
 
- [-s/--source]        :    Path to be-home or location where installers(TIBCO BusinessEvents, Activespaces, FTL) located. [required for installers]
-                           Note: No need to specify be-home if script is executed from BE_HOME/cloud/docker folder.
+ [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
 
- [-t/--tag]           :    Tag or name of the image. (example: beimage:v1) [optional]
+ [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]
 
- [-d/--docker-file]   :    Dockerfile to be used for generating image. [optional]
+ [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
 
- [--gv-provider]      :    Name of GV provider to be included in the image. Values must be (consul/http/custom). (example: consul) [optional]
-                           Note: This flag can be ignored if -i/--image-type is teagent.
+ [--gv-provider]      :    Name of GV provider to be included in the image ("consul"|"http"|"custom") [optional]
+                           Note: This flag is ignored if --image-type is "teagent"
 
- [--disable-tests]    :    Disables docker unit tests on created image. [optional]
-                           Note: Use this flag only if -i/--image-type is app/s2ibuilder.
+ [--disable-tests]    :    Disables docker unit tests on created image (applicable only for "app" and "s2ibuilder" image types) [optional]
 
- [-h/--help]          :    Print the usage of script. [optional]
+ [-h/--help]          :    Print the usage of script [optional]
 
  NOTE : supply long options with '=' 
 ```
