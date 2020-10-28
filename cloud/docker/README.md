@@ -47,17 +47,13 @@ Usage: build_image.sh
  NOTE : supply long options with '=' 
 ```
 
-NOTE: While supplying arguments `-s` can be any of the following.
-
-- Location where software installers or provided.
-- TIBCO BusinessEvents installed then path to be-home.
-- If script is executed from `be-home/cloud/docker` then `-s` can be ignored.
+NOTE: All example commands shown below are for `linux/mac` environment. In `windows` try using `build_image.bat` file. Flag `--disable-tests` is not available for windows.
 
 ### TIBCO BusinessEvents Application Image
 
 #### Syntax:
 ```bash
-./build_image.sh -i <image-type> -a <application-location> -s <be-home path or software installers location>
+build_image -i <image-type> -a <application-location> -s <be-home path or software installers location>
 ```
 #### Example:
 ```bash
@@ -69,7 +65,7 @@ On successful completion docker image `app:6.0.0` will get created. In above com
 
 #### Syntax:
 ```bash
-./build_image.sh -i <image-type> -s <be-home path or software installers location>
+build_image -i <image-type> -s <be-home path or software installers location>
 ```
 #### Example:
 ```bash
@@ -81,7 +77,7 @@ On successful completion docker image `rms:6.0.0` will get created.
 
 #### Syntax:
 ```bash
-./build_image.sh -i <image-type> -s <be-home path or software installers location>
+build_image -i <image-type> -s <be-home path or software installers location>
 ```
 #### Example:
 ```bash
@@ -95,7 +91,7 @@ TIBCO Business Events's S2I support allows users to create a reusable builder im
 
 #### Syntax:
 ```bash
-./build_image.sh -i <image-type> -s <be-home path or software installers location>
+build_image -i <image-type> -s <be-home path or software installers location>
 ```
 #### Example:
 ```bash

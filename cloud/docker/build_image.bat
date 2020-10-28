@@ -230,7 +230,7 @@ if !ARG_DOCKER_FILE! EQU na (
 if !INSTALLATION_TYPE! EQU fromlocal (
     REM Identify BE version
     if NOT EXIST !BE_HOME!\uninstaller_scripts\post-install.properties (
-        echo "ERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6). OR Path to installers location."
+        echo "ERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location."
         GOTO END-withError
     )
 

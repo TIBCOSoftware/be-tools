@@ -222,7 +222,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
-        printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/5.6). OR Path to installers location.\n"
+        printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location.\n"
         exit 1
     else
         BE_HOME_BASE=${BASH_REMATCH[1]}
