@@ -28,6 +28,7 @@ set "ARG_BE_VERSION=na"
 set "ARG_BE_SHORT_VERSION=na"
 set "ARG_BE_HOTFIX=na"
 set "ARG_JRE_VERSION=na"
+set "ARG_ADDONS=na"
 set "BE6=false"
 
 set "BE_REGX=^.*businessevents-enterprise.*[0-9]\.[0-9]\.[0-9]_.*\.zip$"
@@ -747,11 +748,9 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 REM Remove temporary intermediate images if any.
-if !INSTALLATION_TYPE! EQU frominstallers (
+for /f "tokens=*" %%i IN ('docker images -q -f "label=be-intermediate-image=true"') do (
     echo INFO: Deleting temporary intermediate image.
-    for /f "tokens=*" %%i IN ('docker images -q -f "label=be-intermediate-image=true"') do (
-        docker rmi %%i
-    )
+    docker rmi %%i
 )
 
 if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
