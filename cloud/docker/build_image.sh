@@ -495,13 +495,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
-        if ![ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+        if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
             printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
         fi
     fi
 else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$ARG_AS_LEG_VERSION" = "na" ]; then
-        if ![ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+        if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
             printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
         fi
     fi
