@@ -31,6 +31,8 @@ if "%AS_VERSION%" NEQ "na" (
 			powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
 		)
 	)
+	mkdir c:\_tibco\as\%AS_SHORT_VERSION%\lib
+	powershell -Command "Copy-Item 'c:\tibco\as\%AS_SHORT_VERSION%\lib\*.dll','c:\tibco\as\%AS_SHORT_VERSION%\lib\*.jar','c:\tibco\as\%AS_SHORT_VERSION%\lib\*.lib' -Destination 'c:\_tibco\as\%AS_SHORT_VERSION%\lib' -Recurse | out-null"
 )
 
 cd /d c:/working
@@ -72,6 +74,9 @@ if "%FTL_VERSION%" NEQ "na" (
 	if "%FTL_PRODUCT_HOTFIX%" NEQ "na" (
 		call :InstallFtlorASHf "%FTL_VERSION%" "%FTL_SHORT_VERSION%" "ftl"
 	)
+	mkdir c:\_tibco\ftl\%FTL_SHORT_VERSION%\lib c:\_tibco\ftl\%FTL_SHORT_VERSION%\bin
+	powershell -Command "Copy-Item 'c:\tibco\ftl\%FTL_SHORT_VERSION%\lib\*.dll','c:\tibco\ftl\%FTL_SHORT_VERSION%\lib\*.jar','c:\tibco\ftl\%FTL_SHORT_VERSION%\lib\*.lib' -Destination 'c:\_tibco\ftl\%FTL_SHORT_VERSION%\lib' -Recurse | out-null"
+	powershell -Command "Copy-Item 'c:\tibco\ftl\%FTL_SHORT_VERSION%\bin\*.dll','c:\tibco\ftl\%FTL_SHORT_VERSION%\bin\*.jar','c:\tibco\ftl\%FTL_SHORT_VERSION%\bin\*.lib' -Destination 'c:\_tibco\ftl\%FTL_SHORT_VERSION%\bin' -Recurse | out-null"
 )
 
 :: if ACTIVESPACES is available extract and install it.
@@ -81,6 +86,9 @@ if "%ACTIVESPACES_VERSION%" NEQ "na" (
 	if "%ACTIVESPACES_PRODUCT_HOTFIX%" NEQ "na" (
 		call :InstallFtlorASHf "%ACTIVESPACES_VERSION%" "%ACTIVESPACES_SHORT_VERSION%" "as"
 	)
+	mkdir c:\_tibco\as\%ACTIVESPACES_SHORT_VERSION%\lib c:\_tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin
+	powershell -Command "Copy-Item 'c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\lib\*.dll','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\lib\*.jar','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\lib\*.lib' -Destination 'c:\_tibco\as\%ACTIVESPACES_SHORT_VERSION%\lib' -Recurse | out-null"
+	powershell -Command "Copy-Item 'c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.dll','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.jar','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.lib' -Destination 'c:\_tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin' -Recurse | out-null"
 )
 
 :: Delete installer zip files.
@@ -92,6 +100,29 @@ cd %BE_HOME%/bin
 set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aws/*;%BE_HOME%/lib/ext/tpcl/gwt/*;%BE_HOME%/lib/ext/tpcl/apache/*;%BE_HOME%/lib/ext/tpcl/emf/*;%BE_HOME%/lib/ext/tpcl/tomsawyer/*;%BE_HOME%/lib/ext/tibco/*;%BE_HOME%/lib/eclipse/plugins/*;%BE_HOME%/rms/lib/*;%BE_HOME%/mm/lib/*;%JRE_HOME%/lib/*;%JRE_HOME%/lib/ext/*;
 echo Building annotation indexes..
 %JRE_HOME%/bin/java -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
+
+if "%COMPONENT%" EQU "rms" (
+	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio
+	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm','%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
+	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\aws
+	powershell -Command "Copy-Item '%BE_HOME%\examples\standard\WebStudio' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio' -Recurse | out-null"
+) else (
+	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin
+	powershell -Command "Copy-Item '%BE_HOME%\lib' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
+	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
+)
+
+powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
+powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
+
+if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
+	del /S /Q "c:\_tibco\be\ext\%CDD_FILE_NAME%" > NUL
+)
+
+if exist "c:\_tibco\be\ext\%EAR_FILE_NAME%" (
+	del /S /Q "c:\_tibco\be\ext\%EAR_FILE_NAME%" > NUL
+)
+
 EXIT /B 0
 
 ::----------------------------------------------------------------------------------------------------

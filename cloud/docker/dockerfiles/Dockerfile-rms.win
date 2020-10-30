@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 as intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
@@ -23,9 +23,7 @@ ARG JRE_VERSION
 ARG TEMP_FOLDER
 ARG GVPROVIDER
 
-LABEL \
-    TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
-    TIBCO BusinessEvents Docker Image Version ${BE_PRODUCT_IMAGE_VERSION} 
+LABEL be-intermediate-image=true
 
 ENV \
     TIBCO_HOME=c:/tibco \
@@ -46,21 +44,53 @@ ENV \
     AS_PROXY_NODE=false \
     COMPONENT=rms
 
-RUN mkdir "c:\working\installer" && mkdir "c:\tibco\be"
+RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
-COPY lib/be_docker_install.bat lib/runbe.bat lib/vcredist_install.bat installers/* "c:\working/"
-COPY gvproviders "c:\tibco\be\gvproviders"
-COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
+COPY lib/be_docker_install.bat installers/* c:\\working/
+COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
+COPY gvproviders "c:\_tibco\be\gvproviders"
 
 # Remove unnecessary files and folders after successful installation and configuration
 RUN "c:\working\be_docker_install.bat"
-RUN copy "c:\working\runbe.bat" "c:\tibco\be"
-RUN "c:\working\vcredist_install.bat"
+COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+MAINTAINER Tibco BusinessEvents Engineering Team
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG JRE_VERSION
+ARG GVPROVIDER
+
+LABEL \
+    TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
+    TIBCO BusinessEvents Docker Image Version ${BE_PRODUCT_IMAGE_VERSION} 
+
+ENV \
+    TIBCO_HOME=c:/tibco \
+    BE_HOME=c:/tibco/be/${BE_SHORT_VERSION} \
+    AS_HOME=c:/tibco/as/${AS_SHORT_VERSION} \
+    JRE_VERSION=${JRE_VERSION} \
+    JRE_HOME=c:/tibco/tibcojre64/${JRE_VERSION} \
+    BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
+    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+    PU=default \
+    ENGINE_NAME=be-engine \
+    LOG_LEVEL=na \
+    DOCKER_HOST=localhost \
+    AS_DISCOVER_URL=self \
+    AS_PROXY_NODE=false \
+    COMPONENT=rms
+
+COPY --from=intermediate c:\\_tibco c:\\tibco
+
+RUN c:\tibco\be\vcredist_install.bat
 
 # Setup gv providers
 RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
-
-RUN rmdir /S /Q "c:\working"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
@@ -72,11 +102,8 @@ VOLUME \
     "${BE_HOME}\examples\standard\WebStudio"
 
 # The following is the list of communication ports that need to be open-n-available
-# Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port
-EXPOSE 50000 50001 5555
-
-#RMS PORTs
-EXPOSE 8090 5000 
+# Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port, RMS PORTs 8090 5000
+EXPOSE 50000 50001 5555 8090 5000 
 
 WORKDIR "c:\tibco\be"
 CMD ["runbe.bat"]
