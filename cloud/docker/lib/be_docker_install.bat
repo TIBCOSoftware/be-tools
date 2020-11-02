@@ -95,6 +95,14 @@ if "%ACTIVESPACES_VERSION%" NEQ "na" (
 cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"
 
+:: If AS is available append relevent properties to tra.
+if %AS_VERSION% NEQ na (
+	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%\bin\be-engine.tra
+	echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
+	echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
+)
+echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> %BE_HOME%\bin\be-engine.tra
+
 :: Perform annotations processing (_annotations.idx)
 cd %BE_HOME%/bin
 set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aws/*;%BE_HOME%/lib/ext/tpcl/gwt/*;%BE_HOME%/lib/ext/tpcl/apache/*;%BE_HOME%/lib/ext/tpcl/emf/*;%BE_HOME%/lib/ext/tpcl/tomsawyer/*;%BE_HOME%/lib/ext/tibco/*;%BE_HOME%/lib/eclipse/plugins/*;%BE_HOME%/rms/lib/*;%BE_HOME%/mm/lib/*;%JRE_HOME%/lib/*;%JRE_HOME%/lib/ext/*;
@@ -106,12 +114,13 @@ if "%COMPONENT%" EQU "rms" (
 	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm','%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\aws
 	powershell -Command "Copy-Item '%BE_HOME%\examples\standard\WebStudio' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio' -Recurse | out-null"
+	if exist "%BE_HOME%\decisionmanager" powershell -Command "Copy-Item '%BE_HOME%\decisionmanager' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 ) else (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin
 	powershell -Command "Copy-Item '%BE_HOME%\lib' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
 )
-
+if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
 powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 

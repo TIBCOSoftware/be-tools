@@ -37,18 +37,13 @@ ENV \
     EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
     COMPONENT=rms
 
-RUN mkdir "c:\tibco\be"
-
 #'/' at the end is required while copying multiple files to a destination.
-COPY tibcoHome "c:\tibco/"
-COPY lib/vcredist_install.bat "c:\working/"
-COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
-COPY gvproviders "c:\tibco\be\gvproviders"
+COPY tibcoHome "c:\tibco"
 
-RUN c:\working\vcredist_install.bat
+#RUN c:\tibco\be\vcredist_install.bat
 
-# Remove unnecessary files and folders after successful installation and configuration
-RUN rmdir /S /Q "c:\working"
+# Setup gv providers
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
@@ -59,15 +54,9 @@ VOLUME \
     "${BE_HOME}\rms\shared" \
     "${BE_HOME}\examples\standard\WebStudio"
 
-# Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
-
 # The following is the list of communication ports that need to be open-n-available
-# # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port
-EXPOSE 50000 50001 5555
-
-#RMS PORTs
-EXPOSE 8090 5000 
+# # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port, #RMS PORTs 8090 5000
+EXPOSE 50000 50001 5555 8090 5000 
 
 WORKDIR "c:\tibco\be"
 CMD ["runbe.bat"]

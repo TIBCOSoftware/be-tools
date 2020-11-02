@@ -231,7 +231,7 @@ if !ARG_DOCKER_FILE! EQU na (
 if !INSTALLATION_TYPE! EQU fromlocal (
     REM Identify BE version
     if NOT EXIST !BE_HOME!\uninstaller_scripts\post-install.properties (
-        echo "ERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location."
+        echo ERROR: Provide proper be home [be/^<be-version^>] ^(ex: ^<path to^>/be/6.0^). OR Path to installers location.
         GOTO END-withError
     )
 
@@ -366,7 +366,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
     REM Check AS_HOME exist or not if it present
     if !AS_LEG_HOME! NEQ na (
         if NOT EXIST !AS_LEG_HOME! (
-            echo "ERROR: The directory: [!AS_LEG_HOME!] is not a valid directory. Skipping activespaces(legacy) installation."
+            echo ERROR: The directory: [!AS_LEG_HOME!] is not a valid directory. Skipping activespaces^(legacy^) installation.
             set "AS_LEG_HOME=na"
         )
     )
@@ -540,17 +540,17 @@ set /a BE6VAL=!ARG_BE_VERSION:.=!
 if !BE6VAL! GEQ 600 set "BE6=true"
 
 if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
-    echo "ERROR:  TIBCO Activespaces(legacy) Required for RMS."
+    echo ERROR:  TIBCO Activespaces^(legacy^) Required for RMS.
     GOTO END-withError
 )
 
-if !INSTALLATION_TYPE! EQU fromlocal if !FTL_HOME! NEQ na if !AS_LEG_HOME! NEQ na echo "WARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size."
+if !INSTALLATION_TYPE! EQU fromlocal if !FTL_HOME! NEQ na if !AS_LEG_HOME! NEQ na echo WARN: Local machine contains both FTL and Activespaces^(legacy^) installations. Removing unused installation improves the docker image size.
 
-if !INSTALLATION_TYPE! EQU fromlocal if "!BE6!" EQU "false" if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME not defined in be-engine.tra"
+if !INSTALLATION_TYPE! EQU fromlocal if "!BE6!" EQU "false" if !ARG_AS_LEG_SHORT_VERSION! EQU na echo WARN: TIBCO Activespaces^(legacy^) will not be installed as AS_HOME not defined in be-engine.tra.
 
-if !INSTALLATION_TYPE! EQU frominstallers if "!BE6!" EQU "false" if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo "WARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location."
+if !INSTALLATION_TYPE! EQU frominstallers if "!BE6!" EQU "false" if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo WARN: TIBCO Activespaces^(legacy^) will not be installed as no package found in the installer location.
 
-if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS_LEG_VERSION! NEQ na echo "WARN: The directory: [!ARG_INSTALLER_LOCATION!] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size."
+if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS_LEG_VERSION! NEQ na echo WARN: The directory: [!ARG_INSTALLER_LOCATION!] contains both FTL and Activespaces^(legacy^) installers. Removing unused installer improves the docker image size.
 
 if !INSTALLATION_TYPE! EQU fromlocal mkdir !TEMP_FOLDER!
 
@@ -618,27 +618,21 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
 ) else (
     echo.
-    powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION! | out-null"
+    mkdir !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin
 
     echo INFO: Adding [be\!ARG_BE_SHORT_VERSION!] to tibcohome.
     powershell -Command "Copy-Item '!BE_HOME!\..\..\tibcojre64' -Destination '!TEMP_FOLDER!\tibcoHome' -Recurse | out-null"
-    powershell -Command "Copy-Item '!BE_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
-
-    REM remove logs folder from be-home\bin
-    powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\logs' -ErrorAction Ignore | out-null"
+    powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
     REM replace tibco home path
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
 
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
-        powershell -Command "Copy-Item '!BE_HOME!\rms' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
-        powershell -Command "Copy-Item '!BE_HOME!\studio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
-        powershell -Command "Copy-Item '!BE_HOME!\eclipse-platform' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
-        powershell -Command "Copy-Item '!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\rms','!BE_HOME!\studio','!BE_HOME!\eclipse-platform','!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
         powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard\WebStudio' -Recurse | out-null"
 
-        if !BE6! NEQ true (
+        if EXIST "!BE_HOME!\decisionmanager" (
             powershell -Command "Copy-Item '!BE_HOME!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
         )
 
@@ -648,6 +642,16 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
+        
+        rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws
+        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+    ) else (
+        rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
+        mkdir !TEMP_FOLDER!\tibcoHome\be\application\ear !TEMP_FOLDER!\tibcoHome\be\ext
+        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
+        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\application' -Recurse | out-null"
+        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\application\ear' -Recurse | out-null"
+        del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
     )
 
     if EXIST !BE_HOME!\hotfix (
@@ -657,25 +661,23 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     if !AS_LEG_HOME! NEQ na (
         echo INFO: Adding [as\!ARG_AS_LEG_SHORT_VERSION!] to tibcohome.
 
-        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION! | out-null"
-
-        powershell -Command "Copy-Item '!AS_LEG_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
-        powershell -Command "Copy-Item '!AS_LEG_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
-
-        if EXIST !AS_LEG_HOME!\hotfix (
-            powershell -Command "Copy-Item '!AS_LEG_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!' -Recurse | out-null"
-        )
+        mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!\lib
+        powershell -Command "Copy-Item '!AS_LEG_HOME!\lib\*.dll','!AS_LEG_HOME!\lib\*.lib','!AS_LEG_HOME!\lib\*.jar' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_LEG_SHORT_VERSION!\lib' -Recurse | out-null"
 
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.AS_HOME').Line.Substring(18), 'c:/tibco/as/!ARG_AS_LEG_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
+
+        echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+        echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
+        echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
     )
+    echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra
 
     if !FTL_HOME! NEQ na (
         echo INFO: Adding [ftl\!ARG_FTL_SHORT_VERSION!] to tibcohome.
 
-        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION! | out-null"
-
-        powershell -Command "Copy-Item '!FTL_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!' -Recurse | out-null"
-        powershell -Command "Copy-Item '!FTL_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!' -Recurse | out-null"
+        mkdir !TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!\lib !TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!\bin
+        powershell -Command "Copy-Item '!FTL_HOME!\lib\*.dll','!FTL_HOME!\lib\*.jar','!FTL_HOME!\lib\*.lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!\lib' -Recurse | out-null"
+        powershell -Command "Copy-Item '!FTL_HOME!\bin\*.dll','!FTL_HOME!\bin\*.jar','!FTL_HOME!\bin\*.lib' -Destination '!TEMP_FOLDER!\tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!\bin' -Recurse | out-null"
 
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.FTL_HOME').Line.Substring(19), 'c:/tibco/ftl/!ARG_FTL_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
     )
@@ -683,19 +685,15 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     if !AS_HOME! NEQ na (
         echo INFO: Adding [as\!ARG_AS_SHORT_VERSION!] to tibcohome.
 
-        powershell -Command "mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION! | out-null"
-
-        powershell -Command "Copy-Item '!AS_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!' -Recurse | out-null"
-        powershell -Command "Copy-Item '!AS_HOME!\bin' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!' -Recurse | out-null"
+        mkdir !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!\bin !TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!\lib
+        powershell -Command "Copy-Item '!AS_HOME!\lib\*.lib','!AS_HOME!\lib\*.jar','!AS_HOME!\lib\*.dll' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!\lib' -Recurse | out-null"
+        powershell -Command "Copy-Item '!AS_HOME!\bin\*.lib','!AS_HOME!\bin\*.jar','!AS_HOME!\bin\*.dll' -Destination '!TEMP_FOLDER!\tibcoHome\as\!ARG_AS_SHORT_VERSION!\bin' -Recurse | out-null"
 
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.ACTIVESPACES_HOME').Line.Substring(28), 'c:/tibco/as/!ARG_AS_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
     )
 
     echo.
     echo INFO: Generating annotation indexes.
-    if EXIST !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
-        powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx' -ErrorAction Ignore | out-null"
-    )
     cd !TEMP_FOLDER!
     set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
     tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
@@ -704,7 +702,12 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     )
     cd ..
 
-    powershell -Command "Copy-Item '.\lib\runbe.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
+    powershell -Command "Copy-Item '.\lib\runbe.bat','.\lib\vcredist_install.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
+
+    powershell -Command "Copy-Item '!TEMP_FOLDER!\gvproviders' -Destination '!TEMP_FOLDER!\tibcoHome\be' -Recurse | out-null"
+
+    rd /S /Q !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app !TEMP_FOLDER!\installers 
+
     echo.
 )
 
