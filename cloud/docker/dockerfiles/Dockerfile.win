@@ -63,7 +63,7 @@ COPY app/* "c:\_tibco\be\ext/"
 COPY app/${CDD_FILE_NAME} "c:\_tibco\be\application/"
 COPY app/${EAR_FILE_NAME} "c:\_tibco\be\application\ear/"
 
-# Remove unnecessary files and folders after successful installation and configuration
+# Copy required files to _tibco folder which will be used in final image
 RUN c:\working\be_docker_install.bat
 
 FROM mcr.microsoft.com/windows/servercore:ltsc2019

@@ -37,7 +37,6 @@ ENV \
     EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
     COMPONENT=rms
 
-#'/' at the end is required while copying multiple files to a destination.
 COPY tibcoHome "c:\tibco"
 
 #RUN c:\tibco\be\vcredist_install.bat

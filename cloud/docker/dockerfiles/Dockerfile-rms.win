@@ -50,8 +50,9 @@ COPY lib/be_docker_install.bat installers/* c:\\working/
 COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
 COPY gvproviders "c:\_tibco\be\gvproviders"
 
-# Remove unnecessary files and folders after successful installation and configuration
+# Copy required files to _tibco folder which will be used in final image
 RUN "c:\working\be_docker_install.bat"
+
 COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
 
 FROM mcr.microsoft.com/windows/servercore:ltsc2019
