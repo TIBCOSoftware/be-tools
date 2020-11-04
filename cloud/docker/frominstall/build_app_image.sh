@@ -231,7 +231,7 @@ else
     fi
     
     cd ../tests
-    source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_LEGACY_SHORT_VERSION -as $AS_SHORT_VERSION -f $FTL_SHORT_VERSION
+    source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_LEGACY_SHORT_VERSION -as $AS_SHORT_VERSION -f $FTL_SHORT_VERSION
   fi
   exit 0
 fi
