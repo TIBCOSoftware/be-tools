@@ -553,6 +553,16 @@ if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
 
+# configurations for s2i builder image
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
+	touch $TEMP_FOLDER/app/dummy.txt
+    EAR_FILE_NAME="dummy.txt"
+	CDD_FILE_NAME="dummy.txt"
+    FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
+    ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
+    cp -a "./s2i" $TEMP_FOLDER/
+fi
+
 # create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
@@ -654,6 +664,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
+    rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse 2>/dev/null
+    rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$FTL_DIR/lib/simplejson 2>/dev/null
+
     #removing tomsawyer and gwt
     if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
         rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt 2>/dev/null
@@ -662,6 +675,21 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws 2>/dev/null
+    fi
+
+    if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]]; then
+        mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/{application/ear,ext}
+        cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext
+        cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/application
+        cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/application/ear
+        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME}
+        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}        
+    fi
+
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/ext
+        cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext/
+        cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin/
     fi
 
     # re create be.tar
@@ -692,16 +720,6 @@ printf "\nINFO: Building docker image.\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
-
-# configurations for s2i builder image
-if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
-	touch $TEMP_FOLDER/app/dummy.txt
-    EAR_FILE_NAME="dummy.txt"
-	CDD_FILE_NAME="dummy.txt"
-    FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
-    ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
-    cp -a "./s2i" $TEMP_FOLDER/
-fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then

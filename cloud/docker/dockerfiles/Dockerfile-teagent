@@ -33,7 +33,8 @@ ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
  JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
- BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ COMPONENT=tea
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
@@ -43,13 +44,8 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf as_installers be_installers *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
-WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-RUN echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+RUN ./cleanup.sh
 
-RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws  \
-   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
-   && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer \
-   && rm -rf /home/tibco/be/be_installers-hf
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.04
 
@@ -72,12 +68,7 @@ ARG JRE_VERSION
 
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 
-COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
-
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/teagent /opt/tibco/be/${BE_SHORT_VERSION}/teagent
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib/*.jar /opt/tibco/be/${BE_SHORT_VERSION}/lib/
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/mm /opt/tibco/be/${BE_SHORT_VERSION}/mm
+COPY --from=intermediate /tibco_home /opt/tibco
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION

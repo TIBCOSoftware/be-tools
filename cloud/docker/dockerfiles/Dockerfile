@@ -50,6 +50,7 @@ RUN apt-get update \
 
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
 COPY gvproviders /home/tibco/be/gvproviders
+COPY app/* /opt/tibco/be/ext/
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
@@ -68,28 +69,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf as_installers be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
-WORKDIR /opt/tibco/be/$BE_SHORT_VERSION/bin/
-RUN echo \ >> be-engine.tra \
- && echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
- && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
-
-#set ftl home in tra file
-RUN sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
-
-#set activespaces home in tra file
-RUN sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
-
-# Cleanup.
-RUN mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/ \
-    && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/bin \
-    && mkdir -p /opt/tibco/as/${AS_SHORT_VERSION}/lib \
-    && mkdir -p /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib \
-    && mkdir -p /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib \
-    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt \
-    && rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer \
-    && rm -rf /home/tibco/be/be_installers-hf
+RUN ./cleanup.sh
 
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.10
@@ -108,25 +88,9 @@ ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 ARG GVPROVIDER
 
-COPY app/${CDD_FILE_NAME} /opt/tibco/be/application/
-COPY app/${EAR_FILE_NAME} /opt/tibco/be/application/ear/
-COPY app/* /opt/tibco/be/ext/
-
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 
-# copy jre
-COPY --from=intermediate /opt/tibco/tibcojre64/${JRE_VERSION} /opt/tibco/tibcojre64/${JRE_VERSION}
-# copy be related files
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/be-engine* /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/bin/*.idx /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-COPY --from=intermediate /opt/tibco/be/${BE_SHORT_VERSION}/lib /opt/tibco/be/${BE_SHORT_VERSION}/lib
-# copy as2 related files
-COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/bin /opt/tibco/as/${AS_SHORT_VERSION}/bin
-COPY --from=intermediate /opt/tibco/as/${AS_SHORT_VERSION}/lib /opt/tibco/as/${AS_SHORT_VERSION}/lib
-# copy ftl related files
-COPY --from=intermediate /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib
-# copy activespaces related files
-COPY --from=intermediate /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib
+COPY --from=intermediate /tibco_home /opt/tibco
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -154,14 +118,10 @@ RUN mkdir -p /mnt/tibco/be/logs \
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
- /mnt/tibco/be/data-store \
- /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared
+ /mnt/tibco/be/data-store
 
-# These will always be the listen port for AS and AS Remote URL
-EXPOSE 50000 50001
-
-# JMX Port
-EXPOSE 5555
+# These will always be the listen port for AS and AS Remote URL #5555 for JMX port
+EXPOSE 50000 50001 5555
 
 WORKDIR /home/tibco/be
 CMD ["./run"]

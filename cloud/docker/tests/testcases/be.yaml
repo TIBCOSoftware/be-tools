@@ -24,7 +24,7 @@ metadataTest:
     - key: EAR_FILE
       value: /opt/tibco/be/application/ear/EAR_FILE_NAME_KEY
   exposedPorts: ["5555","50000","50001"]
-  volumes: ["/mnt/tibco/be/logs","/mnt/tibco/be/data-store","/opt/tibco/be/BE_SHORT_VERSION/rms/shared"]
+  volumes: ["/mnt/tibco/be/logs","/mnt/tibco/be/data-store"]
 fileContentTests:
   - name: 'BE TRA Updated with AS home'
     path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
@@ -59,12 +59,6 @@ fileExistenceTests:
     shouldExist: true
   - name: 'Ear file'
     path: '/opt/tibco/be/application/ear/EAR_FILE_NAME_KEY'
-    shouldExist: true
-  - name: 'Cdd file'
-    path: '/opt/tibco/be/ext/CDD_FILE_NAME_KEY'
-    shouldExist: true
-  - name: 'Ear file'
-    path: '/opt/tibco/be/ext/EAR_FILE_NAME_KEY'
     shouldExist: true
 commandTests:
     - name: "beengine without cdd"

@@ -19,8 +19,6 @@ LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
 
 ADD be.tar /opt/tibco
-COPY app/* /opt/tibco/be/ext/
-COPY app/* /opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/
 COPY gvproviders /home/tibco/be/gvproviders
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
@@ -68,14 +66,8 @@ VOLUME /mnt/tibco/be/logs \
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
-# These will always be the listen port for AS and AS Remote URL
-EXPOSE 50000 50001
-
-# JMX Port
-EXPOSE 5555
-
-#RMS PORTs
-EXPOSE 8090 5000
+# These will always be the listen port for AS and AS Remote URL #5555 for JMX port # 8090 5000 for RMS
+EXPOSE 50000 50001 5555 8090 5000
 
 WORKDIR /home/tibco/be
 
