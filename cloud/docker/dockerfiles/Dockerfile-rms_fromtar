@@ -50,9 +50,7 @@ ENV PU=default \
  COMPONENT=rms
 
 RUN mkdir -p /mnt/tibco/be/logs \ 
-    mkdir -p /mnt/tibco/be/data-store \
-    mkdir -p /opt/tibco/be/ext \
-    mkdir -p /opt/tibco/be/files 
+ && mkdir -p /mnt/tibco/be/data-store
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
