@@ -76,6 +76,7 @@ then
     rm -rf /home/tibco/be/run_teagent.sh        
 else
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/teagent /tibco_home/be/${BE_SHORT_VERSION}
+    mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/lib
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/*.jar /tibco_home/be/${BE_SHORT_VERSION}/lib
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext /tibco_home/be/${BE_SHORT_VERSION}/lib
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/mm /tibco_home/be/${BE_SHORT_VERSION}

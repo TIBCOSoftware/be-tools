@@ -573,7 +573,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi
     if [ -d "$BE_HOME/decisionmanager" ]; then
-        BE_TAR_CMD="$BE_DIR/decisionmanager "
+        BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/decisionmanager "
     fi
     if [ -d "$BE_HOME/hotfix" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/hotfix "
