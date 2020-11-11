@@ -49,9 +49,11 @@ if [ "$COMPONENT" != "tea" ]; then
 
     if [ "$COMPONENT" = "rms" ]; then
         cp -r ../mm ../rms ../studio ../eclipse-platform /tibco_home/be/${BE_SHORT_VERSION}
+        rm -f /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/be-rms.tra.1
+        rm -f /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/be-rms.tra.2
         mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/examples/standard
         cp -r ../examples/standard/WebStudio /tibco_home/be/${BE_SHORT_VERSION}/examples/standard
-        cp -r /opt/tibco/be/ext /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/
+        mv -f /opt/tibco/be/ext/*.cdd /opt/tibco/be/ext/*.ear /opt/tibco/be/ext/*.war /opt/tibco/be/ext/*.tra /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/ 2>/dev/null
     else
         mkdir -p /tibco_home/be/application/ear
         cp /tibco_home/be/ext/${CDD_FILE_NAME} /tibco_home/be/application/
