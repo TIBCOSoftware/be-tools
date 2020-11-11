@@ -52,7 +52,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
 
 COPY app/* /opt/tibco/be/ext/
 
-RUN ./cleanup.sh
+RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.10

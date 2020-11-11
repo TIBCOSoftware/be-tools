@@ -69,7 +69,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf as_installers be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
-RUN ./cleanup.sh
+RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.10

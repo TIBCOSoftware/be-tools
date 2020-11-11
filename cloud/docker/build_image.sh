@@ -510,7 +510,6 @@ else
     fi
 fi
 
-mkdir $TEMP_FOLDER
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "./lib" $TEMP_FOLDER/
 
