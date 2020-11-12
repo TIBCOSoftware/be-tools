@@ -19,10 +19,6 @@ metadataTest:
       value: self
     - key: AS_PROXY_NODE
       value: false
-    - key: CDD_FILE
-      value: /opt/tibco/be/application/CDD_FILE_NAME_KEY
-    - key: EAR_FILE
-      value: /opt/tibco/be/application/ear/EAR_FILE_NAME_KEY
   exposedPorts: ["5555","50000","50001"]
   volumes: ["/mnt/tibco/be/logs","/mnt/tibco/be/data-store"]
 fileContentTests:
@@ -55,10 +51,10 @@ fileExistenceTests:
     path: '/home/tibco/be/run'
     shouldExist: true
   - name: 'Cdd file'
-    path: '/opt/tibco/be/application/CDD_FILE_NAME_KEY'
+    path: '$CDD_FILE'
     shouldExist: true
   - name: 'Ear file'
-    path: '/opt/tibco/be/application/ear/EAR_FILE_NAME_KEY'
+    path: '$EAR_FILE'
     shouldExist: true
 commandTests:
     - name: "beengine without cdd"
