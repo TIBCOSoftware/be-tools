@@ -10,19 +10,19 @@ echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engi
 
 mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/bin
 
-if [ ! -z "$AS_SHORT_VERSION" ]; then 
+if [ "$AS_SHORT_VERSION" != "" -a "$AS_SHORT_VERSION" != "na" ]; then 
     mkdir -p /tibco_home/as/${AS_SHORT_VERSION}
     cp -r /opt/tibco/as/${AS_SHORT_VERSION}/lib /tibco_home/as/${AS_SHORT_VERSION}
 fi
 
-if [ ! -z "$FTL_SHORT_VERSION" ]; then 
+if [ "$FTL_SHORT_VERSION" != "" -a "$FTL_SHORT_VERSION" != "na" ]; then 
     mkdir -p /tibco_home/ftl/${FTL_SHORT_VERSION}
     rm -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib/simplejson
     cp -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /tibco_home/ftl/${FTL_SHORT_VERSION}
     sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
 fi
 
-if [ ! -z "$ACTIVESPACES_SHORT_VERSION" ]; then
+if [ "$ACTIVESPACES_SHORT_VERSION" != "" -a "$ACTIVESPACES_SHORT_VERSION" != "na" ]; then
     mkdir -p /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
     cp -r /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
     sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
