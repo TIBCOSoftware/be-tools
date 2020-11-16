@@ -24,13 +24,11 @@ if [ -z "${USAGE}" ]; then
   USAGE="\nUsage: run_tests.sh"
 fi
 
-USAGE+="\n\n [ -i|--image-name]           : Be app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
-USAGE+="\n\n [ -b|--be-version]           : Be version in x.x format ex(5.6) [required]"
-USAGE+="\n\n [ -c|--cdd-filename]         : CDD file name ex(fd.cdd) [required]"
-USAGE+="\n\n [ -e|--ear-filename]         : EAR file name ex(fd.ear) [required]"
-USAGE+="\n\n [-al|--as-legacy-version]    : Activespaces legacy version in x.x format ex(2.4) [optional]"
-USAGE+="\n\n [-as|--as-version]           : Activespaces version in x.x format ex(4.4) [optional]"
-USAGE+="\n\n [ -f|--ftl-version]          : Ftl version in x.x format ex(6.4) [optional]"
+USAGE+="\n\n [ -i|--image-name]           : BE app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
+USAGE+="\n\n [ -b|--be-version]           : BE version in x.x format ex(5.6) [required]"
+USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2.4) [optional]"
+USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.4) [optional]"
+USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.4) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
@@ -53,20 +51,6 @@ while [[ $# -gt 0 ]]; do
         ;;
         -b=*|--be-version=*)
         ARG_BE_SHORT_VERSION="${key#*=}"
-        ;;
-		    -c|--cdd-filename)
-        shift # past the key and to the value
-        ARG_CDD_FILE_NAME="$1"
-        ;;
-        -c=*|--cdd-filename=*)
-        ARG_CDD_FILE_NAME="${key#*=}"
-        ;;
-		    -e|--ear-filename)
-        shift # past the key and to the value
-        ARG_EAR_FILE_NAME="$1"
-        ;;
-        -e=*|--ear-filename=*)
-        ARG_EAR_FILE_NAME="${key#*=}"
         ;;
         -al|--as-legacy-version)
         shift # past the key and to the value
@@ -109,6 +93,14 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+DOCKER_CONTEXT_TLS=$(docker context inspect -f="{{.TLSMaterial.docker}}")
+DOCKER_HOST=$(docker context inspect -f="{{.Endpoints.docker.Host}}")
+
+if [[ $DOCKER_CONTEXT_TLS =~ pem  && $DOCKER_HOST =~ tcp:// ]]; then
+  echo "Skipping docker container structure tests, as docker context is not pointing to local docker daemon"
+  exit 0
+fi
+
 echo ""
 echo "=================RUNNING CONTAINER STRUCTURE TESTS================="
 echo ""
@@ -133,26 +125,6 @@ if [ $ARG_BE_SHORT_VERSION != na ]; then
   SED_EXP+=" -e s/BE_SHORT_VERSION/${ARG_BE_SHORT_VERSION}/g "
 else
   echo "ERROR: Be version is mandatory "
-  printf " ${USAGE} "
-  exit 1;
-fi
-
-## cdd file name validation
-if [ $ARG_CDD_FILE_NAME != na ]; then
-  echo "INFO: cdd file name:       [${ARG_CDD_FILE_NAME}]"
-  SED_EXP+=" -e s/CDD_FILE_NAME_KEY/${ARG_CDD_FILE_NAME}/g "
-else
-  echo "ERROR: cdd file name is mandatory "
-  printf " ${USAGE} "
-  exit 1;
-fi
-
-## ear file name validation
-if [ $ARG_EAR_FILE_NAME != na ]; then
-  echo "INFO: ear file name:       [${ARG_EAR_FILE_NAME}]"
-  SED_EXP+=" -e s/EAR_FILE_NAME_KEY/${ARG_EAR_FILE_NAME}/g "
-else
-  echo "ERROR: ear file name is mandatory "
   printf " ${USAGE} "
   exit 1;
 fi
@@ -216,7 +188,7 @@ done
 ## docker test command
 docker run -i --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ${PWD}:/test gcr.io/gcp-runtimes/container-structure-test:latest \
+  -v ${PWD}:/test gcr.io/gcp-runtimes/container-structure-test:v1.9.1 \
     test \
     --image ${ARG_IMAGE_NAME} \
     ${CONFIG_FILE_ARGS}

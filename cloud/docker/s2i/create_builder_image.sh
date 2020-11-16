@@ -556,7 +556,7 @@ if [ "$IS_S2I" = "true" ]; then
 		cd ../tests
 		EAR_FILE_NAME="dummy.txt"
 		CDD_FILE_NAME="dummy.txt"
-		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -c $CDD_FILE_NAME -e $EAR_FILE_NAME -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
+		source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_SHORT_VERSION -as $ACTIVESPACES_SHORT_VERSION -f $FTL_SHORT_VERSION
 	fi
 
 fi
