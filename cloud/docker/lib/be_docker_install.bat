@@ -124,6 +124,10 @@ if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -D
 powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
 powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
+if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
+	rd /S /Q "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" > NUL
+)
+
 if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
 	del /S /Q "c:\_tibco\be\ext\%CDD_FILE_NAME%" > NUL
 )

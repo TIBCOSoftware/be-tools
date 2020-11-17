@@ -653,6 +653,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\application\ear' -Recurse | out-null"
         del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
     )
+    
+    if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" (
+        rd /S /Q "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" > NUL
+    )
 
     if EXIST !BE_HOME!\hotfix (
         powershell -Command "Copy-Item '!BE_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
