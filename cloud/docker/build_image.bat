@@ -644,7 +644,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
         
         rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws
-        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
     ) else (
         rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
         mkdir !TEMP_FOLDER!\tibcoHome\be\application\ear !TEMP_FOLDER!\tibcoHome\be\ext

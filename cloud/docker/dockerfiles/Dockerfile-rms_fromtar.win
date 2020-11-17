@@ -39,7 +39,7 @@ ENV \
 
 COPY tibcoHome "c:\tibco"
 
-#RUN c:\tibco\be\vcredist_install.bat
+RUN c:\tibco\be\vcredist_install.bat
 
 # Setup gv providers
 RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
