@@ -12,10 +12,10 @@
 cpType: minikube      #cpType can be minikube, aws, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,AS2,FTL
-omType: inmemory                   #omType can be inmemory,store,cache
-bsType: na         #BackingStore can be None sharednothing, store
-storeType: na                 #storeType can be RDBMS, AS4, Cassandra
-cacheType: AS2                      #cacheType can be AS2, ignite
+omType: inmemory                        #omType can be inmemory,store,cache
+bsType: na                              #BackingStore can be None sharednothing, store
+storeType: na                           #storeType can be RDBMS, AS4, Cassandra
+cacheType: AS2                          #cacheType can be AS2, ignite
 
 # Image name and pull policy required for be app
 image: befdapp:01
@@ -25,7 +25,7 @@ imagepullsecret:
 
 # imageCredentials Credentials to pull image from a private registry. You can skip this if you want create image pull secret manually.
 imageCredentials:
-  registry:   #Ex: hub.docker.com
+  registry:                             #Ex: hub.docker.com
   username:
   password:
   email:
@@ -49,7 +49,7 @@ env:
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
   # custom gv provider specific environment variables
   # other environment variables
-
+  
 #*************************Agents Part****************************************************
 
 #Required for cache, sharednothing, store in  all cloud providers
@@ -176,21 +176,60 @@ volumes:
 
 #Required for store in  all cloud providers
 mysql:
-  enabled: false #use true for store
+  enabled: false              #use true for store
   image: "mysql"
   imageTag: "5.7"
   args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
   mysqlUser: root
   mysqlPassword: root
   mysqlRootPassword: password
-  mysqlDatabase: BE_DATABASE #database name
+  mysqlDatabase: BE_DATABASE  #database name
   # persistence: 
-  #   storageClass: "-" #Type of persistent volume claim
+  #   storageClass: "-"       #Type of persistent volume claim
 
 # Required for sharednothing and store in AWS
 aws-efs:
-  enabled: false #use true for aws 
+  enabled: false              #use true for aws 
   replicaCount: 1
   efsProvisioner:
     efsFileSystemId: fs-e8f5fa68
-    awsRegion: us-east-1        
+    awsRegion: us-east-1
+
+# ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
+
+metricsType: na           # metricsType value is strict to "influx","liveview","custom"
+
+influxconfigmap:
+  dburl: http://influxDB:8086
+  dbname: fdmetrics 
+
+influxdatabase:
+  INFLUXDB_URL: dburl
+  INFLUXDBNAME: dbname  
+
+
+# Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
+influxdb:
+  enabled: false
+  persistence:
+    enabled: false            # Set to true for persistence
+
+
+# Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
+grafana:
+  enabled: false
+  service:
+    type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
+
+# --------- Streambase and liveview information ------
+
+sbconfigmap:
+  ldmurl: lv://localhost:10080
+
+streambase:
+  LDM_URL: ldmurl
+
+# custom metrics(ex:elastic, prometheus etc.,)
+
+metricdetails:
+  URL: http://localhost:1234
