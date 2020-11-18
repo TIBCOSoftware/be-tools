@@ -78,3 +78,29 @@ Connect to cassandra db:
 kubectl exec -it CASSANDRA-POD-NAME bash
 cqlsh -u cassandra -p PASSWORD 127.0.0.1 9042
 ```
+
+Clean up:
+```sh
+helm uninstall cassandra
+```
+
+## Consul
+
+Install Consul using [hashicorp consul](https://github.com/hashicorp/consul-helm) helm chart:
+
+```sh
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm install -f helm-consul-values.yaml consulapp hashicorp/consul
+```
+
+[Reference](https://learn.hashicorp.com/tutorials/consul/kubernetes-minikube?in=consul/kubernetes)
+
+Access consul UI using below service:
+```sh
+kubectl get service/consulapp-consul-ui
+```
+
+Clean up:
+```sh
+helm uninstall consulapp
+```
