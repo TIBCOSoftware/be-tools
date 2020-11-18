@@ -1,0 +1,16 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'AS Lib Path'
+    path: '/opt/tibco/as/AS_LEG_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'AS Lib Jar File'
+    path: '/opt/tibco/as/AS_LEG_SHORT_VERSION/lib/as-common.jar'
+    shouldExist: true
+fileContentTests:
+  - name: 'BE TRA Updated with AS home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    expectedContents: ['AS_HOME=/opt/tibco/as/AS_LEG_SHORT_VERSION']

@@ -1,4 +1,8 @@
 #
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
 # TIBCO BusinessEvents Dockerfile_fromtar.rhel
 # To be used for creation with the frominstall/build_app_image script
 #
@@ -36,7 +40,9 @@ RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSI
  && chmod +x run
 
 WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
+
+RUN echo \ >> be-engine.tra \
+ && echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
  && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra

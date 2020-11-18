@@ -1,0 +1,63 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+metadataTest:
+  env:
+    - key: TIBCO_HOME
+      value: /opt/tibco
+    - key: BE_HOME
+      value: /opt/tibco/be/BE_SHORT_VERSION
+    - key: PU
+      value: default
+    - key: ENGINE_NAME
+      value: be-engine   
+    - key: LOG_LEVEL
+      value: na
+    - key: AS_DISCOVER_URL
+      value: self
+    - key: AS_PROXY_NODE
+      value: false
+  exposedPorts: ["5555","50000","50001"]
+  volumes: ["/mnt/tibco/be/logs","/mnt/tibco/be/data-store","/opt/tibco/be/BE_SHORT_VERSION/rms/shared"]
+fileContentTests:
+  - name: 'BE TRA Updated with AS home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    expectedContents: ['BE_HOME=/opt/tibco/be/BE_SHORT_VERSION']
+fileExistenceTests:
+  - name: 'BE Path'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/'
+    shouldExist: true
+  - name: 'BE Engine Binary'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine'
+    shouldExist: true
+  - name: 'BE Engine TRA File'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    shouldExist: true
+  - name: 'BE Path Lib'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'BE Lib File'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/lib/be-functions.jar'
+    shouldExist: true
+  - name: 'Gvproviders Path'
+    path: '/home/tibco/be/gvproviders/'
+    shouldExist: true
+  - name: 'Gvproviders File'
+    path: '/home/tibco/be/gvproviders/setup.sh'
+    shouldExist: true
+  - name: 'Docker Run File'
+    path: '/home/tibco/be/run'
+    shouldExist: true
+  - name: 'Cdd file'
+    path: '$CDD_FILE'
+    shouldExist: true
+  - name: 'Ear file'
+    path: '$EAR_FILE'
+    shouldExist: true
+commandTests:
+    - name: "beengine without cdd"
+      command: "sh"
+      args: ["-c","/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine --propFile /opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra > /dev/null"]
+      exitCode: 255

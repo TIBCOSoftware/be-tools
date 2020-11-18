@@ -1,4 +1,6 @@
 @echo off
+@rem Copyright (c) 2019-2020. TIBCO Software Inc.
+@rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -7,22 +9,19 @@ set "ARG_INSTALLER_LOCATION=na"
 set BE_TAG="com.tibco.be"
 set S2I_DOCKER_FILE_BASE="bin/Dockerfile"
 set S2I_DOCKER_FILE_APP="Dockerfile"
-set ARG_DOCKERFILE_NAME="Dockerfile"
 set ARG_EDITION="enterprise"
 set ARG_VERSION="na"
 set ARG_ADDONS="na"
-set ARG_INSTALLER_LOCATION="na"
 set ARG_BE_HOTFIX="na"
 set ARG_AS_HOTFIX="na"
 set ARG_JRE_VERSION="na"
 set IS_S2I="true"
 set ARG_APP_LOCATION="na"
 set ARG_IMAGE_VERSION="na"
-set ARG_DOCKER_FILE="Dockerfile"
+set ARG_DOCKERFILE=na
 set "TEMP_FOLDER=tmp_%RANDOM%"
 set AS_VERSION="na"
 set ARG_GVPROVIDERS="na"
-
 
 for %%x in (%*) do (
  if %%x EQU nos2i (
@@ -108,12 +107,12 @@ if !ARG_INSTALLER_LOCATION! EQU na (
   set "MISSING_ARG=!MISSING_ARG! Installer Location[-l/--installers-location] "
 )
 if !IS_S2I! NEQ "true"  (
-if !ARG_APP_LOCATION! EQU na (
+if !ARG_APP_LOCATION! EQU "na" (
   set "MISSING_ARG=!MISSING_ARG! App Location [-a/--app-location] "
 )
 )
 if !IS_S2I! NEQ "true"  (
-if !ARG_IMAGE_VERSION! EQU na (
+if !ARG_IMAGE_VERSION! EQU "na" (
   set "MISSING_ARG=!MISSING_ARG! Image repo [-r/--repo] "
 )
 )
@@ -158,11 +157,13 @@ if "!ARG_DOCKERFILE!" EQU "na" set ARG_DOCKERFILE=Dockerfile
 set /A RESULT=0
 set ARG_JRE_VERSION=na
 set ARG_AS_VERSION=na
+set ARG_FTL_VERSION=na
+set ARG_ACTIVESPACES_VERSION=na
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\lib !TEMP_FOLDER!\gvproviders
 
 REM Performing validation
-call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION
+call ..\lib\be_validate_installers.bat ARG_VERSION !ARG_INSTALLER_LOCATION! !TEMP_FOLDER! true true ARG_HF ARG_ADDONS ARG_AS_VERSION ARG_AS_HF ARG_JRE_VERSION ARG_FTL_VERSION ARG_FTL_HF ARG_ACTIVESPACES_VERSION ARG_ACTIVESPACES_HF
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
   GOTO END-withError
@@ -174,11 +175,21 @@ echo INFO: Installers Platform - !ARG_INSTALLERS_PLATFORM!
 echo INGO: BusinessEvents version - !ARG_VERSION!
 echo INFO: BusinessEvents HF - !ARG_HF!
 echo INFO: Addons - !ARG_ADDONS!
-echo INFO: ActiveSpaces version - !ARG_AS_VERSION!
-echo INFO: ActiveSpaces Hf - !ARG_AS_HF!
+echo INFO: AS legacy version - !ARG_AS_VERSION!
+echo INFO: AS legacy Hf - !ARG_AS_HF!
+if !ARG_FTL_VERSION! NEQ na echo INFO: FTL version - !ARG_FTL_VERSION!
+if !ARG_FTL_HF! NEQ na echo INFO: FTL Hf - !ARG_FTL_HF!
+if !ARG_ACTIVESPACES_VERSION! NEQ na echo INFO: Activespaces version - !ARG_ACTIVESPACES_VERSION!
+if !ARG_ACTIVESPACES_HF! NEQ na echo INFO: Activespaces Hf - !ARG_ACTIVESPACES_HF!
 echo INFO: Image Repo - !ARG_IMAGE_VERSION!
 echo INFO: Dockerfile - !ARG_DOCKERFILE!
 echo ----------------------------------------------
+
+if !ARG_AS_VERSION! NEQ na (
+  if !ARG_FTL_VERSION! NEQ na (
+    echo WARN: The directory - !ARG_INSTALLER_LOCATION! contains both FTL and AS legacy installers. Removing unused installer improves the docker image size.
+  )
+)
 
 echo INFO: Copying packages...
 
@@ -192,6 +203,8 @@ for /F "tokens=*" %%f in (!TEMP_FOLDER!/package_files.txt) do (
 
 set SHORT_VERSION=!ARG_VERSION:~0,3!
 set AS_SHORT_VERSION=!ARG_AS_VERSION:~0,3!
+set FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+set ACTIVESPACES_SHORT_VERSION=!ARG_ACTIVESPACES_VERSION:~0,3!
 xcopy /Q /C /R /Y /E ..\lib !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E ..\gvproviders !TEMP_FOLDER!\gvproviders
 
@@ -212,7 +225,7 @@ type NUL > dummy.txt
 cd ../..
 
 
-docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!BE_TAG!":"!ARG_VERSION!"-"!ARG_VERSION!" !TEMP_FOLDER!
+docker build -f !TEMP_FOLDER!\!ARG_DOCKERFILE! --build-arg BE_PRODUCT_VERSION="!ARG_VERSION!" --build-arg BE_SHORT_VERSION="!SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_HF!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_HF!" --build-arg DOCKERFILE_NAME=!ARG_DOCKERFILE! --build-arg AS_VERSION="!ARG_AS_VERSION!" --build-arg AS_SHORT_VERSION="!AS_SHORT_VERSION!" --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HF!" --build-arg ACTIVESPACES_VERSION="!ARG_ACTIVESPACES_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ACTIVESPACES_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_ACTIVESPACES_HF!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=dummy.txt --build-arg EAR_FILE_NAME=dummy.txt --build-arg GVPROVIDERS="!ARG_GVPROVIDERS!" -t "!BE_TAG!":"!ARG_VERSION!"-"!ARG_VERSION!" !TEMP_FOLDER!
 
 if %ERRORLEVEL% NEQ 0 (
   echo "Docker build failed."
@@ -242,7 +255,7 @@ EXIT /B 1
 ) else (
  call ..\bin\build_app_image.bat %*
 )
-
+EXIT /B 0
 
 :printUsage
   if !IS_S2I! EQU "false" (
@@ -250,7 +263,7 @@ EXIT /B 1
 ) else (
   echo Usage: create_builder_image.bat
 )
-  echo  [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
+  echo  [-l/--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]
   if !IS_S2I! EQU "false" (
   echo  [-a/--app-location]         :       Location where the application ear, cdd and other files are located [required]
   echo  [-r/--repo]                 :       The app image Repository [example - fdc:latest] [required]

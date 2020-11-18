@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -17,22 +17,35 @@ Open terminal and go to folder cloud/docker/s2i
 
 
 Lets start off with creating a reusable builder image:
-./create_builder_image.sh -l <installers-location> -v <BE-version> -i <image-version>
 
-where
-[-l|--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]
-[-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]"
+./create_builder_image.sh -h
+
+Usage: create_builder_image.sh
+
+ [-l|--installers-location]  :       Location where TIBCO BusinessEvents and other required installers are located [required]
+
+ [-d|--docker-file]          :       Dockerfile to be used for generating image.(default Dockerfile) [optional]
+
+ [--disable-tests]           :       Disables docker unit tests on created image. [optional]
+
+ [--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]
+
+ [-r|--repo]                 :       The builder image Repository (example - s2ibuilder:latest) [required]
+
+ [-h|--help]                 :       Print the usage of script [optional]
+
+ NOTE : supply long options with '='
 
 
 For example:
-./create_builder_image.sh -l /Users/test/BE_Installers
+./create_builder_image.sh -l /Users/test/BE_Installers -r s2ibuilder:v1
 
 Next we provide application source to s2i to create an assembled image off the previously created builder image.
 
 s2i build <location of the source code> <name of the builder image> <name of the application image>
 
 Using FraudDetection application for this example,
-s2i build /Users/test/Applications/FraudDetection/source com.tibco.be:5.6.0-v01 fdopenshifts2i:01
+s2i build /Users/test/Applications/FraudDetection/source s2ibuilder:v1 fdapps2i:01
 
 Finally run the application,
 docker run -p 8108:8108 <app-image>

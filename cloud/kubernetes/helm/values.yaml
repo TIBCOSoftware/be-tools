@@ -1,0 +1,224 @@
+
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+# Default values.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#Required parameter to be passed for all cloud providers
+cpType: minikube      #cpType can be minikube, aws, azure, openshift OR gcp
+#-----------------------------------------
+cmType: unclustered                     #cmType can be unclustered,AS2,FTL
+omType: inmemory                        #omType can be inmemory,store,cache
+bsType: na                              #BackingStore can be None sharednothing, store
+storeType: na                           #storeType can be RDBMS, AS4, Cassandra
+cacheType: AS2                          #cacheType can be AS2, ignite
+
+# Image name and pull policy required for be app
+image: befdapp:01
+imagePullPolicy: IfNotPresent
+# imagepullsecret Provide image pull secret name, If the image is available in a private registry. You can create image pull secret manually OR use imageCredentials section to create it. 
+imagepullsecret:
+
+# imageCredentials Credentials to pull image from a private registry. You can skip this if you want create image pull secret manually.
+imageCredentials:
+  registry:                             #Ex: hub.docker.com
+  username:
+  password:
+  email:
+
+#*************************Agents env varaibles****************************************************
+
+ignite:
+  discover_url: IGNITE_DISCOVER_URL
+
+ftl:
+  FTL_gv_REALM_SERVER: http://localhost:8585
+  FTL_gv_CLUSTER_NAME: ftl.default.cluster
+
+#*************************Agents Part****************************************************
+
+#Required for cache, sharednothing, store in  all cloud providers
+cachenode:
+  name: becacheagent
+  replicaCount: 1
+  containers:
+    name: cachenode
+
+#Required for all applications in  all cloud providers
+inferencenode:
+  name: beinferenceagent
+  replicaCount: 1
+  containers:
+    name: inferencenode
+
+#*************************Service Part****************************************************
+#Required for cache, sharednothing, store in all cloud providers
+cacheservice:
+  name: becache-service
+  ports:
+    port: 50000
+    protocol: TCP
+
+#Required for all applications in all cloud providers
+jmxservice:
+  name: jmx-service
+  ports:
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
+  type: LoadBalancer
+
+#Required for all applications in all cloud providers
+beservice:
+  name: beservice
+  type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP
+  ports:
+    name: port1
+    protocol: TCP
+    port: 8108
+
+ignitePort:
+  dis0: 47500
+  dis1: 47501
+  dis2: 47502
+  dis3: 47503
+  dis4: 47504
+  dis5: 47505
+  dis6: 47506
+  dis7: 47507
+  dis8: 47508
+  dis9: 47509  
+
+#*************************ConfigMap****************************************************
+
+#Required for store in all cloud providers
+configmapname: storeconfig
+
+configmap:
+  dbdriver: com.mysql.jdbc.Driver
+  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  dbusername: BE_USER
+  dbpwd: BE_USER
+  dbpoolsize: 5
+  dblogintimeout: 0
+
+#Required for store in all cloud providers
+database:
+  BACKINGSTORE_JDBC_DRIVER: dbdriver 
+  BACKINGSTORE_JDBC_URL: dburl
+  BACKINGSTORE_JDBC_USERNAME: dbusername
+  BACKINGSTORE_JDBC_PASSWORD: dbpwd
+  BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
+  BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
+
+cassconfigmap:
+  cass_server: localhost:9042
+  cass_keyspace_name: testdb
+  cass_username: cassandra
+  cass_password: cassandra
+
+cassdatabase:
+  CASS_SERVER: cass_server
+  CASS_KEYSPACE_NAME: cass_keyspace_name
+  CASS_USERNAME: cass_username
+  CASS_PASSWORD: cass_password
+
+as4configmap:
+  realm_url: http://localhost:8585
+  sec_realm_url: http://localhost:8585
+  grid_name: fd_store
+  store_timeout: 5
+  store_waittime: 0.1
+  store_poolsize: 1
+
+as4database:
+  REALM_URL: realm_url
+  SEC_REALM_URL: sec_realm_url
+  GRID_NAME: grid_name
+  STORE_TIMEOUT: store_timeout
+  STORE_WAITTIME: "store_waittime"
+  STORE_POOLSIZE: store_poolsize  
+
+#*************************Volumes Part****************************************************
+volumes:
+  #Required for sharednothing and store in all cloud providers
+  snmountPath: "/mnt/tibco/be/data-store"
+  snmountVolume: store
+  accessModes: ["ReadWriteOnce"]
+  storage: 0.5Gi
+  storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
+  snclaimVolume: pv0003
+
+  #Required for sharednothing and store in Azure
+  azure:
+    storageClassName: azurestorageclass
+    skuName: Standard_LRS
+    provisioner: kubernetes.io/azure-file
+    dir_mode: 0777
+    file_mode: 0777
+    uid: 1000
+    gid: 1000
+
+#Required for store in  all cloud providers
+mysql:
+  enabled: false              #use true for store
+  image: "mysql"
+  imageTag: "5.7"
+  args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
+  mysqlUser: root
+  mysqlPassword: root
+  mysqlRootPassword: password
+  mysqlDatabase: BE_DATABASE  #database name
+  # persistence: 
+  #   storageClass: "-"       #Type of persistent volume claim
+
+# Required for sharednothing and store in AWS
+aws-efs:
+  enabled: false              #use true for aws 
+  replicaCount: 1
+  efsProvisioner:
+    efsFileSystemId: fs-e8f5fa68
+    awsRegion: us-east-1
+
+# ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
+
+metricsType: na           # metricsType value is strict to "influx","liveview","custom"
+
+influxconfigmap:
+  dburl: http://influxDB:8086
+  dbname: fdmetrics 
+
+influxdatabase:
+  INFLUXDB_URL: dburl
+  INFLUXDBNAME: dbname  
+
+
+# Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
+influxdb:
+  enabled: false
+  persistence:
+    enabled: false            # Set to true for persistence
+
+
+# Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
+grafana:
+  enabled: false
+  service:
+    type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
+
+# --------- Streambase and liveview information ------
+
+sbconfigmap:
+  ldmurl: lv://localhost:10080
+
+streambase:
+  LDM_URL: ldmurl
+
+# custom metrics(ex:elastic, prometheus etc.,)
+
+metricdetails:
+  URL: http://localhost:1234

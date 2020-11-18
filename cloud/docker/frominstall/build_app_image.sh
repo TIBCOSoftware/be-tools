@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -10,6 +10,7 @@ USAGE+="[-a|--app-location]         :       Location where the application ear, 
 USAGE+="[-r|--repo]                 :       The app image Repository (example - fdc:latest) [required]\n"
 USAGE+="[-l|--be-home]              :       be-home [optional, default: "../../.." i.e; as run from its default location BE_HOME/cloud/docker/frominstall] [optional]\n"
 USAGE+="[-d|--docker-file]          :       Dockerfile to be used for generating image (default: Dockerfile_fromtar) [optional]\n"
+USAGE+="[--disable-tests]           :       Disables docker unit tests on created image. [optional] \n"
 USAGE+="[--gv-providers]            :       Names of GV providers to be included in the image. Supported value(s) - consul [optional]\n"
 USAGE+="[-h|--help]                 :       Print the usage of script [optional]\n";
 
@@ -20,59 +21,62 @@ ARG_IMAGE_VERSION="na"
 BE_HOME="../../.."
 TEMP_FOLDER="tmp_$RANDOM"
 ARG_GVPROVIDERS="na"
+ARG_ENABLE_TESTS="true"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-    -d|--docker-file)
-        shift # past the key and to the value
-        ARG_DOCKER_FILE="$1"
-        ;;
-        -d=*|--docker-file=*)
-        ARG_DOCKER_FILE="${key#*=}"
-        ;;
-	--gv-providers)
-        shift # past the key and to the value
-        ARG_GVPROVIDERS="$1"
-        ;;
-        --gv-providers=*)
-        ARG_GVPROVIDERS="${key#*=}"
-        ;;
-	-r|--repo) 
-        shift # past the key and to the value
-        ARG_IMAGE_VERSION="$1"
-        ;;
-        -r=*|--image-version=*)
-        ARG_IMAGE_VERSION="${key#*=}"
-        ;;
-	-l|--be-home) 
-        shift # past the key and to the value
-        BE_HOME="$1"
-        ;;
-        -l=*|--be-home=*)
-        BE_HOME="${key#*=}"
-        ;;
-	-a|--app-location) 
-        shift # past the key and to the value
-        ARG_APP_LOCATION="$1"
-        ;;
-        -a=*|--app-location=*)
-        ARG_APP_LOCATION="${key#*=}"
-        ;;
-	-h|--help) 
+      -d|--docker-file)
+          shift # past the key and to the value
+          ARG_DOCKER_FILE="$1"
+          ;;
+          -d=*|--docker-file=*)
+          ARG_DOCKER_FILE="${key#*=}"
+          ;;
+      --gv-providers)
+          shift # past the key and to the value
+          ARG_GVPROVIDERS="$1"
+          ;;
+          --gv-providers=*)
+          ARG_GVPROVIDERS="${key#*=}"
+          ;;
+      -r|--repo) 
+          shift # past the key and to the value
+          ARG_IMAGE_VERSION="$1"
+          ;;
+          -r=*|--image-version=*)
+          ARG_IMAGE_VERSION="${key#*=}"
+          ;;
+      -l|--be-home) 
+          shift # past the key and to the value
+          BE_HOME="$1"
+          ;;
+          -l=*|--be-home=*)
+          BE_HOME="${key#*=}"
+          ;;
+      -a|--app-location) 
+          shift # past the key and to the value
+          ARG_APP_LOCATION="$1"
+          ;;
+          -a=*|--app-location=*)
+          ARG_APP_LOCATION="${key#*=}"
+          ;;
+      --disable-tests)
+          ARG_ENABLE_TESTS="false"
+          ;;
+      -h|--help) 
+          shift
+          printf "$USAGE"
+          exit 0
+          ;;
+          *)
+          echo "Invalid Option '$key'"
+          printf "$USAGE"
+          exit 1
+          ;;
+      esac
+        # Shift after checking all the cases to get the next option
         shift
-        printf "$USAGE"
-        exit 0
-	    ;;
-        *)
-        echo "Invalid Option '$key'"
-	printf "$USAGE"
-        exit 1
-        
-        ;;
-    esac
-    # Shift after checking all the cases to get the next option
-    shift
 done
 
 MISSING_ARGS="-"
@@ -133,6 +137,21 @@ EAR_FILE_NAME="$(basename -- ${ears[0]})"
 CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 ARG_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
 ARG_VERSION=$(echo $ARG_VERSION | sed -e 's/\r//g')
+
+# get ftl home
+FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
+FTL_HOME=${FTL_HOME%?}
+if [[ $FTL_HOME == '' ]]; then
+  FTL_HOME="na"
+fi
+
+# get activespaces home
+ACTIVESPACES_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
+ACTIVESPACES_HOME=${ACTIVESPACES_HOME%?}
+if [[ $ACTIVESPACES_HOME == '' ]]; then
+  ACTIVESPACES_HOME="na"
+fi
+
 echo "----------------------------------------------"
 echo "INFO: VERSION : $ARG_VERSION"
 echo "INFO: APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
@@ -140,6 +159,13 @@ echo "INFO: DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO: IMAGE REPO : $ARG_IMAGE_VERSION"
 echo "INFO: CDD FILE NAME : $CDD_FILE_NAME"
 echo "INFO: EAR FILE NAME : $EAR_FILE_NAME"
+echo "INFO: BE_HOME : $BE_HOME"
+if [[ $FTL_HOME != "na" ]]; then
+  echo "INFO: FTL_HOME : $FTL_HOME"
+fi
+if [[ $ACTIVESPACES_HOME != "na" ]]; then
+  echo "INFO: ACTIVESPACES_HOME : $ACTIVESPACES_HOME"
+fi
 echo "----------------------------------------------"
 
 DOCKER_BIN_DIR="$BE_HOME"/cloud/docker/bin
@@ -152,12 +178,7 @@ cp $ARG_APP_LOCATION/$CDD_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/$EAR_FILE_NAME $TEMP_FOLDER/app
 cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 
-if [ "$BE_HOME" = "../../.." ]
-then
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER
-else
-  perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME
-fi
+perl ../lib/genbetar.pl $(pwd)/$TEMP_FOLDER $BE_HOME $FTL_HOME $ACTIVESPACES_HOME
 
 if [ "$?" != 0 ]; then
   echo "Creating BE archive failed"
@@ -185,5 +206,32 @@ if [ "$?" != 0 ]; then
 else
   echo "DONE: Docker build successful."
   rm -rf $TEMP_FOLDER
+  if [ $ARG_ENABLE_TESTS == "true" ]; then
+    ## get ftl version
+    if [ $FTL_HOME != "na" ]; then
+      FTL_SHORT_VERSION=$( echo ${FTL_HOME}  | rev | cut -d'/' -f1 | rev )
+    else
+      FTL_SHORT_VERSION=na
+    fi
+
+    ## get as legacy version
+    AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
+    AS_LEG_HOME=${AS_LEG_HOME%?}
+    if [[ $AS_LEG_HOME == '' ]]; then
+      AS_LEGACY_SHORT_VERSION="na"
+    else
+      AS_LEGACY_SHORT_VERSION=$( echo ${AS_LEG_HOME}  | rev | cut -d'/' -f1 | rev )
+    fi
+
+    ## get as version
+    if [ $ACTIVESPACES_HOME != "na" ]; then
+      AS_SHORT_VERSION=$( echo ${ACTIVESPACES_HOME}  | rev | cut -d'/' -f1 | rev )
+    else
+      AS_SHORT_VERSION=na
+    fi
+    
+    cd ../tests
+    source run_tests.sh -i $ARG_IMAGE_VERSION  -b $SHORT_VERSION -al $AS_LEGACY_SHORT_VERSION -as $AS_SHORT_VERSION -f $FTL_SHORT_VERSION
+  fi
   exit 0
 fi

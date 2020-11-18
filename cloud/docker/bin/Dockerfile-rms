@@ -1,4 +1,8 @@
 #
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
 # BusinessEvents Dockerfile
 #
 ARG BE_PRODUCT_VERSION
@@ -8,7 +12,7 @@ ARG AS_VERSION
 ARG JRE_VERSION
 ARG AS_SHORT_VERSION
 
-FROM ubuntu:latest as intermediate
+FROM ubuntu:20.10 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -51,9 +55,10 @@ RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> 
 
 # Cleanup.
 RUN rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws
+RUN rm -rf /home/tibco/be/be_installers-hf
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:latest
+FROM ubuntu:20.10
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION

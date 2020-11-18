@@ -1,0 +1,98 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+---
+# This is used to populate the grid configuration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftl4be-conf
+  labels:
+    app: ftl4be
+data:
+  ftl.yaml: |
+    globals:
+      core.servers:
+        ftlserver4be-0: ftlserver4be-0.ftlservers4be:30080
+    services: {}
+    servers:
+      ftlserver4be-0:
+      - realm:
+          ftl: ftlserver4be-0.ftlservers4be:30083
+          data: /opt/tibco/ftl/6.4/ftlcluster/persistence/realm
+      - persistence:
+          name: cepFTLCluster_default
+          data: /opt/tibco/ftl/6.4/ftlcluster/persistence/pdata
+
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftlservers4be
+  labels:
+    com.tibco.ftl4be.service: ftlservers
+    app: ftl4be
+spec:
+  type: "NodePort"
+  ports:
+    - name: http
+      port: 8585
+      targetPort: 30080
+    - name: ftl
+      port: 30083
+  selector:
+    com.tibco.ftl4be.service: ftlservers
+
+...
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ftlserver4be
+  labels:
+    com.tibco.ftl4be.service: ftlservers
+    app: ftl4be
+spec:
+  serviceName: ftlservers4be
+  replicas: 1
+  selector:
+    matchLabels:
+      com.tibco.ftl4be.service: ftlservers
+  template:
+    metadata:
+      labels:
+        com.tibco.ftl4be.service: ftlservers
+        app: tibdg
+    spec:
+      containers:
+        - name: ftlservers
+          image: ftl-tibftlserver:6.4.0
+          args:
+            - '-c'
+            - '/config/ftl.yaml'
+            - '-n'
+            - '$(POD_NAME)'
+          ports:
+            - name: realm-http
+              containerPort: 30080
+            - name: realm-ftl
+              containerPort: 30083
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /config
+              name: config-pv
+      imagePullSecrets:
+        - name: beacrsecret          
+      volumes:
+        - name: config-pv
+          configMap:
+            name: ftl4be-conf
+
+...

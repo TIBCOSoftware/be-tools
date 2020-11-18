@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -37,6 +37,7 @@ my $REGEX_LD_LIB_PATH = "tibco.env.LD_LIBRARY_PATH(.*)[\s]*";
 my $REGEX_AS_INSTALLER  = "*activespaces";
 my $REGEX_BE_INSTALLER  = "*businessevents";
 my $REGEX_FTL_INSTALLER  = "*ftl";
+my $REGEX_ACTIVESPACES_INSTALLER  = "*as";
 
 my %REGEX_SLNT_FILE_TOKENS = (
   '(<entry key="installationRoot">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_LOC,
@@ -75,14 +76,20 @@ my %AS_VERSION_MAP_MAX  = (
 );
 
 my %FTL_VERSION_MAP  = (
- '6.0.0' => '6.4.0'
+ '6.0.0' => '6.2.0'
 );
 
 my %FTL_VERSION_MAP_MAX  = (
- '6.0.0' => '6.4.0'
+ '6.0.0' => '6.X.X'
 );
 
+my %ACTIVESPACES_VERSION_MAP  = (
+ '6.0.0' => '4.2.0'
+);
 
+my %ACTIVESPACES_VERSION_MAP_MAX  = (
+ '6.0.0' => '4.X.X'
+);
 
 # OTHERS---------------------------------------------------------
 my $VALUE_CUSTOM_CP = "tibco.env.CUSTOM_EXT_PREPEND_CP=".$CUSTOM_CP;
@@ -130,7 +137,7 @@ sub install_be {
 		}
 
 		#-------------------------------------------------------------------
-		print "\nINFO:Installing ActiveSpaces $asVersion...\n";
+		print "\nINFO:Installing ActiveSpaces Legacy $asVersion...\n";
     my $asInstallResult =
 		  extractAndInstall( $ROOT_FOLDER, $asVersion, $asProd[0], 0,
 			$asHfPkgVal, $FOLDER_AS_INSTALLER, 'as', 0, $arg_asHotfix );
@@ -139,7 +146,7 @@ sub install_be {
 			print "\nERROR : Error occurred while installating AS.Aborting\n";
 			exit 0;
 		}
-		print "\nINFO:Installing ActiveSpaces $asVersion...DONE\n\n";
+		print "\nINFO:Installing ActiveSpaces Legacy $asVersion...DONE\n\n";
 
 		#-------------------------------------------------------------------
 	}else{
@@ -148,9 +155,6 @@ sub install_be {
 		my $blank="";
 		my $spversion=$arg_beVersion;
 		$spversion=~s/$token/$blank/g;	
-		
-		#Handle base and service pack 
-		print "\nINFO:BusinessEvents Version $arg_beVersion ...DONE\n\n";
 		
 		#Disable datagrid
 		if($spversion eq "0"){
@@ -239,6 +243,7 @@ sub install_be {
 
 sub install_ftl {
   my $arg_ftlVersion = shift;
+  my $arg_ftlHotfix = shift;
 
   if($arg_ftlVersion == "na"){
     return 1;
@@ -255,14 +260,82 @@ sub install_ftl {
     return 0;
   }
 
-  my $result=installFTLPackages($arg_ftlVersion,'ftl_installers');
+  my $result=installFTLORACTIVESPACESPackages($arg_ftlVersion,'ftl_installers',"TIB_ftl_");
   if($result == 0){
     print "\nERROR : Error occurred while installing FTL. Aborting\n";
     return 0;
   }
   print "\nINFO:Installing FTL $arg_ftlVersion...DONE\n\n";
+
+  if($arg_ftlHotfix ne "na"){
+    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...\n";
+  
+    my $baseFtlHfRegex="*ftl_$arg_ftlVersion*$arg_ftlHotfix*zip";
+    my (@baseFtlHf) = glob "$ROOT_FOLDER/$baseFtlHfRegex";
+
+    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_ftlVersion,$baseFtlHf[0],'ftl_installers_hf');
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while extracting FTL HF installer package - $baseFtlHf[0]. Aborting\n";
+      return 0;
+    }
+
+    my $hfResult=installFTLORACTIVESPACESPackages($arg_ftlVersion,'ftl_installers_hf',"TIB_ftl_");
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while installing FTL HF. Aborting\n";
+      return 0;
+    }
+    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...DONE\n\n";
+  }
+
 }
 
+sub install_activespaces {
+  my $arg_activespacesVersion = shift;
+  my $arg_activespacesHotfix  = shift;
+
+  if($arg_activespacesVersion == "na"){
+    return 1;
+  }
+
+  print "\nINFO:Installing Activespaces $arg_activespacesVersion...\n";
+  
+  my $baseProdRegex="*as_$arg_activespacesVersion*zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+
+  my $result=extractPackages($ROOT_FOLDER,$arg_activespacesVersion,$baseProd[0],'activespaces_installers');
+  if($result == 0){
+    print "\nERROR : Error occurred while extracting activespaces installer package - $baseProd[0]. Aborting\n";
+    return 0;
+  }
+
+  my $result=installFTLORACTIVESPACESPackages($arg_activespacesVersion,'activespaces_installers',"TIB_as_");
+  if($result == 0){
+    print "\nERROR : Error occurred while installing activespaces. Aborting\n";
+    return 0;
+  }
+  print "\nINFO:Installing Activespaces $arg_activespacesVersion...DONE\n\n";
+
+  if($arg_activespacesHotfix ne "na"){
+    print "\nINFO:Installing Activespaces $arg_activespacesVersion HF $arg_activespacesHotfix ...\n";
+    
+    my $baseAs3xHfRegex="*as_$arg_activespacesVersion*$arg_activespacesHotfix*zip";
+    my (@baseAs3xHf) = glob "$ROOT_FOLDER/$baseAs3xHfRegex";
+
+    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_activespacesVersion,$baseAs3xHf[0],'activespaces_installers_hf');
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while extracting activespaces HF installer package - $baseAs3xHf[0]. Aborting\n";
+      return 0;
+    }
+
+    my $hfResult=installFTLORACTIVESPACESPackages($arg_activespacesVersion,'activespaces_installers_hf',"TIB_as_");
+    if($hfResult == 0){
+      print "\nERROR : Error occurred while installing activespaces HF. Aborting\n";
+      return 0;
+    }
+    print "\nINFO:Installing Activespaces $arg_activespacesVersion HF $arg_activespacesHotfix ...DONE\n\n";
+  }
+
+}
 #----------------------------------------------------------------------------------------
 
 sub extractAndInstall{
@@ -369,17 +442,18 @@ sub installPackages{
   return 1;
 }
 
-sub installFTLPackages{
+sub installFTLORACTIVESPACESPackages{
   
   my $version = shift;
   my $pkgSourceRoot= shift;
+  my $installerType = shift;
 
-  my $pkgSourceFolder = "$pkgSourceRoot/" . "TIB_ftl_" . "$version";
+  my $pkgSourceFolder = "$pkgSourceRoot/" . "$installerType" . "$version";
   
-  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with dpkg using the folder: $pkgSourceFolder\n":"";
-  my $installCmd = `cd $pkgSourceFolder;dpkg -i deb/*.deb`;
-  # TODO: installCmd works for Debian & Ubuntu. Need to handle for other varients.
-  my $installResult = "$installCmd";
+  my $installCmd = "cd $pkgSourceFolder;"."for f in tar/*; do tar -C / -xvf \$f; done";
+  
+  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with command: $installCmd\n":"";
+  my $installResult = `$installCmd` ;
   $DEBUG_ENABLE==1?print "\nDEBUG: $installResult":"";
 
   return 1;
@@ -609,6 +683,8 @@ sub validate{
   my $addons     =shift;
   my $beHotfix   =shift;
   my $asHotfix   =shift;
+  my $ftlHotfix   =shift;
+  my $activespacesHotfix   =shift;
   my $tempdir  = shift;
   
   @FILES_LIST	 = ();
@@ -659,12 +735,19 @@ sub validate{
     exit 0;
   }
 
-  $result=validateFTL($version,$targetDir);
+  my $isLess=isLessThan($version, "6.0.0");
+  if($isLess < 1 ){
+    $result=validateFTL($version,$ftlHotfix,$targetDir);
+    if($result == 0){
+      exit 0;
+    }
 
-  if($result == 0){
-    exit 0;
+    $result=validateACTIVESPACES($version,$activespacesHotfix,$targetDir);
+    if($result == 0){
+      exit 0;
+    }
   }
-  
+
   writeToFile(\@FILES_LIST,"$tempdir/$FILE_PCKG_LIST");
   print "\n";
   exit 1;
@@ -908,13 +991,19 @@ print "argver: $arg_version, asver: $AS_VERSION_MAP{$arg_version}, asver:$asVers
 
 sub validateFTL{
   
-  my $arg_version    =shift;  
+  my $arg_version    =shift;
+  my $arg_ftlHotfix  =shift;
   my $arg_targetDir  =shift;
   
   my @ftlPckg=glob "$arg_targetDir/$REGEX_FTL_INSTALLER*.zip";
+  my @ftlHfPckg=glob "$arg_targetDir/$REGEX_FTL_INSTALLER*_HF*.zip";
+
   my $ftlCount = @ftlPckg;
+  my $ftlHFCount = @ftlHfPckg;
   
-  if($ftlCount == 1){
+  my $countFTL=$ftlCount-$ftlHFCount;
+
+  if($countFTL == 1){
     my @ftlPckgFiltered = grep(/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g, @ftlPckg);
 	
     if($ftlPckgFiltered[0] =~ m/.*ftl.*([\d]\.[\d]\.[\d])_linux.*/g){
@@ -925,15 +1014,104 @@ sub validateFTL{
         print "argver: $arg_version, ftlver: $FTL_VERSION_MAP{$arg_version}, ftlver:$ftlVersion \n";
         print "\nERROR :BE Version :$arg_version is not compatible with FTL version $ftlVersion.\n";
         return 0;
-      }
-      else{
+      }else{
         $DEBUG_ENABLE==1?print "\nDEBUG: FTL VERSION : $ftlPckgFiltered[0]\n":"";
         push @FILES_LIST, "$ftlPckgFiltered[0]\n";
+
+        if($arg_ftlHotfix ne "na"){
+          my $arg_ftlHotfix=formatHotfixNumber($arg_ftlHotfix);
+          if($arg_ftlHotfix =~ m/\d{3}/){
+            my $regex="*ftl_".$ftlVersion."_HF-$arg_ftlHotfix*zip";
+            my (@hfPkg) = glob "$arg_targetDir/$regex";
+            if(scalar @hfPkg == 0){
+              print "\nERROR :No package found for HF : $arg_ftlHotfix with version: $ftlVersion in the installer location.\n";
+              return 0;
+            }elsif(scalar @hfPkg==1){
+              if($hfPkg[0] =~ m/.*ftl.*($ftlVersion).*/g){
+                $DEBUG_ENABLE==1?print "\nDEBUG: HF : $hfPkg[0]\n":"";
+				        push @FILES_LIST, "$hfPkg[0]\n";
+              }else{
+                print "\nERROR :ftl version does not match with the hotfix version.
+                Make sure both the packages are of same version. \n";
+              }
+            }else{
+              print "\nERROR :More than one HFs($arg_ftlHotfix) are present in the target directory.There should be only one.\n";
+              return 0;
+            }
+          }else{
+            print "\nERROR :Invalid value for be hotfix: $arg_ftlHotfix.Make sure you provide correct hotfix number as an argument.Ex- 5\n";
+            return 0;
+          }
+        }
+
       }
     }
-  }
-  else{
+  }elsif($ftlCount != 0){
     print "\nERROR :More than one FTL Packages are present in the target directory. There should be only one.\n";
+    return 0;
+  }
+  return 1;
+}
+
+sub validateACTIVESPACES{
+  
+  my $arg_version    =shift;
+  my $arg_activespacesHotfix  =shift;  
+  my $arg_targetDir  =shift;
+  
+  my @activespacesPckg=glob "$arg_targetDir/$REGEX_ACTIVESPACES_INSTALLER*.zip";
+  my @activespacesHfPckg=glob "$arg_targetDir/$REGEX_ACTIVESPACES_INSTALLER*_HF*.zip";
+
+  my $activespacesCount = @activespacesPckg;
+  my $activespacesHFCount = @activespacesHfPckg;
+
+  my $countACTIVESPACES=$activespacesCount-$activespacesHFCount;
+  
+  if($countACTIVESPACES == 1){
+    my @activespacesPckgFiltered = grep(/.*as.*([\d]\.[\d]\.[\d])_linux.*/g, @activespacesPckg);
+	
+    if($activespacesPckgFiltered[0] =~ m/.*as.*([\d]\.[\d]\.[\d])_linux.*/g){
+      my ($activespacesVersion) = $1;
+      my $isLess=isLessThan($activespacesVersion, $ACTIVESPACES_VERSION_MAP{$arg_version});
+      my $isGreater=isGreaterThan($activespacesVersion, $ACTIVESPACES_VERSION_MAP_MAX{$arg_version});
+      if($isLess > 0 or $isGreater > 0 ){
+        print "argver: $arg_version, activespaces: $ACTIVESPACES_VERSION_MAP{$arg_version}, activespaces ver:$activespacesVersion \n";
+        print "\nERROR :BE Version :$arg_version is not compatible with activespaces version $activespacesVersion.\n";
+        return 0;
+      }else{
+        $DEBUG_ENABLE==1?print "\nDEBUG: activespaces VERSION : $activespacesPckgFiltered[0]\n":"";
+        push @FILES_LIST, "$activespacesPckgFiltered[0]\n";
+
+        if($arg_activespacesHotfix ne "na"){
+          my $arg_activespacesHotfix=formatHotfixNumber($arg_activespacesHotfix);
+          if($arg_activespacesHotfix =~ m/\d{3}/){
+            my $regex="*as_".$activespacesVersion."_HF-$arg_activespacesHotfix*zip";
+            my (@hfPkg) = glob "$arg_targetDir/$regex";
+            if(scalar @hfPkg == 0){
+              print "\nERROR :No package found for HF : $arg_activespacesHotfix with version: $activespacesVersion in the installer location.\n";
+              return 0;
+            }elsif(scalar @hfPkg==1){
+              if($hfPkg[0] =~ m/.*as.*($activespacesVersion).*/g){
+                $DEBUG_ENABLE==1?print "\nDEBUG: HF : $hfPkg[0]\n":"";
+				        push @FILES_LIST, "$hfPkg[0]\n";
+              }else{
+                print "\nERROR :activespaces version does not match with the hotfix version.
+                Make sure both the packages are of same version. \n";
+              }
+            }else{
+              print "\nERROR :More than one HFs($arg_activespacesHotfix) are present in the target directory.There should be only one.\n";
+              return 0;
+            }
+          }else{
+            print "\nERROR :Invalid value for be hotfix: $arg_activespacesHotfix.Make sure you provide correct hotfix number as an argument.Ex- 5\n";
+            return 0;
+          }
+        }
+
+      }
+    }
+  }elsif($activespacesCount != 0){
+    print "\nERROR :More than one AS Packages are present in the target directory. There should be only one.\n";
     return 0;
   }
   return 1;
@@ -954,32 +1132,81 @@ sub formatHotfixNumber{
 }
 
 
+## isLessThan()
+## Arguments:
+##    $arg_version: version string. Ex: 4.5.1
+##    $arg_minVersion: minimum version string. Ex: 6.4.1
+##
+## Returns:
+##    1 - if $arg_version lessthan $arg_minVersion OR in case of any error
+##    0 - for all other cases
+##
 sub isLessThan {
+  my $arg_version    = shift;
+  my $arg_minVersion = shift;
 
-  my $arg_asVersion  =shift;
-  my $arg_minVersion =shift;
+  my @version    = $arg_version =~ /(^\d+)\.(\d+)\.(\d+$)/g;
+  my @minVersion = $arg_minVersion =~ /(^\d+)\.(\d+)\.(\d+$)/g;
 
-  $arg_asVersion =~ s/\.//g;
-  $arg_minVersion =~ s/\.//g;
-
-  
-  if ($arg_asVersion < $arg_minVersion) {
+  if ( $#version != 2 ) {
+    print "\nERROR: isLessThan() arg1 $arg_version is not a valid version string \n";
     return 1;
+  }
+  if ( $#minVersion != 2 ) {
+    print "\nERROR: isLessThan() arg2 $arg_minVersion is not a valid version string \n";
+    return 1;
+  }
+
+  for ( my $i = 0 ; $i < 3 ; $i++ ) {
+    my $v  = @version[$i];
+    my $mv = @minVersion[$i];
+    if ( $v < $mv ) {
+      return 1;
+    } elsif ( $v > $mv ) {
+      return 0;
+    }
   }
   return 0;
 }
 
+## isGreaterThan()
+## Arguments:
+##    $arg_version: version string. Ex: 4.5.1
+##    $arg_maxVersion: maximum version string. Ex: 6.4.1 / 6.X.X / 7.x.x
+##
+## Returns:
+##    1 - if $arg_version greaterthan $arg_maxVersion OR in case of any error
+##    0 - all other cases
+##
 sub isGreaterThan {
+  my $arg_version    = shift;
+  my $arg_maxVersion = shift;
 
-  my $arg_asVersion  =shift;
-  my $arg_maxVersion =shift;
+  my @version = $arg_version =~ /(^\d+)\.(\d+)\.(\d+$)/g;
+  my @maxVersion = $arg_maxVersion =~ /(^\d+|^x?|^X?)\.(\d+|x?|X?)\.(\d+$|x?$|X?$)/g;
 
-  $arg_asVersion =~ s/\.//g;
-  $arg_maxVersion =~ s/\.//g;
-
-  
-  if ($arg_asVersion > $arg_maxVersion) {
+  if ( $#version != 2 ) {
+    print "\nERROR: isGreaterThan() arg1 $arg_version is not a valid version string \n";
     return 1;
+  }
+  if ( $#maxVersion != 2 ) {
+    print "\nERROR: isGreaterThan() arg2 $arg_maxVersion is not a valid version string \n";
+    return 1;
+  }
+
+  for ( my $i = 0 ; $i < 3 ; $i++ ) {
+    my $v  = @version[$i];
+    my $mv = @maxVersion[$i];
+
+    if ((index($mv, "X") != -1) ||  (index($mv, "x") != -1)) {
+       return 0;
+    }
+
+    if ( $v > $mv ) {
+      return 1;
+    } elsif ( $v < $mv ) {
+      return 0;
+    }
   }
   return 0;
 }
@@ -1050,6 +1277,5 @@ sub writeToFile{
   close OUT;
 }
 #-------------------------------------------------------------------------------------
-
 
 1;

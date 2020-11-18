@@ -1,4 +1,8 @@
 #
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms.win
 #
 
@@ -14,6 +18,12 @@ ARG BE_PRODUCT_HOTFIX
 ARG AS_PRODUCT_HOTFIX
 ARG AS_VERSION
 ARG AS_SHORT_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG FTL_PRODUCT_HOTFIX
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG ACTIVESPACES_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
@@ -30,6 +40,10 @@ ENV \
     JRE_HOME=c:/tibco/tibcojre64/${JRE_VERSION} \
     AS_VERSION=${AS_VERSION} \
     AS_SHORT_VERSION=${AS_SHORT_VERSION} \
+    FTL_VERSION=${FTL_VERSION} \
+    FTL_SHORT_VERSION=${FTL_SHORT_VERSION} \
+    ACTIVESPACES_VERSION=${ACTIVESPACES_VERSION} \
+    ACTIVESPACES_SHORT_VERSION=${ACTIVESPACES_SHORT_VERSION} \
     BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
     CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
     EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
@@ -56,10 +70,10 @@ RUN rmdir /S /Q "c:\working"
 VOLUME \
     "c:\mnt\tibco\be\logs" \
     "c:\mnt\tibco\be\data-store" \
-    "c:\tibco\be\${BE_SHORT_VERSION}\rms\config\notify" \
-    "c:\tibco\be\${BE_SHORT_VERSION}\rms\config\security" \
-    "c:\tibco\be\${BE_SHORT_VERSION}\rms\shared" \
-    "c:\tibco\be\${BE_SHORT_VERSION}\examples\standard\WebStudio"
+    "${BE_HOME}\rms\config\notify" \
+    "${BE_HOME}\rms\config\security" \
+    "${BE_HOME}\rms\shared" \
+    "${BE_HOME}\examples\standard\WebStudio"
 
 # The following is the list of communication ports that need to be open-n-available
 # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port

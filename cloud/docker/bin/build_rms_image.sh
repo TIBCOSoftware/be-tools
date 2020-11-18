@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11")
 
 USAGE="\nUsage: build_rms_image.sh"
 USAGE+="\n\n [-l/--installers-location]  :       Location where TIBCO BusinessEvents and TIBCO Activespaces installers are located [required]"
@@ -132,9 +132,9 @@ BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 
 BE_BASE_VERSION_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*${INSTALLER_PLATFORM}"
-BE_HF_REGEX="${BE_PRODUCT}-${ARG_EDITION}_*_HF"
-AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
-AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
+BE_HF_REGEX="${BE_PRODUCT}-hf_*_HF"
+#AS_REGEX="TIB_activespaces*_linux_x86_64.zip";
+#AS_HF_REGEX="TIB_activespaces*_HF-*_linux_x86_64.zip";
 
 
 #Check for BE Installer  --------------------------------------
@@ -142,7 +142,7 @@ result=$(find $ARG_INSTALLER_LOCATION -name "$BE_BASE_VERSION_REGEX")
 len=$(echo ${result} | wc -l)
 
 if [ $len -eq 0 ]; then
-	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory. There should be only one.\n"
+	printf "\nERROR: TIBCO BusinessEvents Installer is not present in the target directory.\n"
 	exit 1;
 fi
 
@@ -155,20 +155,20 @@ bePckgsCnt=$(find $ARG_INSTALLER_LOCATION -name "${BE_PRODUCT}-${ARG_EDITION}_*$
 beHfPckgs=$(find $ARG_INSTALLER_LOCATION -name "$BE_HF_REGEX*$INSTALLER_PLATFORM")
 beHfCnt=$(find $ARG_INSTALLER_LOCATION -name  "$BE_HF_REGEX*$INSTALLER_PLATFORM" | wc -l)
 
-# Check Single Base version for 5.6.0 exist, zero or one HF exist. --------------------------------------
+# Check Single Base version exist, zero or one HF exist. --------------------------------------
 
 beBasePckgsCnt=$(expr ${bePckgsCnt} - ${beHfCnt})
 
-if [ $beBasePckgsCnt -gt 1 ]; then # If more than one base versions are present
+if [ $bePckgsCnt -gt 1 ]; then # If more than one base versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents base versions are present in the target directory.There should be only one.\n"
 	exit 1;
 elif [ $beHfCnt -gt 1 ]; then # If more than one hf versions are present
 	printf "\nERROR :More than one TIBCO BusinessEvents HF are present in the target directory.There should be only one.\n"
 	exit 1;
-elif [ $beBasePckgsCnt -le 0 ]; then # If HF is present but base version is not present
+elif [ $beBasePckgsCnt -lt 0 ]; then # If HF is present but base version is not present
 	printf "\nERROR :TIBCO BusinessEvents HF is present but TIBCO BusinessEvents Base version is not present in the target directory.\n"
 	exit 1;	
-elif [ $beBasePckgsCnt -eq 1 ]; then
+elif [ $bePckgsCnt -eq 1 ]; then
 	#Find BE Version from installer
 	BASE_PACKAGE="${bePckgs[0]}"
 	ARG_VERSION=$(echo "${BASE_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g" |  sed -e "s/${BE_PRODUCT}-${ARG_EDITION}"_"/${BLANK}/g")  
@@ -182,9 +182,12 @@ elif [ $beBasePckgsCnt -eq 1 ]; then
 	done
 	
 	if [ $beHfCnt -eq 1 ]; then # If Only one HF is present then parse the HF version
-		hfbeversion=$(echo "${beHfPckgs[0]}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
-		if [ $ARG_VERSION == $hfbeversion];then
-			ARG_BE_HOTFIX=$(echo "${beversion}"| cut -d'_' -f 5)
+
+		VERSION_PACKAGE="${beHfPckgs[0]}"
+		hfbepackage=$(echo "${VERSION_PACKAGE##*/}" | sed -e "s/${INSTALLER_PLATFORM}/${BLANK}/g")
+		hfbeversion=$(echo "$hfbepackage"| cut -d'_' -f 3)
+    	if [ $ARG_VERSION == $hfbeversion ];then
+      		ARG_BE_HOTFIX=$(echo "${hfbepackage}"| cut -d'_' -f 4 | sed -e "s/HF-/${BLANK}/g")
 		else
 			printf "\nERROR: TIBCO BusinessEvents version in HF installer and TIBCO BusinessEvents Base version is not matching.\n"
 			exit 1;
@@ -254,7 +257,7 @@ echo "INFO:APPLICATION DATA DIRECTORY : $ARG_APP_LOCATION"
 echo "INFO:ADDONS : $ARG_ADDONS"
 echo "INFO:DOCKERFILE : $ARG_DOCKER_FILE"
 echo "INFO:BE-HF : $ARG_BE_HOTFIX"
-echo "INFO:AS-HF : $ARG_AS_HOTFIX"
+echo "INFO:AS Legacy -HF : $ARG_AS_HOTFIX"
 echo "INFO:IMAGE VERSION : $ARG_IMAGE_VERSION"
 echo "INFO:JRE VERSION : $ARG_JRE_VERSION"
 echo "----------------------------------------------"
@@ -268,7 +271,7 @@ then
 fi
 
 export PERL5LIB="../lib"
-VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','$TEMP_FOLDER');")
+VALIDATION_RESULT=$(perl -Mbe_docker_install -e "be_docker_install::validate('$ARG_INSTALLER_LOCATION','$ARG_VERSION','$ARG_EDITION','$ARG_ADDONS','$ARG_BE_HOTFIX','$ARG_AS_HOTFIX','na','na','$TEMP_FOLDER');")
 
 if [ "$?" = 0 ]
 then

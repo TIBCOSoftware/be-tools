@@ -1,8 +1,12 @@
 #
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
 # TIBCO BusinessEvents Dockerfile-rms_fromtar
 # To be used for creation with the frominstall/build_rms_image script
 #
-FROM ubuntu:latest
+FROM ubuntu:20.10
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION

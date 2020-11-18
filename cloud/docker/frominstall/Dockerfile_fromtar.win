@@ -1,4 +1,8 @@
 #
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
 # TIBCO BusinessEvents Dockerfile For Windows Platform - Dockerfile_fromtar.win
 # To be used for creation with the frominstall/build_app_image script
 #
@@ -54,7 +58,7 @@ RUN rmdir /S /Q "c:\working"
 VOLUME \
     "c:\mnt\tibco\be\logs" \
     "c:\mnt\tibco\be\data-store" \
-    "c:\tibco\be\${BE_SHORT_VERSION}\rms\shared"
+    "${BE_HOME}\rms\shared"
 
 # Setup gv providers
 RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDERS%

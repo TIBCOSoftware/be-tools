@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
@@ -56,11 +56,14 @@ data:
   dns.name: "ADD YOUR EFS DNS NAME HERE"
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: efs-provisioner
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: efs-provisioner
   strategy:
     type: Recreate 
   template:

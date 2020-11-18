@@ -1,0 +1,16 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'ACTIVESPACES Lib Path'
+    path: '/opt/tibco/as/AS_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'ACTIVESPACES Lib Jar File'
+    path: '/opt/tibco/as/AS_SHORT_VERSION/lib/tibdg.jar'
+    shouldExist: true
+fileContentTests:
+  - name: 'BE TRA Updated with ACTIVESPACES home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    expectedContents: ['ACTIVESPACES_HOME=/opt/tibco/as/AS_SHORT_VERSION']

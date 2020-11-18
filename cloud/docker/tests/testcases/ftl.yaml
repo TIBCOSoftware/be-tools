@@ -1,0 +1,16 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'FTL Lib Path'
+    path: '/opt/tibco/ftl/FTL_SHORT_VERSION/lib/'
+    shouldExist: true
+  - name: 'FTL Lib Jar File'
+    path: '/opt/tibco/ftl/FTL_SHORT_VERSION/lib/tibftl.jar'
+    shouldExist: true
+fileContentTests:
+  - name: 'BE TRA Updated with FTL home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    expectedContents: ['FTL_HOME=/opt/tibco/ftl/FTL_SHORT_VERSION']

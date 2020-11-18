@@ -1,56 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<cluster xmlns="http://tibco.com/businessevents/configuration/5.6">
+<cluster xmlns="http://tibco.com/businessevents/configuration/6.0">
     <revision>
-        <version>3</version>
-        <author>TIBCO Software Inc.</author>
-        <date>2019/04/03 09:05:21</date>
+        <version>5</version>
+        <author>moshaikh</author>
+        <date>2020/08/06 16:58:34</date>
         <comment/>
     </revision>
     <name>BooksApp</name>
     <message-encoding>UTF-8</message-encoding>
+    <provider>
+        <type>AS2x</type>
+        <class/>
+    </provider>
     <object-management>
         <cache-manager>
-            <provider>
-                <name>TIBCO</name>
-            </provider>
-            <cache-agent-quorum/>
-            <backup-copies>1</backup-copies>
-            <entity-cache-size>10000</entity-cache-size>
-            <discovery-url/>
-            <listen-url/>
-            <remote-listen-url/>
-            <protocol-timeout>-1</protocol-timeout>
-            <read-timeout>60000</read-timeout>
-            <write-timeout>60000</write-timeout>
-            <lock-timeout>-1</lock-timeout>
-            <shoutdown-wait>8500</shoutdown-wait>
-            <workerthreads-count>4</workerthreads-count>
-            <explicit-tuple>true</explicit-tuple>
-            <object-table>
-                <max-size>100000</max-size>
-            </object-table>
-            <backing-store>
-                <persistence-option>None</persistence-option>
-                <cache-aside>true</cache-aside>
-                <cache-loader-class/>
-                <enforce-pools>true</enforce-pools>
-                <strategy>jdbc</strategy>
-                <type>Oracle</type>
-                <data-store-path/>
-                <persistence-policy>ASYNC</persistence-policy>
-                <parallel-recovery>true</parallel-recovery>
-                <primary-connection>
-                    <uri>%%DbUri1%%</uri>
-                    <initial-size>4</initial-size>
-                    <max-size>8</max-size>
-                    <min-size>1</min-size>
-                </primary-connection>
-            </backing-store>
+            <type>AS2x</type>
+            <class/>
+            <properties>
+                <property name="cache-agent-quorum" value="0"/>
+                <property name="backup-copies" value="1"/>
+                <property name="entity-cache-size" value="10000"/>
+                <property name="object-table-cache-size" value="100000"/>
+                <property name="discovery-url" value=""/>
+                <property name="listen-url" value=""/>
+                <property name="remote-listen-url" value=""/>
+                <property name="protocol-timeout" value="-1"/>
+                <property name="read-timeout" value="60000"/>
+                <property name="write-timeout" value="60000"/>
+                <property name="lock-timeout" value="-1"/>
+                <property name="shutdown-wait" value="8500"/>
+                <property name="workerthreads-count" value="4"/>
+                <property name="explicit-tuple" value="true"/>
+            </properties>
+            <security enabled="false">
+                <property name="policy-file" value=""/>
+                <property name="policy-identity-password" value=""/>
+                <property name="token-file" value=""/>
+                <property name="token-identity-password" value=""/>
+                <property name="certificate-key-file" value=""/>
+                <property name="domain-name" value=""/>
+                <property name="user-name" value=""/>
+                <property name="user-password" value=""/>
+            </security>
             <domain-objects>
                 <default-mode>cache</default-mode>
                 <check-for-version>true</check-for-version>
-                <constant>false</constant>
-                <enable-tracking>true</enable-tracking>
                 <evict-on-update>false</evict-on-update>
                 <cache-limited>false</cache-limited>
                 <subscribe>true</subscribe>
@@ -58,7 +52,25 @@
                 <pre-load-fetch-size>0</pre-load-fetch-size>
                 <pre-load-handles>false</pre-load-handles>
                 <concept-ttl>-1</concept-ttl>
+                <constant>false</constant>
+                <enable-tracking>true</enable-tracking>
             </domain-objects>
+            <backing-store>
+                <persistence-option>None</persistence-option>
+                <type>Oracle</type>
+                <properties>
+                    <property name="strategy" value="jdbc"/>
+                    <property name="persistence-policy" value="ASYNC"/>
+                    <property name="cache-aside" value="true"/>
+                    <property name="enforce-pools" value="true"/>
+                </properties>
+                <primary-connection>
+                    <uri>%%DbUri1%%</uri>
+                    <initial-size>4</initial-size>
+                    <max-size>8</max-size>
+                    <min-size>1</min-size>
+                </primary-connection>
+            </backing-store>
         </cache-manager>
         <db-concepts>
             <db-uris/>
@@ -97,9 +109,9 @@
                 <append>true</append>
             </files>
             <terminal>
-                <enabled>false</enabled>
-                <sys-out-redirect>false</sys-out-redirect>
-                <sys-err-redirect>false</sys-err-redirect>
+                <enabled>true</enabled>
+                <sys-out-redirect>true</sys-out-redirect>
+                <sys-err-redirect>true</sys-err-redirect>
                 <encoding/>
             </terminal>
             <line-layout>
@@ -155,7 +167,7 @@
             </local-cache>
             <shared-queue>
                 <size>1024</size>
-                <workers>32</workers>
+                <workers>16</workers>
             </shared-queue>
             <load>
                 <max-active>99</max-active>
@@ -205,8 +217,8 @@
     <property-group>
         <property-group comment="" name="auth">
             <property name="be.mm.auth.type" value="file"/>
-            <property name="be.mm.auth.file.location" value="D:/tibco/installations/BE560V047/be/5.6/mm/config/users.pwd"/>
-            <property name="java.security.auth.login.config" value="D:/tibco/installations/BE560V047/be/5.6/mm/config/jaas-config.config"/>
+            <property name="be.mm.auth.file.location" value="D:/tibco/installations/600_158/be/6.0/mm/config/users.pwd"/>
+            <property name="java.security.auth.login.config" value="D:/tibco/installations/600_158/be/6.0/mm/config/jaas-config.config"/>
         </property-group>
     </property-group>
 </cluster>
