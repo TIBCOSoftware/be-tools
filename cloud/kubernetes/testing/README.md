@@ -93,7 +93,7 @@ helm repo add hashicorp https://helm.releases.hashicorp.com
 helm install -f helm-consul-values.yaml consulapp hashicorp/consul
 ```
 
-[Reference](https://learn.hashicorp.com/tutorials/consul/kubernetes-minikube?in=consul/kubernetes)
+Reference: [here](https://learn.hashicorp.com/tutorials/consul/kubernetes-minikube?in=consul/kubernetes)
 
 Access consul UI using below service:
 ```sh
