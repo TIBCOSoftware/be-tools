@@ -658,6 +658,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     CURR_DIR=$PWD
     cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
     ls | grep -v "be-engine*" | xargs rm 2>/dev/null
+    echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
     cd $CURR_DIR
 
     # removing all .bak files
