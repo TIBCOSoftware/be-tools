@@ -72,6 +72,17 @@ volumeMounts:
 {{- end }}
 {{- end -}}
 
+{{- define "fargate-resource-memory" -}}
+{{- if eq .Values.cpType "awsfargate" }}
+resources:
+  requests:
+    memory: "{{ .Values.resources.memory }}"
+    cpu: "{{ .Values.resources.cpu }}"
+  limits:
+    memory: "{{ .Values.resources.memory }}"
+    cpu: "{{ .Values.resources.cpu }}"
+{{- end -}}
+{{- end -}}
 
 {{/*
 Create a DB configMap environment details for store
@@ -229,4 +240,8 @@ data:
   value: {{ $val }}
 {{- end }}
 {{- end }}
+{{- end -}}
+
+{{- define "volumes.storageClass" -}}
+{{ .Values.volumes.storageClass }}
 {{- end -}}

@@ -50,6 +50,7 @@ spec:
          {{- if eq .Values.cmType "FTL" }}   
         {{ include "ftl.data" . | trim }}  
         {{- end }}
+{{ include "fargate-resource-memory" . | trim | indent 8 }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}        
 {{ include "store.configMap" . | trim |  indent 8 }}
 {{ include "sharednothing.volumeMount" . | trim | indent 8 }}
