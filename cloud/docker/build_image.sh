@@ -762,7 +762,7 @@ fi
 echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
-if [ $BUILD_SUCCESS = "true" ]; then
+if [ "$BUILD_SUCCESS" = "true" ]; then
     echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
     if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
