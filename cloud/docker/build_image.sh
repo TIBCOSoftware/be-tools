@@ -754,9 +754,15 @@ else
     fi
 fi
 
-if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+if [ "$DOCKER_BUILDKIT" = 1 ]; then
+    docker builder prune -f
+fi
+
+export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
+
+if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
     echo "INFO: Deleting temporary intermediate image."
-    docker rmi -f $(docker images -q -f "label=be-intermediate-image=true")
+    docker rmi -f $INTERMEDIATE_IMAGE
 fi
 
 echo "INFO: Deleting folder: [$TEMP_FOLDER]."
