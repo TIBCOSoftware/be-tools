@@ -76,6 +76,12 @@ const (
 	FtlClusterNameKey = "FTL_gv_CLUSTER_NAME"
 	FtlClusterNameVal = "samplecluster"
 
+	// IGNITE GV constants
+	IgniteListenPortKey = "LISTEN_PORTS"
+	IgniteListenPortVal = "47500..47510"
+	IgniteCommPortKey   = "COMM_PORTS"
+	IgniteCommPortVal   = "47100..47110"
+
 	// CassandraChart test constants
 	CassandraChart   = "bitnami/cassandra"
 	CassandraRelease = "release"
@@ -86,6 +92,15 @@ const (
 	AS4realm         = "http://ftlserver-0.ftlservers:30080"
 	AS4grid          = "_default"
 
+	// InfluxDriverKey database constants
+	InfluxDbURL  = "dburl"
+	InfluxDbName = "dbname"
+
+	// LdmDbURL LiveView url
+	LdmDbURL = "ldmurl"
+
+	//CustomMetricsURL for metrics Type Custom
+	CustomMetricsURL = "URL"
 	// imagename for Integration tests
 	UnclInmemory = "unclinmem"
 	Unclas4      = "unclas4"
@@ -276,4 +291,100 @@ func appendFTLValues(data map[string]string) map[string]string {
 	data["ftl."+FtlClusterNameKey] = FtlClusterNameVal
 
 	return data
+}
+
+// MetricsFTLCacheCassandraStoreValues returns cluster ftl store topology values
+func MetricsFTLCacheCassandraStoreValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["storeType"] = "Cassandra"
+	Values["bsType"] = "store"
+	Values["metricsType"] = "liveview"
+	Values = appendCassandraValues(Values)
+	Values = appendFTLValues(Values)
+
+	return Values
+}
+
+// MetricsFTLCacheMysqlStoreValues returns cluster ftl store topology values
+func MetricsFTLCacheMysqlStoreValues() map[string]string {
+	Values["cmType"] = "FTL"
+	Values["omType"] = "cache"
+	Values["storeType"] = "RDBMS"
+	Values["bsType"] = "store"
+	Values["metricsType"] = "influx"
+	Values = appendMysqlValues(Values)
+	Values = appendFTLValues(Values)
+
+	return Values
+}
+
+// MetricsCustomInmemoryValues returns Inmemory topology values
+func MetricsCustomInmemoryValues() map[string]string {
+	Values["metricsType"] = "custom"
+
+	return Values
+}
+
+func appendIGNITEValues(data map[string]string) map[string]string {
+	data["ftl."+IgniteListenPortKey] = IgniteListenPortVal
+	data["ftl."+IgniteCommPortKey] = IgniteCommPortVal
+
+	return data
+}
+
+// IGNITECacheNoneValues returns cluster IGNITE cache none
+func IGNITECacheNoneValues() map[string]string {
+	Values["cmType"] = "IGNITE"
+	Values["omType"] = "cache"
+	Values["bsType"] = "None"
+	Values = appendIGNITEValues(Values)
+
+	return Values
+}
+
+// IGNITECacheSNValues returns cluster IGNITE cache none
+func IGNITECacheSNValues() map[string]string {
+	Values["cmType"] = "IGNITE"
+	Values["omType"] = "cache"
+	Values["bsType"] = "sharednothing"
+	Values = appendIGNITEValues(Values)
+
+	return Values
+}
+
+// IGNITECacheMysqlStoreValues returns cluster IGNITE store topology values
+func IGNITECacheMysqlStoreValues() map[string]string {
+	Values["cmType"] = "IGNITE"
+	Values["omType"] = "cache"
+	Values["storeType"] = "RDBMS"
+	Values["bsType"] = "store"
+	Values = appendMysqlValues(Values)
+	Values = appendIGNITEValues(Values)
+
+	return Values
+}
+
+// IGNITECacheAS4StoreValues returns cluster IGNITE store topology values
+func IGNITECacheAS4StoreValues() map[string]string {
+	Values["cmType"] = "IGNITE"
+	Values["omType"] = "cache"
+	Values["storeType"] = "AS4"
+	Values["bsType"] = "store"
+	Values = appendAs4Values(Values)
+	Values = appendIGNITEValues(Values)
+
+	return Values
+}
+
+// IGNITECacheCassandraStoreValues returns cluster IGNITE store topology values
+func IGNITECacheCassandraStoreValues() map[string]string {
+	Values["cmType"] = "IGNITE"
+	Values["omType"] = "cache"
+	Values["storeType"] = "Cassandra"
+	Values["bsType"] = "store"
+	Values = appendCassandraValues(Values)
+	Values = appendIGNITEValues(Values)
+
+	return Values
 }

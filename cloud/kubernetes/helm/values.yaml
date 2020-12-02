@@ -11,7 +11,7 @@
 #Required parameter to be passed for all cloud providers
 cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift OR gcp
 #-----------------------------------------
-cmType: unclustered                     #cmType can be unclustered,AS2,FTL
+cmType: unclustered                     #cmType can be unclustered,AS2,FTL,IGNITE
 omType: inmemory                        #omType can be inmemory,store,cache
 bsType: na                              #BackingStore can be None sharednothing, store
 storeType: na                           #storeType can be RDBMS, AS4, Cassandra
@@ -32,8 +32,14 @@ imageCredentials:
 
 #*************************Agents env varaibles****************************************************
 
+# ignite.discovery_url is GV of discovery URL
 ignite:
-  discover_url: IGNITE_DISCOVER_URL
+  discovery_url: IGNITE_DISCOVER_URL
+
+# ignite_gv requires to define in key as GV and value as value, define all gv's except ignite URL and update the ignite listen ports as per requirement
+ignite_gv:
+  LISTEN_PORTS: "47500..47510"
+  COMM_PORTS: "47100..47110"
 
 ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
@@ -109,7 +115,8 @@ ignitePort:
   dis6: 47506
   dis7: 47507
   dis8: 47508
-  dis9: 47509  
+  dis9: 47509
+  disc10: 47510  
 
 #*************************ConfigMap****************************************************
 

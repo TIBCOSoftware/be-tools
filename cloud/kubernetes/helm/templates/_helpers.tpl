@@ -242,6 +242,26 @@ data:
 {{- end }}
 {{- end -}}
 
-{{- define "volumes.storageClass" -}}
-{{ .Values.volumes.storageClass }}
-{{- end -}}
+
+{{- define "discovery_url" -}}
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
+- name: AS_DISCOVER_URL
+  value: tcp://{{ include "cacheservice.fullname" . }}:50000
+{{- end }}
+{{- if or (eq .Values.omType "cache" ) (eq .Values.omType "store" ) }}   
+{{- if eq .Values.cmType "FTL" }}
+{{- range $key, $val := $.Values.ftl }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "IGNITE" ) }}  
+- name: {{ .Values.ignite.discovery_url }}
+  value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.LISTEN_PORTS }}"
+{{- range $key, $val := $.Values.ignite_gv }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end }}  
+{{- end }}
+{{- end -}}        
