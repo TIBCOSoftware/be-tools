@@ -51,7 +51,7 @@ func inferenceFTLNoneTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 }
 
 // inferenceFTLSNTest testing inference content for FTL cluster backing store shared nothing
@@ -62,7 +62,7 @@ func inferenceFTLSNTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
 }
 
@@ -110,7 +110,7 @@ func inferenceFTLMysqlTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
 }
 
@@ -122,7 +122,7 @@ func inferenceFTLAS4Test(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	configMapEnvAS4Testcases(sSet, t)
 	registryPullSecret(sSet, t)
 }
@@ -134,6 +134,100 @@ func inferenceFTLCassTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvCassandraTestcases(sSet, t)
+}
+
+// inferenceMetricsFTLMysqlTest testing inference content for FTL cluster backing store none
+func inferenceMetricsFTLMysqlTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvRDBMSTestcases(sSet, t)
+	configMapEnvInfluxTestcases(sSet, t)
+}
+
+// inferenceMetricsFTLCassTest testing inference content for FTL cluster backing store cassandra
+func inferenceMetricsFTLCassTest(data string, t *testing.T) {
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvCassandraTestcases(sSet, t)
+	configMapEnvLiveViewTestcases(sSet, t)
+}
+
+// inferenceMetricsCustomTest testing inference content
+func inferenceMetricsCustomTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	metricscustomTestcases(sSet, t)
+}
+
+// inferenceIGNITENoneTest testing inference content for IGNITE cluster backing store none
+func inferenceIGNITENoneTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+}
+
+// inferenceIGNITESNTest testing inference content for IGNITE cluster shared nothing
+func inferenceIGNITESNTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	checkVolumeClaims(sSet, t)
+}
+
+// inferenceIGNITEMysqlTest testing inference content for IGNITE cluster backing store mysql
+func inferenceIGNITEMysqlTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	configMapEnvRDBMSTestcases(sSet, t)
+}
+
+// inferenceIGNITEAS4Test testing inference content for IGNITE cluster backing store as4
+func inferenceIGNITEAS4Test(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	configMapEnvAS4Testcases(sSet, t)
+}
+
+// inferenceIGNITECassTest testing inference content for IGNITE cluster backing store cassandra
+func inferenceIGNITECassTest(data string, t *testing.T) {
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	inferenceTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)
 }

@@ -1,3 +1,5 @@
 .DS_Store
-cloud/docker/tmp*/**
+cloud/docker/bin/tmp*/**
+cloud/docker/frominstall/tmp_*
 cloud/kubernetes/helm/charts/
+*.log

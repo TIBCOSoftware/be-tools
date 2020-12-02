@@ -42,7 +42,7 @@ func cacheFTLNoneTestt(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 }
 
 // cacheFTLSNTest testing cache content for FTL cluster backing store shared nothing
@@ -53,7 +53,7 @@ func cacheFTLSNTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
 }
 
@@ -78,7 +78,7 @@ func cacheFTLMysqlTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
 }
 
@@ -90,7 +90,7 @@ func cacheFTLAS4Test(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
 	configMapEnvAS4Testcases(sSet, t)
 	registryPullSecret(sSet, t)
 }
@@ -103,6 +103,91 @@ func cacheFTLCassTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	cacheTestcases(sSet, t)
-	ftlIgniteTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvCassandraTestcases(sSet, t)
+}
+
+// cacheMetricsFTLMysqlTest testing cache content for FTL cluster backing store none
+func cacheMetricsFTLMysqlTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvRDBMSTestcases(sSet, t)
+	configMapEnvInfluxTestcases(sSet, t)
+}
+
+// cacheMetricsFTLCassTest testing cache content for FTL cluster backing store none
+func cacheMetricsFTLCassTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	ftlTestcases(sSet, t)
+	configMapEnvCassandraTestcases(sSet, t)
+	configMapEnvLiveViewTestcases(sSet, t)
+}
+
+// cacheIGNITENoneTest testing cache content for IGNITE cluster backing store none
+func cacheAIGNITENoneTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+}
+
+// cacheIGNITESNTest testing cache content for IGNITE cluster backing store shared nothing
+func cacheIGNITESNTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	checkVolumeClaims(sSet, t)
+}
+
+// cacheIGNITEMysqlTest testing cache content for IGNITE cluster backing store none
+func cacheIGNITEMysqlTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	configMapEnvRDBMSTestcases(sSet, t)
+}
+
+// cacheIGNITEAS4Test testing cache content for IGNITE cluster backing store none
+func cacheIGNITEAS4Test(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
+	configMapEnvAS4Testcases(sSet, t)
+}
+
+// cacheIGNITECassTest testing cache content for IGNITE cluster backing store none
+func cacheIGNITECassTest(data string, t *testing.T) {
+
+	var sSet appsv1.StatefulSet
+	helm.UnmarshalK8SYaml(t, data, &sSet)
+
+	agentTestcases(sSet, t)
+	cacheTestcases(sSet, t)
+	IGNITEDiscoveryTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)
 }
