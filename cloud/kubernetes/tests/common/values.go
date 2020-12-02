@@ -140,7 +140,7 @@ func InmemoryValues() map[string]string {
 // InmemoryAS4StoreValues returns Inmemory store topology values
 func InmemoryAS4StoreValues() map[string]string {
 	Values["omType"] = "store"
-	Values["storeType"] = "AS4"
+	Values["storeType"] = "as4"
 	Values = appendAs4Values(Values)
 	return Values
 }
@@ -148,16 +148,16 @@ func InmemoryAS4StoreValues() map[string]string {
 // InmemoryCassandraStoreValues returns Inmemory store topology values
 func InmemoryCassandraStoreValues() map[string]string {
 	Values["omType"] = "store"
-	Values["storeType"] = "Cassandra"
+	Values["storeType"] = "cassandra"
 	Values = appendCassandraValues(Values)
 	return Values
 }
 
 // FTLAS4StoreValues returns cluster ftl store topology values
 func FTLAS4StoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "store"
-	Values["storeType"] = "AS4"
+	Values["storeType"] = "as4"
 	Values = appendAs4Values(Values)
 	Values = appendFTLValues(Values)
 
@@ -166,9 +166,9 @@ func FTLAS4StoreValues() map[string]string {
 
 // FTLCassandraStoreValues returns cluster ftl store topology values
 func FTLCassandraStoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "store"
-	Values["storeType"] = "Cassandra"
+	Values["storeType"] = "cassandra"
 	Values = appendCassandraValues(Values)
 	Values = appendFTLValues(Values)
 
@@ -177,16 +177,16 @@ func FTLCassandraStoreValues() map[string]string {
 
 // AS2CacheNoneValues returns cluster as2 cache none
 func AS2CacheNoneValues() map[string]string {
-	Values["cmType"] = "AS2"
+	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
-	Values["bsType"] = "None"
+	Values["bsType"] = "none"
 
 	return Values
 }
 
 // AS2CacheSNValues returns cluster as2 cache none
 func AS2CacheSNValues() map[string]string {
-	Values["cmType"] = "AS2"
+	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharednothing"
 
@@ -195,9 +195,9 @@ func AS2CacheSNValues() map[string]string {
 
 // FTLCacheNoneValues returns cluster ftl cache none
 func FTLCacheNoneValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["bsType"] = "None"
+	Values["bsType"] = "none"
 	Values = appendFTLValues(Values)
 
 	return Values
@@ -205,7 +205,7 @@ func FTLCacheNoneValues() map[string]string {
 
 // FTLCacheSNValues returns cluster ftl cache none
 func FTLCacheSNValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharednothing"
 	Values = appendFTLValues(Values)
@@ -215,9 +215,9 @@ func FTLCacheSNValues() map[string]string {
 
 // FTLCacheAS4StoreValues returns cluster ftl store topology values
 func FTLCacheAS4StoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["storeType"] = "AS4"
+	Values["storeType"] = "as4"
 	Values["bsType"] = "store"
 	Values = appendAs4Values(Values)
 	Values = appendFTLValues(Values)
@@ -227,9 +227,9 @@ func FTLCacheAS4StoreValues() map[string]string {
 
 // FTLCacheCassandraStoreValues returns cluster ftl store topology values
 func FTLCacheCassandraStoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["storeType"] = "Cassandra"
+	Values["storeType"] = "cassandra"
 	Values["bsType"] = "store"
 	Values = appendCassandraValues(Values)
 	Values = appendFTLValues(Values)
@@ -239,9 +239,9 @@ func FTLCacheCassandraStoreValues() map[string]string {
 
 // AS2CacheRDBMSStoreValues returns cluster as2 cache none
 func AS2CacheRDBMSStoreValues() map[string]string {
-	Values["cmType"] = "AS2"
+	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
-	Values["storeType"] = "RDBMS"
+	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
 	Values = appendMysqlValues(Values)
 
@@ -250,9 +250,9 @@ func AS2CacheRDBMSStoreValues() map[string]string {
 
 // FTLCacheMysqlStoreValues returns cluster ftl store topology values
 func FTLCacheMysqlStoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["storeType"] = "RDBMS"
+	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
 	Values = appendMysqlValues(Values)
 	Values = appendFTLValues(Values)
@@ -295,9 +295,9 @@ func appendFTLValues(data map[string]string) map[string]string {
 
 // MetricsFTLCacheCassandraStoreValues returns cluster ftl store topology values
 func MetricsFTLCacheCassandraStoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["storeType"] = "Cassandra"
+	Values["storeType"] = "cassandra"
 	Values["bsType"] = "store"
 	Values["metricsType"] = "liveview"
 	Values = appendCassandraValues(Values)
@@ -308,9 +308,9 @@ func MetricsFTLCacheCassandraStoreValues() map[string]string {
 
 // MetricsFTLCacheMysqlStoreValues returns cluster ftl store topology values
 func MetricsFTLCacheMysqlStoreValues() map[string]string {
-	Values["cmType"] = "FTL"
+	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
-	Values["storeType"] = "RDBMS"
+	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
 	Values["metricsType"] = "influx"
 	Values = appendMysqlValues(Values)
@@ -335,9 +335,9 @@ func appendIGNITEValues(data map[string]string) map[string]string {
 
 // IGNITECacheNoneValues returns cluster IGNITE cache none
 func IGNITECacheNoneValues() map[string]string {
-	Values["cmType"] = "IGNITE"
+	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"
-	Values["bsType"] = "None"
+	Values["bsType"] = "none"
 	Values = appendIGNITEValues(Values)
 
 	return Values
@@ -345,7 +345,7 @@ func IGNITECacheNoneValues() map[string]string {
 
 // IGNITECacheSNValues returns cluster IGNITE cache none
 func IGNITECacheSNValues() map[string]string {
-	Values["cmType"] = "IGNITE"
+	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharednothing"
 	Values = appendIGNITEValues(Values)
@@ -355,9 +355,9 @@ func IGNITECacheSNValues() map[string]string {
 
 // IGNITECacheMysqlStoreValues returns cluster IGNITE store topology values
 func IGNITECacheMysqlStoreValues() map[string]string {
-	Values["cmType"] = "IGNITE"
+	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"
-	Values["storeType"] = "RDBMS"
+	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
 	Values = appendMysqlValues(Values)
 	Values = appendIGNITEValues(Values)
@@ -367,9 +367,9 @@ func IGNITECacheMysqlStoreValues() map[string]string {
 
 // IGNITECacheAS4StoreValues returns cluster IGNITE store topology values
 func IGNITECacheAS4StoreValues() map[string]string {
-	Values["cmType"] = "IGNITE"
+	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"
-	Values["storeType"] = "AS4"
+	Values["storeType"] = "as4"
 	Values["bsType"] = "store"
 	Values = appendAs4Values(Values)
 	Values = appendIGNITEValues(Values)
@@ -379,9 +379,9 @@ func IGNITECacheAS4StoreValues() map[string]string {
 
 // IGNITECacheCassandraStoreValues returns cluster IGNITE store topology values
 func IGNITECacheCassandraStoreValues() map[string]string {
-	Values["cmType"] = "IGNITE"
+	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"
-	Values["storeType"] = "Cassandra"
+	Values["storeType"] = "cassandra"
 	Values["bsType"] = "store"
 	Values = appendCassandraValues(Values)
 	Values = appendIGNITEValues(Values)

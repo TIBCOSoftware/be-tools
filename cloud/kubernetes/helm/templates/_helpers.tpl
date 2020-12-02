@@ -89,7 +89,7 @@ Create a DB configMap environment details for store
 */}}
 {{- define "store.configMap" -}}
 {{- $mapName  :=  include "configmapname.fullname" . -}}
-{{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
+{{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "rdbms" ) }}
 {{- range $key,$val := .Values.database }}
 - name: {{ $key }}
   valueFrom:
@@ -99,7 +99,7 @@ Create a DB configMap environment details for store
 {{- end }}
 {{- end }}
 {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
-{{- if eq .Values.storeType "Cassandra"  }}
+{{- if eq .Values.storeType "cassandra"  }}
 {{- range $key,$val := .Values.cassdatabase }}
 - name: {{ $key }}
   valueFrom:
@@ -108,7 +108,7 @@ Create a DB configMap environment details for store
       key: {{ $val }}
 {{- end }}
 {{- end }}
-{{- if eq .Values.storeType "AS4"  }}
+{{- if eq .Values.storeType "as4"  }}
 {{- range $key,$val := .Values.as4database }}
 - name: {{ $key }}
   valueFrom:
@@ -133,7 +133,7 @@ Create a common DB configMap data details for store
 {{- define "configmap.data" -}}
 data:
   {{- $mysqlenabled := .Values.mysql.enabled }}
-  {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "RDBMS" ) }}
+  {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "rdbms" ) }}
   {{- if eq $mysqlenabled true }}
   dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
   {{- end }}
@@ -148,27 +148,17 @@ data:
   {{- end }}
   {{- end -}}
   {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
-  {{- if eq .Values.storeType "Cassandra"  }}
+  {{- if eq .Values.storeType "cassandra"  }}
   {{- range $key, $val := $.Values.cassconfigmap }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- end -}}
-  {{- if eq .Values.storeType "AS4" }}
+  {{- if eq .Values.storeType "as4" }}
   {{- range $key, $val := $.Values.as4configmap }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- end -}}
   {{- end -}}
-{{- end -}}
-
-{{/*
-Create a EKS DB configMap data details
-*/}}
-{{- define "eksconfigmap.data" -}}
-data:
-  file.system.id: {{ .Values.persistentvolumes.eks.configmap.filesystemid }}
-  aws.region: {{ .Values.persistentvolumes.eks.configmap.awsregion }}
-  provisioner.name: {{ .Values.persistentvolumes.eks.configmap.provisionername }}
 {{- end -}}
 
 {{- define "beimagepullsecret.fullname" }}
@@ -244,19 +234,19 @@ data:
 
 
 {{- define "discovery_url" -}}
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "as2" ) }}  
 - name: AS_DISCOVER_URL
   value: tcp://{{ include "cacheservice.fullname" . }}:50000
 {{- end }}
 {{- if or (eq .Values.omType "cache" ) (eq .Values.omType "store" ) }}   
-{{- if eq .Values.cmType "FTL" }}
+{{- if eq .Values.cmType "ftl" }}
 {{- range $key, $val := $.Values.ftl }}
 - name: {{ $key }}
   value: {{ $val }}
 {{- end }}
 {{- end }}
 {{- end }}
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "IGNITE" ) }}  
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
 - name: {{ .Values.ignite.discovery_url }}
   value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.LISTEN_PORTS }}"
 {{- range $key, $val := $.Values.ignite_gv }}

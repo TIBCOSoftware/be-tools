@@ -11,11 +11,11 @@
 #Required parameter to be passed for all cloud providers
 cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift OR gcp
 #-----------------------------------------
-cmType: unclustered                     #cmType can be unclustered,AS2,FTL,IGNITE
+cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
 omType: inmemory                        #omType can be inmemory,store,cache
-bsType: na                              #BackingStore can be None sharednothing, store
-storeType: na                           #storeType can be RDBMS, AS4, Cassandra
-cacheType: AS2                          #cacheType can be AS2, ignite
+bsType: na                              #BackingStore can be none sharednothing, store
+storeType: na                           #storeType can be rdbms, as4, cassandra
+cacheType: as2                          #cacheType can be as2, ignite
 
 # Image name and pull policy required for be app
 image: befdapp:01

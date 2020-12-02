@@ -20,7 +20,7 @@ func TestIgniteCacheNone(t *testing.T) {
 
 	// cache agent test
 	cacheAppOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheagent})
-	cacheAIGNITENoneTest(cacheAppOutput, t)
+	cacheIGNITENoneTest(cacheAppOutput, t)
 
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})

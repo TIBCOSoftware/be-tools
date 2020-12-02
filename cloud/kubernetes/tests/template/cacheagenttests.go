@@ -134,7 +134,7 @@ func cacheMetricsFTLCassTest(data string, t *testing.T) {
 }
 
 // cacheIGNITENoneTest testing cache content for IGNITE cluster backing store none
-func cacheAIGNITENoneTest(data string, t *testing.T) {
+func cacheIGNITENoneTest(data string, t *testing.T) {
 
 	var sSet appsv1.StatefulSet
 	helm.UnmarshalK8SYaml(t, data, &sSet)
