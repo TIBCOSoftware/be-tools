@@ -75,7 +75,7 @@ inferencenode:
 #*************************Health check Part****************************************************
 # Required for cache and inference agent health check
 healthcheck:
-  enabled: false
+  enabled: false        #Set to true - to enable healthcheck
   livenessProbe:
     port: 5555
     initialDelaySeconds: 5
