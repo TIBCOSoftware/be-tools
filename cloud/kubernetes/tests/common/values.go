@@ -42,7 +42,7 @@ const (
 	StorageClass                   = "standard"
 	DefaultPU                      = "default"
 	CachePU                        = "cache"
-	IgniteURL                      = "IGNITE_DISCOVER_URL"
+	IgniteURL                      = "IGNITE_gv_DISCOVERY_URL"
 	AsURL                          = "AS_DISCOVER_URL"
 	// As4ReamURLKey constants
 	As4ReamURLKey    = "realm_url"
