@@ -72,6 +72,19 @@ inferencenode:
   containers:
     name: inferencenode
 
+#*************************Health check Part****************************************************
+# Required for cache and inference agent health check
+healthcheck:
+  enabled: true
+  livenessProbe:
+    port: 5555
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  readinessProbe:
+    port: 5555
+    initialDelaySeconds: 5 
+    periodSeconds: 5 
+
 # Resource memory for EKS Fargate pods
 resources:
   memory: 1.2Gi
