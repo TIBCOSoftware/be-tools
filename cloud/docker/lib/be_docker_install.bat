@@ -122,7 +122,7 @@ if "%COMPONENT%" EQU "rms" (
 )
 if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
-powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
+powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx','%BE_HOME%\bin\dbkeywordmap.xml','%BE_HOME%\bin\base_types.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
 if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
 	rd /S /Q "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" > NUL

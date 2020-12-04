@@ -659,6 +659,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
     ls | grep -v "be-engine*" | xargs rm 2>/dev/null
     echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
+    cp "$BE_HOME/bin/dbkeywordmap.xml" "$BE_HOME/bin/base_types.xml" .
     cd $CURR_DIR
 
     # removing all .bak files

@@ -623,7 +623,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo INFO: Adding [be\!ARG_BE_SHORT_VERSION!] to tibcohome.
     powershell -Command "Copy-Item '!BE_HOME!\..\..\tibcojre64' -Destination '!TEMP_FOLDER!\tibcoHome' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
-    powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
+    powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe','!BE_HOME!\bin\dbkeywordmap.xml','!BE_HOME!\bin\base_types.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
     REM replace tibco home path
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"

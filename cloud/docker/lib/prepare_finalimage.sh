@@ -43,7 +43,7 @@ rm -rf /home/tibco/be/be_installers-hf
 cp -r /opt/tibco/tibcojre64 /tibco_home
 
 if [ "$COMPONENT" != "tea" ]; then
-    cp be-engine be-engine.tra *.idx /tibco_home/be/${BE_SHORT_VERSION}/bin
+    cp be-engine be-engine.tra *.idx dbkeywordmap.xml base_types.xml /tibco_home/be/${BE_SHORT_VERSION}/bin
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/lib /tibco_home/be/${BE_SHORT_VERSION}
     cp -r /opt/tibco/be/ext /tibco_home/be    
 
