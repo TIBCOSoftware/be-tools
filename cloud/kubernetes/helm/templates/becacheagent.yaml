@@ -33,14 +33,11 @@ spec:
         env:
         - name: PU
           value: cache
-        {{- range $key,$val := .Values.env }}
-        - name: {{ $key }}
-          value: {{ $val }}
-        {{- end}}
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
-              fieldPath: metadata.name  
+              fieldPath: metadata.name
+{{ include "gvproviders" . | trim | indent 8 }}                
 {{ include "discovery_url" . | trim | indent 8 }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}
 {{ include "store.configMap" . | trim | indent 8 }}

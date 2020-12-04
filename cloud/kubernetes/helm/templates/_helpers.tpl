@@ -270,3 +270,10 @@ readinessProbe:
   periodSeconds: {{ .Values.healthcheck.readinessProbe.periodSeconds }} 
 {{- end }}
 {{- end -}}
+
+{{- define "gvproviders" -}}
+{{- range $key,$val := .Values.env }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end}}
+{{- end -}}
