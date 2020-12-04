@@ -248,7 +248,7 @@ data:
 {{- end }}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
 - name: {{ .Values.ignite.discovery_url }}
-  value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.LISTEN_PORTS }}"
+  value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.IGNITE_gv_LISTEN_PORT }}"
 {{- range $key, $val := $.Values.ignite_gv }}
 - name: {{ $key }}
   value: {{ $val }}
@@ -269,4 +269,11 @@ readinessProbe:
   initialDelaySeconds: {{ .Values.healthcheck.readinessProbe.initialDelaySeconds }}
   periodSeconds: {{ .Values.healthcheck.readinessProbe.periodSeconds }} 
 {{- end }}
+{{- end -}}
+
+{{- define "gvproviders" -}}
+{{- range $key,$val := .Values.env }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end}}
 {{- end -}}

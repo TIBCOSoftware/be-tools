@@ -34,12 +34,12 @@ imageCredentials:
 
 # ignite.discovery_url is GV of discovery URL
 ignite:
-  discovery_url: IGNITE_DISCOVER_URL
+  discovery_url: IGNITE_gv_DISCOVERY_URL
 
 # ignite_gv requires to define in key as GV and value as value, define all gv's except ignite URL and update the ignite listen ports as per requirement
 ignite_gv:
-  LISTEN_PORTS: "47500..47510"
-  COMM_PORTS: "47100..47110"
+  IGNITE_gv_LISTEN_PORT: "47500..47510"
+  IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
 
 ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
@@ -47,9 +47,9 @@ ftl:
 
 env:
   # Consul GV provider specific environment variables
-  CONSUL_SERVER_URL: http://192.168.0.1:8500
-  BE_APP_NAME: fd
-  APP_CONFIG_PROFILE: test
+  # CONSUL_SERVER_URL: http://192.168.0.1:8500
+  # BE_APP_NAME: fd
+  # APP_CONFIG_PROFILE: test
   # HTTP GV provider specific environment variables
   # GVP_HTTP_SERVER_URL: URL
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
@@ -75,7 +75,7 @@ inferencenode:
 #*************************Health check Part****************************************************
 # Required for cache and inference agent health check
 healthcheck:
-  enabled: false
+  enabled: false        #Set to true - to enable healthcheck
   livenessProbe:
     port: 5555
     initialDelaySeconds: 5
@@ -90,7 +90,7 @@ resources:
   memory: 1.2Gi
   cpu: 1
 fargate:
-  efsFileSystemId: fs-1234
+  efsFileSystemId: fs-1234    #update for awsfargate(cpType=awsfargate) 
 
 #*************************Service Part****************************************************
 #Required for cache, sharednothing, store in all cloud providers
@@ -188,18 +188,8 @@ volumes:
   snmountVolume: store
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
-  storageClass: standard                    #Use default storage class in case of minikube and PKS persistent volumes
+  storageClass: standard                    #Use one of the available storage classes as per your preference
   snclaimVolume: pv0003
-
-  #Required for sharednothing and store in Azure
-  azure:
-    storageClassName: azurestorageclass
-    skuName: Standard_LRS
-    provisioner: kubernetes.io/azure-file
-    dir_mode: 0777
-    file_mode: 0777
-    uid: 1000
-    gid: 1000
 
 #Required for store in  all cloud providers
 mysql:
@@ -214,9 +204,9 @@ mysql:
   # persistence: 
   #   storageClass: "-"       #Type of persistent volume claim
 
-# Required for sharednothing and store in AWS
+# Required for sharednothing and store in AWS(Only for cpType=aws)
 aws-efs:
-  enabled: false              #use true for aws 
+  enabled: false              #use true to create aws-efs provisioner 
   replicaCount: 1
   efsProvisioner:
     efsFileSystemId: fs-e8f5fa68

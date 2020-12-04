@@ -42,7 +42,7 @@ const (
 	StorageClass                   = "standard"
 	DefaultPU                      = "default"
 	CachePU                        = "cache"
-	IgniteURL                      = "IGNITE_DISCOVER_URL"
+	IgniteURL                      = "IGNITE_gv_DISCOVERY_URL"
 	AsURL                          = "AS_DISCOVER_URL"
 	// As4ReamURLKey constants
 	As4ReamURLKey    = "realm_url"
@@ -77,9 +77,9 @@ const (
 	FtlClusterNameVal = "samplecluster"
 
 	// IGNITE GV constants
-	IgniteListenPortKey = "LISTEN_PORTS"
+	IgniteListenPortKey = "IGNITE_gv_LISTEN_PORT"
 	IgniteListenPortVal = "47500..47510"
-	IgniteCommPortKey   = "COMM_PORTS"
+	IgniteCommPortKey   = "IGNITE_gv_COMMUNICATION_PORT"
 	IgniteCommPortVal   = "47100..47110"
 
 	// CassandraChart test constants
@@ -327,8 +327,8 @@ func MetricsCustomInmemoryValues() map[string]string {
 }
 
 func appendIGNITEValues(data map[string]string) map[string]string {
-	data["ftl."+IgniteListenPortKey] = IgniteListenPortVal
-	data["ftl."+IgniteCommPortKey] = IgniteCommPortVal
+	data["ignite_gv."+IgniteListenPortKey] = IgniteListenPortVal
+	data["ignite_gv."+IgniteCommPortKey] = IgniteCommPortVal
 
 	return data
 }
