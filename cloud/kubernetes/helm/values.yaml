@@ -206,7 +206,7 @@ mysql:
 
 # Required for sharednothing and store in AWS(Only for cpType=aws)
 aws-efs:
-  enabled: false              #use true to create aws-efs provisioner 
+  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
   replicaCount: 1
   efsProvisioner:
     efsFileSystemId: fs-e8f5fa68

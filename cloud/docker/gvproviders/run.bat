@@ -37,7 +37,7 @@ if EXIST !JSON_FILE! (
 
   for %%a in (!keys!) do (
     set key=%%~a
-    (jq -r .%%~a !JSON_FILE!) > values
+    (jq -r .\"%%~a\" !JSON_FILE!) > values
     set /p value=<values
     echo tibco.clientVar.!key!=!value! >> !BE_PROPS_FILE!
   )

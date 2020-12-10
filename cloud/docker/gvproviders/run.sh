@@ -31,7 +31,7 @@ if [ -f $JSON_FILE ]; then
     for prop in $prop_keys
     do
       echo "Prop: $prop"
-      echo tibco.clientVar.${prop}=$(/home/tibco/be/gvproviders/jq -r .$prop $JSON_FILE)>>$BE_PROPS_FILE
+      echo tibco.clientVar.${prop}=$(/home/tibco/be/gvproviders/jq -r .\"$prop\" $JSON_FILE)>>$BE_PROPS_FILE
     done
   fi
 else
