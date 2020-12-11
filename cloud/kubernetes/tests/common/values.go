@@ -93,8 +93,10 @@ const (
 	AS4grid          = "_default"
 
 	// InfluxDriverKey database constants
-	InfluxDbURL  = "dburl"
-	InfluxDbName = "dbname"
+	InfluxDbURL   = "dburl"
+	InfluxBucket  = "bucket"
+	InfluxDBToken = "dbtoken"
+	InfluxOrg     = "dborg"
 
 	// LdmDbURL LiveView url
 	LdmDbURL = "ldmurl"

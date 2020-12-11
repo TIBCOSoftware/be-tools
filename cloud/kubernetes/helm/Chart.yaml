@@ -35,7 +35,7 @@ dependencies:
     alias: influxdb
     condition: influxdb.enabled
   - name: grafana
-    version: 5.6.7
+    version: 6.1.14
     repository: https://grafana.github.io/helm-charts   
     alias: grafana
     condition: grafana.enabled

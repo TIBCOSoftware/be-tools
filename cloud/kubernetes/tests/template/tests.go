@@ -271,7 +271,9 @@ func configMapEnvRDBMSTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 func configMapEnvInfluxTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, common.InfluxDbURL, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL"))
-	require.Equal(t, common.InfluxDbName, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXDBNAME"))
+	require.Equal(t, common.InfluxBucket, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXBUCKET"))
+	require.Equal(t, common.InfluxDBToken, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXTOKEN"))
+	require.Equal(t, common.InfluxOrg, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXORG"))
 }
 
 func configMapEnvLiveViewTestcases(sSet appsv1.StatefulSet, t *testing.T) {

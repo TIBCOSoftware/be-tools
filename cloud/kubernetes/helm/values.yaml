@@ -218,16 +218,22 @@ metricsType: na           # metricsType value is strict to "influx","liveview","
 
 influxconfigmap:
   dburl: http://influxDB:8086
-  dbname: fdmetrics 
+  bucket: fdmetrics 
+  dbtoken: be-examples-fdmetrics-token
+  dborg: be-examples  
 
 influxdatabase:
   INFLUXDB_URL: dburl
-  INFLUXDBNAME: dbname  
-
+  INFLUXBUCKET: bucket
+  INFLUXTOKEN: dbtoken
+  INFLUXORG: dborg
 
 # Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
 influxdb:
   enabled: false
+  image:
+    repository: quay.io/influxdb/influxdb
+    tag: v2.0.1
   persistence:
     enabled: false            # Set to true for persistence
 
@@ -235,6 +241,8 @@ influxdb:
 # Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
 grafana:
   enabled: false
+  image:
+    tag: 7.3.5
   service:
     type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
 
