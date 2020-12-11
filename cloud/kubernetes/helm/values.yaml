@@ -231,8 +231,8 @@ influxdatabase:
 # Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
 influxdb:
   enabled: false
-  image:
-    repository: quay.io/influxdb/influxdb
+  image:  # Comment influx image, repository and tag for BE version 6.0 
+    repository: quay.io/influxdb/influxdb   
     tag: v2.0.1
   persistence:
     enabled: false            # Set to true for persistence
