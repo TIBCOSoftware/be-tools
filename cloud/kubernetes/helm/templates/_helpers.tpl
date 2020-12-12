@@ -247,8 +247,16 @@ data:
 {{- end }}
 {{- end }}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
-- name: {{ .Values.ignite.discovery_url }}
-  value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.IGNITE_gv_LISTEN_PORT }}"
+- name: "tra.java.property.ignite.discovery.type"
+  value: "k8s"
+- name: "tra.java.property.ignite.k8s.namespace"
+  value: "default"
+- name: "tra.java.property.ignite.k8s.service.name"
+  value: "{{ include "cacheservice.fullname" . }}"
+- name: "tra.java.property.ignite.k8s.master.url"
+  value: "https://kubernetes.default.svc.cluster.local:443"
+- name: "tra.java.property.ignite.k8s.account.token"
+  value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
 {{- range $key, $val := $.Values.ignite_gv }}
 - name: {{ $key }}
   value: {{ $val }}
