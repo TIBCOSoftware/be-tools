@@ -35,12 +35,15 @@ imageCredentials:
 # ignite.discovery_url is GV of discovery URL
 ignite:
   discovery_url: IGNITE_gv_DISCOVERY_URL
+  serviceaccount: ignitecache
 
 # ignite_gv requires to define in key as GV and value as value, define all gv's except ignite URL and update the ignite listen ports as per requirement
 ignite_gv:
   IGNITE_gv_LISTEN_PORT: "47500..47510"
   IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
-
+  tra.be.ignite.discovery.type: k8s
+  tra.be.ignite.k8s.namespace: default
+  
 ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
   FTL_gv_CLUSTER_NAME: ftl.default.cluster

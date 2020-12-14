@@ -245,7 +245,6 @@ func asDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 func IGNITEDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	// ignite discovery url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteURL))
 	require.Equal(t, common.IgniteListenPortVal, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteListenPortKey))
 	require.Equal(t, common.IgniteCommPortVal, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteCommPortKey))
 }

@@ -24,6 +24,7 @@ spec:
         {{- else  }}
         - name: {{ include "beimagepullsecret.fullname" . }}
         {{- end  }}
+{{ include "ignitesaname" . | trim | indent 6 }}        
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}

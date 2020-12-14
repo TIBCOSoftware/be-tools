@@ -46,6 +46,12 @@ If release name contains chart name it will be used as a full name.
 {{ .Values.volumes.azure.storageClassName }}
 {{- end -}}
 
+{{- define "ignitesaname" -}}
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}
+serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+{{- end }}
+{{- end -}} 
+
 {{/*
 Create a volume mount and volume claim template for sharednothing
 */}}
@@ -247,8 +253,8 @@ data:
 {{- end }}
 {{- end }}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
-- name: {{ .Values.ignite.discovery_url }}
-  value: "{{ include "cacheservice.fullname" . }}:{{ .Values.ignite_gv.IGNITE_gv_LISTEN_PORT }}"
+- name: "tra.be.ignite.k8s.service.name"
+  value: "{{ include "cacheservice.fullname" . }}"
 {{- range $key, $val := $.Values.ignite_gv }}
 - name: {{ $key }}
   value: {{ $val }}
