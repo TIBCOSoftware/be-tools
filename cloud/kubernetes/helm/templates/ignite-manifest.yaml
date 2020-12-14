@@ -1,0 +1,36 @@
+{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }} 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  namespace: default
+rules:
+- apiGroups:
+  - ""
+  resources: # Here are resources you can access
+  - pods
+  - endpoints
+  verbs: # That is what you can do with them
+  - get
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+roleRef:
+  kind: ClusterRole
+  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  namespace: default
+{{- end -}}  
