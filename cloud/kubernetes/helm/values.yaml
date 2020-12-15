@@ -41,8 +41,8 @@ ignite:
 ignite_gv:
   IGNITE_gv_LISTEN_PORT: "47500..47510"
   IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
-  tra.be.ignite.discovery.type: k8s
-  tra.be.ignite.k8s.namespace: default
+  tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
+  tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
   
 ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
