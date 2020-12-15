@@ -1,5 +1,5 @@
 #supported FTL versions for be version
-FTL_VERSION_MAP_MIN=( "6.0.0:6.2.0" "6.1.0:6.2.0" )
+FTL_VERSION_MAP_MIN=( "6.0.0:6.2.0" "6.1.0:6.5.0" )
 FTL_VERSION_MAP_MAX=( "6.0.0:6.x.x" "6.1.0:6.x.x" )
 
 # Validate and get TIBCO FTL base and hf versions
