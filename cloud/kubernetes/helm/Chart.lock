@@ -1,15 +1,9 @@
 dependencies:
-- name: mysql
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 1.6.2
-- name: efs-provisioner
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.11.0
 - name: influxdb
   repository: https://helm.influxdata.com/
   version: 4.8.4
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 6.1.14
-digest: sha256:689268a81f94429e6bae5745667a61759948fc70d11fc4d8fbfe010af8938fbc
-generated: "2020-12-11T10:00:41.347174863+05:30"
+digest: sha256:6bf293f0001ca6f3aeb1380c462655ba607d8bdab05a2724f156b5dd7a821e02
+generated: "2020-12-17T14:01:48.01781796+05:30"

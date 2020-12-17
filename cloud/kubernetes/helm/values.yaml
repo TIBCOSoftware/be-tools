@@ -194,26 +194,26 @@ volumes:
   storageClass: standard                    #Use one of the available storage classes as per your preference
   snclaimVolume: pv0003
 
-#Required for store in  all cloud providers
-mysql:
-  enabled: false              #use true for store
-  image: "mysql"
-  imageTag: "5.7"
-  args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
-  mysqlUser: root
-  mysqlPassword: root
-  mysqlRootPassword: password
-  mysqlDatabase: BE_DATABASE  #database name
-  # persistence: 
-  #   storageClass: "-"       #Type of persistent volume claim
+# #Required for store in  all cloud providers
+# mysql:
+#   enabled: false              #use true for store
+#   image: "mysql"
+#   imageTag: "5.7"
+#   args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
+#   mysqlUser: root
+#   mysqlPassword: root
+#   mysqlRootPassword: password
+#   mysqlDatabase: BE_DATABASE  #database name
+#   # persistence: 
+#   #   storageClass: "-"       #Type of persistent volume claim
 
-# Required for sharednothing and store in AWS(Only for cpType=aws)
-aws-efs:
-  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
-  replicaCount: 1
-  efsProvisioner:
-    efsFileSystemId: fs-e8f5fa68
-    awsRegion: us-east-1
+# # Required for sharednothing and store in AWS(Only for cpType=aws)
+# aws-efs:
+#   enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
+#   replicaCount: 1
+#   efsProvisioner:
+#     efsFileSystemId: fs-e8f5fa68
+#     awsRegion: us-east-1
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 

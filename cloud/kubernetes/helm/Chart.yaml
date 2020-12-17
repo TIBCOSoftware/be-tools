@@ -15,20 +15,20 @@ description: Helm chart for BE Applications.
 version: 1.0.0
 
 dependencies:
-  - name: mysql
-    version: 1.6.2
-    repository: https://kubernetes-charts.storage.googleapis.com/
-    alias: mysql
-    condition: mysql.enabled
-    tags:
-      - database
-  - name: efs-provisioner
-    version: 0.11.0
-    repository: https://kubernetes-charts.storage.googleapis.com/    
-    alias: aws-efs
-    condition: aws-efs.enabled
-    tags:
-      - fileStore
+  # - name: mysql
+  #   version: 1.6.2
+  #   repository: https://kubernetes-charts.storage.googleapis.com/
+  #   alias: mysql
+  #   condition: mysql.enabled
+  #   tags:
+  #     - database
+  # - name: efs-provisioner
+  #   version: 0.11.0
+  #   repository: https://kubernetes-charts.storage.googleapis.com/    
+  #   alias: aws-efs
+  #   condition: aws-efs.enabled
+  #   tags:
+  #     - fileStore
   - name: influxdb
     version: 4.8.4
     repository: https://helm.influxdata.com/   
