@@ -1,5 +1,5 @@
 @echo off
-@rem Copyright (c) 2019. TIBCO Software Inc.
+@rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 setlocal EnableExtensions EnableDelayedExpansion
@@ -37,7 +37,7 @@ if EXIST !JSON_FILE! (
 
   for %%a in (!keys!) do (
     set key=%%~a
-    (jq -r .\"%%~a\" !JSON_FILE!) > values
+    (jq -r .\"%%~a\" !JSON_FILE!) > values
     set /p value=<values
     echo tibco.clientVar.!key!=!value! >> !BE_PROPS_FILE!
   )
