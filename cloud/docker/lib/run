@@ -35,9 +35,11 @@ TRA_FILE=$BE_HOME/bin/be-engine.tra
 export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
-if [ ! -z "$CONSUL_SERVER_URL" ]; then
-  ./gvproviders/consul/run.sh
+if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
+  chmod +x /home/tibco/be/gvproviders/run.sh
+  /home/tibco/be/gvproviders/run.sh
 fi
+
 /bin/cat $BE_PROPS_FILE
 
 COMPONENT_PARSED="${COMPONENT%\"}"
@@ -121,11 +123,6 @@ else
 			#Check App location have cdd or not
 			CDD_LOCATION="/opt/tibco/be/application"
 			cdds=$(find $CDD_LOCATION -name "*.cdd")
-			cddCnt=$(find $CDD_LOCATION -name "*.cdd" | wc -l)
-			if [ $cddCnt -ne 1 ]; then
-				printf "ERROR: The directory - $CDD_LOCATION must have single CDD file\n"
-				exit 1
-			fi
 			CDD_FILE=${cdds[0]}
 		fi
 	fi
@@ -137,11 +134,6 @@ else
 			#Check App location have ear or not
 			EAR_LOCATION="/opt/tibco/be/application/ear"
 			ears=$(find $EAR_LOCATION -name "*.ear")
-			earCnt=$(find $EAR_LOCATION -name "*.ear" | wc -l)
-			if [ $earCnt -ne 1 ]; then
-				printf "ERROR: The directory - $EAR_LOCATION must have single EAR file\n"
-				exit 1
-			fi
 			EAR_FILE=${ears[0]}
 		fi
 	fi

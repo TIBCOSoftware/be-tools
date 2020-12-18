@@ -230,14 +230,6 @@ func cacheTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, common.CachePU, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"))
 }
 
-func ftlIgniteTestcases(sSet appsv1.StatefulSet, t *testing.T) {
-
-	ftlTestcases(sSet, t)
-
-	// ignite url check
-	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteURL))
-}
-
 func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	// ftl url check
 	require.Equal(t, common.FtlServerURLVal, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.FtlServerURLKey))
@@ -249,6 +241,12 @@ func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 func asDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	// as discovery url check
 	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.AsURL))
+}
+
+func IGNITEDiscoveryTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	// ignite discovery url check
+	require.Equal(t, common.IgniteListenPortVal, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteListenPortKey))
+	require.Equal(t, common.IgniteCommPortVal, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.IgniteCommPortKey))
 }
 
 func configMapEnvAS4Testcases(sSet appsv1.StatefulSet, t *testing.T) {
@@ -268,6 +266,21 @@ func configMapEnvRDBMSTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, common.RdbmsDriverKey, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_DRIVER"))
 	require.Equal(t, common.RdbmsDbUsernameKey, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_USERNAME"))
 	require.Equal(t, common.RdbmsDbPswdKey, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_PASSWORD"))
+}
+
+func configMapEnvInfluxTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.Equal(t, common.InfluxDbURL, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL"))
+	require.Equal(t, common.InfluxBucket, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXBUCKET"))
+	require.Equal(t, common.InfluxDBToken, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXTOKEN"))
+	require.Equal(t, common.InfluxOrg, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "INFLUXORG"))
+}
+
+func configMapEnvLiveViewTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.Equal(t, common.LdmDbURL, configMapKeyFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "LDM_URL"))
+}
+
+func metricscustomTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+	require.NotEmpty(t, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, common.CustomMetricsURL))
 }
 
 func valueFromEnv(data []v1.EnvVar, key string) string {

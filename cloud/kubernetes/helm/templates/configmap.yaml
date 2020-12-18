@@ -3,7 +3,7 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 {{- if or (eq .Values.omType "store" ) (eq .Values.omType "cache" ) }}
-{{- if or (eq .Values.storeType "AS4" ) (eq .Values.storeType "Cassandra" ) (eq .Values.storeType "RDBMS" ) }}
+{{- if or (eq .Values.storeType "as4" ) (eq .Values.storeType "cassandra" ) (eq .Values.storeType "rdbms" ) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

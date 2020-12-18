@@ -1,0 +1,58 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+#
+# TIBCO BusinessEvents Dockerfile For Windows Platform - Dockerfile_fromtar.win
+#
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+MAINTAINER Tibco BusinessEvents Engineering Team
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG JRE_VERSION
+ARG DOCKERFILE_NAME
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
+ARG GVPROVIDER
+
+LABEL \
+    TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
+    TIBCO BusinessEvents Docker Image Version ${BE_PRODUCT_IMAGE_VERSION}
+
+ENV \
+    TIBCO_HOME=c:/tibco \
+    BE_HOME=c:/tibco/be/${BE_SHORT_VERSION} \
+    JRE_VERSION=${JRE_VERSION} \
+    CDD_FILE=no-default \
+    PU=default \
+    EAR_FILE=no-default \
+    ENGINE_NAME=be-engine \
+    LOG_LEVEL=na \
+    DOCKER_HOST=localhost \
+    AS_DISCOVER_URL=self \
+    AS_PROXY_NODE=false \
+    CDD_FILE=c:/tibco/be/application/${CDD_FILE_NAME} \
+    EAR_FILE=c:/tibco/be/application/ear/${EAR_FILE_NAME}
+
+COPY tibcoHome "c:\tibco"
+
+RUN c:\tibco\be\vcredist_install.bat
+
+# Setup gv providers
+RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
+
+# The following is the list of data, log and RMS Volumes
+VOLUME \
+    "c:\mnt\tibco\be\logs" \
+    "c:\mnt\tibco\be\data-store"
+
+# The following is the list of communication ports that need to be open-n-available
+# # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port
+EXPOSE 50000 50001 5555
+
+WORKDIR "c:\tibco\be"
+CMD ["runbe.bat"]

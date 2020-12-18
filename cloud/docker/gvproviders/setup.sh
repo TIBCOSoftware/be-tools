@@ -5,8 +5,39 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-# Setup the gv providers
-if [[ $1 == *"consul"* ]]; then
-  chmod +x /home/tibco/be/gvproviders/consul/*.sh
-  /home/tibco/be/gvproviders/consul/setup.sh
+GVPROVIDER=$1
+
+if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
+	echo "INFO: Skipping gv provider setup"
+  exit 0
 fi
+
+echo "INFO: Setting up '$GVPROVIDER' gv provider..."
+
+if [ -f /usr/bin/apt-get ]; then
+  ln -s /usr/bin/apt-get /usr/bin/package-manager
+elif [ -f /usr/bin/yum ]; then
+  ln -s /usr/bin/yum /usr/bin/package-manager
+fi
+
+# install tools common for all gv providers
+cd /home/tibco/be/gvproviders
+package-manager update -y && package-manager install -y wget
+
+# Download jq.
+wget "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"
+mv jq-linux64 jq
+chmod +x jq
+
+# invoke provider specific setup
+chmod +x /home/tibco/be/gvproviders/${GVPROVIDER}/*.sh
+if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh; fi
+
+# update run.sh with selected gvprovider
+cd /home/tibco/be/gvproviders
+ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
+sed -i "s/GVPROVIDER=na/GVPROVIDER=$ESCAPED_GVPROVIDER/g" run.sh
+
+# clean up
+package-manager remove -y wget
+package-manager autoremove -y
