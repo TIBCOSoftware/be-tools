@@ -64,14 +64,15 @@ env:
 #Required for cache, sharednothing, store in  all cloud providers
 cachenode:
   name: becacheagent
-  replicaCount: 1
+  replicaCount: 1       # Number of cache nodes
+  discoveryCount: 1     # Number discovery nodes (applicable only for cmType = as2). It should not be more than number of cache nodes i.e. cachenode.replicaCount
   containers:
     name: cachenode
 
 #Required for all applications in  all cloud providers
 inferencenode:
   name: beinferenceagent
-  replicaCount: 1
+  replicaCount: 1       # Number of inference nodes    
   containers:
     name: inferencenode
 
