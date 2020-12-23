@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
-{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
+{{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "unclustered" ) (eq .Values.cmType "ignite" ) }}
 kind: Service
 apiVersion: v1
 metadata:

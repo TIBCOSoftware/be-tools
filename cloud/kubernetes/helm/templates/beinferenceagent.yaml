@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
-{{- if or (eq .Values.cmType "AS2" ) (eq .Values.cmType "FTL" ) (eq .Values.cmType "unclustered" ) }}
+{{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "unclustered" ) (eq .Values.cmType "ignite" ) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -24,30 +24,24 @@ spec:
         {{- else  }}
         - name: {{ include "beimagepullsecret.fullname" . }}
         {{- end  }}
+{{ include "ignitesaname" . | trim | indent 6 }}        
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: PU
-          value: default
+          value: default        
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
-              fieldPath: metadata.name  
-         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "AS2" ) }}  
-        - name: AS_DISCOVER_URL
-          value: tcp://{{ include "cacheservice.fullname" . }}:50000
-         {{- end }}
-         {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "FTL" ) }}  
-        - name: {{ .Values.ignite.discover_url }}
-          value: {{ include "cacheservice.fullname" . }} 
-         {{- end }}
-         {{- if eq .Values.cmType "FTL" }}   
-        {{ include "ftl.data" . | trim }}  
-        {{- end }}
+              fieldPath: metadata.name
+{{ include "gvproviders" . | trim | indent 8 }}                        
+{{ include "discovery_url" . | trim | indent 8 }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}        
 {{ include "store.configMap" . | trim |  indent 8 }}
+{{ include "fargate-resource-memory" . | trim | indent 8 }}
+{{ include "healthcheck" . | trim | indent 8 }}
 {{ include "sharednothing.volumeMount" . | trim | indent 8 }}
 {{ include "sharednothing.volumeClaim" . }}
 {{- end }}
