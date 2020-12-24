@@ -242,7 +242,7 @@ data:
 {{- define "discovery_url" -}}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "as2" ) }}  
 - name: AS_DISCOVER_URL
-  value: tcp://{{ include "cacheservice.fullname" . }}:50000
+  value: tcp://{{range $i, $e := until (int .Values.cachenode.discoveryCount)}}{{ include "becacheagent.fullname" $ }}-{{$i}}.{{ include "cacheservice.fullname" $ }}:50000;{{end}}
 {{- end }}
 {{- if or (eq .Values.omType "cache" ) (eq .Values.omType "store" ) }}   
 {{- if eq .Values.cmType "ftl" }}
