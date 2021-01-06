@@ -16,26 +16,26 @@ version: 1.0.0
 
 dependencies:
   - name: mysql
-    version: 1.6.2
-    repository: https://kubernetes-charts.storage.googleapis.com/
+    version: 8.2.3
+    repository: https://charts.bitnami.com/bitnami
     alias: mysql
     condition: mysql.enabled
     tags:
       - database
-  - name: efs-provisioner
-    version: 0.11.0
-    repository: https://kubernetes-charts.storage.googleapis.com/    
-    alias: aws-efs
-    condition: aws-efs.enabled
-    tags:
-      - fileStore
+  # - name: efs-provisioner
+  #   version: 0.11.0
+  #   repository: https://kubernetes-charts.storage.googleapis.com/    
+  #   alias: aws-efs
+  #   condition: aws-efs.enabled
+  #   tags:
+  #     - fileStore
   - name: influxdb
     version: 4.8.4
     repository: https://helm.influxdata.com/   
     alias: influxdb
     condition: influxdb.enabled
   - name: grafana
-    version: 6.1.14
+    version: 5.6.7
     repository: https://grafana.github.io/helm-charts   
     alias: grafana
     condition: grafana.enabled

@@ -141,7 +141,7 @@ data:
   {{- $mysqlenabled := .Values.mysql.enabled }}
   {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "rdbms" ) }}
   {{- if eq $mysqlenabled true }}
-  dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.mysqlDatabase }}" #db service url generated from release name
+  dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.auth.database }}" #db service url generated from release name
   {{- end }}
   {{- range $key, $val := $.Values.configmap }}
   {{- if eq $mysqlenabled true }}

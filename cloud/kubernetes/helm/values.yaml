@@ -198,15 +198,19 @@ volumes:
 #Required for store in  all cloud providers
 mysql:
   enabled: false              #use true for store
-  image: "mysql"
-  imageTag: "5.7"
-  args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
-  mysqlUser: root
-  mysqlPassword: root
-  mysqlRootPassword: password
-  mysqlDatabase: BE_DATABASE  #database name
-  # persistence: 
-  #   storageClass: "-"       #Type of persistent volume claim
+  image:
+    repository: "mysql"
+    tag: "5.7"
+  primary:
+    args: [ "--lower_case_table_names=1","--sql_mode=IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" ]
+    persistence:
+      enabled: false
+      # storageClass: "-"     #Type of persistent volume claim
+  auth:
+    username: root1
+    password: password12
+    rootPassword: password12
+    database: BE_DATABASE  #database name
 
 # Required for sharednothing and store in AWS(Only for cpType=aws)
 aws-efs:
