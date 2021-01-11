@@ -9,7 +9,7 @@
 # Declare variables to be passed into your templates.
 
 #Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift OR gcp
+cpType: minikube      #cpType can be minikube, aws, awsfargate, awsefs, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
 omType: inmemory                        #omType can be inmemory,store,cache
@@ -93,8 +93,8 @@ healthcheck:
 resources:
   memory: 1.2Gi
   cpu: 1
-fargate:
-  efsFileSystemId: fs-1234    #update for awsfargate(cpType=awsfargate) 
+aws:
+  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with storage class type efs set cpType=awsefs
 
 #*************************Service Part****************************************************
 #Required for cache, sharednothing, store in all cloud providers
