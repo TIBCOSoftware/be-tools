@@ -1,0 +1,27 @@
+#
+# Copyright (c) 2020-2021. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'gvproviders run.sh'
+    path: '/home/tibco/be/gvproviders/run.sh'
+    shouldExist: true
+  - name: 'gvproviders setup.sh'
+    path: '/home/tibco/be/gvproviders/setup.sh'
+    shouldExist: true
+  - name: 'JQ BINARY PATH'
+    path: '/home/tibco/be/gvproviders/jq'
+    shouldExist: true
+  - name: 'JQ LICENSE PATH'
+    path: '/home/tibco/be/gvproviders/JQLICENSE'
+    shouldExist: true
+  - name: 'CURL BINARY PATH'
+    path: '/usr/bin/curl'
+    shouldExist: true
+  - name: 'http run.sh'
+    path: '/home/tibco/be/gvproviders/http/run.sh'
+    shouldExist: true
+  - name: 'http setup.sh'
+    path: '/home/tibco/be/gvproviders/http/setup.sh'
+    shouldExist: true

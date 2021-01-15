@@ -13,11 +13,12 @@ ARG_EAR_FILE_NAME=na
 ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
+ARG_GV_PROVIDER=na
 ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,as.yaml,aslegacy.yaml,ftl.yaml"
+FIXED_TESTCASES="be.yaml,as.yaml,aslegacy.yaml,ftl.yaml,consulgv.yaml,httpgv.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -30,6 +31,7 @@ USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2
 USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.4) [optional]"
 USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.4) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
+USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
@@ -65,6 +67,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -as=*|--as-version=*)
         ARG_AS_SHORT_VERSION="${key#*=}"
+        ;;
+        -gv|--gv-provider)
+        shift # past the key and to the value
+        ARG_GV_PROVIDER="$1"
+        ;;
+        -gv=*|--gv-provider=*)
+        ARG_GV_PROVIDER="${key#*=}"
         ;;
         -f|--ftl-version)
         shift # past the key and to the value
@@ -148,6 +157,16 @@ if [ $ARG_FTL_SHORT_VERSION != na ]; then
   echo "INFO: ftl version:         [${ARG_FTL_SHORT_VERSION}]"
   CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl.yaml "
   SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
+fi
+
+## GV provider validation
+if [ $ARG_GV_PROVIDER != na ]; then
+  echo "INFO: gv provider:         [${ARG_GV_PROVIDER}]"
+  if [ "$ARG_GV_PROVIDER" = "consul" ]; then
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/consulgv.yaml "
+  elif [ "$ARG_GV_PROVIDER" = "http" ]; then
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/httpgv.yaml "
+  fi
 fi
 
 ## key value pairs validation
