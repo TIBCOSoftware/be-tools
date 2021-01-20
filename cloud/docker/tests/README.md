@@ -38,7 +38,7 @@ Sample run command:
 --be-version 6.1 \
 --as-version 4.5 \
 --ftl-version 6.5 \
---gv-provder consul
+--gv-provider consul
 ```
 
 ## Test Cases
