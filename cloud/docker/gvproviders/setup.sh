@@ -35,6 +35,11 @@ chmod +x jq
 chmod +x /home/tibco/be/gvproviders/${GVPROVIDER}/*.sh
 if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh; fi
 
+if [ "$?" != 0 ]; then
+    echo "ERROR: ${GVPROVIDER} gvprovider setup failed."
+    exit 1
+fi
+
 # update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders
 ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
