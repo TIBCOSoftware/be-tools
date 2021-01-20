@@ -26,12 +26,12 @@ if [ -z "${USAGE}" ]; then
 fi
 
 USAGE+="\n\n [ -i|--image-name]           : BE app image name with tag <image-name>:<tag> ex(be6:v1) [required]"
-USAGE+="\n\n [ -b|--be-version]           : BE version in x.x format ex(5.6) [required]"
+USAGE+="\n\n [ -b|--be-version]           : BE version in x.x format ex(6.1) [required]"
 USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2.4) [optional]"
-USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.4) [optional]"
-USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.4) [optional]"
+USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.5) [optional]"
+USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
-USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value"
+USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
