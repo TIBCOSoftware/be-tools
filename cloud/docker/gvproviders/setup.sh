@@ -26,7 +26,9 @@ package-manager update -y && package-manager install -y wget
 
 # Download jq.
 wget "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"
+wget "https://raw.githubusercontent.com/stedolan/jq/master/COPYING"
 mv jq-linux64 jq
+mv COPYING JQLICENSE
 chmod +x jq
 
 # invoke provider specific setup
