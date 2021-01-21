@@ -22,6 +22,10 @@ dependencies:
     condition: mysql.enabled
     tags:
       - database
+  - name: aws-efs-csi-driver
+    version: 1.0.0
+    repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+    condition: efs-driver.enabled
   - name: influxdb
     version: 4.8.4
     repository: https://helm.influxdata.com/   

@@ -212,13 +212,9 @@ mysql:
     rootPassword: password12
     database: BE_DATABASE  #database name
 
-# Required for sharednothing and store in AWS(Only for cpType=aws)
-aws-efs:
+# Required for sharednothing and store in AWS(Only for cpType=awsefs)
+efs-driver:
   enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
-  replicaCount: 1
-  efsProvisioner:
-    efsFileSystemId: fs-e8f5fa68
-    awsRegion: us-east-1
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 

@@ -2,11 +2,14 @@ dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
   version: 8.2.3
+- name: aws-efs-csi-driver
+  repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+  version: 1.0.0
 - name: influxdb
   repository: https://helm.influxdata.com/
   version: 4.8.4
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 5.6.7
-digest: sha256:ae007a09fd9bd70237f045634c4aa924610cd6c61d8927c8675564ad851517c4
-generated: "2021-01-05T14:22:37.031310256+05:30"
+digest: sha256:738370e121c1258beb95b53ae37289210a6ea042c1fb800a2b38a3be436fa719
+generated: "2021-01-20T10:01:22.47319347+05:30"
