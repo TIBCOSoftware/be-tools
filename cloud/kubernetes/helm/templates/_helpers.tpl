@@ -283,3 +283,14 @@ readinessProbe:
   value: {{ $val }}
 {{- end}}
 {{- end -}}
+
+{{- define "pullsecrets" -}}
+{{- if or (.Values.imagepullsecret) (.Values.imageCredentials.registry) }}
+imagePullSecrets:
+  {{- if .Values.imagepullsecret }}
+  - name: {{ .Values.imagepullsecret }}
+  {{- else  }}
+  - name: {{ include "beimagepullsecret.fullname" . }}
+  {{- end  }}
+{{- end}}  
+{{- end -}}
