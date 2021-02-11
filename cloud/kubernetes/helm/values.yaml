@@ -9,7 +9,7 @@
 # Declare variables to be passed into your templates.
 
 #Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, awsefs, azure, openshift OR gcp
+cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift OR gcp
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
 omType: inmemory                        #omType can be inmemory,store,cache
@@ -94,7 +94,7 @@ resources:
   memory: 1.2Gi
   cpu: 1
 aws:
-  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with storage class type efs set cpType=awsefs
+  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
 
 #*************************Service Part****************************************************
 #Required for cache, sharednothing, store in all cloud providers
@@ -192,7 +192,7 @@ volumes:
   snmountVolume: store
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
-  storageClass: standard                    #Use one of the available storage classes as per your preference
+  storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
   snclaimVolume: pv0003
 
 #Required for store in  all cloud providers
@@ -212,7 +212,7 @@ mysql:
     rootPassword: password12
     database: BE_DATABASE  #database name
 
-# Required for sharednothing and store in AWS(Only for cpType=awsefs)
+# Required for sharednothing and store data in AWS EFS(Only for volumes.storageClass=efs-sc)
 efs-driver:
   enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
 
