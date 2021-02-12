@@ -31,14 +31,21 @@ mv jq-linux64 jq
 mv COPYING JQLICENSE
 chmod +x jq
 
-# invoke provider specific setup
-chmod +x /home/tibco/be/gvproviders/${GVPROVIDER}/*.sh
-if [ -f /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh ]; then /home/tibco/be/gvproviders/${GVPROVIDER}/setup.sh; fi
+oIFS="$IFS"; IFS=','; declare -a GVs=($GVPROVIDER); IFS="$oIFS"; unset oIFS
 
-if [ "$?" != 0 ]; then
-    echo "ERROR: ${GVPROVIDER} gvprovider setup failed."
+# invoke provider specific setups
+for GV in "${GVs[@]}"
+do
+  echo "INFO: setting up gvprovider[${GV}]..."
+  chmod +x /home/tibco/be/gvproviders/${GV}/*.sh
+  if [ -f /home/tibco/be/gvproviders/${GV}/setup.sh ]; then /home/tibco/be/gvproviders/${GV}/setup.sh; fi
+
+  if [ "$?" != 0 ]; then
+    echo "ERROR: ${GV} gvprovider setup failed."
     exit 1
-fi
+  fi
+  echo "INFO: done"
+done
 
 # update run.sh with selected gvprovider
 cd /home/tibco/be/gvproviders
