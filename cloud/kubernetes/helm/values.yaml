@@ -9,7 +9,7 @@
 # Declare variables to be passed into your templates.
 
 #Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift OR gcp
+cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
 omType: inmemory                        #omType can be inmemory,store,cache
