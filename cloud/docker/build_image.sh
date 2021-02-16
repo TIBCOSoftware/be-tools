@@ -478,6 +478,7 @@ echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
+    ARG_GVPROVIDER=$(removeDuplicates $ARG_GVPROVIDER)
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
 fi
 
@@ -532,24 +533,22 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
                 mkdir -p $TEMP_FOLDER/gvproviders/$GV
                 cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
             else
-                ARG_GVPROVIDER_TEMP=${GV/custom\//}
-                ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER_TEMP/custom\\/}
-                ARG_GVPROVIDER_TEMP="custom/$ARG_GVPROVIDER_TEMP"
+                ARG_GVPROVIDER_TEMP="custom/$GV"
                 if [ -d "./gvproviders/$ARG_GVPROVIDER_TEMP" ]; then
                     # check for setup.sh & run.sh
                     if ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/setup.sh" ]; then
                         echo "ERROR: setup.sh is required for custom GV provider[$GV] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                        exit 1;
+                        rm -rf $TEMP_FOLDER; exit 1;
                     elif ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/run.sh" ]; then
                         echo "ERROR: run.sh is required for custom GV provider[$GV] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                        exit 1;
+                        rm -rf $TEMP_FOLDER; exit 1;
                     fi
                     mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
                     cp -a ./gvproviders/$ARG_GVPROVIDER_TEMP/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
                     GV="${ARG_GVPROVIDER_TEMP}"
                 else
                     echo "ERROR: GV provider[$GV] is not supported."
-                    exit 1;
+                    rm -rf $TEMP_FOLDER; exit 1;
                 fi
             fi
             if [ "$ARG_GVPROVIDER" = "" ]; then
