@@ -12,13 +12,19 @@ getFromArray()
     echo $result
 }
 
-removeDuplicates()
+removeDuplicatesAndFormatGVs()
 {
     result=""
     oIFS="$IFS"; IFS=','; declare -a values=($1);
+
     for key in "${values[@]}"; do
-        key=${key/custom\//}
-        key=${key/custom\\/}
+
+        if ! [ "$key" = "http" -o "$key" = "consul" ]; then
+            key=${key/custom\//}
+            key=${key/custom\\/}
+            key="custom/$key"
+        fi
+
         if [ "$result" = "" ]; then
             result="$key"
         else

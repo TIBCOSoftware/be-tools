@@ -8,11 +8,11 @@
 GVPROVIDER=$1
 
 if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
-	echo "INFO: Skipping gv provider setup"
+	echo "INFO: Skipping gv providers setup"
   exit 0
 fi
 
-echo "INFO: Setting up '$GVPROVIDER' gv provider..."
+echo "INFO: Setting up gv providers[${GVPROVIDER}]..."
 
 if [ -f /usr/bin/apt-get ]; then
   ln -s /usr/bin/apt-get /usr/bin/package-manager
@@ -36,15 +36,15 @@ oIFS="$IFS"; IFS=','; declare -a GVs=($GVPROVIDER); IFS="$oIFS"; unset oIFS
 # invoke provider specific setups
 for GV in "${GVs[@]}"
 do
-  echo "INFO: setting up gvprovider[${GV}]..."
+  echo "INFO: setting up the gvprovider[${GV}]..."
   chmod +x /home/tibco/be/gvproviders/${GV}/*.sh
   if [ -f /home/tibco/be/gvproviders/${GV}/setup.sh ]; then /home/tibco/be/gvproviders/${GV}/setup.sh; fi
 
   if [ "$?" != 0 ]; then
-    echo "ERROR: ${GV} gvprovider setup failed."
+    echo "ERROR: gvprovider[${GV}] setup failed."
     exit 1
   fi
-  echo "INFO: done"
+  echo "INFO: gvprovider[${GV}] setup done."
 done
 
 # update run.sh with selected gvprovider

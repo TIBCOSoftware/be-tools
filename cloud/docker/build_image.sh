@@ -478,7 +478,7 @@ echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
-    ARG_GVPROVIDER=$(removeDuplicates $ARG_GVPROVIDER)
+    ARG_GVPROVIDER=$(removeDuplicatesAndFormatGVs $ARG_GVPROVIDER)
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
 fi
 
@@ -525,36 +525,28 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         ARG_GVPROVIDER="na"
     else
         oIFS="$IFS"; IFS=','; declare -a GVs=($ARG_GVPROVIDER); IFS="$oIFS"; unset oIFS
-        ARG_GVPROVIDER=""
-
+        
         for GV in "${GVs[@]}"
         do
             if [ "$GV" = "http" -o "$GV" = "consul" ]; then
                 mkdir -p $TEMP_FOLDER/gvproviders/$GV
                 cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
             else
-                ARG_GVPROVIDER_TEMP="custom/$GV"
-                if [ -d "./gvproviders/$ARG_GVPROVIDER_TEMP" ]; then
+                if [ -d "./gvproviders/$GV" ]; then
                     # check for setup.sh & run.sh
-                    if ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/setup.sh" ]; then
-                        echo "ERROR: setup.sh is required for custom GV provider[$GV] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
+                    if ! [ -f "./gvproviders/$GV/setup.sh" ]; then
+                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
                         rm -rf $TEMP_FOLDER; exit 1;
-                    elif ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/run.sh" ]; then
-                        echo "ERROR: run.sh is required for custom GV provider[$GV] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
+                    elif ! [ -f "./gvproviders/$GV/run.sh" ]; then
+                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
                         rm -rf $TEMP_FOLDER; exit 1;
                     fi
-                    mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-                    cp -a ./gvproviders/$ARG_GVPROVIDER_TEMP/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-                    GV="${ARG_GVPROVIDER_TEMP}"
+                    mkdir -p $TEMP_FOLDER/gvproviders/$GV
+                    cp -a ./gvproviders/$GV/* $TEMP_FOLDER/gvproviders/$GV
                 else
                     echo "ERROR: GV provider[$GV] is not supported."
                     rm -rf $TEMP_FOLDER; exit 1;
                 fi
-            fi
-            if [ "$ARG_GVPROVIDER" = "" ]; then
-                ARG_GVPROVIDER="${GV}"
-            else
-                ARG_GVPROVIDER="${ARG_GVPROVIDER},${GV}"
             fi
         done
     fi
