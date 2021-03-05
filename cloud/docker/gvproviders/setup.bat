@@ -6,12 +6,13 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 set GVPROVIDER=%1
 
+REM removing double quotes(")
+set GVPROVIDER=!GVPROVIDER:"=!
+
 if "!GVPROVIDER!" EQU "na" (
     echo INFO: Skipping gv provider setup
     exit 0
 )
-
-echo INFO: Setting up '!GVPROVIDER!' gv provider...
 
 if NOT EXIST "c:\ProgramData\chocolatey\bin\choco.exe" (
     ping chocolatey.org -n 1 -w 20000
@@ -33,5 +34,11 @@ powershell -Command "c:\ProgramData\chocolatey\bin\choco install jq --force -ver
 REM update gvprovider name in run.bat file	
 powershell -Command "(Get-Content 'c:\tibco\be\gvproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\gvproviders\run.bat' -Pattern '^set GVPROVIDER=na').Line.Substring(4), 'GVPROVIDER=!GVPROVIDER!' | Set-Content 'c:\tibco\be\gvproviders\run.bat'"
 
-REM calling gv provider setup.bat file
-c:\tibco\be\gvproviders\!GVPROVIDER!\setup.bat
+set GVS=!GVPROVIDER:,= !
+for %%v in (!GVS!) do (
+    SET GV=%%v
+    echo INFO: Setting up '!GV!' gv provider...
+
+    REM calling gv provider setup.bat file
+    call c:\tibco\be\gvproviders\!GV!\setup.bat
+)

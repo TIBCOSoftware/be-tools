@@ -4,14 +4,14 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-type NUL > c:\tibco\be\gvproviders\output.json
-set JSON_FILE=c:\tibco\be\gvproviders\output.json
-
 if not defined GVP_HTTP_SERVER_URL (
   echo WARN: GV provider[http] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied.
   echo WARN: Skip fetching GV values from http end-store.
   EXIT /B 1
 )
+
+type NUL > c:\tibco\be\gvproviders\output.json
+set JSON_FILE=c:\tibco\be\gvproviders\output.json
 
 echo INFO: GVP_HTTP_SERVER_URL = %GVP_HTTP_SERVER_URL%
 

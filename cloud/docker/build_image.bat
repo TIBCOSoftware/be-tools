@@ -526,6 +526,7 @@ echo INFO: DOCKERFILE                   : [!ARG_DOCKER_FILE!]
 echo INFO: IMAGE TAG                    : [!ARG_IMAGE_VERSION!]
 
 if !ARG_GVPROVIDER! NEQ na (
+    call .\scripts\util.bat :RemoveDuplicatesAndFormatGVs "!ARG_GVPROVIDER!"
     echo INFO: GV PROVIDER                  : [!ARG_GVPROVIDER!]
 )
 
@@ -567,34 +568,36 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
     xcopy /Q /C /Y .\gvproviders\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders > NUL
     if "!ARG_GVPROVIDER!" EQU "na" (
         set "ARG_GVPROVIDER=na"
-    ) else if "!ARG_GVPROVIDER!" EQU "http" (
-        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
-        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
-    ) else if "!ARG_GVPROVIDER!" EQU "consul" (
-        mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER!
-        xcopy /Q /C /Y .\gvproviders\!ARG_GVPROVIDER!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER! > NUL
     ) else (
-        set "ARG_GVPROVIDER_TEMP=!ARG_GVPROVIDER:custom\=!"
-        set "ARG_GVPROVIDER_TEMP=!ARG_GVPROVIDER_TEMP:custom/=!"
-        set "ARG_GVPROVIDER_TEMP=custom\!ARG_GVPROVIDER_TEMP!"
-        if EXIST ".\gvproviders\!ARG_GVPROVIDER_TEMP!" (
-            if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER_TEMP!\setup!SCRIPT_EXTN!" (
-                echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER_TEMP!\]
-                GOTO END-withError
-            ) else if NOT EXIST ".\gvproviders\!ARG_GVPROVIDER_TEMP!\run!SCRIPT_EXTN!" (
-                echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!ARG_GVPROVIDER!] under the directory - [.\gvproviders\!ARG_GVPROVIDER_TEMP!\]
-                GOTO END-withError
+        set GVS=!ARG_GVPROVIDER:,= !
+        for %%v in (!GVS!) do (
+            SET GV=%%v
+            if "!GV!" EQU "http" (
+                mkdir !TEMP_FOLDER!\gvproviders\!GV!
+                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+            ) else if "!GV!" EQU "consul" (
+                mkdir !TEMP_FOLDER!\gvproviders\!GV!
+                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
             ) else (
-                 mkdir !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER_TEMP!
-                 xcopy /Q /C /R /Y /E .\gvproviders\!ARG_GVPROVIDER_TEMP!\* !TEMP_FOLDER!\gvproviders\!ARG_GVPROVIDER_TEMP! > NUL
+                if EXIST ".\gvproviders\!GV!" (
+                    if NOT EXIST ".\gvproviders\!GV!\setup!SCRIPT_EXTN!" (
+                        echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\gvproviders\!GV!\]
+                        GOTO END-withError
+                    ) else if NOT EXIST ".\gvproviders\!GV!\run!SCRIPT_EXTN!" (
+                        echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\gvproviders\!GV!\]
+                        GOTO END-withError
+                    ) else (
+                        mkdir !TEMP_FOLDER!\gvproviders\!GV!
+                        xcopy /Q /C /R /Y /E .\gvproviders\!GV!\* !TEMP_FOLDER!\gvproviders\!GV! > NUL
+                    )
+                ) else (
+                    echo ERROR: GV provider[!GV!] is not supported.
+                    GOTO END-withError
+                )
             )
-        ) else (
-            echo ERROR: GV provider[!ARG_GVPROVIDER!] is not supported.
-            GOTO END-withError
         )
-        set "ARG_GVPROVIDER=!ARG_GVPROVIDER_TEMP!"
         if "!SCRIPT_EXTN!" EQU ".sh" (
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER_TEMP:custom\=custom/!"
+            set "ARG_GVPROVIDER=!ARG_GVPROVIDER:custom\=custom/!"
         )
     )
 )
