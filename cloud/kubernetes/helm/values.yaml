@@ -207,8 +207,6 @@ mysql:
       enabled: false
       # storageClass: "-"     #Type of persistent volume claim
   auth:
-    username: root1
-    password: password12
     rootPassword: password12
     database: BE_DATABASE  #database name
 
