@@ -146,28 +146,19 @@ for awsrole in awsroles:
         awsroles.insert(index, newawsrole)
         awsroles.remove(awsrole)
 
-# If I have more than one role, ask the user which one they want,
-# otherwise just proceed
-print("")
-if len(awsroles) > 1:
-    i = 0
-    print("Please choose the role you would like to assume:")
-    for awsrole in awsroles:
-        print('[', i, ']: ', awsrole.split(',')[0])
-        i += 1
-    print("Selection: ", end=' ')
-    selectedroleindex = input()
+# Check whether the require AWS_ROLE_ARN is available in authorized roles
+requiredawsrole = os.environ['AWS_ROLE_ARN']
+requiredawsrolefound = False
+for awsrole in awsroles:
+    role_arn = awsrole.split(',')[0]
+    principal_arn = awsrole.split(',')[1]
+    if requiredawsrole == role_arn:
+        requiredawsrolefound = True
+        break
 
-    # Basic sanity check of input
-    if int(selectedroleindex) > (len(awsroles) - 1):
-        print('You selected an invalid role index, please try again')
-        sys.exit(0)
-
-    role_arn = awsroles[int(selectedroleindex)].split(',')[0]
-    principal_arn = awsroles[int(selectedroleindex)].split(',')[1]
-else:
-    role_arn = awsroles[0].split(',')[0]
-    principal_arn = awsroles[0].split(',')[1]
+if not requiredawsrolefound:
+    print('AWS role[', requiredawsrole, '] is not a authorized role')
+    sys.exit(0)
 
 # Use the assertion to get an AWS STS token using Assume Role with SAML
 conn = boto.sts.connect_to_region(region)
@@ -200,17 +191,4 @@ with open(filename, 'w+') as configfile:
 print('\n\n----------------------------------------------------------------')
 print('Your new access key pair has been stored in the AWS configuration file {0} under the saml profile.'.format(filename))
 print('Note that it will expire at {0}.'.format(token.credentials.expiration))
-print('After this time, you may safely rerun this script to refresh your access key pair.')
-print('To use this credential, call the AWS CLI with the --profile option (e.g. aws --profile saml ec2 describe-instances).')
 print('----------------------------------------------------------------\n\n')
-
-# Use the AWS STS token to list all of the S3 buckets
-s3conn = boto.s3.connect_to_region(region,
-                     aws_access_key_id=token.credentials.access_key,
-                     aws_secret_access_key=token.credentials.secret_key,
-                     security_token=token.credentials.session_token)
-
-buckets = s3conn.get_all_buckets()
-
-print('Simple API example listing all S3 buckets:')
-print(buckets)

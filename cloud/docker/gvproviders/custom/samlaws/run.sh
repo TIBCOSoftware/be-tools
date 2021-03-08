@@ -17,6 +17,12 @@ if [[ -z "$AWS_DEFAULT_REGION" ]]; then
   exit 1
 fi
 
+if [[ -z "$AWS_ROLE_ARN" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_ROLE_ARN"
+  exit 1
+fi
+
 if [[ -z "$SAML_IDP_URL" ]]; then
   echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
   echo "ERROR: Specify env variable SAML_IDP_URL"

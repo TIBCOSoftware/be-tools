@@ -22,6 +22,7 @@ Following environment variables are applicable for this GV provider type:
 * SAML_PASSWORD - Password
 * AWS_SM_SECRET_ID - AWS Secter ID
 * AWS_DEFAULT_REGION - AWS region
+* AWS_ROLE_ARN - AWS IAM Role
 
 ### Examples
 
@@ -32,6 +33,7 @@ Sample run:
 docker run \
   -e AWS_SM_SECRET_ID=<AWS SECRETS MANAGER - SECRET ID> \
   -e AWS_DEFAULT_REGION=<REGION> \
+  -e AWS_ROLE_ARN=<AWS IAM role>
   -e SAML_IDP_URL=<IdP login URL> \
   -e SAML_USERNAME=<user name> \
   -e SAML_PASSWORD=<password> \
