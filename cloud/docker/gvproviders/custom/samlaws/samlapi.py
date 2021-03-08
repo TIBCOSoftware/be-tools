@@ -59,7 +59,7 @@ idpauthformsubmiturl = formresponse.url
 
 # Parse the response and extract all the necessary values
 # in order to build a dictionary of all of the form values the IdP expects
-formsoup = BeautifulSoup(formresponse.text)
+formsoup = BeautifulSoup(formresponse.text, "html.parser")
 payload = {}
 
 for inputtag in formsoup.find_all(re.compile('(INPUT|input)')):
@@ -108,7 +108,7 @@ del username
 del password
 
 # Decode the response and extract the SAML assertion
-soup = BeautifulSoup(response.text)
+soup = BeautifulSoup(response.text, "html.parser")
 assertion = ''
 
 # Look for the SAMLResponse attribute of the input tag (determined by
