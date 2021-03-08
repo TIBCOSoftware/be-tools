@@ -212,7 +212,7 @@ mysql:
 
 # Required for sharednothing and store data in AWS EFS(Only for volumes.storageClass=efs-sc)
 efs-driver:
-  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-efs" 
+  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-sc" 
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 
