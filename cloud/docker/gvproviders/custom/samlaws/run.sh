@@ -38,16 +38,16 @@ fi
 touch /home/tibco/be/gvproviders/output.json
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 
-# configure aws cli with minimal credential file
-PROFILE_NAME="saml"
-printf "%s\n%s\n%s\njson" "" "" "$AWS_DEFAULT_REGION" | aws configure --profile $PROFILE_NAME
+# configure aws cli with minimal credential file - which is required for samlapi.py
+printf "%s\n%s\n%s\njson" " " " " "$AWS_DEFAULT_REGION" | aws configure
 
-# programmatically get the SAML assertion and update aws credentials
+# programmatically get the SAML assertion and update aws credentials with profile name - "saml"
 # reference: https://aws.amazon.com/blogs/security/how-to-implement-a-general-solution-for-federated-apicli-access-using-saml-2-0/
 # reference: https://awsiammedia.s3.amazonaws.com/public/sample/SAMLAPICLIADFS/0192721658_1562696775_blogversion_samlapi_formauth_adfsv3mod_python3.py
 /home/tibco/be/gvproviders/custom/samlaws/samlapi.py
 
 # Read GV values from AWS Secrets Manager into JSON_FILE
+PROFILE_NAME="saml"
 echo ""
 echo "INFO: Reading GV values from AWS Secrets Manager.."
 aws secretsmanager get-secret-value --secret-id $AWS_SM_SECRET_ID --output text --query 'SecretString' --profile $PROFILE_NAME >> $JSON_FILE
