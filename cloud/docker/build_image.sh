@@ -25,6 +25,7 @@ ARG_TAG="na"
 ARG_DOCKER_FILE="na"
 ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
+ARG_BUILD_TOOL=""
 
 # be related args
 BE_HOME="na"
@@ -79,7 +80,8 @@ USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating imag
 USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"custom\") [optional]\n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
-USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]" 
+USAGE+="\n\n [-b/--build-tool]    :    Build Tool to be used (\"docker\"|\"buildah\" default is docker) [optional]"
+USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 #Parse the arguments
@@ -127,6 +129,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --gv-provider=*)
             ARG_GVPROVIDER="${key#*=}"
+            ;;
+        -b|--build-tool)
+            shift # past the key and to the value
+            ARG_BUILD_TOOL="$1"
+            ;;
+        -b=*|--build-tool=*)
+            ARG_BUILD_TOOL="${key#*=}"
             ;;
         --disable-tests)
             ARG_ENABLE_TESTS="false"
@@ -410,6 +419,43 @@ if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
     exit 1
 fi
 
+CHECK_BUILDAH="false"
+if [ "$ARG_BUILD_TOOL" == "" ]; then
+    ARG_BUILD_TOOL="docker"
+    CHECK_BUILDAH="true"
+fi
+
+# check build tool value
+if [ "$ARG_BUILD_TOOL" == "docker" ]; then
+    if [ -f /usr/bin/docker ]; then
+        echo "INFO: Building image with docker tool"
+        ARG_BUILD_TOOL="docker"
+    else
+        if [ "$CHECK_BUILDAH" == "false" ]; then
+            echo "ERROR: Docker tool is not available. Please install."
+            exit 1
+        else
+            echo "WARN: Docker tool is not available. Checking with buildah."
+            ARG_BUILD_TOOL="buildah"
+        fi
+    fi
+fi
+
+if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+    if [ -f /usr/bin/buildah ]; then
+        echo "INFO: Building image with buildah tool"
+        ARG_BUILD_TOOL="buildah"
+    else
+        echo "ERROR: buildah tool is not available. Please install."
+        exit 1
+    fi
+fi
+
+if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
+    echo "ERROR: Build tool[$ARG_BUILD_TOOL] is not valid. Only docker/buildah tool is supported."
+    exit 1
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
@@ -476,6 +522,7 @@ fi
 
 echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
+echo "INFO: BUILD TOOL                   : [$ARG_BUILD_TOOL]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
     ARG_GVPROVIDER=$(removeDuplicatesAndFormatGVs $ARG_GVPROVIDER)
@@ -491,9 +538,14 @@ if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
     exit 1
 fi
 
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
+    printf "\nERROR: s2ibuilder image is not supported with buildah tool.\n\n"
+    exit 1
+fi
+
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
+        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the image size.\n\n"
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
         if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
@@ -507,7 +559,7 @@ else
         fi
     fi
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n\n"
+        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the image size.\n\n"
     fi
 fi
 
@@ -724,7 +776,7 @@ else
 fi
 
 # building docker image
-printf "\nINFO: Building docker image.\n\n\n"
+printf "\nINFO: Building image.\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
@@ -734,24 +786,31 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     else
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi
 fi
 
+if [ "$ARG_BUILD_TOOL" = "buildah" ]; then
+    SKIP_CONTAINER_TESTS="true"
+    buildah bud -f $TEMP_FOLDER/$ARG_DOCKER_FILE $BUILD_ARGS
+else
+    docker build --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
+fi
+
 if [ "$?" != 0 ]; then
-    echo "ERROR: Docker build failed."
+    echo "ERROR: Build failed."
 else
     BUILD_SUCCESS="true"
     # additional steps for s2i builder image
@@ -762,25 +821,29 @@ else
     fi
 fi
 
-if [ "$DOCKER_BUILDKIT" = 1 ]; then
-    docker builder prune -f
-fi
+if [ "$ARG_BUILD_TOOL" = "docker" ]; then
+    if [ "$DOCKER_BUILDKIT" = 1 ]; then
+        docker builder prune -f
+    fi
 
-export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
+    export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
 
-if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
-    echo "INFO: Deleting temporary intermediate image."
-    docker rmi -f $INTERMEDIATE_IMAGE
+    if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
+        echo "INFO: Deleting temporary intermediate image."
+        docker rmi -f $INTERMEDIATE_IMAGE
+    fi
 fi
 
 echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
 if [ "$BUILD_SUCCESS" = "true" ]; then
-    echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
+    echo "INFO: Build successful. Build Tool: [$ARG_BUILD_TOOL], Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
-    if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
-        cd ./tests
-        source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -gv $ARG_GVPROVIDER
+    if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
+        if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
+            cd ./tests
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+        fi
     fi
 fi
