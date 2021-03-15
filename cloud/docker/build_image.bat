@@ -798,6 +798,7 @@ EXIT /B 0
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
     echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"custom") [optional]
+    echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
