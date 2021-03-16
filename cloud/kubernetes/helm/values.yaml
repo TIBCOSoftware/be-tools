@@ -16,7 +16,8 @@ omType: inmemory                        #omType can be inmemory,store,cache
 bsType: na                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
-hpa: false
+hpa: false                              # set to true to enable HorizontalPodAutoscaling
+podAntiAffinity: false                  # set to true to allow evenly distribution of pods across nodes
 
 # Image name and pull policy required for be app
 image: befdapp:01

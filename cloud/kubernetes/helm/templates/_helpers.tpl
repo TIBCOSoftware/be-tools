@@ -304,6 +304,7 @@ imagePullSecrets:
 {{- end -}}
 
 {{- define "cachepodAntiAffinity" -}}
+{{- if eq .Values.podAntiAffinity true }}
 affinity:
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -316,9 +317,11 @@ affinity:
               values:
               - "{{ include "becacheagent.fullname" . }}"
           topologyKey: "kubernetes.io/hostname"
+{{- end }}          
 {{- end -}}
 
 {{- define "infpodAntiAffinity" -}}
+{{- if eq .Values.podAntiAffinity true }}
 affinity:
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -331,4 +334,5 @@ affinity:
               values:
               - "{{ include "beinferenceagent.fullname" . }}"
           topologyKey: "kubernetes.io/hostname"
+{{- end }}
 {{- end -}}
