@@ -6,10 +6,10 @@
 {{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "ignite" ) }}
   {{- if eq .Values.omType "cache" }}
     {{- if or (eq .Values.bsType "none" ) (eq .Values.bsType "sharednothing" ) (eq .Values.bsType "store" ) }}
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: "{{ .Values.cachenode.hpa.resourceName }}-{{ include "becacheagent.fullname" . }}"
+  name: "{{ include "becacheagent.fullname" . }}-{{ .Values.cachenode.hpa.resourceName }}"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -21,9 +21,7 @@ spec:
   - type: {{ .Values.cachenode.hpa.type }}
     resource:
       name: {{ .Values.cachenode.hpa.resourceName }}
-      target:
-        type: {{ .Values.cachenode.hpa.resourceTargetType }}
-        averageUtilization: {{ .Values.cachenode.hpa.averageMemoryUtilization }}
+      targetAverageUtilization: {{ .Values.cachenode.hpa.targetAverageUtilization }}
     {{- end }}
   {{- end }}
 {{- end }}

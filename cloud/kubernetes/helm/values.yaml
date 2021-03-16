@@ -76,8 +76,7 @@ cachenode:
   hpa:
     type: Resource
     resourceName: memory                  # supported values: cpu, memory
-    resourceTargetType: Utilization        
-    averageMemoryUtilization: 20
+    targetAverageUtilization: 80
     minReplicas: 1
     maxReplicas: 10
 
