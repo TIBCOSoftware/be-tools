@@ -55,7 +55,7 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 {{/*
 Create a volume mount and volume claim template for sharednothing
 */}}
-{{- define "sharednothing.volumeMount" -}}
+{{- define "volumeMount" -}}
 {{- if eq .Values.bsType "sharednothing" }}
 volumeMounts:
   - mountPath: {{ .Values.volumes.snmountPath }}
@@ -63,7 +63,7 @@ volumeMounts:
 {{- end }}
 {{- end -}}
 
-{{- define "sharednothing.volumeClaim" -}}
+{{- define "volumeClaim" -}}
 {{- if eq .Values.bsType "sharednothing" }}
   volumeClaimTemplates:
     - metadata:
@@ -78,16 +78,24 @@ volumeMounts:
 {{- end }}
 {{- end -}}
 
-{{- define "fargate-resource-memory" -}}
-{{- if eq .Values.cpType "awsfargate" }}
+{{- define "inf-resource-memory" -}}
 resources:
   requests:
     memory: "{{ .Values.resources.memory }}"
     cpu: "{{ .Values.resources.cpu }}"
   limits:
+    memory: "{{ .Values.inferencenode.resources.limits.memory }}"
+    cpu: "{{ .Values.inferencenode.resources.limits.cpu }}"
+{{- end -}}
+
+{{- define "cache-resource-memory" -}}
+resources:
+  requests:
     memory: "{{ .Values.resources.memory }}"
     cpu: "{{ .Values.resources.cpu }}"
-{{- end -}}
+  limits:
+    memory: "{{ .Values.cachenode.resources.limits.memory }}"
+    cpu: "{{ .Values.cachenode.resources.limits.cpu }}"
 {{- end -}}
 
 {{/*
@@ -293,4 +301,34 @@ imagePullSecrets:
   - name: {{ include "beimagepullsecret.fullname" . }}
   {{- end  }}
 {{- end}}  
+{{- end -}}
+
+{{- define "cachepodAntiAffinity" -}}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: name
+              operator: In
+              values:
+              - "{{ include "becacheagent.fullname" . }}"
+          topologyKey: "kubernetes.io/hostname"
+{{- end -}}
+
+{{- define "infpodAntiAffinity" -}}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 90
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: name
+              operator: In
+              values:
+              - "{{ include "beinferenceagent.fullname" . }}"
+          topologyKey: "kubernetes.io/hostname"
 {{- end -}}

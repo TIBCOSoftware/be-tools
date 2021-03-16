@@ -22,6 +22,7 @@ spec:
     spec:
 {{ include "pullsecrets" . | trim | indent 6 }}
 {{ include "ignitesaname" . | trim | indent 6 }}          
+{{ include "cachepodAntiAffinity" . | trim | indent 6 }}     
       containers:
       - name: {{ .Values.cachenode.containers.name }}
         image: {{ .Values.image }}
@@ -37,10 +38,10 @@ spec:
 {{ include "discovery_url" . | trim | indent 8 }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}
 {{ include "store.configMap" . | trim | indent 8 }}
-{{ include "fargate-resource-memory" . | trim | indent 8 }}
+{{ include "cache-resource-memory" . | trim | indent 8 }}
 {{ include "healthcheck" . | trim | indent 8 }}
-{{ include "sharednothing.volumeMount" . | trim | indent 8 }}
-{{ include "sharednothing.volumeClaim" . }}
+{{ include "volumeMount" . | trim | indent 8 }}
+{{- include "volumeClaim" . }}
     {{- end }}
   {{- end }}
 {{- end }}

@@ -20,6 +20,7 @@ spec:
     spec:
 {{ include "pullsecrets" . | trim | indent 6 }}
 {{ include "ignitesaname" . | trim | indent 6 }}        
+{{ include "infpodAntiAffinity" . | trim | indent 6 }}        
       containers:
       - name: {{ .Values.inferencenode.containers.name }}
         image: {{ .Values.image }}
@@ -35,8 +36,8 @@ spec:
 {{ include "discovery_url" . | trim | indent 8 }}
 {{ include "influx-grafana.data" . | trim | indent 8 }}        
 {{ include "store.configMap" . | trim |  indent 8 }}
-{{ include "fargate-resource-memory" . | trim | indent 8 }}
+{{ include "inf-resource-memory" . | trim | indent 8 }}
 {{ include "healthcheck" . | trim | indent 8 }}
-{{ include "sharednothing.volumeMount" . | trim | indent 8 }}
-{{ include "sharednothing.volumeClaim" . }}
+{{ include "volumeMount" . | trim | indent 8 }}
+{{- include "volumeClaim" . }}
 {{- end }}

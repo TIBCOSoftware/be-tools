@@ -16,6 +16,7 @@ omType: inmemory                        #omType can be inmemory,store,cache
 bsType: na                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
+hpa: false
 
 # Image name and pull policy required for be app
 image: befdapp:01
@@ -68,6 +69,17 @@ cachenode:
   discoveryCount: 1     # Number discovery nodes (applicable only for cmType = as2). It should not be more than number of cache nodes i.e. cachenode.replicaCount
   containers:
     name: cachenode
+  resources:
+    limits:
+      cpu: 1
+      memory: 1.6Gi
+  hpa:
+    type: Resource
+    resourceName: memory                  # supported values: cpu, memory
+    resourceTargetType: Utilization        
+    averageMemoryUtilization: 20
+    minReplicas: 1
+    maxReplicas: 10
 
 #Required for all applications in  all cloud providers
 inferencenode:
@@ -75,6 +87,17 @@ inferencenode:
   replicaCount: 1       # Number of inference nodes    
   containers:
     name: inferencenode
+  resources:
+    limits:
+      cpu: 1
+      memory: 1.2Gi  
+  hpa:
+    type: Resource
+    resourceName: cpu                     # supported values: cpu, memory
+    resourceTargetType: Utilization         
+    averageUtilization: 20
+    minReplicas: 1
+    maxReplicas: 15
 
 #*************************Health check Part****************************************************
 # Required for cache and inference agent health check
