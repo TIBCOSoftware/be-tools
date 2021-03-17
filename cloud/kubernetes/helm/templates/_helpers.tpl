@@ -56,13 +56,13 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 Create a volume mount and volume claim template for sharednothing
 */}}
 {{- define "volumeMount" -}}
-{{- if or (eq .Values.logs true) (eq .Values.bsType "sharednothing") }}
+{{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") }}
 volumeMounts:
 {{- if eq .Values.bsType "sharednothing" }}
   - mountPath: {{ .Values.volumes.snmountPath }}
     name: {{ .Values.volumes.snmountVolume }}
 {{- end }}
-{{- if eq .Values.logs true }}
+{{- if eq .Values.mountLogs true }}
   - mountPath: {{ .Values.volumes.logmountPath }}
     name: {{ .Values.volumes.logmountVolume }}
 {{- end }}
@@ -85,7 +85,7 @@ volumeMounts:
 {{- end }}
 {{- if eq .Values.mountLogs true }}
     - metadata:
-        name: {{ .Values.volumes.snmountVolume }}
+        name: {{ .Values.volumes.logmountVolume }}
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
