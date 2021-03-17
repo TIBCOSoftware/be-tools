@@ -18,6 +18,7 @@ storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
 hpa: false                              # set to true to enable HorizontalPodAutoscaling
 podAntiAffinity: false                  # set to true to allow evenly distribution of pods across nodes
+mountLogs: false                             # set to true to mount logs
 
 # Image name and pull policy required for be app
 image: befdapp:01
@@ -213,6 +214,8 @@ volumes:
   #Required for sharednothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store
+  logmountPath: "/mnt/tibco/be/logs"
+  logmountVolume: applog
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
   storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
