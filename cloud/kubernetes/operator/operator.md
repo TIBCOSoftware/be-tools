@@ -19,6 +19,24 @@ operator-sdk init --plugins=helm --domain be.tibco.com
 operator-sdk create api       --helm-chart=../helm     --helm-chart-version=1.0.0 --verbose
 ```
 
+* Provide required rbac permissions to deploy horizontal pod autoscaling.
+* Navigate to config/rbac/role.yaml file, add below snippet
+
+```
+- verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+  apiGroups:
+  - "autoscaling"
+  resources:
+  - "horizontalpodautoscalers"
+```
+
 * Install BE helm chart operator
 
 ```
