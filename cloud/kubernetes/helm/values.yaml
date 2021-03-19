@@ -233,6 +233,7 @@ volumes:
   logmountVolume: applog
   accessModes: ["ReadWriteOnce"]
   storage: 0.5Gi
+  logStorage: 0.5Gi
   storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
   snclaimVolume: pv0003
 

@@ -92,7 +92,7 @@ volumeMounts:
         accessModes: {{ .Values.volumes.accessModes }}
         resources:
           requests:
-            storage: {{ .Values.volumes.storage }}
+            storage: {{ .Values.volumes.logStorage }}
 {{- end }}
 {{- end }}
 {{- end -}}
