@@ -6,10 +6,10 @@
 {{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "ignite" ) }}
   {{- if eq .Values.omType "cache" }}
     {{- if or (eq .Values.bsType "none" ) (eq .Values.bsType "sharednothing" ) (eq .Values.bsType "store" ) }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: "{{ include "becacheagent.fullname" . }}-{{ .Values.cachenode.hpa.resourceName }}"
+  name: "{{ include "becacheagent.fullname" . }}-hpa"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -18,10 +18,22 @@ spec:
   minReplicas: {{ .Values.cachenode.hpa.minReplicas }}
   maxReplicas: {{ .Values.cachenode.hpa.maxReplicas }}
   metrics:
+  {{- if eq .Values.cachenode.hpa.memory.enabled true }}
   - type: {{ .Values.cachenode.hpa.type }}
     resource:
-      name: {{ .Values.cachenode.hpa.resourceName }}
-      targetAverageUtilization: {{ .Values.cachenode.hpa.targetAverageUtilization }}
+      name: {{ .Values.cachenode.hpa.memory.resourceName }}
+      target:
+        type: {{ .Values.cachenode.hpa.memory.resourceTargetType }}
+        averageUtilization: {{ .Values.cachenode.hpa.memory.averageUtilization }}
+  {{- end }}    
+  {{- if eq .Values.cachenode.hpa.cpu.enabled true }}
+  - type: {{ .Values.cachenode.hpa.type }}
+    resource:
+      name: {{ .Values.cachenode.hpa.cpu.resourceName }}
+      target:
+        type: {{ .Values.cachenode.hpa.cpu.resourceTargetType }}
+        averageUtilization: {{ .Values.cachenode.hpa.cpu.averageUtilization }}
+  {{- end }}    
     {{- end }}
   {{- end }}
 {{- end }}

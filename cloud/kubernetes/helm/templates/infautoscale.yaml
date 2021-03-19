@@ -7,7 +7,7 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: "{{ include "beinferenceagent.fullname" . }}-{{ .Values.inferencenode.hpa.resourceName }}"
+  name: "{{ include "beinferenceagent.fullname" . }}-hpa"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -16,11 +16,21 @@ spec:
   minReplicas: {{ .Values.inferencenode.hpa.minReplicas }}
   maxReplicas: {{ .Values.inferencenode.hpa.maxReplicas }}
   metrics:
+  {{- if eq .Values.inferencenode.hpa.cpu.enabled true }}
   - type: {{ .Values.inferencenode.hpa.type }}
     resource:
-      name: {{ .Values.inferencenode.hpa.resourceName }}
+      name: {{ .Values.inferencenode.hpa.cpu.resourceName }}
       target:
-        type: {{ .Values.inferencenode.hpa.resourceTargetType }}
-        averageUtilization: {{ .Values.inferencenode.hpa.averageUtilization }}
+        type: {{ .Values.inferencenode.hpa.cpu.resourceTargetType }}
+        averageUtilization: {{ .Values.inferencenode.hpa.cpu.averageUtilization }}
+  {{- end }}
+  {{- if eq .Values.inferencenode.hpa.memory.enabled true }}
+  - type: {{ .Values.inferencenode.hpa.type }}
+    resource:
+      name: {{ .Values.inferencenode.hpa.memory.resourceName }}
+      target:
+        type: {{ .Values.inferencenode.hpa.memory.resourceTargetType }}
+        averageUtilization: {{ .Values.inferencenode.hpa.memory.averageUtilization }}
+  {{- end }}
 {{- end }}
 {{- end -}}

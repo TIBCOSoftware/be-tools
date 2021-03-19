@@ -18,7 +18,7 @@ storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
 hpa: false                              # set to true to enable HorizontalPodAutoscaling
 podAntiAffinity: false                  # set to true to allow evenly distribution of pods across nodes
-mountLogs: false                             # set to true to mount logs
+mountLogs: false                        # set to true to mount logs
 
 # Image name and pull policy required for be app
 image: befdapp:01
@@ -74,11 +74,19 @@ cachenode:
   resources:
     limits:
       cpu: 1
-      memory: 1.6Gi
+      memory: 1.1Gi
   hpa:
     type: Resource
-    resourceName: memory                  # supported values: cpu, memory
-    targetAverageUtilization: 80
+    memory:                                 #set to true if required to use memory Metrics
+      enabled: false
+      resourceName: memory                  
+      resourceTargetType: Utilization
+      averageUtilization: 80
+    cpu:                                    #set to true if required to use cpu Metrics
+      enabled: true
+      resourceName: cpu                     
+      resourceTargetType: Utilization         
+      averageUtilization: 85
     minReplicas: 1
     maxReplicas: 10
 
@@ -91,12 +99,19 @@ inferencenode:
   resources:
     limits:
       cpu: 1
-      memory: 1.2Gi  
+      memory: 1.1Gi  
   hpa:
     type: Resource
-    resourceName: cpu                     # supported values: cpu, memory
-    resourceTargetType: Utilization         
-    averageUtilization: 20
+    memory:                               #set to true if required to use memory Metrics
+      enabled: false
+      resourceName: memory                  
+      resourceTargetType: Utilization
+      averageUtilization: 80
+    cpu:                                  #set to true if required to use cpu Metrics
+      enabled: true                       
+      resourceName: cpu                     
+      resourceTargetType: Utilization         
+      averageUtilization: 90
     minReplicas: 1
     maxReplicas: 15
 
@@ -115,7 +130,7 @@ healthcheck:
 
 # Resource memory for EKS Fargate pods
 resources:
-  memory: 1.2Gi
+  memory: 1Gi
   cpu: 1
 aws:
   efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
