@@ -19,7 +19,7 @@ echo "INFO: GVP_HTTP_SERVER_URL = $GVP_HTTP_SERVER_URL"
 declare -a HEADER_VALUE
 
 if [[ -z "$GVP_HTTP_HEADERS" ]]; then
-  echo "ERROR: GVP_HTTP_HEADERS is not secified."
+  echo "ERROR: GVP_HTTP_HEADERS not specified."
 else
   echo "INFO: GVP_HTTP_HEADERS = $GVP_HTTP_HEADERS"
 

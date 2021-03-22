@@ -77,6 +77,7 @@ USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (Busi
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
 USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"custom\") [optional]\n"
+USAGE+="                           To add more than one GV use comma separated format ex: \"consul,http\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]" 
@@ -478,6 +479,7 @@ echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
+    ARG_GVPROVIDER=$(removeDuplicatesAndFormatGVs $ARG_GVPROVIDER)
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
 fi
 
@@ -522,29 +524,32 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     cp ./gvproviders/*.sh $TEMP_FOLDER/gvproviders
     if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
         ARG_GVPROVIDER="na"
-    elif [ "$ARG_GVPROVIDER" = "http" -o "$ARG_GVPROVIDER" = "consul" ]; then
-        mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
-        cp -a ./gvproviders/$ARG_GVPROVIDER/*.sh $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
     else
-        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER/custom\//}
-        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER_TEMP/custom\\/}
-        ARG_GVPROVIDER_TEMP="custom/$ARG_GVPROVIDER_TEMP"
-        if [ -d "./gvproviders/$ARG_GVPROVIDER_TEMP" ]; then
-            # check for setup.sh & run.sh
-            if ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/setup.sh" ]; then
-                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                exit 1;
-            elif ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/run.sh" ]; then
-                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                exit 1;
+        oIFS="$IFS"; IFS=','; declare -a GVs=($ARG_GVPROVIDER); IFS="$oIFS"; unset oIFS
+        
+        for GV in "${GVs[@]}"
+        do
+            if [ "$GV" = "http" -o "$GV" = "consul" ]; then
+                mkdir -p $TEMP_FOLDER/gvproviders/$GV
+                cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
+            else
+                if [ -d "./gvproviders/$GV" ]; then
+                    # check for setup.sh & run.sh
+                    if ! [ -f "./gvproviders/$GV/setup.sh" ]; then
+                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                        rm -rf $TEMP_FOLDER; exit 1;
+                    elif ! [ -f "./gvproviders/$GV/run.sh" ]; then
+                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                        rm -rf $TEMP_FOLDER; exit 1;
+                    fi
+                    mkdir -p $TEMP_FOLDER/gvproviders/$GV
+                    cp -a ./gvproviders/$GV/* $TEMP_FOLDER/gvproviders/$GV
+                else
+                    echo "ERROR: GV provider[$GV] is not supported."
+                    rm -rf $TEMP_FOLDER; exit 1;
+                fi
             fi
-            mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-            cp -a ./gvproviders/$ARG_GVPROVIDER_TEMP/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-            ARG_GVPROVIDER=$ARG_GVPROVIDER_TEMP
-        else
-            echo "ERROR: GV provider[$ARG_GVPROVIDER] is not supported."
-            exit 1;
-        fi
+        done
     fi
 fi
 
