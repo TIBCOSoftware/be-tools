@@ -26,7 +26,7 @@ ADD be.tar /opt/tibco
 COPY gvproviders /home/tibco/be/gvproviders
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
-COPY lib/*.pm lib/*.pl lib/*.sh /home/tibco/be/
+COPY lib/*.pm lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \

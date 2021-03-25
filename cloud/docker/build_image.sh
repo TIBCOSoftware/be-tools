@@ -457,6 +457,11 @@ if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
     exit 1
 fi
 
+if [ "$OS_NAME" = "Darwin" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
+    echo "ERROR: Build tool [$ARG_BUILD_TOOL] is not supported on MAC."
+    exit 1
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"

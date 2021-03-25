@@ -19,7 +19,7 @@ ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 
-FROM ubuntu:20.10 as intermediate
+FROM docker.io/library/ubuntu:20.10 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -72,7 +72,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
 RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:20.10
+FROM docker.io/library/ubuntu:20.10
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
