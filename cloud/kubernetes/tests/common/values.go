@@ -12,38 +12,69 @@ var CacheserviceName = ReleaseName + "-" + "becache-service"
 var CacheSelectorName = ReleaseName + "-" + "becacheagent"
 var ConfigmapName = ReleaseName + "-" + "storeconfig"
 var SecretName = ReleaseName + "-" + "beimagepullsecret"
+var InferenceHPAName = InferenceSelectorName + "-" + "hpa"
+var CacheHPAName = CacheSelectorName + "-" + "hpa"
 
 const (
-	HelmChartPath                  = "../../helm"
-	Bejmx                          = "templates/bejmx-service.yaml"
-	Beappservice                   = "templates/beservice.yaml"
-	Beinferenceagent               = "templates/beinferenceagent.yaml"
-	Configmap                      = "templates/configmap.yaml"
-	Becacheagent                   = "templates/becacheagent.yaml"
-	Becacheservice                 = "templates/becache-service.yaml"
-	SecretFile                     = "templates/imagepullsecret.yaml"
-	FTLPATH                        = "../utils/ftl4be.yml"
-	AS4PATH                        = "../utils/asdg.yml"
-	SecretType                     = "kubernetes.io/dockerconfigjson"
-	ImgPullSecret                  = "besecret"
-	ImageName                      = "s2ifd:01"
-	BeServicePort            int32 = 8108
-	BeAS2CacheServicePort    int32 = 50000
-	BeIgniteCacheServicePort int32 = 47500
-	BeJmxServicePort         int32 = 5555
-	InfServicePortType             = "NodePort"
-	JmxServicePortType             = "LoadBalancer"
-	InfReplicas              int32 = 1
-	CacheReplicas            int32 = 1
-	ImagePullPolicy                = "IfNotPresent"
-	AccessMode                     = "ReadWriteOnce"
-	SnmountVolume                  = "store"
-	Snpath                         = "/mnt/tibco/be/data-store"
-	StorageClass                   = "standard"
-	DefaultPU                      = "default"
-	CachePU                        = "cache"
-	IgniteURL                      = "IGNITE_gv_DISCOVERY_URL"
-	AsURL                          = "AS_DISCOVER_URL"
+	HelmChartPath                          = "../../helm"
+	Bejmx                                  = "templates/bejmx-service.yaml"
+	Beappservice                           = "templates/beservice.yaml"
+	Beinferenceagent                       = "templates/beinferenceagent.yaml"
+	Configmap                              = "templates/configmap.yaml"
+	Becacheagent                           = "templates/becacheagent.yaml"
+	Becacheservice                         = "templates/becache-service.yaml"
+	SecretFile                             = "templates/imagepullsecret.yaml"
+	FTLPATH                                = "../utils/ftl4be.yml"
+	AS4PATH                                = "../utils/asdg.yml"
+	SecretType                             = "kubernetes.io/dockerconfigjson"
+	Beinferencehpa                         = "templates/infautoscale.yaml"
+	Becachehpa                             = "templates/cacheautoscale.yaml"
+	ImgPullSecret                          = "besecret"
+	ImageName                              = "s2ifd:01"
+	CacheNodeResourceCPULimit        int64 = 1
+	CacheNodeResourceMemoryLimit           = "1181116006400m"
+	InferenceNodeResourceCPULimit    int64 = 1
+	InferenceNodeResourceMemoryLimit       = "1181116006400m"
+	RequestResourceCPU               int64 = 1
+	RequestResourceMemory                  = "1Gi"
+	InferencePodAntiAffinityWeight   int32 = 90
+	CachePodAntiAffinityWeight       int32 = 100
+	InfMinReplicas                   int32 = 1
+	InfMaxReplicas                   int32 = 15
+	InfCPUutilization                int32 = 90
+	InfMemoryutilization             int32 = 80
+	CacheMinReplicas                 int32 = 1
+	CacheMaxReplicas                 int32 = 10
+	CacheCPUutilization              int32 = 85
+	CacheMemoryutilization           int32 = 80
+	BeServicePort                    int32 = 8108
+	BeAS2CacheServicePort            int32 = 50000
+	BeIgniteCacheServicePort         int32 = 47500
+	BeJmxServicePort                 int32 = 5555
+	InfServicePortType                     = "NodePort"
+	JmxServicePortType                     = "LoadBalancer"
+	InfReplicas                      int32 = 1
+	CacheReplicas                    int32 = 1
+	ImagePullPolicy                        = "IfNotPresent"
+	AccessMode                             = "ReadWriteOnce"
+	SnmountVolume                          = "store"
+	Snpath                                 = "/mnt/tibco/be/data-store"
+	LogsmountVolume                        = "applog"
+	Logspath                               = "/mnt/tibco/be/logs"
+	StorageClass                           = "standard"
+	DefaultPU                              = "default"
+	CachePU                                = "cache"
+	IgniteURL                              = "IGNITE_gv_DISCOVERY_URL"
+	AsURL                                  = "AS_DISCOVER_URL"
+
+	//  healthcheck
+	LivenessProbeInitialDelaySeconds  int32 = 5
+	LivenessProbePeriodSeconds        int32 = 5
+	LivenessProbePort                       = 5555
+	ReadinessProbeInitialDelaySeconds int32 = 5
+	ReadinessProbePeriodSeconds       int32 = 5
+	ReadinessProbePort                      = 5555
+
 	// As4ReamURLKey constants
 	As4ReamURLKey    = "realm_url"
 	As4ReamURLVal    = "localhost"
@@ -171,6 +202,7 @@ func FTLCassandraStoreValues() map[string]string {
 	Values["cmType"] = "ftl"
 	Values["omType"] = "store"
 	Values["storeType"] = "cassandra"
+	Values["podAntiAffinity"] = "true"
 	Values = appendCassandraValues(Values)
 	Values = appendFTLValues(Values)
 
@@ -191,6 +223,13 @@ func AS2CacheSNValues() map[string]string {
 	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharednothing"
+	Values["hpa"] = "true"
+	Values["inferencenode.hpa.cpu.enabled"] = "true"
+	Values["inferencenode.hpa.memory.enabled"] = "true"
+	Values["cachenode.hpa.memory.enabled"] = "true"
+	Values["cachenode.hpa.cpu.enabled"] = "true"
+	Values["podAntiAffinity"] = "true"
+	Values["mountLogs"] = "true"
 
 	return Values
 }
@@ -233,6 +272,11 @@ func FTLCacheCassandraStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "cassandra"
 	Values["bsType"] = "store"
+	Values["hpa"] = "true"
+	Values["inferencenode.hpa.memory.enabled"] = "true"
+	Values["inferencenode.hpa.cpu.enabled"] = "false"
+	Values["cachenode.hpa.cpu.enabled"] = "true"
+	Values["cachenode.hpa.memory.enabled"] = "false"
 	Values = appendCassandraValues(Values)
 	Values = appendFTLValues(Values)
 
@@ -361,6 +405,13 @@ func IGNITECacheMysqlStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
+	Values["hpa"] = "true"
+	Values["mountLogs"] = "true"
+	Values["inferencenode.hpa.cpu.enabled"] = "true"
+	Values["inferencenode.hpa.memory.enabled"] = "false"
+	Values["cachenode.hpa.cpu.enabled"] = "false"
+	Values["cachenode.hpa.memory.enabled"] = "true"
+	Values["healthcheck.enabled"] = "true"
 	Values = appendMysqlValues(Values)
 	Values = appendIGNITEValues(Values)
 

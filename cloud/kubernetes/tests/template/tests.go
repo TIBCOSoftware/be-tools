@@ -12,7 +12,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta2"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // appAndJmxServices contains common be app and jmx service related tests
@@ -92,6 +94,86 @@ func jmxServiceTest(data string, t *testing.T) {
 	require.Equal(t, v1.ServiceType(common.JmxServicePortType), service.Spec.Type)
 }
 
+// Test inference horizontal pod autoscaler content
+func inferenceAutoScalerTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, common.InferenceHPAName, infscale.Name)
+	require.Equal(t, "HorizontalPodAutoscaler", infscale.Kind)
+	require.Equal(t, "autoscaling/v2beta2", infscale.APIVersion)
+	require.Equal(t, "apps/v1", infscale.Spec.ScaleTargetRef.APIVersion)
+	require.Equal(t, common.InferenceSelectorName, infscale.Spec.ScaleTargetRef.Name)
+	require.Equal(t, common.InfMinReplicas, *infscale.Spec.MinReplicas)
+	require.Equal(t, common.InfMaxReplicas, infscale.Spec.MaxReplicas)
+}
+
+func inferenceAutoScalerCPUMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("cpu"), infscale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.InfCPUutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+}
+
+func inferenceAutoScalerMemoryMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("memory"), infscale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.InfMemoryutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+}
+
+func inferenceAutoScalerCPUNMemoryMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("cpu"), infscale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.InfCPUutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[1].Type)
+	require.Equal(t, v1.ResourceName("memory"), infscale.Spec.Metrics[1].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[1].Resource.Target.Type)
+	require.Equal(t, common.InfMemoryutilization, *infscale.Spec.Metrics[1].Resource.Target.AverageUtilization)
+}
+
+// Test cache horizontal pod autoscaler content
+func cacheAutoScalerTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, "HorizontalPodAutoscaler", cachescale.Kind)
+	require.Equal(t, "autoscaling/v2beta2", cachescale.APIVersion)
+	require.Equal(t, "apps/v1", cachescale.Spec.ScaleTargetRef.APIVersion)
+	require.Equal(t, common.CacheHPAName, cachescale.Name)
+	require.Equal(t, common.CacheSelectorName, cachescale.Spec.ScaleTargetRef.Name)
+	require.Equal(t, common.CacheMinReplicas, *cachescale.Spec.MinReplicas)
+	require.Equal(t, common.CacheMaxReplicas, cachescale.Spec.MaxReplicas)
+}
+
+func cacheAutoScalerCPUMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("cpu"), cachescale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.CacheCPUutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+}
+
+func cacheAutoScalerMemoryMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("memory"), cachescale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.CacheMemoryutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+}
+
+func cacheAutoScalerCPUNMemoryMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
+
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+	require.Equal(t, v1.ResourceName("memory"), cachescale.Spec.Metrics[0].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+	require.Equal(t, common.CacheMemoryutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[1].Type)
+	require.Equal(t, v1.ResourceName("cpu"), cachescale.Spec.Metrics[1].Resource.Name)
+	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[1].Resource.Target.Type)
+	require.Equal(t, common.CacheCPUutilization, *cachescale.Spec.Metrics[1].Resource.Target.AverageUtilization)
+}
+
 // configMapNameTest check for configmap metadata name and labels name
 func configMapNameTest(configMap v1.ConfigMap, t *testing.T) {
 
@@ -164,6 +246,17 @@ func pullSecret(sSet appsv1.StatefulSet, t *testing.T) {
 	// imagePullSecret value defined in values.yaml
 	require.Equal(t, []v1.LocalObjectReference([]v1.LocalObjectReference{v1.LocalObjectReference{Name: common.ImgPullSecret}}), sSet.Spec.Template.Spec.ImagePullSecrets)
 }
+
+func healtCheck(sSet appsv1.StatefulSet, t *testing.T) {
+
+	require.Equal(t, common.LivenessProbeInitialDelaySeconds, sSet.Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
+	require.Equal(t, common.LivenessProbePeriodSeconds, sSet.Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
+	require.Equal(t, intstr.IntOrString(intstr.IntOrString{Type: 0, IntVal: common.LivenessProbePort, StrVal: ""}), sSet.Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port)
+	require.Equal(t, common.ReadinessProbeInitialDelaySeconds, sSet.Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
+	require.Equal(t, common.ReadinessProbePeriodSeconds, sSet.Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
+	require.Equal(t, intstr.IntOrString(intstr.IntOrString{Type: 0, IntVal: common.ReadinessProbePort, StrVal: ""}), sSet.Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port)
+}
+
 func checkVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
 
 	// volume mount path test
@@ -180,6 +273,57 @@ func checkVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
 
 	//  volume claim access modes
 	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{common.AccessMode}), sSet.Spec.VolumeClaimTemplates[0].Spec.AccessModes)
+}
+
+func checkLogVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
+
+	// volume mount path test
+	require.Equal(t, common.Logspath, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+
+	//  mount volume path name check
+	require.Equal(t, common.LogsmountVolume, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+
+	// volume claim temlate testing annotation volume.beta.kubernetes.io/storage-class as standard
+	require.Equal(t, common.StorageClass, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Annotations["volume.beta.kubernetes.io/storage-class"])
+
+	//  claim template mount volume name check
+	require.Equal(t, common.LogsmountVolume, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Name)
+
+	//  volume claim access modes
+	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{common.AccessMode}), sSet.Spec.VolumeClaimTemplates[0].Spec.AccessModes)
+}
+
+func checkSNandLogVolumeClaims(sSet appsv1.StatefulSet, t *testing.T) {
+
+	// volume mount path test
+	require.Equal(t, common.Snpath, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+
+	//  mount volume path name check
+	require.Equal(t, common.SnmountVolume, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+
+	// volume claim temlate testing annotation volume.beta.kubernetes.io/storage-class as standard
+	require.Equal(t, common.StorageClass, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Annotations["volume.beta.kubernetes.io/storage-class"])
+
+	//  claim template mount volume name check
+	require.Equal(t, common.SnmountVolume, sSet.Spec.VolumeClaimTemplates[0].ObjectMeta.Name)
+
+	//  volume claim access modes
+	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{common.AccessMode}), sSet.Spec.VolumeClaimTemplates[0].Spec.AccessModes)
+
+	// volume mount path test
+	require.Equal(t, common.Logspath, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[1].MountPath)
+
+	//  mount volume path name check
+	require.Equal(t, common.LogsmountVolume, sSet.Spec.Template.Spec.Containers[0].VolumeMounts[1].Name)
+
+	// volume claim temlate testing annotation volume.beta.kubernetes.io/storage-class as standard
+	require.Equal(t, common.StorageClass, sSet.Spec.VolumeClaimTemplates[1].ObjectMeta.Annotations["volume.beta.kubernetes.io/storage-class"])
+
+	//  claim template mount volume name check
+	require.Equal(t, common.LogsmountVolume, sSet.Spec.VolumeClaimTemplates[1].ObjectMeta.Name)
+
+	//  volume claim access modes
+	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{common.AccessMode}), sSet.Spec.VolumeClaimTemplates[1].Spec.AccessModes)
 }
 
 func agentTestcases(sSet appsv1.StatefulSet, t *testing.T) {
@@ -211,6 +355,20 @@ func inferenceTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, common.DefaultPU, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"))
 }
 
+func inferencePodAntiAffinityTestcases(sset appsv1.StatefulSet, t *testing.T) {
+
+	require.Equal(t, common.InferencePodAntiAffinityWeight, *&sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight)
+	require.Equal(t, []string([]string{common.InferenceSelectorName}), sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
+}
+
+func inferenceResourceTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+
+	require.Equal(t, common.InferenceNodeResourceCPULimit, sSet.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().Value())
+	require.Equal(t, common.InferenceNodeResourceMemoryLimit, sSet.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String())
+	require.Equal(t, common.RequestResourceCPU, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().Value())
+	require.Equal(t, common.RequestResourceMemory, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String())
+}
+
 func cacheTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	var cacheName = map[string]string{"name": common.CacheSelectorName}
 
@@ -228,6 +386,14 @@ func cacheTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 
 	// PU value check
 	require.Equal(t, common.CachePU, valueFromEnv(sSet.Spec.Template.Spec.Containers[0].Env, "PU"))
+}
+
+func cacheResourceTestcases(sSet appsv1.StatefulSet, t *testing.T) {
+
+	require.Equal(t, common.CacheNodeResourceCPULimit, sSet.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().Value())
+	require.Equal(t, common.CacheNodeResourceMemoryLimit, sSet.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String())
+	require.Equal(t, common.RequestResourceCPU, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().Value())
+	require.Equal(t, common.RequestResourceMemory, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String())
 }
 
 func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {

@@ -41,4 +41,6 @@ func TestFTLStoreCassandra(t *testing.T) {
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
 	configMapCassandraTest(configOutPut, t)
+
+	delete(common.Values, "podAntiAffinity")
 }

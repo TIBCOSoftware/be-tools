@@ -65,6 +65,22 @@ func TestIgniteCacheMYSQL(t *testing.T) {
 	// be cache service test
 	beCacheServiceOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becacheservice})
 	igniteCacheServiceTest(beCacheServiceOutput, t)
+
+	// be inference hpa test
+	inferenceHPAOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferencehpa})
+	inferenceAutoScalerIGNITEMysqlTest(inferenceHPAOutput, t)
+
+	// be cache hpa test
+	cacheHPAOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becachehpa})
+	cacheAutoScalerIGNITEMysqlTest(cacheHPAOutput, t)
+
+	delete(common.Values, "hpa")
+	delete(common.Values, "inferencenode.hpa.memory.enabled")
+	delete(common.Values, "inferencenode.hpa.cpu.enabled")
+	delete(common.Values, "cachenode.hpa.cpu.enabled")
+	delete(common.Values, "cachenode.hpa.memory.enabled")
+	delete(common.Values, "mountLogs")
+	delete(common.Values, "healthcheck.enabled")
 }
 
 func TestIgniteCacheAS4(t *testing.T) {

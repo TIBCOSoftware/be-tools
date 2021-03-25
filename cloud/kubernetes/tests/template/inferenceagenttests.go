@@ -9,6 +9,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta2"
 )
 
 // inferenceTest testing inference content
@@ -19,6 +20,27 @@ func inferenceTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
+	inferenceResourceTestcases(sSet, t)
+}
+
+// cacheIGNITEMysqlTest testing cache content for IGNITE cluster backing store none
+func inferenceAutoScalerIGNITEMysqlTest(data string, t *testing.T) {
+
+	var infscale v2beta2.HorizontalPodAutoscaler
+	helm.UnmarshalK8SYaml(t, data, &infscale)
+
+	inferenceAutoScalerTestcases(infscale, t)
+	inferenceAutoScalerCPUMetricsTestcases(infscale, t)
+}
+
+// inferenceAutoScalerFTLCassTest testing cache content for IGNITE cluster backing store none
+func inferenceAutoScalerFTLCassTest(data string, t *testing.T) {
+
+	var infscale v2beta2.HorizontalPodAutoscaler
+	helm.UnmarshalK8SYaml(t, data, &infscale)
+
+	inferenceAutoScalerTestcases(infscale, t)
+	inferenceAutoScalerMemoryMetricsTestcases(infscale, t)
 }
 
 // inferenceFTLStoreAS4Test testing inference content for ftl cluster and cache type as store as4
@@ -39,8 +61,10 @@ func inferenceFTLStoreCassTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
+	inferencePodAntiAffinityTestcases(sSet, t)
 	ftlTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)
+
 }
 
 // inferenceFTLNoneTest testing inference content for FTL cluster backing store none
@@ -85,8 +109,20 @@ func inferenceAS2SNTest(data string, t *testing.T) {
 
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
+	inferencePodAntiAffinityTestcases(sSet, t)
+	checkSNandLogVolumeClaims(sSet, t)
 	asDiscoveryTestcases(sSet, t)
 	checkVolumeClaims(sSet, t)
+}
+
+// inferenceAutoScalerFTLCassTest testing cache content for IGNITE cluster backing store none
+func inferenceAutoScalerAS2SNTest(data string, t *testing.T) {
+
+	var infscale v2beta2.HorizontalPodAutoscaler
+	helm.UnmarshalK8SYaml(t, data, &infscale)
+
+	inferenceAutoScalerTestcases(infscale, t)
+	inferenceAutoScalerCPUNMemoryMetricsTestcases(infscale, t)
 }
 
 // inferenceAS2MysqlTest testing inference content for AS2 cluster backing store mysql
@@ -206,7 +242,10 @@ func inferenceIGNITEMysqlTest(data string, t *testing.T) {
 	agentTestcases(sSet, t)
 	inferenceTestcases(sSet, t)
 	IGNITEDiscoveryTestcases(sSet, t)
+	checkLogVolumeClaims(sSet, t)
 	configMapEnvRDBMSTestcases(sSet, t)
+	inferenceResourceTestcases(sSet, t)
+	healtCheck(sSet, t)
 }
 
 // inferenceIGNITEAS4Test testing inference content for IGNITE cluster backing store as4

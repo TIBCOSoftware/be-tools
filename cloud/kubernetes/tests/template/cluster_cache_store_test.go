@@ -94,6 +94,20 @@ func TestFTLCacheStoreCassandra(t *testing.T) {
 	// configmap test
 	configOutPut := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Configmap})
 	configMapCassandraTest(configOutPut, t)
+
+	// be inference hpa test
+	inferenceHPAOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Beinferencehpa})
+	inferenceAutoScalerFTLCassTest(inferenceHPAOutput, t)
+
+	// be cache hpa test
+	cacheHPAOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becachehpa})
+	cacheAutoScalerFTLCassTest(cacheHPAOutput, t)
+
+	delete(common.Values, "hpa")
+	delete(common.Values, "inferencenode.hpa.memory.enabled")
+	delete(common.Values, "inferencenode.hpa.cpu.enabled")
+	delete(common.Values, "cachenode.hpa.cpu.enabled")
+	delete(common.Values, "cachenode.hpa.memory.enabled")
 }
 
 func TestFTLCacheStoreMysql(t *testing.T) {
