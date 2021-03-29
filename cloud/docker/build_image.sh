@@ -81,7 +81,7 @@ USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the
 USAGE+="                           To add more than one GV use comma separated format ex: \"consul,http\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
-USAGE+="\n\n [-b/--build-tool]    :    Build Tool to be used (\"docker\"|\"buildah\" default is docker) [optional]"
+USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")"
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -420,36 +420,10 @@ if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
     exit 1
 fi
 
-CHECK_BUILDAH="false"
+CHECK_FOR_BUILDAH="false"
 if [ "$ARG_BUILD_TOOL" == "" ]; then
     ARG_BUILD_TOOL="docker"
-    CHECK_BUILDAH="true"
-fi
-
-# check build tool value
-if [ "$ARG_BUILD_TOOL" == "docker" ]; then
-    if [ -f /usr/bin/docker ]; then
-        echo "INFO: Building image with docker tool"
-        ARG_BUILD_TOOL="docker"
-    else
-        if [ "$CHECK_BUILDAH" == "false" ]; then
-            echo "ERROR: Docker tool is not available. Please install."
-            exit 1
-        else
-            echo "WARN: Docker tool is not available. Checking with buildah."
-            ARG_BUILD_TOOL="buildah"
-        fi
-    fi
-fi
-
-if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
-    if [ -f /usr/bin/buildah ]; then
-        echo "INFO: Building image with buildah tool"
-        ARG_BUILD_TOOL="buildah"
-    else
-        echo "ERROR: buildah tool is not available. Please install."
-        exit 1
-    fi
+    CHECK_FOR_BUILDAH="true"
 fi
 
 if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
@@ -460,6 +434,36 @@ fi
 if [ "$OS_NAME" = "Darwin" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
     echo "ERROR: Build tool [$ARG_BUILD_TOOL] is not supported on MAC."
     exit 1
+fi
+
+# check for build tool existance
+if [ "$ARG_BUILD_TOOL" == "docker" ]; then
+    DOCKER_PKG=$( which docker )
+    if [ "$DOCKER_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[docker] not found. Please install docker."
+            exit 1
+        else
+            echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
+            ARG_BUILD_TOOL="buildah"
+        fi
+    else
+        echo "INFO: Building container image with the build tool[docker]."
+    fi
+fi
+
+if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+    BUILDAH_PKG=$( which buildah )
+    if [ "$BUILDAH_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[buildah] not found. Please install buildah."
+        else
+            echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
+        fi
+        exit 1
+    else
+        echo "INFO: Building container image with the build tool[buildah]."
+    fi
 fi
 
 # information display
@@ -551,7 +555,7 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the image size.\n\n"
+        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the container image size.\n\n"
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
         if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
@@ -565,7 +569,7 @@ else
         fi
     fi
     if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the image size.\n\n"
+        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the container image size.\n\n"
     fi
 fi
 
@@ -782,7 +786,7 @@ else
 fi
 
 # building docker image
-printf "\nINFO: Building image.\n\n\n"
+printf "\nINFO: Building container image.\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
@@ -816,7 +820,7 @@ else
 fi
 
 if [ "$?" != 0 ]; then
-    echo "ERROR: Build failed."
+    echo "ERROR: Container build failed."
 else
     BUILD_SUCCESS="true"
     # additional steps for s2i builder image
@@ -844,7 +848,7 @@ echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
 if [ "$BUILD_SUCCESS" = "true" ]; then
-    echo "INFO: Build successful. Build Tool: [$ARG_BUILD_TOOL], Image Name: [$ARG_IMAGE_VERSION]"
+    echo "INFO: Container build successfull using the build tool[$ARG_BUILD_TOOL]. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
     if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
         if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
