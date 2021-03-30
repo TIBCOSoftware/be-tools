@@ -7,9 +7,7 @@ package template
 import (
 	"testing"
 
-	"github.com/TIBCOSoftware/be-tools/cloud/kubernetes/tests/common"
 	"github.com/gruntwork-io/terratest/modules/helm"
-	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/autoscaling/v2beta2"
 )
@@ -171,7 +169,7 @@ func cacheIGNITESNTest(data string, t *testing.T) {
 	checkVolumeClaims(sSet, t)
 }
 
-// cacheIGNITEMysqlTest testing cache content for IGNITE cluster backing store none
+// cacheIGNITEMysqlTest testing cache content for IGNITE cluster backing store none with horizontalpodautoscaler
 func cacheIGNITEMysqlTest(data string, t *testing.T) {
 
 	var sSet appsv1.StatefulSet
@@ -228,10 +226,4 @@ func cacheIGNITECassTest(data string, t *testing.T) {
 	cacheTestcases(sSet, t)
 	IGNITEDiscoveryTestcases(sSet, t)
 	configMapEnvCassandraTestcases(sSet, t)
-}
-
-func cachePodAntiAffinityTestcases(sset appsv1.StatefulSet, t *testing.T) {
-
-	require.Equal(t, common.CachePodAntiAffinityWeight, *&sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight)
-	require.Equal(t, []string([]string{common.CacheSelectorName}), sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
 }

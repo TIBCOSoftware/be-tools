@@ -97,40 +97,80 @@ func jmxServiceTest(data string, t *testing.T) {
 // Test inference horizontal pod autoscaler content
 func inferenceAutoScalerTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// Inference hpa name check
 	require.Equal(t, common.InferenceHPAName, infscale.Name)
+
+	// kind check for hpa
 	require.Equal(t, "HorizontalPodAutoscaler", infscale.Kind)
+
+	//  API version check
 	require.Equal(t, "autoscaling/v2beta2", infscale.APIVersion)
+
+	// Statefulset api version check
 	require.Equal(t, "apps/v1", infscale.Spec.ScaleTargetRef.APIVersion)
+
+	//  Statefulset selector name check
 	require.Equal(t, common.InferenceSelectorName, infscale.Spec.ScaleTargetRef.Name)
+
+	// minimum replica and max replica count check
 	require.Equal(t, common.InfMinReplicas, *infscale.Spec.MinReplicas)
 	require.Equal(t, common.InfMaxReplicas, infscale.Spec.MaxReplicas)
 }
 
 func inferenceAutoScalerCPUMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("cpu"), infscale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.InfCPUutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
 }
 
 func inferenceAutoScalerMemoryMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("memory"), infscale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.InfMemoryutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
 }
 
 func inferenceAutoScalerCPUNMemoryMetricsTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("cpu"), infscale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.InfCPUutilization, *infscale.Spec.Metrics[0].Resource.Target.AverageUtilization)
+
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), infscale.Spec.Metrics[1].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("memory"), infscale.Spec.Metrics[1].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), infscale.Spec.Metrics[1].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.InfMemoryutilization, *infscale.Spec.Metrics[1].Resource.Target.AverageUtilization)
 }
 
@@ -148,29 +188,56 @@ func cacheAutoScalerTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *tes
 
 func cacheAutoScalerCPUMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("cpu"), cachescale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.CacheCPUutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
 }
 
 func cacheAutoScalerMemoryMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("memory"), cachescale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.CacheMemoryutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
 }
 
 func cacheAutoScalerCPUNMemoryMetricsTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *testing.T) {
 
+	// metrics type check
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[0].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("memory"), cachescale.Spec.Metrics[0].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[0].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.CacheMemoryutilization, *cachescale.Spec.Metrics[0].Resource.Target.AverageUtilization)
 	require.Equal(t, v2beta2.MetricSourceType("Resource"), cachescale.Spec.Metrics[1].Type)
+
+	// metrics resource name check
 	require.Equal(t, v1.ResourceName("cpu"), cachescale.Spec.Metrics[1].Resource.Name)
+
+	// metrics target type check
 	require.Equal(t, v2beta2.MetricTargetType("Utilization"), cachescale.Spec.Metrics[1].Resource.Target.Type)
+
+	// metrics target utilization check
 	require.Equal(t, common.CacheCPUutilization, *cachescale.Spec.Metrics[1].Resource.Target.AverageUtilization)
 }
 
@@ -394,6 +461,13 @@ func cacheResourceTestcases(sSet appsv1.StatefulSet, t *testing.T) {
 	require.Equal(t, common.CacheNodeResourceMemoryLimit, sSet.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String())
 	require.Equal(t, common.RequestResourceCPU, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().Value())
 	require.Equal(t, common.RequestResourceMemory, sSet.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String())
+}
+
+// cachek podantiaffinity testcases
+func cachePodAntiAffinityTestcases(sset appsv1.StatefulSet, t *testing.T) {
+
+	require.Equal(t, common.CachePodAntiAffinityWeight, *&sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight)
+	require.Equal(t, []string([]string{common.CacheSelectorName}), sset.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
 }
 
 func ftlTestcases(sSet appsv1.StatefulSet, t *testing.T) {

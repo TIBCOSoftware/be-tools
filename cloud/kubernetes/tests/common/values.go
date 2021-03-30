@@ -197,7 +197,7 @@ func FTLAS4StoreValues() map[string]string {
 	return Values
 }
 
-// FTLCassandraStoreValues returns cluster ftl store topology values
+// FTLCassandraStoreValues returns cluster ftl store topology values with PodAntiAffinity
 func FTLCassandraStoreValues() map[string]string {
 	Values["cmType"] = "ftl"
 	Values["omType"] = "store"
@@ -218,7 +218,7 @@ func AS2CacheNoneValues() map[string]string {
 	return Values
 }
 
-// AS2CacheSNValues returns cluster as2 cache none
+// AS2CacheSNValues returns cluster as2 cache none with horizontalPodAutoscaler, podAntiAffinity and mounting logs
 func AS2CacheSNValues() map[string]string {
 	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
@@ -266,7 +266,7 @@ func FTLCacheAS4StoreValues() map[string]string {
 	return Values
 }
 
-// FTLCacheCassandraStoreValues returns cluster ftl store topology values
+// FTLCacheCassandraStoreValues returns cluster ftl store topology values with horizontalPodAutoscaler
 func FTLCacheCassandraStoreValues() map[string]string {
 	Values["cmType"] = "ftl"
 	Values["omType"] = "cache"
@@ -399,7 +399,7 @@ func IGNITECacheSNValues() map[string]string {
 	return Values
 }
 
-// IGNITECacheMysqlStoreValues returns cluster IGNITE store topology values
+// IGNITECacheMysqlStoreValues returns cluster IGNITE store topology values with horizontalPodAutoscaler, healthcheck enabled and mounting logs
 func IGNITECacheMysqlStoreValues() map[string]string {
 	Values["cmType"] = "ignite"
 	Values["omType"] = "cache"

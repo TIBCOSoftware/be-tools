@@ -12,7 +12,7 @@ import (
 	"k8s.io/api/autoscaling/v2beta2"
 )
 
-// inferenceTest testing inference content
+// inferenceTest testing inference content with horizontalpodautoscaler
 func inferenceTest(data string, t *testing.T) {
 
 	var sSet appsv1.StatefulSet
@@ -233,7 +233,7 @@ func inferenceIGNITESNTest(data string, t *testing.T) {
 	checkVolumeClaims(sSet, t)
 }
 
-// inferenceIGNITEMysqlTest testing inference content for IGNITE cluster backing store mysql
+// inferenceIGNITEMysqlTest testing inference content for IGNITE cluster backing store mysql with horizontalpodautoscaler
 func inferenceIGNITEMysqlTest(data string, t *testing.T) {
 
 	var sSet appsv1.StatefulSet
