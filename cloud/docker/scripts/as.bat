@@ -10,8 +10,8 @@ SET ARG_BE_VERSION=%4
 
 set VALID_AS_MAP_MIN[6.0.0]=4.2.0
 set VALID_AS_MAP_MAX[6.0.0]=4.9.9
-set VALID_AS_MAP_MIN[6.1.0]=4.5.0
-set VALID_AS_MAP_MAX[6.1.0]=4.9.9
+set VALID_AS_MAP_MIN[6.1]=4.5.0
+set VALID_AS_MAP_MAX[6.1]=4.9.9
 
 REM variables
 SET ARG_AS_VERSION=na
@@ -31,8 +31,26 @@ if "!ARG_AS_VERSION!" NEQ "na" (
     )
     
     SET /a asval=!ARG_AS_VERSION:.=!
-    SET /a asminval=!VALID_AS_MAP_MIN[%ARG_BE_VERSION%]:.=!
-    SET /a asmaxval=!VALID_AS_MAP_MAX[%ARG_BE_VERSION%]:.=!
+    SET VALID_AS_MIN_VAL=!VALID_AS_MAP_MIN[%ARG_BE_VERSION%]!
+    if "!VALID_AS_MIN_VAL!" EQU "" (
+        SET VALID_AS_MIN_VAL=!VALID_AS_MAP_MIN[%ARG_BE_SHORT_VERSION%]!
+    )
+    SET VALID_AS_MAX_VAL=!VALID_AS_MAP_MAX[%ARG_BE_VERSION%]!
+    if "!VALID_AS_MAX_VAL!" EQU "" (
+        SET VALID_AS_MAX_VAL=!VALID_AS_MAP_MAX[%ARG_BE_SHORT_VERSION%]!
+    )
+
+    SET "BE_VER_AS_VER_CONFIG=true"
+    if "!VALID_AS_MIN_VAL!" EQU "" SET "BE_VER_AS_VER_CONFIG=false"
+    if "!VALID_AS_MAX_VAL!" EQU "" SET "BE_VER_AS_VER_CONFIG=false"
+
+    if "!BE_VER_AS_VER_CONFIG!" EQU "false" (
+        echo ERROR: Activespaces version values not configured for BE version: [!ARG_BE_VERSION!].
+        GOTO END-withError
+    )
+
+    SET /a asminval=!VALID_AS_MIN_VAL:.=!
+    SET /a asmaxval=!VALID_AS_MAX_VAL:.=!
 
     if !asval! GEQ !asminval! if !asval! LEQ !asmaxval! SET AS_VALIDATION=true
     if "!AS_VALIDATION!" NEQ "true" (
