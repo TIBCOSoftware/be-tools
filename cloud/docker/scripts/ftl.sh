@@ -1,6 +1,6 @@
 #supported FTL versions for be version
-FTL_VERSION_MAP_MIN=( "6.0.0:6.2.0" "6.1.0:6.5.0" )
-FTL_VERSION_MAP_MAX=( "6.0.0:6.x.x" "6.1.0:6.x.x" )
+FTL_VERSION_MAP_MIN=( "6.0.0:6.2.0" "6.1:6.5.0" )
+FTL_VERSION_MAP_MAX=( "6.0.0:6.x.x" "6.1:6.x.x" )
 
 # Validate and get TIBCO FTL base and hf versions
 ftlPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
@@ -30,8 +30,21 @@ if [ $ftlPckgsCnt -gt 0 ]; then
 		# validate ftl version with be base version
 		DOT="\."
 		ftlMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
+		if [ "$ftlMinVersion" = "" ]; then
+			ftlMinVersion=$(echo $( getFromArray "$ARG_BE_SHORT_VERSION" "${FTL_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
+		fi
+
 		ftlVersion=$(echo "${ARG_FTL_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
+
 		ftlMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
+		if [ "$ftlMaxVersion" = "" ]; then
+			ftlMaxVersion=$(echo $( getFromArray "$ARG_BE_SHORT_VERSION" "${FTL_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
+		fi
+
+		if [ "$ftlMinVersion" = "" -o "$ftlMaxVersion" = "" ]; then
+			printf "ERROR: FTL version values not configured for BE version: [$ARG_BE_VERSION].\n";
+			exit 1
+		fi
 
 		if ! [[ (( $ftlMinVersion -le $ftlVersion )) && (( $ftlVersion -le $ftlMaxVersion )) ]]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with FTL version: [$ARG_FTL_VERSION].\n";
