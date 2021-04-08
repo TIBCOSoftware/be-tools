@@ -14,8 +14,10 @@ set VALID_AS_LEG_MAP_MIN[5.6.1]=2.3.0
 set VALID_AS_LEG_MAP_MAX[5.6.1]=2.4.1
 set VALID_AS_LEG_MAP_MIN[6.0.0]=2.4.0
 set VALID_AS_LEG_MAP_MAX[6.0.0]=2.4.1
-set VALID_AS_LEG_MAP_MIN[6.1]=2.4.0
-set VALID_AS_LEG_MAP_MAX[6.1]=2.4.1
+set VALID_AS_LEG_MAP_MIN[6.1.0]=2.4.0
+set VALID_AS_LEG_MAP_MAX[6.1.0]=2.4.1
+set VALID_AS_LEG_MAP_MIN[6.1.1]=2.4.0
+set VALID_AS_LEG_MAP_MAX[6.1.1]=2.4.1
 
 REM variables
 SET ARG_AS_LEG_VERSION=na
@@ -35,27 +37,8 @@ if "!ARG_AS_LEG_VERSION!" NEQ "na" (
     )
     
     SET /a aslegval=!ARG_AS_LEG_VERSION:.=!
-
-    SET VALID_AS_LEG_MIN_VAL=!VALID_AS_LEG_MAP_MIN[%ARG_BE_VERSION%]!
-    if "!VALID_AS_LEG_MIN_VAL!" EQU "" (
-        SET VALID_AS_LEG_MIN_VAL=!VALID_AS_LEG_MAP_MIN[%ARG_BE_SHORT_VERSION%]!
-    )
-    SET VALID_AS_LEG_MAX_VAL=!VALID_AS_LEG_MAP_MAX[%ARG_BE_VERSION%]!
-    if "!VALID_AS_LEG_MAX_VAL!" EQU "" (
-        SET VALID_AS_LEG_MAX_VAL=!VALID_AS_LEG_MAP_MAX[%ARG_BE_SHORT_VERSION%]!
-    )
-
-    SET "BE_VER_AS_LEG_VER_CONFIG=true"
-    if "!VALID_AS_LEG_MIN_VAL!" EQU "" SET "BE_VER_AS_LEG_VER_CONFIG=false"
-    if "!VALID_AS_LEG_MAX_VAL!" EQU "" SET "BE_VER_AS_LEG_VER_CONFIG=false"
-
-    if "!BE_VER_AS_LEG_VER_CONFIG!" EQU "false" (
-        echo ERROR: Activespaces legacy version values not configured for BE version: [!ARG_BE_VERSION!].
-        GOTO END-withError
-    )
-
-    SET /a aslegminval=!VALID_AS_LEG_MIN_VAL:.=!
-    SET /a aslegmaxval=!VALID_AS_LEG_MAX_VAL:.=!
+    SET /a aslegminval=!VALID_AS_LEG_MAP_MIN[%ARG_BE_VERSION%]:.=!
+    SET /a aslegmaxval=!VALID_AS_LEG_MAP_MAX[%ARG_BE_VERSION%]:.=!
 
     if !aslegval! GEQ !aslegminval! if !aslegval! LEQ !aslegmaxval! SET AS_LEG_VALIDATION=true
     if "!AS_LEG_VALIDATION!" NEQ "true" (

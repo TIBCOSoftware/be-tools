@@ -1,6 +1,6 @@
 #supported As versions for be version
-AS_VERSION_MAP_MIN=( "6.0.0:4.2.0" "6.1:4.5.0" )
-AS_VERSION_MAP_MAX=( "6.0.0:4.x.x" "6.1:4.x.x" )
+AS_VERSION_MAP_MIN=( "6.0.0:4.4.0" "6.1.0:4.6.1" "6.1.1:4.6.1" )
+AS_VERSION_MAP_MAX=( "6.0.0:4.4.0" "6.1.0:4.6.1" "6.1.1:4.6.1" )
 
 # Validate and get TIBCO As base and hf versions
 asPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
@@ -30,21 +30,8 @@ if [ $asPckgsCnt -gt 0 ]; then
 		# validate as version with be base version
 		DOT="\."
 		asMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
-		if [ "$asMinVersion" = "" ]; then
-			asMinVersion=$(echo $( getFromArray "$ARG_BE_SHORT_VERSION" "${AS_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
-		fi
-
 		asVersion=$(echo "${ARG_AS_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
-
 		asMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${AS_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
-		if [ "$asMaxVersion" = "" ]; then
-			asMaxVersion=$(echo $( getFromArray "$ARG_BE_SHORT_VERSION" "${AS_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
-		fi
-
-		if [ "$asMinVersion" = "" -o "$asMaxVersion" = "" ]; then
-			printf "ERROR: As version values not configured for BE version: [$ARG_BE_VERSION].\n";
-			exit 1
-		fi
 
 		if ! [[ (( $asMinVersion -le $asVersion )) && (( $asVersion -le $asMaxVersion )) ]]; then
 			printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with As version: [$ARG_AS_VERSION].\n";

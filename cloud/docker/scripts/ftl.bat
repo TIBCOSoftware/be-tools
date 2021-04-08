@@ -8,10 +8,12 @@ SET ARG_INSTALLERS_PLATFORM=%2
 SET ARG_TEMP_FOLDER=%3
 SET ARG_BE_VERSION=%4
 
-set VALID_FTL_MAP_MIN[6.0.0]=6.2.0
-set VALID_FTL_MAP_MAX[6.0.0]=6.9.9
-set VALID_FTL_MAP_MIN[6.1]=6.5.0
-set VALID_FTL_MAP_MAX[6.1]=6.9.9
+set VALID_FTL_MAP_MIN[6.0.0]=6.4.0
+set VALID_FTL_MAP_MAX[6.0.0]=6.4.9
+set VALID_FTL_MAP_MIN[6.1.0]=6.5.0
+set VALID_FTL_MAP_MAX[6.1.0]=6.5.0
+set VALID_FTL_MAP_MIN[6.1.1]=6.5.0
+set VALID_FTL_MAP_MAX[6.1.1]=6.6.1
 
 REM variables
 SET ARG_FTL_VERSION=na
@@ -32,27 +34,8 @@ if "!ARG_FTL_VERSION!" NEQ "na" (
     )
     
     SET /a ftlval=!ARG_FTL_VERSION:.=!
-
-    SET VALID_FTL_MIN_VAL=!VALID_FTL_MAP_MIN[%ARG_BE_VERSION%]!
-    if "!VALID_FTL_MIN_VAL!" EQU "" (
-        SET VALID_FTL_MIN_VAL=!VALID_FTL_MAP_MIN[%ARG_BE_SHORT_VERSION%]!
-    )
-    SET VALID_FTL_MAX_VAL=!VALID_FTL_MAP_MAX[%ARG_BE_VERSION%]!
-    if "!VALID_FTL_MAX_VAL!" EQU "" (
-        SET VALID_FTL_MAX_VAL=!VALID_FTL_MAP_MAX[%ARG_BE_SHORT_VERSION%]!
-    )
-
-    SET "BE_VER_FTL_VER_CONFIG=true"
-    if "!VALID_FTL_MIN_VAL!" EQU "" SET "BE_VER_FTL_VER_CONFIG=false"
-    if "!VALID_FTL_MAX_VAL!" EQU "" SET "BE_VER_FTL_VER_CONFIG=false"
-
-    if "!BE_VER_FTL_VER_CONFIG!" EQU "false" (
-        echo ERROR: FTL version values not configured for BE version: [!ARG_BE_VERSION!].
-        GOTO END-withError
-    )
-
-    SET /a ftlminval=!VALID_FTL_MIN_VAL:.=!
-    SET /a ftlmaxval=!VALID_FTL_MAX_VAL:.=!
+    SET /a ftlminval=!VALID_FTL_MAP_MIN[%ARG_BE_VERSION%]:.=!
+    SET /a ftlmaxval=!VALID_FTL_MAP_MAX[%ARG_BE_VERSION%]:.=!
 
     if !ftlval! GEQ !ftlminval! if !ftlval! LEQ !ftlmaxval! SET FTL_VALIDATION=true
     if "!FTL_VALIDATION!" NEQ "true" (

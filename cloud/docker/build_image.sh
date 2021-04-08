@@ -42,7 +42,7 @@ BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_P
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1" "11" )
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" )
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -403,7 +403,7 @@ fi
 #Find JRE Version for given BE Version
 length=${#BE_VERSION_AND_JRE_MAP[@]}	
 for (( i = 0; i < length; i++ )); do
-    if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" -o "$ARG_BE_SHORT_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
+    if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
         ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
         break;	
     fi
