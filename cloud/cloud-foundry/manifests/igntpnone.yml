@@ -1,0 +1,30 @@
+---
+applications:
+- name: igntpnonecache
+  env:
+    PU: cache
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+  docker:
+    image: ykalidin/igntpnone:v1
+  routes:
+  - route: igntpnonecache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: igntpnonedefault
+  env:
+    IGNITE/DISCOVERY_URL: igntpnonecache.apps.internal:47500..47510
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+  docker:
+    image: ykalidin/igntpnone:v1
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

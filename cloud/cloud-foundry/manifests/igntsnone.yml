@@ -1,0 +1,30 @@
+---
+applications:
+- name: igntsnonecache
+  env:
+    PU: cache
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+  docker:
+    image: <DOCKER_IMAGE>
+  routes:
+  - route: igntsnonecache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: igntsnonedefault
+  env:
+    IGNITE/DISCOVERY_URL: igntsnonecache.apps.internal:47500..47510
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+  docker:
+    image: <DOCKER_IMAGE>
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

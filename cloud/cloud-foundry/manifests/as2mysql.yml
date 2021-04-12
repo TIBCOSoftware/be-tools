@@ -1,0 +1,26 @@
+---
+applications:
+- name: as2mysqlcache
+  env:
+    PU: cache
+  docker:
+    image: ykalidin/as2mysql:6.0
+  routes:
+  - route: as2mysqlcache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: as2mysqldefault
+  env:
+    AS_DISCOVER_URL: tcp://as2mysqlcache.apps.internal:50000
+  docker:
+    image: ykalidin/as2mysql:6.0
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

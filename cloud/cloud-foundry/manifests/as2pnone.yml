@@ -1,0 +1,26 @@
+---
+applications:
+- name: as2pnonecache
+  env:
+    PU: cache
+  docker:
+    image: ykalidin/as2pnone:v01
+  routes:
+  - route: as2pnonecache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: as2pnonedefault
+  env:
+    AS_DISCOVER_URL: tcp://as2pnonecache.apps.internal:50000
+  docker:
+    image: ykalidin/as2pnone:v01
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

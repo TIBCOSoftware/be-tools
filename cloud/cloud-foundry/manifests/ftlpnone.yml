@@ -1,0 +1,27 @@
+---
+applications:
+- name: ftlpnonecache
+  env:
+    PU: cache
+    FTL/REALM_SERVER: <REALM_SERVER_URL>
+  docker:
+    image: <DOCKER_IMAGE>
+  routes:
+  - route: ftlpnonecache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: ftlpnonedefault
+  env:
+    FTL/REALM_SERVER: <REALM_SERVER_URL>
+  docker:
+    image: <DOCKER_IMAGE>
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

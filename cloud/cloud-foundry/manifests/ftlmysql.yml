@@ -1,0 +1,29 @@
+---
+applications:
+- name: ftlmysqlcache
+  env:
+    PU: cache
+    FTL/REALM_SERVER: http://40.125.57.190:8585
+    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysqlhyd.mysql.database.azure.com:3306/be_database
+  docker:
+    image: ykalidin/ftlmysql:v1
+  routes:
+  - route: ftlmysqlcache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: ftlmysqldefault
+  env:
+    FTL/REALM_SERVER: http://40.125.57.190:8585
+    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysqlhyd.mysql.database.azure.com:3306/be_database
+  docker:
+    image: ykalidin/ftlmysql:v1
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
