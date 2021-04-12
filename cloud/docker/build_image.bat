@@ -539,10 +539,13 @@ echo.
 REM check be6 or not
 set /a BE6VAL=!ARG_BE_VERSION:.=!
 if !BE6VAL! GEQ 600 set "BE6=true"
+if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 
 if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
-    echo ERROR:  TIBCO Activespaces^(legacy^) Required for RMS.
-    GOTO END-withError
+    if "!LESSTHANBE611!" EQU "true" (
+        echo ERROR:  TIBCO Activespaces^(legacy^) Required for RMS.
+        GOTO END-withError
+    )
 )
 
 if !INSTALLATION_TYPE! EQU fromlocal if !FTL_HOME! NEQ na if !AS_LEG_HOME! NEQ na echo WARN: Local machine contains both FTL and Activespaces^(legacy^) installations. Removing unused installation improves the docker image size.

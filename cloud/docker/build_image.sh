@@ -544,8 +544,10 @@ echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 echo "------------------------------------------------------------------------------"
 
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
-    printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
-    exit 1
+    if [ $(echo "${ARG_BE_VERSION//.}") -lt 611 ]; then
+        printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
+        exit 1
+    fi
 fi
 
 if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
