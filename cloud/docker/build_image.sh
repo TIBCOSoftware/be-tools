@@ -39,6 +39,7 @@ ARG_JRE_VERSION="na"
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_PLATFORM}"
+VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
@@ -295,9 +296,22 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
+
+        VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
+
+        if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+            TRA_FILE="rms/bin/be-rms.tra"
+        else
+            TRA_FILE="bin/be-engine.tra"
+        fi
+        TRA_FILE_NAME=$(basename $TRA_FILE)
+
         ## get as legacy details
-        AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
-        AS_LEG_HOME=${AS_LEG_HOME%?}
+        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            AS_LEG_HOME=${AS_LEG_HOME%?}
+        fi
+        
         if [ "$AS_LEG_HOME" = "" ]; then
             AS_LEG_HOME="na"
         else
@@ -308,7 +322,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
                 if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
                 fi
                 AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
@@ -318,10 +332,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
+    if [ "$VALIDATE_FTL_AS" = "true" ]; then
         # get ftl details
-        FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
-        FTL_HOME=${FTL_HOME%?}
+        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            FTL_HOME=${FTL_HOME%?}
+        fi
         if [ "$FTL_HOME" = "" ]; then
             FTL_HOME="na"
         else
@@ -332,7 +348,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
                 if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>).\n"
+                    printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in $TRA_FILE_NAME file (ex: <path-to>/ftl/<ftl-version>).\n"
                     exit 1
                 fi
                 FTL_HOME_BASE=${BASH_REMATCH[1]}
@@ -342,8 +358,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
 
         # get as details
-        AS_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
-        AS_HOME=${AS_HOME%?}
+        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            AS_HOME=${AS_HOME%?}
+        fi
         if [ "$AS_HOME" = "" ]; then
             AS_HOME="na"
         else
@@ -354,7 +372,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
                 if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
                 fi
                 AS_HOME_BASE=${BASH_REMATCH[1]}
@@ -384,21 +402,22 @@ else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
         source ./scripts/asleg.sh
-    fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # check be addons
         source ./scripts/beaddons.sh
 
-        # check for FTL and AS4 only when BE version is > 6.0.0
-        if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
-            # validate ftl
-            source ./scripts/ftl.sh
-
-            # validate as
-            source ./scripts/as.sh
-        fi
+        VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
     fi
+
+    # check for FTL and AS4 only when VALIDATE_FTL_AS is true
+    if [ "$VALIDATE_FTL_AS" = "true" ]; then
+        # validate ftl
+        source ./scripts/ftl.sh
+
+        # validate as
+        source ./scripts/as.sh
+    fi
+    
 fi
 
 #Find JRE Version for given BE Version
@@ -562,7 +581,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
         if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
-            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
+            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in $TRA_FILE_NAME file.\n\n"
         fi
     fi
 else
@@ -571,7 +590,7 @@ else
             printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
         fi
     fi
-    if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
+    if [[ ( "$ARG_AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
         printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the container image size.\n\n"
     fi
 fi
@@ -809,7 +828,7 @@ else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg GVPROVIDER=$ARG_GVPROVIDER  --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
         BUILD_ARGS=$(echo --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi

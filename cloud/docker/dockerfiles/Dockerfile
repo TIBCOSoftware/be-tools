@@ -65,7 +65,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$A
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
+ && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 RUN ./prepare_finalimage.sh

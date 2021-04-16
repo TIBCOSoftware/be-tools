@@ -43,3 +43,27 @@ removeDuplicatesAndFormatGVs()
     IFS="$oIFS"; unset oIFS
     echo $result
 }
+
+validateFTLandAS()
+{
+    ARG_BE_VERSION=$1
+    IMAGE_NAME=$2
+    RMS_IMAGE=$3
+    VALIDATE_FTL_AS="false"
+
+    # check for FTL and AS4 only when BE version is > 6.0.0
+    if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
+        VALIDATE_FTL_AS="true"
+    fi
+
+    # check for FTL and AS4 only when BE version is > 6.1.1 if app is rms
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        if [ $(echo "${ARG_BE_VERSION//.}") -ge 611 ]; then
+            VALIDATE_FTL_AS="true"
+        else
+            VALIDATE_FTL_AS="false"
+        fi
+    fi
+
+    echo $VALIDATE_FTL_AS
+}

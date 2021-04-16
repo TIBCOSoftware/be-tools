@@ -20,12 +20,18 @@ if [ "$FTL_SHORT_VERSION" != "" -a "$FTL_SHORT_VERSION" != "na" ]; then
     rm -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib/simplejson
     cp -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /tibco_home/ftl/${FTL_SHORT_VERSION}
     sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
+    if [ "$COMPONENT" = "rms" ]; then
+        sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" ../rms/bin/be-rms.tra
+    fi
 fi
 
 if [ "$ACTIVESPACES_SHORT_VERSION" != "" -a "$ACTIVESPACES_SHORT_VERSION" != "na" ]; then
     mkdir -p /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
     cp -r /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
     sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
+    if [ "$COMPONENT" = "rms" ]; then
+        sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" ../rms/bin/be-rms.tra
+    fi
 fi
 
 if [ "$COMPONENT" != "rms" ]; then
