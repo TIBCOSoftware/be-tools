@@ -1,12 +1,17 @@
 cd /opt/tibco/be/$BE_SHORT_VERSION/bin/
-
-if [ "$COMPONENT" != "tea" ]; then
-    echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra
-    echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra
-    echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra
+if [ "$COMPONENT" = "rms" ]; then
+    TRA_FILE="../rms/bin/be-rms.tra"
+else
+    TRA_FILE="be-engine.tra"
 fi
 
-echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
+if [ "$COMPONENT" != "tea" ]; then
+    echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> $TRA_FILE
+    echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> $TRA_FILE
+    echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> $TRA_FILE
+fi
+
+echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> $TRA_FILE
 
 mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/bin
 
@@ -19,19 +24,13 @@ if [ "$FTL_SHORT_VERSION" != "" -a "$FTL_SHORT_VERSION" != "na" ]; then
     mkdir -p /tibco_home/ftl/${FTL_SHORT_VERSION}
     rm -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib/simplejson
     cp -r /opt/tibco/ftl/${FTL_SHORT_VERSION}/lib /tibco_home/ftl/${FTL_SHORT_VERSION}
-    sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" be-engine.tra
-    if [ "$COMPONENT" = "rms" ]; then
-        sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" ../rms/bin/be-rms.tra
-    fi
+    sed -i "s@tibco.env.FTL_HOME=@tibco.env.FTL_HOME=/opt/tibco/ftl/$FTL_SHORT_VERSION@g" $TRA_FILE
 fi
 
 if [ "$ACTIVESPACES_SHORT_VERSION" != "" -a "$ACTIVESPACES_SHORT_VERSION" != "na" ]; then
     mkdir -p /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
     cp -r /opt/tibco/as/${ACTIVESPACES_SHORT_VERSION}/lib /tibco_home/as/${ACTIVESPACES_SHORT_VERSION}
-    sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" be-engine.tra
-    if [ "$COMPONENT" = "rms" ]; then
-        sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" ../rms/bin/be-rms.tra
-    fi
+    sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" $TRA_FILE
 fi
 
 if [ "$COMPONENT" != "rms" ]; then
