@@ -271,6 +271,8 @@ if NOT EXIST !ARG_DOCKER_FILE! (
 REM check app location
 if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
     set "ARG_APP_LOCATION=na"
+) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
+    set "ARG_APP_LOCATION=na"
 ) else if !IMAGE_NAME! EQU !APP_IMAGE! (
     if NOT EXIST !ARG_APP_LOCATION! (
         echo ERROR: The directory: [!ARG_APP_LOCATION!] is not a valid directory. Enter a valid directory and try again.
@@ -315,10 +317,6 @@ if !ARG_APP_LOCATION! NEQ na (
         )
     )
 )
-
-set "APP_OR_BUILDER_IMAGE=na"
-if !IMAGE_NAME! EQU !APP_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
-if !IMAGE_NAME! EQU !BUILDER_IMAGE! set "APP_OR_BUILDER_IMAGE=true"
 
 REM assign image tag to ARG_IMAGE_VERSION variable
 set "ARG_IMAGE_VERSION=!ARG_TAG!"
@@ -615,6 +613,8 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
 if !ARG_APP_LOCATION! NEQ na xcopy /Q /C /R /Y /E !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app > NUL
 
 if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
+    set "EAR_FILE_NAME=RMS.ear"
+	set "CDD_FILE_NAME=RMS.cdd"
     cd !TEMP_FOLDER!\app
     type NUL > dummyrms.txt
     cd ../..
@@ -659,7 +659,12 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
         
         rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws
-        powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+        if !ARG_APP_LOCATION! NEQ na (
+            mkdir !TEMP_FOLDER!\tibcoHome\be\ext
+            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
+            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' '!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+            del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
+        )
     ) else (
         rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
         mkdir !TEMP_FOLDER!\tibcoHome\be\application\ear !TEMP_FOLDER!\tibcoHome\be\ext
@@ -749,19 +754,13 @@ copy !ARG_DOCKER_FILE! !TEMP_FOLDER! > NUL
 for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
 
 if !INSTALLATION_TYPE! EQU frominstallers (
-    if !IMAGE_NAME! EQU !RMS_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
-    ) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
+    if !IMAGE_NAME! EQU !TEA_IMAGE! (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
-    if !IMAGE_NAME! EQU !RMS_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
-    ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
-    )
+    docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 )
 
 if %ERRORLEVEL% NEQ 0 (
@@ -799,7 +798,10 @@ EXIT /B 0
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
     echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki.
     echo.
-    echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present [required if --image-type is "!APP_IMAGE!"]
+    echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
+    echo                            Note: Required if --image-type is "!APP_IMAGE!"
+    echo                                  Optional if --image-type is "!RMS_IMAGE!"
+    echo                                  Ignored  if --image-type is "!TEA_IMAGE!" or "!BUILDER_IMAGE!"
     echo.
     echo  [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
     echo.

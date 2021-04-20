@@ -16,6 +16,8 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG DOCKERFILE_NAME
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -33,8 +35,8 @@ ENV \
     DOCKER_HOST=localhost \
     AS_DISCOVER_URL=self \
     AS_PROXY_NODE=false \
-    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
-    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
     COMPONENT=rms
 
 COPY tibcoHome "c:\tibco"

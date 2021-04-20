@@ -137,10 +137,12 @@ if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
 )
 
 if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
+	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%CDD_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL
 	del /S /Q "c:\_tibco\be\ext\%CDD_FILE_NAME%" > NUL
 )
 
 if exist "c:\_tibco\be\ext\%EAR_FILE_NAME%" (
+	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%EAR_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL
 	del /S /Q "c:\_tibco\be\ext\%EAR_FILE_NAME%" > NUL
 )
 

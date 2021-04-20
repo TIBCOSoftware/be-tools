@@ -28,6 +28,8 @@ ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL be-intermediate-image=true
 
@@ -44,8 +46,8 @@ ENV \
     ACTIVESPACES_VERSION=${ACTIVESPACES_VERSION} \
     ACTIVESPACES_SHORT_VERSION=${ACTIVESPACES_SHORT_VERSION} \
     BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
-    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
-    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
     PU=default \
     ENGINE_NAME=be-engine \
     LOG_LEVEL=na \
@@ -56,14 +58,13 @@ ENV \
 
 RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
+# Copy required files to _tibco folder which will be used in final image
 COPY lib/be_docker_install.bat installers/* c:\\working/
 COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
 COPY gvproviders "c:\_tibco\be\gvproviders"
+COPY app/* "c:\_tibco\be\ext/"
 
-# Copy required files to _tibco folder which will be used in final image
 RUN "c:\working\be_docker_install.bat"
-
-COPY app/* c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/
 
 FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
@@ -74,6 +75,8 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -86,8 +89,8 @@ ENV \
     JRE_VERSION=${JRE_VERSION} \
     JRE_HOME=c:/tibco/tibcojre64/${JRE_VERSION} \
     BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
-    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
-    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+    CDD_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+    EAR_FILE=c:/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
     PU=default \
     ENGINE_NAME=be-engine \
     LOG_LEVEL=na \
