@@ -14,6 +14,8 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -45,8 +47,8 @@ ENV PU=default \
  JRE_VERSION=${JRE_VERSION} \
  JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}  \
- CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
- EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms
 
 RUN mkdir -p /mnt/tibco/be/logs \ 

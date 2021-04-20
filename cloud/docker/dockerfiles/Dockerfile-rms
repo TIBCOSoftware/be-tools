@@ -15,6 +15,8 @@ ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 FROM docker.io/library/ubuntu:20.10 as intermediate
 
@@ -35,6 +37,8 @@ ARG ACTIVESPACES_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL be-intermediate-image=true
 
@@ -80,6 +84,8 @@ ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 ARG JRE_VERSION
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 COPY --from=intermediate /tibco_home /opt/tibco
@@ -99,8 +105,8 @@ ENV PU=default \
  JRE_VERSION=${JRE_VERSION} \
  JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
- CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
- EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms
 
 # Setup gv providers
