@@ -1,6 +1,6 @@
 #supported As versions for be version
-AS_VERSION_MAP_MIN=( "6.0.0:4.2.0" "6.1.0:4.5.0" )
-AS_VERSION_MAP_MAX=( "6.0.0:4.x.x" "6.1.0:4.x.x" )
+AS_VERSION_MAP_MIN=( "6.0.0:4.4.0" "6.1.0:4.6.1" "6.1.1:4.6.1" )
+AS_VERSION_MAP_MAX=( "6.0.0:4.4.0" "6.1.0:4.6.1" "6.1.1:4.6.1" )
 
 # Validate and get TIBCO As base and hf versions
 asPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_as_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )

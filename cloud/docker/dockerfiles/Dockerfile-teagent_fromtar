@@ -5,7 +5,7 @@
 #
 # TIBCO BusinessEvents Dockerfile-teagent_fromtar
 #
-FROM ubuntu:20.04
+FROM docker.io/library/ubuntu:20.04
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION
@@ -32,7 +32,7 @@ RUN apt-get update -y \
 ADD be.tar /opt/tibco
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
-COPY lib/*.pm lib/*.pl lib/*.py lib/*.sh /home/tibco/be/
+COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \

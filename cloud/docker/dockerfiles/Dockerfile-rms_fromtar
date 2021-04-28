@@ -5,7 +5,7 @@
 #
 # TIBCO BusinessEvents Dockerfile-rms_fromtar
 #
-FROM ubuntu:20.10
+FROM docker.io/library/ubuntu:20.10
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION
@@ -14,6 +14,8 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -22,7 +24,7 @@ ADD be.tar /opt/tibco
 COPY gvproviders /home/tibco/be/gvproviders
 
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
-COPY lib/*.pm lib/*.pl lib/*.sh /home/tibco/be/
+COPY lib/*.pm lib/*.sh /home/tibco/be/
 
 WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
@@ -45,8 +47,8 @@ ENV PU=default \
  JRE_VERSION=${JRE_VERSION} \
  JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}  \
- CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
- EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms
 
 RUN mkdir -p /mnt/tibco/be/logs \ 
