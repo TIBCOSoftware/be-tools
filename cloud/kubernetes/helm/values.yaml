@@ -11,9 +11,9 @@
 #Required parameter to be passed for all cloud providers
 cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
 #-----------------------------------------
-cmType: as2                     #cmType can be unclustered,as2,ftl,ignite
-omType: cache                        #omType can be inmemory,store,cache
-bsType: none                              #BackingStore can be none sharednothing, store
+cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
+omType: inmemory                        #omType can be inmemory,store,cache
+bsType: na                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
 hpa: false                              # set to true to enable HorizontalPodAutoscaling
@@ -83,7 +83,7 @@ cachenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                    #set to true if required to use cpu Metrics
-      enabled: false
+      enabled: true
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 85
@@ -108,7 +108,7 @@ inferencenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                  #set to true if required to use cpu Metrics
-      enabled: false                       
+      enabled: true                       
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 90
@@ -159,7 +159,7 @@ beservice:
   ports:
     name: port1
     protocol: TCP
-    port: 8010
+    port: 8108
 
 ignitePort:
   dis0: 47500
@@ -306,7 +306,7 @@ metricdetails:
 # ---------------------------START OF RMS PART-------------------------------------------------------------
 
 rms:
-  enabled: true
+  enabled: false
   image: rms:6.1.1
   name: rms
   # Load FTL, IGNITE and other GV's from env section
@@ -317,12 +317,12 @@ rms:
     # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
     # tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
     # tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
-    BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver 
-    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
-    BACKINGSTORE_JDBC_USERNAME: BE_USER
-    BACKINGSTORE_JDBC_PASSWORD: BE_USER
-    BACKINGSTORE_JDBC_POOL_SIZE: 5 
-    BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
+    # BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver 
+    # BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+    # BACKINGSTORE_JDBC_USERNAME: BE_USER
+    # BACKINGSTORE_JDBC_PASSWORD: BE_USER
+    # BACKINGSTORE_JDBC_POOL_SIZE: 5 
+    # BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
   storageClassName: standard
   service:
     name: berms-service
