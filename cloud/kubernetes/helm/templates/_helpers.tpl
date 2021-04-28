@@ -56,7 +56,7 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 Create a volume mount and volume claim template for sharednothing
 */}}
 {{- define "volumeMount" -}}
-{{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") }}
+{{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") (eq .Values.rms.enabled true) }}
 volumeMounts:
 {{- if eq .Values.bsType "sharednothing" }}
   - mountPath: {{ .Values.volumes.snmountPath }}
@@ -65,6 +65,39 @@ volumeMounts:
 {{- if eq .Values.mountLogs true }}
   - mountPath: {{ .Values.volumes.logmountPath }}
     name: {{ .Values.volumes.logmountVolume }}
+{{- end }}
+{{- if eq .Values.rms.enabled true }}
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/shared/"
+    name: shared
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/config/security/"
+    name: security
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/examples/standard/WebStudio/"
+    name: webstudio
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/config/notify/"
+    name: notify
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "volumes" -}}
+{{- if eq .Values.rms.enabled true }}
+volumes:
+  - name: {{ .Values.rms.volumes.name1 }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.rms.volumes.pvc.claimName1 }}
+  - name: {{ .Values.rms.volumes.name2 }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.rms.volumes.pvc.claimName2 }}
+  - name: {{ .Values.rms.volumes.name3 }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.rms.volumes.pvc.claimName3 }}
+  - name: {{ .Values.rms.volumes.name4 }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.rms.volumes.pvc.claimName4 }}
+{{- if eq .Values.bsType "sharednothing"}}      
+  - name: {{ .Values.volumes.snmountVolume }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- end }}
 {{- end -}}
@@ -354,4 +387,20 @@ affinity:
               - "{{ include "beinferenceagent.fullname" . }}"
           topologyKey: "kubernetes.io/hostname"
 {{- end }}
+{{- end -}}
+
+{{- define "rmsgvs" }}
+{{- range $key,$val := .Values.rms.env }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end}}
+{{- end -}}
+
+
+{{- define "berms.fullname" -}}
+{{ .Release.Name }}-{{- .Values.rms.name -}}
+{{- end -}}
+
+{{- define "bermsservice.fullname" -}}
+{{ .Release.Name }}-{{ .Values.rms.service.name }}
 {{- end -}}

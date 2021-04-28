@@ -1,0 +1,19 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+{{- if and (eq .Values.bsType "sharednothing") (eq .Values.rms.enabled true) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "{{ .Values.volumes.snmountVolume }}"
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+spec:
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  accessModes: 
+    - "{{ .Values.rms.volumes.pvc.snAccessModes }}"
+  resources:
+    requests:
+      storage: "{{ .Values.volumes.storage }}"
+{{- end -}}

@@ -39,5 +39,6 @@ spec:
 {{ include "inf-resource-memory" . | trim | indent 8 }}
 {{ include "healthcheck" . | trim | indent 8 }}
 {{ include "volumeMount" . | trim | indent 8 }}
+{{ include "volumes" . | trim | indent 6 }}
 {{- include "volumeClaim" . }}
 {{- end }}

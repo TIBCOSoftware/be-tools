@@ -11,9 +11,9 @@
 #Required parameter to be passed for all cloud providers
 cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
 #-----------------------------------------
-cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
-omType: inmemory                        #omType can be inmemory,store,cache
-bsType: na                              #BackingStore can be none sharednothing, store
+cmType: as2                     #cmType can be unclustered,as2,ftl,ignite
+omType: cache                        #omType can be inmemory,store,cache
+bsType: none                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
 hpa: false                              # set to true to enable HorizontalPodAutoscaling
@@ -83,7 +83,7 @@ cachenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                    #set to true if required to use cpu Metrics
-      enabled: true
+      enabled: false
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 85
@@ -108,7 +108,7 @@ inferencenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                  #set to true if required to use cpu Metrics
-      enabled: true                       
+      enabled: false                       
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 90
@@ -150,7 +150,7 @@ jmxservice:
     protocol: TCP
     port: 5555
     targetPort: 5555
-  type: LoadBalancer
+  type: NodePort
 
 #Required for all applications in all cloud providers
 beservice:
@@ -159,7 +159,7 @@ beservice:
   ports:
     name: port1
     protocol: TCP
-    port: 8108
+    port: 8010
 
 ignitePort:
   dis0: 47500
@@ -302,3 +302,49 @@ streambase:
 
 metricdetails:
   URL: http://localhost:1234
+
+# ---------------------------START OF RMS PART-------------------------------------------------------------
+
+rms:
+  enabled: true
+  image: rms:6.1.1
+  name: rms
+  # Load FTL, IGNITE and other GV's from env section
+  env:
+    # FTL_gv_REALM_SERVER: http://localhost:8585
+    # FTL_gv_CLUSTER_NAME: ftl.default.cluster
+    # IGNITE_gv_LISTEN_PORT: "47500..47510"
+    # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
+    # tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
+    # tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
+    BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver 
+    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+    BACKINGSTORE_JDBC_USERNAME: BE_USER
+    BACKINGSTORE_JDBC_PASSWORD: BE_USER
+    BACKINGSTORE_JDBC_POOL_SIZE: 5 
+    BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
+  storageClassName: standard
+  service:
+    name: berms-service
+    type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP
+    ports:
+      protocol: TCP
+      port: 8090
+      targetPort: 8090
+  volumes:
+    beVersion: 6.1
+    name1: security
+    name2: notify
+    name3: webstudio
+    name4: shared
+    pvc:
+      claimName1: nfs-security
+      claimName2: nfs-notify
+      claimName3: nfs-webstudio
+      claimName4: nfs-shared
+      storage: 1Mi
+      accessModes: ReadWriteMany
+      snAccessModes: ReadWriteOnce   
+
+
+# ---------------------------END OF RMS PART-------------------------------------------------------------
