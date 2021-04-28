@@ -1,0 +1,19 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+{{- if eq .Values.rms.enabled true }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "bermsservice.fullname" . }}
+spec:
+  selector:
+    dep_name: {{ include "bermsservice.fullname" . }}
+  ports:
+    - protocol: {{ .Values.rms.service.ports.protocol }}
+      port: {{ .Values.rms.service.ports.port }}
+      targetPort: {{ .Values.rms.service.ports.targetPort }}
+  type: {{ .Values.rms.service.type }}
+  {{- end -}}

@@ -309,20 +309,17 @@ rms:
   enabled: false
   image: rms:6.1.1
   name: rms
-  # Load FTL, IGNITE and other GV's from env section
+  persistenceType: na        # If Persistence option is sharednothing then set to `sharednothing` , otherwise set to `na`
+  # Load RMS GV's from env section
   env:
-    # FTL_gv_REALM_SERVER: http://localhost:8585
-    # FTL_gv_CLUSTER_NAME: ftl.default.cluster
-    # IGNITE_gv_LISTEN_PORT: "47500..47510"
+    # CDD_FILE: /opt/tibco/be/6.1/rms/bin/RMS_FTL.cdd
+    # RMS_gv_FTL_gv_url: http://localhost:8585
+    # RMS_gv_ActiveSpaces_gv_url: http://localhost:8585
+    # RMS_gv_ActiveSpaces_gv_gridName: "_default"
+    # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
     # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
     # tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
     # tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
-    # BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver 
-    # BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
-    # BACKINGSTORE_JDBC_USERNAME: BE_USER
-    # BACKINGSTORE_JDBC_PASSWORD: BE_USER
-    # BACKINGSTORE_JDBC_POOL_SIZE: 5 
-    # BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
   storageClassName: standard
   service:
     name: berms-service

@@ -3,6 +3,7 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+{{- if eq .Values.rms.enabled true }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,5 +30,5 @@ spec:
 {{ include "rmsgvs" . | trim | indent 8 }}          
 {{ include "volumeMount" . | trim | indent 8 }}
 {{ include "volumes" . | trim | indent 6 }}
-
+{{- end -}}
 
