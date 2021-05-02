@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
-{{- if and ( eq .Values.rms.persistenceType "sharednothing" ) ( eq .Values.rms.enabled true ) }}
+{{- if and ( eq .Values.mountLogs true ) ( eq .Values.rms.enabled true ) }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

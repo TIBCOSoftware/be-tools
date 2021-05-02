@@ -94,10 +94,15 @@ volumes:
   - name: {{ .Values.rms.volumes.name4 }}
     persistentVolumeClaim:
       claimName: {{ .Values.rms.volumes.pvc.claimName4 }}
-{{- if eq .Values.bsType "sharednothing"}}      
+{{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
       claimName: {{ .Values.volumes.snmountVolume }}
+{{- end }}
+{{- if eq .Values.mountLogs true }}      
+  - name: {{ .Values.volumes.logmountVolume }}
+    persistentVolumeClaim:
+      claimName: {{ .Values.volumes.logmountVolume }}
 {{- end }}
 {{- end }}
 {{- end -}}
