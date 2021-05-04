@@ -2,10 +2,11 @@ This chart installs TIBCO BusinessEvents application deployment on a [Kubernetes
 
 * [Prerequisites](#Prerequisites-Details)
 * [Installing chart](#Installing-the-Chart)
+* [RMS and TEA support](#RMS-and-TEA)
 * [Metrics](#Metrics-Configuration-and-Deployment)
 * [Uninstalling chart](#Uninstalling-the-Chart)
 * [Testing](#Testing)
-* [Backup and Restore](#Backup-and-Restore)
+* [Backup and Restore](#Backup-and-Restore) 
 
 ## Features
 
@@ -79,6 +80,20 @@ To install the chart with the release name `my-release` in azure with Horizonal 
 
 ```
 helm install my-release ./helm --set cpType=azure,hpa=true
+```
+
+### RMS-and-TEA
+
+Install rms along with BE helm chart
+
+```
+helm install my-release ./helm --set rms.enabled=true
+```
+
+Install teagent along with BE helm chart
+
+```
+helm install my-release ./helm --set tea.enabled=true
 ```
 
 **Note**:
