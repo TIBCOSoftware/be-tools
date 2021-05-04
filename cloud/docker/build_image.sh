@@ -25,6 +25,7 @@ ARG_TAG="na"
 ARG_DOCKER_FILE="na"
 ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
+ARG_BUILD_TOOL=""
 
 # be related args
 BE_HOME="na"
@@ -38,10 +39,11 @@ ARG_JRE_VERSION="na"
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
 BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_PLATFORM}"
+VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" )
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -72,14 +74,20 @@ USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
 USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki."
-USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present [required if --image-type is \"$APP_IMAGE\"]"
+USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
+USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
+USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
+USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\" or \"$BUILDER_IMAGE\""
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
 USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"custom\") [optional]\n"
+USAGE+="                           To add more than one GV use comma separated format ex: \"consul,http\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
-USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]" 
+USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
+USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
+USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 #Parse the arguments
@@ -127,6 +135,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --gv-provider=*)
             ARG_GVPROVIDER="${key#*=}"
+            ;;
+        -b|--build-tool)
+            shift # past the key and to the value
+            ARG_BUILD_TOOL="$1"
+            ;;
+        -b=*|--build-tool=*)
+            ARG_BUILD_TOOL="${key#*=}"
             ;;
         --disable-tests)
             ARG_ENABLE_TESTS="false"
@@ -231,8 +246,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 fi
 
 # check app location
-if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
-    # incase of builder image app location is not needed
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+    # incase of builder/teagent image app location is not needed
     ARG_APP_LOCATION="na"
 elif [ "$IMAGE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
     printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
@@ -283,10 +298,23 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         exit 1
     fi
 
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        TRA_FILE="rms/bin/be-rms.tra"
+    else
+        TRA_FILE="bin/be-engine.tra"
+    fi
+    TRA_FILE_NAME=$(basename $TRA_FILE)
+
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
+
+        VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
+
         ## get as legacy details
-        AS_LEG_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
-        AS_LEG_HOME=${AS_LEG_HOME%?}
+        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            AS_LEG_HOME=${AS_LEG_HOME%?}
+        fi
+        
         if [ "$AS_LEG_HOME" = "" ]; then
             AS_LEG_HOME="na"
         else
@@ -297,7 +325,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
                 if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
                 fi
                 AS_LEG_HOME_BASE=${BASH_REMATCH[1]}
@@ -307,10 +335,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
+    if [ "$VALIDATE_FTL_AS" = "true" ]; then
         # get ftl details
-        FTL_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
-        FTL_HOME=${FTL_HOME%?}
+        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            FTL_HOME=${FTL_HOME%?}
+        fi
         if [ "$FTL_HOME" = "" ]; then
             FTL_HOME="na"
         else
@@ -321,7 +351,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
                 if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in be-engine.tra file (ex: <path-to>/ftl/<ftl-version>).\n"
+                    printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in $TRA_FILE_NAME file (ex: <path-to>/ftl/<ftl-version>).\n"
                     exit 1
                 fi
                 FTL_HOME_BASE=${BASH_REMATCH[1]}
@@ -331,8 +361,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
 
         # get as details
-        AS_HOME=$(cat $BE_HOME/bin/be-engine.tra | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
-        AS_HOME=${AS_HOME%?}
+        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
+        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
+            AS_HOME=${AS_HOME%?}
+        fi
         if [ "$AS_HOME" = "" ]; then
             AS_HOME="na"
         else
@@ -343,7 +375,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             else
                 AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
                 if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
-                    printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in be-engine.tra file (ex: <path-to>/as/<as-version>).\n"
+                    printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
                 fi
                 AS_HOME_BASE=${BASH_REMATCH[1]}
@@ -373,21 +405,22 @@ else
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
         source ./scripts/asleg.sh
-    fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
         # check be addons
         source ./scripts/beaddons.sh
 
-        # check for FTL and AS4 only when BE version is > 6.0.0
-        if [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
-            # validate ftl
-            source ./scripts/ftl.sh
-
-            # validate as
-            source ./scripts/as.sh
-        fi
+        VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
     fi
+
+    # check for FTL and AS4 only when VALIDATE_FTL_AS is true
+    if [ "$VALIDATE_FTL_AS" = "true" ]; then
+        # validate ftl
+        source ./scripts/ftl.sh
+
+        # validate as
+        source ./scripts/as.sh
+    fi
+    
 fi
 
 #Find JRE Version for given BE Version
@@ -408,6 +441,52 @@ OS_NAME=$(uname -s)
 if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
     echo "ERROR: Building image using local installtion is not supported on MAC."
     exit 1
+fi
+
+CHECK_FOR_BUILDAH="false"
+if [ "$ARG_BUILD_TOOL" == "" ]; then
+    ARG_BUILD_TOOL="docker"
+    CHECK_FOR_BUILDAH="true"
+fi
+
+if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
+    echo "ERROR: Build tool[$ARG_BUILD_TOOL] is not valid. Only docker/buildah tool is supported."
+    exit 1
+fi
+
+if [ "$OS_NAME" = "Darwin" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
+    echo "ERROR: Build tool [$ARG_BUILD_TOOL] is not supported on MAC."
+    exit 1
+fi
+
+# check for build tool existance
+if [ "$ARG_BUILD_TOOL" == "docker" ]; then
+    DOCKER_PKG=$( which docker )
+    if [ "$DOCKER_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[docker] not found. Please install docker."
+            exit 1
+        else
+            echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
+            ARG_BUILD_TOOL="buildah"
+        fi
+    else
+        echo "INFO: Building container image with the build tool[docker]."
+    fi
+fi
+
+if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+    BUILDAH_PKG=$( which buildah )
+    if [ "$BUILDAH_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[buildah] not found. Please install buildah."
+        else
+            echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
+        fi
+        exit 1
+    else
+        echo "INFO: Building container image with the build tool[buildah]."
+    fi
 fi
 
 # information display
@@ -476,8 +555,10 @@ fi
 
 echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
+echo "INFO: BUILD TOOL                   : [$ARG_BUILD_TOOL]"
 
 if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
+    ARG_GVPROVIDER=$(removeDuplicatesAndFormatGVs $ARG_GVPROVIDER)
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
 fi
 
@@ -486,17 +567,24 @@ echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 echo "------------------------------------------------------------------------------"
 
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
-    printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
+    if [ $(echo "${ARG_BE_VERSION//.}") -lt 611 ]; then
+        printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
+        exit 1
+    fi
+fi
+
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
+    printf "\nERROR: s2ibuilder image is not supported with buildah tool.\n\n"
     exit 1
 fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$FTL_HOME" != "na" -a "$AS_LEG_HOME" != "na" ]; then
-        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the docker image size.\n\n"
+        printf "\nWARN: Local machine contains both FTL and Activespaces(legacy) installations. Removing unused installation improves the container image size.\n\n"
     fi
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$AS_LEG_HOME" = "na" ]; then
         if ! [ $(echo "${ARG_BE_VERSION//.}") -ge 600 ]; then
-            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in be-engine.tra file.\n\n"
+            printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as AS_HOME is not defined in $TRA_FILE_NAME file.\n\n"
         fi
     fi
 else
@@ -505,8 +593,8 @@ else
             printf "\nWARN: TIBCO Activespaces(legacy) will not be installed as no package found in the installer location.\n\n"
         fi
     fi
-    if [[ ( "$AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
-        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the docker image size.\n\n"
+    if [[ ( "$ARG_AS_LEG_VERSION" != "na" ) && ( "$ARG_FTL_VERSION" != "na" ) ]]; then
+        printf "\nWARN: The directory: [$ARG_INSTALLER_LOCATION] contains both FTL and Activespaces(legacy) installers. Removing unused installer improves the container image size.\n\n"
     fi
 fi
 
@@ -522,33 +610,38 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     cp ./gvproviders/*.sh $TEMP_FOLDER/gvproviders
     if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
         ARG_GVPROVIDER="na"
-    elif [ "$ARG_GVPROVIDER" = "http" -o "$ARG_GVPROVIDER" = "consul" ]; then
-        mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
-        cp -a ./gvproviders/$ARG_GVPROVIDER/*.sh $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER
     else
-        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER/custom\//}
-        ARG_GVPROVIDER_TEMP=${ARG_GVPROVIDER_TEMP/custom\\/}
-        ARG_GVPROVIDER_TEMP="custom/$ARG_GVPROVIDER_TEMP"
-        if [ -d "./gvproviders/$ARG_GVPROVIDER_TEMP" ]; then
-            # check for setup.sh & run.sh
-            if ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/setup.sh" ]; then
-                echo "ERROR: setup.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                exit 1;
-            elif ! [ -f "./gvproviders/$ARG_GVPROVIDER_TEMP/run.sh" ]; then
-                echo "ERROR: run.sh is required for custom GV provider[$ARG_GVPROVIDER] under the directory - [./gvproviders/$ARG_GVPROVIDER_TEMP/]"
-                exit 1;
+        oIFS="$IFS"; IFS=','; declare -a GVs=($ARG_GVPROVIDER); IFS="$oIFS"; unset oIFS
+        
+        for GV in "${GVs[@]}"
+        do
+            if [ "$GV" = "http" -o "$GV" = "consul" ]; then
+                mkdir -p $TEMP_FOLDER/gvproviders/$GV
+                cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
+            else
+                if [ -d "./gvproviders/$GV" ]; then
+                    # check for setup.sh & run.sh
+                    if ! [ -f "./gvproviders/$GV/setup.sh" ]; then
+                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                        rm -rf $TEMP_FOLDER; exit 1;
+                    elif ! [ -f "./gvproviders/$GV/run.sh" ]; then
+                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                        rm -rf $TEMP_FOLDER; exit 1;
+                    fi
+                    mkdir -p $TEMP_FOLDER/gvproviders/$GV
+                    cp -a ./gvproviders/$GV/* $TEMP_FOLDER/gvproviders/$GV
+                else
+                    echo "ERROR: GV provider[$GV] is not supported."
+                    rm -rf $TEMP_FOLDER; exit 1;
+                fi
             fi
-            mkdir -p $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-            cp -a ./gvproviders/$ARG_GVPROVIDER_TEMP/* $TEMP_FOLDER/gvproviders/$ARG_GVPROVIDER_TEMP
-            ARG_GVPROVIDER=$ARG_GVPROVIDER_TEMP
-        else
-            echo "ERROR: GV provider[$ARG_GVPROVIDER] is not supported."
-            exit 1;
-        fi
+        done
     fi
 fi
 
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
+    EAR_FILE_NAME="RMS.ear"
+	CDD_FILE_NAME="RMS.cdd"
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
 
@@ -659,6 +752,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
     ls | grep -v "be-engine*" | xargs rm 2>/dev/null
     echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../rms/bin/be-rms.tra
+    fi
     cp "$BE_HOME/bin/dbkeywordmap.xml" .
     if [ -e "$BE_HOME/bin/cassandrakeywordmap.xml" ]; then
         cp "$BE_HOME/bin/cassandrakeywordmap.xml" .
@@ -686,14 +782,14 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext
         cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/application
         cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/application/ear
-        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME}
-        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}        
+        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
     fi
 
-    if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
         mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/ext
         cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext/
-        cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin/
+        cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin
+        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
     fi
 
     # re create be.tar
@@ -720,7 +816,7 @@ else
 fi
 
 # building docker image
-printf "\nINFO: Building docker image.\n\n\n"
+printf "\nINFO: Building container image.\n\n\n"
 
 cp $ARG_DOCKER_FILE $TEMP_FOLDER
 ARG_DOCKER_FILE="$(basename -- $ARG_DOCKER_FILE)"
@@ -730,24 +826,27 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
-    elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     else
-        docker build -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER"
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
-    elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
-        docker build --force-rm -f $TEMP_FOLDER/$ARG_DOCKER_FILE --build-arg BE_PRODUCT_TARGET_DIR="$ARG_INSTALLER_LOCATION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi
 fi
 
+if [ "$ARG_BUILD_TOOL" = "buildah" ]; then
+    SKIP_CONTAINER_TESTS="true"
+    buildah bud -f $TEMP_FOLDER/$ARG_DOCKER_FILE $BUILD_ARGS
+else
+    docker build --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
+fi
+
 if [ "$?" != 0 ]; then
-    echo "ERROR: Docker build failed."
+    echo "ERROR: Container build failed."
 else
     BUILD_SUCCESS="true"
     # additional steps for s2i builder image
@@ -758,25 +857,29 @@ else
     fi
 fi
 
-if [ "$DOCKER_BUILDKIT" = 1 ]; then
-    docker builder prune -f
-fi
+if [ "$ARG_BUILD_TOOL" = "docker" ]; then
+    if [ "$DOCKER_BUILDKIT" = 1 ]; then
+        docker builder prune -f
+    fi
 
-export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
+    export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
 
-if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
-    echo "INFO: Deleting temporary intermediate image."
-    docker rmi -f $INTERMEDIATE_IMAGE
+    if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
+        echo "INFO: Deleting temporary intermediate image."
+        docker rmi -f $INTERMEDIATE_IMAGE
+    fi
 fi
 
 echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
 if [ "$BUILD_SUCCESS" = "true" ]; then
-    echo "INFO: Docker build successful. Image Name: [$ARG_IMAGE_VERSION]"
+    echo "INFO: Container build successfull using the build tool[$ARG_BUILD_TOOL]. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
-    if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
-        cd ./tests
-        source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -gv $ARG_GVPROVIDER
+    if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
+        if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
+            cd ./tests
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+        fi
     fi
 fi

@@ -11,8 +11,14 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG AS_VERSION
 ARG JRE_VERSION
 ARG AS_SHORT_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
-FROM ubuntu:20.10 as intermediate
+FROM docker.io/library/ubuntu:20.10 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -22,9 +28,17 @@ ARG BE_PRODUCT_HOTFIX
 ARG AS_PRODUCT_HOTFIX
 ARG AS_VERSION
 ARG AS_SHORT_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG FTL_PRODUCT_HOTFIX
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG ACTIVESPACES_PRODUCT_HOTFIX
 ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG TEMP_FOLDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 LABEL be-intermediate-image=true
 
@@ -44,10 +58,12 @@ ENV TIBCO_HOME=/opt/tibco \
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_ftl('$FTL_VERSION','$FTL_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$ACTIVESPACES_VERSION','$ACTIVESPACES_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip \
+ && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 COPY app/* /opt/tibco/be/ext/
@@ -55,15 +71,21 @@ COPY app/* /opt/tibco/be/ext/
 RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:20.10
+FROM docker.io/library/ubuntu:20.10
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG AS_VERSION
 ARG AS_SHORT_VERSION
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
 ARG JRE_VERSION
 ARG GVPROVIDER
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
 
 COPY --from=intermediate /home/tibco/be /home/tibco/be
 COPY --from=intermediate /tibco_home /opt/tibco
@@ -83,8 +105,8 @@ ENV PU=default \
  JRE_VERSION=${JRE_VERSION} \
  JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
- CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.cdd \
- EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/RMS.ear \
+ CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
+ EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms
 
 # Setup gv providers

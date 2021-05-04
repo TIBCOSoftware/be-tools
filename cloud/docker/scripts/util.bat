@@ -39,3 +39,54 @@ GOTO :EOF
     )
     SET "%~5=!INSTLR_VERSION!" & SET "%~6=!FILENAME!" & SET "%~7=false"
     EXIT /B 0
+
+:RemoveDuplicatesAndFormatGVs
+    set ARG_GVPROVIDER=%~1
+    set ARG_GV_RESULT=
+
+    set GVS=!ARG_GVPROVIDER:,= !
+    for %%j in (!GVS!) do (
+
+        SET GV=%%j
+        set "GV=!GV:custom\=!"
+        set "GV=!GV:custom/=!"
+
+        if "!GV!" NEQ "http" if "!GV!" NEQ "consul" set "GV=custom\!GV!"
+
+        SET DUPLICATE_FOUND=false
+        if "!ARG_GV_RESULT!" EQU "" (
+            set ARG_GV_RESULT=!GV!
+        ) else (
+            set GVS2=!ARG_GV_RESULT:,= !
+            for %%k in (!GVS2!) do (
+                if "!GV!" EQU "%%k" (
+                    SET DUPLICATE_FOUND=true
+                )
+            )
+            if "!DUPLICATE_FOUND!" EQU "false" (
+                SET "ARG_GV_RESULT=!ARG_GV_RESULT!,!GV!"
+            )
+        )
+    )
+    set ARG_GVPROVIDER=!ARG_GV_RESULT!
+    EXIT /B 0
+
+:ValidateFTLAndAS
+    SET ARG_BE_VERSION=%~1
+    SET IMAGE_NAME=%~2
+    SET RMS_IMAGE=%~3
+    SET VALIDATE_FTL_AS=%~4
+    SET /a BE6VAL=!ARG_BE_VERSION:.=!
+
+    REM check for FTL and AS4 only when BE version is > 6.0.0
+    if !BE6VAL! GEQ 600 SET "VALIDATE_FTL_AS=true"
+
+    REM check for FTL and AS4 only when BE version is > 6.1.1 if app is rms
+    if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+        if !BE6VAL! GEQ 611 (
+            SET "VALIDATE_FTL_AS=true"
+        ) else (
+            SET "VALIDATE_FTL_AS=false"
+        )
+    )
+    EXIT /B 0

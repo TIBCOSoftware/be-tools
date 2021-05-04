@@ -19,13 +19,11 @@ ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 
-FROM ubuntu:20.10 as intermediate
+FROM docker.io/library/ubuntu:20.10 as intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
-ARG BE_PRODUCT_EDITION
-ARG BE_PRODUCT_TARGET_DIR
 ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
 ARG AS_PRODUCT_HOTFIX
@@ -66,13 +64,13 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$A
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
+ && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
  && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
 
 RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:20.10
+FROM docker.io/library/ubuntu:20.10
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION

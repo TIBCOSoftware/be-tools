@@ -6,6 +6,12 @@ if "%AS_VERSION%" EQU "" set AS_VERSION=na
 if "%FTL_VERSION%" EQU "" set FTL_VERSION=na
 if "%ACTIVESPACES_VERSION%" EQU "" set ACTIVESPACES_VERSION=na
 
+if "%COMPONENT%" EQU "rms" (
+	set TRA_FILE=rms/bin/be-rms.tra
+) else (
+	set TRA_FILE=bin/be-engine.tra
+)
+
 powershell -Command "mkdir c:\tibco -ErrorAction Ignore | out-null; mkdir c:\tibco\be\application -ErrorAction Ignore | out-null"
 :: if AS is available extract and install it.
 if "%AS_VERSION%" NEQ "na" (
@@ -97,11 +103,11 @@ powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-
 
 :: If AS is available append relevent properties to tra.
 if %AS_VERSION% NEQ na (
-	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%\bin\be-engine.tra
-	echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
-	echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> %BE_HOME%\bin\be-engine.tra
+	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%/%TRA_FILE%
+	echo java.property.be.engine.cluster.as.listen.url=%%AS_LISTEN_URL%%>> %BE_HOME%/%TRA_FILE%
+	echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> %BE_HOME%/%TRA_FILE%
 )
-echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> %BE_HOME%\bin\be-engine.tra
+echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> %BE_HOME%/%TRA_FILE%
 
 :: Perform annotations processing (_annotations.idx)
 cd %BE_HOME%/bin
@@ -122,7 +128,7 @@ if "%COMPONENT%" EQU "rms" (
 )
 if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
-powershell -Command "Copy-Item '%BE_HOME%\bin\be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx','%BE_HOME%\bin\dbkeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
+powershell -Command "Copy-Item '%BE_HOME%/bin/be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx','%BE_HOME%\bin\dbkeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
 if exist "%BE_HOME%\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '%BE_HOME%\bin\cassandrakeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
@@ -131,10 +137,12 @@ if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
 )
 
 if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
+	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%CDD_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL
 	del /S /Q "c:\_tibco\be\ext\%CDD_FILE_NAME%" > NUL
 )
 
 if exist "c:\_tibco\be\ext\%EAR_FILE_NAME%" (
+	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%EAR_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL
 	del /S /Q "c:\_tibco\be\ext\%EAR_FILE_NAME%" > NUL
 )
 
@@ -169,9 +177,9 @@ REM INSTALLERS SUBROUTINES
 	cd /d c:/working
 	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
 
-	if exist %BE_HOME%/bin/be-engine.tra (
-		if %InstallerType% EQU ftl powershell -Command "(Get-Content '%BE_HOME%/bin/be-engine.tra') -replace 'tibco.env.FTL_HOME=', 'tibco.env.FTL_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/bin/be-engine.tra'"
-		if %InstallerType% EQU as powershell -Command "(Get-Content '%BE_HOME%/bin/be-engine.tra') -replace 'tibco.env.ACTIVESPACES_HOME=', 'tibco.env.ACTIVESPACES_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/bin/be-engine.tra'"
+	if exist %BE_HOME%/%TRA_FILE% (
+		if %InstallerType% EQU ftl powershell -Command "(Get-Content '%BE_HOME%/%TRA_FILE%') -replace 'tibco.env.FTL_HOME=', 'tibco.env.FTL_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/%TRA_FILE%'"
+		if %InstallerType% EQU as powershell -Command "(Get-Content '%BE_HOME%/%TRA_FILE%') -replace 'tibco.env.ACTIVESPACES_HOME=', 'tibco.env.ACTIVESPACES_HOME=c:/tibco/%InstallerType%/%SHORT_VERSION%' | Set-Content '%BE_HOME%/%TRA_FILE%'"
 	)
 Exit /B 0
 

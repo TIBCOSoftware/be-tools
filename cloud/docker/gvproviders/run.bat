@@ -10,40 +10,47 @@ if !GVPROVIDER! EQU na (
   exit /b 0
 )
 
-echo INFO: Reading GV values from [!GVPROVIDER!]
+set GVS=!GVPROVIDER:,= !
+for %%v in (!GVS!) do (
+    SET GV=%%v
+    echo INFO: Reading GV values from [!GV!]
 
-call .\gvproviders\!GVPROVIDER!\run.bat
-if %ERRORLEVEL% NEQ 0 (
-  exit /b 1
-)
+    set JSON_FILE=c:\tibco\be\gvproviders\output.json
+    set BE_PROPS_FILE=c:\tibco\be\application\beprops_all.props
 
-set JSON_FILE=c:\tibco\be\gvproviders\output.json
-set BE_PROPS_FILE=c:\tibco\be\application\beprops_all.props
+    if EXIST !JSON_FILE! (
+      del !JSON_FILE!
+    )
+    call .\gvproviders\!GV!\run.bat
+    if %ERRORLEVEL% NEQ 0 (
+      exit /b 1
+    )
 
-if EXIST !JSON_FILE! (
-  (jq -r "keys | @csv" !JSON_FILE!) > jsonkeys
+    if EXIST !JSON_FILE! (
+      (jq -r "keys | @csv" !JSON_FILE!) > jsonkeys
 
-  set /p tempkeys=<jsonkeys
-  set keys=!tempkeys:"=!
-  
-  echo # >>!BE_PROPS_FILE!
-  echo # GV values from !GVPROVIDER!>>!BE_PROPS_FILE!
-  
-  if "!keys!" EQU "" (
-    echo WARN: 0[zero] GV values fetched from the GV provider[!GVPROVIDER!]
-    echo.
-    exit /b 0
-  )
+      set /p tempkeys=<jsonkeys
+      set keys=!tempkeys:"=!
+      
+      echo # >>!BE_PROPS_FILE!
+      echo # GV values from !GV!>>!BE_PROPS_FILE!
+      
+      if "!keys!" EQU "" (
+        echo WARN: 0[zero] GV values fetched from the GV provider[!GV!]
+        echo.
+        exit /b 0
+      )
 
-  for %%a in (!keys!) do (
-    set key=%%~a
-    (jq -r .\"%%~a\" !JSON_FILE!) > values
-    set /p value=<values
-    echo tibco.clientVar.!key!=!value! >> !BE_PROPS_FILE!
-  )
+      for %%a in (!keys!) do (
+        set key=%%~a
+        (jq -r .\"%%~a\" !JSON_FILE!) > values
+        set /p value=<values
+        echo tibco.clientVar.!key!=!value! >> !BE_PROPS_FILE!
+      )
 
-  del jsonkeys values
-) else (
-  echo WARN: 0[zero] GV values fetched from the GV provider[!GVPROVIDER!]
-  echo.
+      del jsonkeys values
+    ) else (
+      echo WARN: 0[zero] GV values fetched from the GV provider[!GV!]
+      echo.
+    )
 )
