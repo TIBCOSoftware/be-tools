@@ -67,13 +67,13 @@ volumeMounts:
     name: {{ .Values.volumes.logmountVolume }}
 {{- end }}
 {{- if eq .Values.rms.enabled true }}
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/shared/"
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/shared/"
     name: shared
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/config/security/"
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/security/"
     name: security
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/examples/standard/WebStudio/"
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/examples/standard/WebStudio/"
     name: webstudio
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.volumes.beVersion }}/rms/config/notify/"
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/notify/"
     name: notify
 {{- end }}
 {{- end }}
@@ -82,27 +82,27 @@ volumeMounts:
 {{- define "volumes" -}}
 {{- if eq .Values.rms.enabled true }}
 volumes:
-  - name: {{ .Values.rms.volumes.name1 }}
+  - name: shared
     persistentVolumeClaim:
-      claimName: {{ .Values.rms.volumes.pvc.claimName1 }}
-  - name: {{ .Values.rms.volumes.name2 }}
+      claimName: rms-pvc-security
+  - name: security
     persistentVolumeClaim:
-      claimName: {{ .Values.rms.volumes.pvc.claimName2 }}
-  - name: {{ .Values.rms.volumes.name3 }}
+      claimName: rms-pvc-notify
+  - name: webstudio
     persistentVolumeClaim:
-      claimName: {{ .Values.rms.volumes.pvc.claimName3 }}
-  - name: {{ .Values.rms.volumes.name4 }}
+      claimName: rms-pvc-webstudio
+  - name: notify
     persistentVolumeClaim:
-      claimName: {{ .Values.rms.volumes.pvc.claimName4 }}
+      claimName: rms-pvc-shared
 {{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
-      claimName: {{ .Values.volumes.snmountVolume }}
+      claimName: rms-{{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- if eq .Values.mountLogs true }}      
   - name: {{ .Values.volumes.logmountVolume }}
     persistentVolumeClaim:
-      claimName: {{ .Values.volumes.logmountVolume }}
+      claimName: rms-{{ .Values.volumes.logmountVolume }}
 {{- end }}
 {{- end }}
 {{- end -}}

@@ -18,6 +18,7 @@ spec:
       labels:
         dep_name: {{ include "berms.fullname" . }}
     spec:
+{{ include "pullsecrets" . | trim | indent 6 }}    
       containers:
       - name: {{ .Values.rms.name }}
         image: {{ .Values.rms.image }}

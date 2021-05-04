@@ -1,0 +1,62 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+#Create persistent volumeClaims for RMS 
+{{- if eq .Values.rms.enabled true }}
+{{- $scName  :=  .Values.rms.storageClassName -}}
+{{- $scStorage  :=  .Values.rms.pvcClaimSize -}}
+{{- range tuple "rms-pvc-security" "rms-pvc-notify" "rms-pvc-webstudio" "rms-pvc-shared" }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ . | quote }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: {{ $scName }}
+spec:
+  storageClassName: {{ $scName }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ $scStorage }}
+{{- end }}
+{{- end -}}
+
+
+{{- if and ( eq .Values.rms.persistenceType "sharednothing" ) ( eq .Values.rms.enabled true ) }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "rms-{{ .Values.volumes.snmountVolume }}"
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+spec:
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  accessModes: 
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.volumes.storage }}"
+{{- end -}}
+
+
+{{- if and ( eq .Values.mountLogs true ) ( eq .Values.rms.enabled true ) }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "rms-{{ .Values.volumes.logmountVolume }}"
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+spec:
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  accessModes: 
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.volumes.storage }}"
+{{- end -}}
