@@ -409,3 +409,18 @@ affinity:
 {{- define "bermsservice.fullname" -}}
 {{ .Release.Name }}-{{ .Values.rms.service.name }}
 {{- end -}}
+
+{{- define "betea.fullname" -}}
+{{ .Release.Name }}-{{- .Values.tea.name -}}
+{{- end -}}
+
+{{- define "beteaservice.fullname" -}}
+{{ .Release.Name }}-{{ .Values.tea.service.name }}
+{{- end -}}
+
+{{- define "teagvs" }}
+{{- range $key,$val := .Values.tea.env }}
+- name: {{ $key }}
+  value: {{ $val }}
+{{- end}}
+{{- end -}}

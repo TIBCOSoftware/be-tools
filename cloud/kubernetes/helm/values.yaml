@@ -331,3 +331,21 @@ rms:
       port: 8090
       targetPort: 8090
 # ---------------------------END OF RMS PART-------------------------------------------------------------
+
+# ---------------------------START OF TEA PART-------------------------------------------------------------
+
+tea:
+  enabled: false                        # set to true for tea
+  image: teaagent:6.1.1                      # tea image name
+  name: tea                             # tea deployment name
+  env:                                  # Load TEA GV's from env section
+    # TEA_SERVER_URL: http://teaserver-url:1234
+    # TEA_SERVER_USERNAME: admin
+    # TEA_SERVER_PASSWORD: password
+  service:
+    name: betea-service                 # tea agent service name
+    type: NodePort                      #supported values: NodePort, LoadBalancer or clusterIP
+    ports:
+      protocol: TCP
+      port: 9777
+# ---------------------------END OF TEA PART-------------------------------------------------------------

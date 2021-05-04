@@ -1,0 +1,30 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+{{- if eq .Values.tea.enabled true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "betea.fullname" .}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      dep_name: {{ include "betea.fullname" .}}
+  template:
+    metadata:
+      labels:
+        dep_name: {{ include "betea.fullname" .}}
+    spec:
+{{ include "pullsecrets" . | trim | indent 6 }}    
+      containers:
+      - name: {{ .Values.tea.name }}
+        image: {{ .Values.tea.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: BE_TEA_AGENT_URL
+          value: "http://{{ include "beteaservice.fullname" . }}:9777"
+{{ include "teagvs" . | trim | indent 8 }}          
+{{- end -}}

@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+
+{{- if eq .Values.tea.enabled true }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "beteaservice.fullname" . }}
+spec:
+  selector:
+    dep_name: {{ include "beteaservice.fullname" . }}
+  ports:
+    - protocol: {{ .Values.tea.service.ports.protocol }}
+      port: {{ .Values.tea.service.ports.port }}
+{{- end -}}
