@@ -84,16 +84,16 @@ volumeMounts:
 volumes:
   - name: shared
     persistentVolumeClaim:
-      claimName: rms-pvc-security
+      claimName: rms-pvc-shared
   - name: security
     persistentVolumeClaim:
-      claimName: rms-pvc-notify
+      claimName: rms-pvc-security
   - name: webstudio
     persistentVolumeClaim:
       claimName: rms-pvc-webstudio
   - name: notify
     persistentVolumeClaim:
-      claimName: rms-pvc-shared
+      claimName: rms-pvc-notify
 {{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
