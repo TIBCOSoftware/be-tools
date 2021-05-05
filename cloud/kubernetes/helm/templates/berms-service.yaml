@@ -10,7 +10,7 @@ metadata:
   name: {{ include "bermsservice.fullname" . }}
 spec:
   selector:
-    dep_name: {{ include "bermsservice.fullname" . }}
+    dep_name: {{ include "berms.fullname" . }}
   ports:
     - protocol: {{ .Values.rms.service.ports.protocol }}
       port: {{ .Values.rms.service.ports.port }}
