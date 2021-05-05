@@ -16,7 +16,6 @@ omType: inmemory                        #omType can be inmemory,store,cache
 bsType: na                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
-hpa: false                              # set to true to enable HorizontalPodAutoscaling
 podAntiAffinity: false                  # set to true to allow evenly distribution of pods across nodes
 mountLogs: false                        # set to true to mount logs
 
@@ -87,7 +86,6 @@ cachenode:
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 85
-    minReplicas: 1
     maxReplicas: 10
 
 #Required for all applications in  all cloud providers
@@ -112,7 +110,6 @@ inferencenode:
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 90
-    minReplicas: 1
     maxReplicas: 15
 
 #*************************Health check Part****************************************************
@@ -150,7 +147,7 @@ jmxservice:
     protocol: TCP
     port: 5555
     targetPort: 5555
-  type: NodePort
+  type: LoadBalancer
 
 #Required for all applications in all cloud providers
 beservice:
@@ -254,7 +251,7 @@ mysql:
 
 # Required for sharednothing and store data in AWS EFS(Only for volumes.storageClass=efs-sc)
 efs-driver:
-  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-sc" 
+  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "efs-sc" 
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 

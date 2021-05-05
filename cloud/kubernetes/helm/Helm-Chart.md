@@ -79,7 +79,7 @@ Following table illustrates how to use helm switches to select particular deploy
 To install the chart with the release name `my-release` in azure with Horizonal pod autoscaling
 
 ```
-helm install my-release ./helm --set cpType=azure,hpa=true
+helm install my-release ./helm --set cpType=azure,cachenode.hpa.cpu.enabled=true,inferencenode.hpa.cpu.enabled=true
 ```
 
 ### RMS-and-TEA

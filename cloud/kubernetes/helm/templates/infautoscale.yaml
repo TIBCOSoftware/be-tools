@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
-{{- if eq .Values.hpa true }}
+{{- if or ( eq .Values.inferencenode.hpa.cpu.enabled true ) ( eq .Values.inferencenode.hpa.memory.enabled true ) }}
 {{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "unclustered" ) (eq .Values.cmType "ignite" ) }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
@@ -13,7 +13,7 @@ spec:
     apiVersion: apps/v1
     kind: StatefulSet
     name: "{{ include "beinferenceagent.fullname" . }}"
-  minReplicas: {{ .Values.inferencenode.hpa.minReplicas }}
+  minReplicas: {{ .Values.inferencenode.hpa.replicaCount }}
   maxReplicas: {{ .Values.inferencenode.hpa.maxReplicas }}
   metrics:
   {{- if eq .Values.inferencenode.hpa.cpu.enabled true }}
