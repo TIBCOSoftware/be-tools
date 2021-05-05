@@ -13,7 +13,7 @@ spec:
     apiVersion: apps/v1
     kind: StatefulSet
     name: "{{ include "beinferenceagent.fullname" . }}"
-  minReplicas: {{ .Values.inferencenode.hpa.replicaCount }}
+  minReplicas: {{ .Values.inferencenode.replicaCount }}
   maxReplicas: {{ .Values.inferencenode.hpa.maxReplicas }}
   metrics:
   {{- if eq .Values.inferencenode.hpa.cpu.enabled true }}
