@@ -113,7 +113,7 @@ func inferenceAutoScalerTestcases(infscale v2beta2.HorizontalPodAutoscaler, t *t
 	require.Equal(t, common.InferenceSelectorName, infscale.Spec.ScaleTargetRef.Name)
 
 	// minimum replica and max replica count check
-	require.Equal(t, common.InfMinReplicas, *infscale.Spec.MinReplicas)
+	require.Equal(t, common.InfReplicas, *infscale.Spec.MinReplicas)
 	require.Equal(t, common.InfMaxReplicas, infscale.Spec.MaxReplicas)
 }
 
@@ -182,7 +182,7 @@ func cacheAutoScalerTestcases(cachescale v2beta2.HorizontalPodAutoscaler, t *tes
 	require.Equal(t, "apps/v1", cachescale.Spec.ScaleTargetRef.APIVersion)
 	require.Equal(t, common.CacheHPAName, cachescale.Name)
 	require.Equal(t, common.CacheSelectorName, cachescale.Spec.ScaleTargetRef.Name)
-	require.Equal(t, common.CacheMinReplicas, *cachescale.Spec.MinReplicas)
+	require.Equal(t, common.CacheReplicas, *cachescale.Spec.MinReplicas)
 	require.Equal(t, common.CacheMaxReplicas, cachescale.Spec.MaxReplicas)
 }
 

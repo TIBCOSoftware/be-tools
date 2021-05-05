@@ -39,11 +39,9 @@ const (
 	RequestResourceMemory                  = "1Gi"
 	InferencePodAntiAffinityWeight   int32 = 90
 	CachePodAntiAffinityWeight       int32 = 100
-	InfMinReplicas                   int32 = 1
 	InfMaxReplicas                   int32 = 15
 	InfCPUutilization                int32 = 90
 	InfMemoryutilization             int32 = 80
-	CacheMinReplicas                 int32 = 1
 	CacheMaxReplicas                 int32 = 10
 	CacheCPUutilization              int32 = 85
 	CacheMemoryutilization           int32 = 80
@@ -223,7 +221,6 @@ func AS2CacheSNValues() map[string]string {
 	Values["cmType"] = "as2"
 	Values["omType"] = "cache"
 	Values["bsType"] = "sharednothing"
-	Values["hpa"] = "true"
 	Values["inferencenode.hpa.cpu.enabled"] = "true"
 	Values["inferencenode.hpa.memory.enabled"] = "true"
 	Values["cachenode.hpa.memory.enabled"] = "true"
@@ -272,7 +269,6 @@ func FTLCacheCassandraStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "cassandra"
 	Values["bsType"] = "store"
-	Values["hpa"] = "true"
 	Values["inferencenode.hpa.memory.enabled"] = "true"
 	Values["inferencenode.hpa.cpu.enabled"] = "false"
 	Values["cachenode.hpa.cpu.enabled"] = "true"
@@ -405,7 +401,6 @@ func IGNITECacheMysqlStoreValues() map[string]string {
 	Values["omType"] = "cache"
 	Values["storeType"] = "rdbms"
 	Values["bsType"] = "store"
-	Values["hpa"] = "true"
 	Values["mountLogs"] = "true"
 	Values["inferencenode.hpa.cpu.enabled"] = "true"
 	Values["inferencenode.hpa.memory.enabled"] = "false"

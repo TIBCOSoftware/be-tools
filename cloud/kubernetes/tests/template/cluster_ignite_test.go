@@ -74,7 +74,6 @@ func TestIgniteCacheMYSQL(t *testing.T) {
 	cacheHPAOutput := helm.RenderTemplate(t, options, common.HelmChartPath, common.ReleaseName, []string{common.Becachehpa})
 	cacheAutoScalerIGNITEMysqlTest(cacheHPAOutput, t)
 
-	delete(common.Values, "hpa")
 	delete(common.Values, "inferencenode.hpa.memory.enabled")
 	delete(common.Values, "inferencenode.hpa.cpu.enabled")
 	delete(common.Values, "cachenode.hpa.cpu.enabled")
