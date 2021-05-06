@@ -1,0 +1,13 @@
+---
+applications:
+- name: ftlcasdefault
+  env:
+    FTL/REALM_SERVER: http://40.125.57.190:8585
+  docker:
+    image: <DOCKER_IMAGE>
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
