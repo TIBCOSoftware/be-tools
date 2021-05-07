@@ -29,7 +29,7 @@ spec:
         - name: COMPONENT
           value: "rms"
 {{ include "rmsgvs" . | trim | indent 8 }}          
-{{ include "volumeMount" . | trim | indent 8 }}
-{{ include "volumes" . | trim | indent 6 }}
+{{ include "rmsvolumeMount" . | trim | indent 8 }}
+{{ include "rmsvolumes" . | trim | indent 6 }}
 {{- end -}}
 

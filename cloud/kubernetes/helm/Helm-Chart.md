@@ -41,6 +41,10 @@ cd cloud/kubernetes
 * bsType → Refers to Backing Store type.
 * storeType → Refers to store type. It has significance only when bsType=store OR omType=store. Valid values: RDBMS(Oracle/SQLServer/DB2/MySql/PostgreSQL)/AS4/Cassandra
 
+**Note**: 
+* cmType,omType,bsType,storeType are applicable only for BE APP and not for rms and tea.
+* For rms if you want to use different store/cluster configuration, load the env variables under section rms.env from respective global variables. 
+
 Following table illustrates how to use helm switches to select particular deployment option out of possible options:
 
 | Topology Name | cmType | omType | bsType  | storeType |

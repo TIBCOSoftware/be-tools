@@ -52,6 +52,19 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 {{- end }}
 {{- end -}} 
 
+{{- define "rmsmounts" -}}
+{{- if eq .Values.rms.enabled true }}
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/shared/"
+    name: shared
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/security/"
+    name: security
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/examples/standard/WebStudio/"
+    name: webstudio
+  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/notify/"
+    name: notify
+{{- end }}
+{{- end -}}
+
 {{/*
 Create a volume mount and volume claim template for sharednothing
 */}}
@@ -66,18 +79,25 @@ volumeMounts:
   - mountPath: {{ .Values.volumes.logmountPath }}
     name: {{ .Values.volumes.logmountVolume }}
 {{- end }}
-{{- if eq .Values.rms.enabled true }}
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/shared/"
-    name: shared
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/security/"
-    name: security
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/examples/standard/WebStudio/"
-    name: webstudio
-  - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/notify/"
-    name: notify
-{{- end }}
+{{- include "rmsmounts" . }}
 {{- end }}
 {{- end -}}
+
+
+{{- define "rmsvolumeMount" -}}
+{{- if or (eq .Values.mountLogs true) (eq .Values.rms.enabled true) }}
+volumeMounts:
+{{- include "rmsmounts" . }}
+{{- if eq .Values.rms.persistenceType "sharednothing" }}
+  - mountPath: {{ .Values.volumes.snmountPath }}
+    name: {{ .Values.volumes.snmountVolume }}
+{{- end }}
+{{- if eq .Values.mountLogs true }}
+  - mountPath: {{ .Values.volumes.logmountPath }}
+    name: {{ .Values.volumes.logmountVolume }}
+{{- end }}
+{{- end }}
+{{- end -}} 
 
 {{- define "volumes" -}}
 {{- if eq .Values.rms.enabled true }}
@@ -94,6 +114,12 @@ volumes:
   - name: notify
     persistentVolumeClaim:
       claimName: rms-pvc-notify
+{{- end }}
+{{- end -}}
+
+{{- define "rmsvolumes" -}}
+{{- if eq .Values.rms.enabled true }}
+{{- include "volumes" . }}
 {{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
