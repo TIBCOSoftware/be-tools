@@ -60,3 +60,20 @@ spec:
     requests:
       storage: "{{ .Values.volumes.storage }}"
 {{- end -}}
+
+{{- if and ( eq .Values.mountLogs true ) ( eq .Values.tea.enabled true ) }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "tea-{{ .Values.volumes.logmountVolume }}"
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+spec:
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  accessModes: 
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.volumes.storage }}"
+{{- end -}}

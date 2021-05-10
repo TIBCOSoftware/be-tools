@@ -26,5 +26,12 @@ spec:
         env:
         - name: BE_TEA_AGENT_URL
           value: "http://{{ include "beteaservice.fullname" . }}:9777"
-{{ include "teagvs" . | trim | indent 8 }}          
+{{ include "teagvs" . | trim | indent 8 }}
+        volumeMounts:
+          - mountPath: "/opt/tibco/be/{{ .Values.tea.beVersion }}/teagent/logs"
+            name: tealogs
+      volumes:
+        - name: tealogs
+          persistentVolumeClaim:
+            claimName: "tea-{{ .Values.volumes.logmountVolume }}"            
 {{- end -}}

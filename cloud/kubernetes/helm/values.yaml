@@ -335,6 +335,7 @@ tea:
   enabled: false                        # set to true for tea
   image: teaagent:6.1.1                      # tea image name
   name: tea                             # tea deployment name
+  beVersion: 6.1
   env:                                  # Load TEA GV's from env section
     # TEA_SERVER_URL: http://teaserver-url:1234
     # TEA_SERVER_USERNAME: admin
