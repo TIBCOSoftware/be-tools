@@ -23,11 +23,15 @@ apiVersion: storage.k8s.io/v1
 metadata:
   name: "{{ .Values.volumes.storageClass }}"
 provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: {{ .Values.aws.efsFileSystemId}}
+  directoryPerms: "700"
 {{- end }}
 {{- end }}
 ---
 
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
+{{- if and (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
 {{- if eq .Values.bsType "sharednothing" }}
 {{- $root := . -}}
 {{range untilStep 0 (.Values.cachenode.replicaCount | int) 1 }}
@@ -54,7 +58,7 @@ spec:
 {{- end }}
 {{- end }}
 
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
+{{- if and (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
 {{- if eq .Values.bsType "sharednothing" }}
 {{- $root := . -}}
 {{range untilStep 0 (.Values.inferencenode.replicaCount | int) 1 }}
