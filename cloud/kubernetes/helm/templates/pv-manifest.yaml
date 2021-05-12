@@ -17,7 +17,7 @@ spec:
 ---
 
 {{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
+{{- if or (eq .Values.bsType "sharednothing") (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") (eq .Values.rms.enabled true) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
