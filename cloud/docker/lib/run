@@ -138,8 +138,16 @@ else
 		fi
 	fi
 
-	AS_LISTEN_URL=tcp://`hostname`:50000
-	AS_REMOTE_LISTEN_URL=tcp://`hostname`:50001
+	if [ "$AS_LISTEN_PORT" = "" ]; then
+		AS_LISTEN_PORT=50000
+	fi
+
+	if [ "$AS_REMOTE_LISTEN_PORT" = "" ]; then
+		AS_REMOTE_LISTEN_PORT=50001
+	fi
+
+	AS_LISTEN_URL=tcp://`hostname`:$AS_LISTEN_PORT
+	AS_REMOTE_LISTEN_URL=tcp://`hostname`:$AS_REMOTE_LISTEN_PORT
 	if [ "$AS_DISCOVER_URL" = "self" ]; then
   		AS_DISCOVER_URL="$AS_LISTEN_URL"
 	fi
