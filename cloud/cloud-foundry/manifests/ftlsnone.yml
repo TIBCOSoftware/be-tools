@@ -3,7 +3,7 @@ applications:
 - name: ftlsnonecache
   env:
     PU: cache
-    FTL/REALM_SERVER: <REALM_SERVER_URL>
+    FTL/REALM_SERVER: <REALM_URL>
   docker:
     image: <DOCKER_IMAGE>
   routes:
@@ -16,7 +16,7 @@ applications:
     health-check-type: process
 - name: ftlsnonedefault
   env:
-    FTL/REALM_SERVER: <REALM_SERVER_URL>
+    FTL/REALM_SERVER: <REALM_URL>
   docker:
     image: <DOCKER_IMAGE>
   processes:

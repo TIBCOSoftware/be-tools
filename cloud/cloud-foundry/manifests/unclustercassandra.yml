@@ -2,7 +2,7 @@
 applications:
 - name: unclustercas
   docker:
-    image: ykalidin/unclustercas80:v1
+    image: <DOCKER_IMAGE>
   processes:
   - type: web
     instances: 1

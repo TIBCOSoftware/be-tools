@@ -40,22 +40,22 @@ Use the respective manifest file:
 | Topology Name | Manifest File |
 | ------------- | :---: |
 | Inmemory | inmemory.yml |
-| Unclustered store AS4 |  |
+| Unclustered store AS4 | unclusteras4.yml |
 | Unclustered store Cassandra | unclustercassandra.yml |
 | AS2 Clustered Cache Persistence None | as2pnone.yml |
 | AS2 Clustered Cache Shared Nothing | as2snone.yml |
 | AS2 Clustered Cache Store RDBMS| as2mysql.yml |
-| FTL Clustered Store AS4 |  |
+| FTL Clustered Store AS4 | ftlas4.yml |
 | FTL Clustered Store Cassandra | ftlcassandra.yml |
 | FTL Clustered Cache Persistence None | ftlpnone.yml |
 | FTL Clustered Cache Shared Nothing | ftlsnone.yml |
 | FTL Clustered Cache Store RDBMS | ftlmysql.yml |
-| FTL Clustered Cache Store AS4 |  |
+| FTL Clustered Cache Store AS4 | ftlcacheas4.yml |
 | FTL Clustered Cache Store Cassandra | ftlcachecassandra.yml |
 | IGNITE Clustered Cache Persistence None | igntpnone.yml |
 | IGNITE Clustered Cache Shared Nothing | igntsnone.yml |
 | IGNITE Clustered Cache Store RDBMS | igntmysql.yml |
-| IGNITE Clustered Cache Store AS4 |  |
+| IGNITE Clustered Cache Store AS4 | igntas4.yml |
 | IGNITE Clustered Cache Store Cassandra | igntcassandra.yml |
 
 

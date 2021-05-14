@@ -2,7 +2,7 @@
 applications:
 - name: beinmemory
   docker:
-    image: ykalidin/inmemjmx:6.0
+    image: <DOCKER_IMAGE>
   processes:
   - type: web
     instances: 1

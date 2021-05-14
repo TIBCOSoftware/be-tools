@@ -3,10 +3,10 @@ applications:
 - name: ftlmysqlcache
   env:
     PU: cache
-    FTL/REALM_SERVER: http://40.125.57.190:8585
-    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysqlhyd.mysql.database.azure.com:3306/be_database
+    FTL/REALM_SERVER: <REALM_URL>
+    BACKINGSTORE_JDBC_URL: <JDBC_URL>
   docker:
-    image: ykalidin/ftlmysql:v1
+    image: <DOCKER_IMAGE>
   routes:
   - route: ftlmysqlcache.apps.internal
   processes:
@@ -17,10 +17,10 @@ applications:
     health-check-type: process
 - name: ftlmysqldefault
   env:
-    FTL/REALM_SERVER: http://40.125.57.190:8585
-    BACKINGSTORE_JDBC_URL: jdbc:mysql://mysqlhyd.mysql.database.azure.com:3306/be_database
+    FTL/REALM_SERVER: <REALM_URL>
+    BACKINGSTORE_JDBC_URL: <JDBC_URL>
   docker:
-    image: ykalidin/ftlmysql:v1
+    image: <DOCKER_IMAGE>
   processes:
   - type: web
     instances: 1

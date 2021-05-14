@@ -4,7 +4,7 @@ applications:
   env:
     PU: cache
   docker:
-    image: ykalidin/as2pnone:v01
+    image: <DOCKER_IMAGE>
   routes:
   - route: as2pnonecache.apps.internal
   processes:
@@ -17,7 +17,7 @@ applications:
   env:
     AS_DISCOVER_URL: tcp://as2pnonecache.apps.internal:50000
   docker:
-    image: ykalidin/as2pnone:v01
+    image: <DOCKER_IMAGE>
   processes:
   - type: web
     instances: 1

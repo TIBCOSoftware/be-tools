@@ -6,7 +6,7 @@ applications:
     IGNITE/COMMUNICATION_PORT: 47100..47110
     IGNITE/LISTEN_PORT: 47500..47510
   docker:
-    image: ykalidin/igntpnone:v1
+    image: <DOCKER_IMAGE>
   routes:
   - route: igntpnonecache.apps.internal
   processes:
@@ -21,7 +21,7 @@ applications:
     IGNITE/COMMUNICATION_PORT: 47100..47110
     IGNITE/LISTEN_PORT: 47500..47510
   docker:
-    image: ykalidin/igntpnone:v1
+    image: <DOCKER_IMAGE>
   processes:
   - type: web
     instances: 1

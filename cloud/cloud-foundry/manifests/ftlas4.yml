@@ -1,0 +1,13 @@
+---
+applications:
+- name: ftlas4default
+  env:
+    FTL/REALM_SERVER: <REALM_URL>
+  docker:
+    image: <DOCKER_IMAGE>
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

@@ -2,7 +2,7 @@
 applications:
 - name: ftlcasdefault
   env:
-    FTL/REALM_SERVER: http://40.125.57.190:8585
+    FTL/REALM_SERVER: <REALM_URL>
   docker:
     image: <DOCKER_IMAGE>
   processes:
