@@ -33,7 +33,7 @@ Note: Required organizations and spaces can be created using the cf commands
 
      git clone https://github.com/TIBCOSoftware/be-tools.git
      cd be-tools/cloud/cloud-foundry/manifests
-     cf7 push <APP_NAME> -f <Manifest_file>
+     cf push <APP_NAME> -f <Manifest_file> -u process
 
 Use the respective manifest file:
 
