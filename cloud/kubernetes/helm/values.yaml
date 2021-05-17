@@ -82,7 +82,7 @@ cachenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                    #set to true if required to use cpu Metrics
-      enabled: true
+      enabled: false
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 85
@@ -106,7 +106,7 @@ inferencenode:
       resourceTargetType: Utilization
       averageUtilization: 80
     cpu:                                  #set to true if required to use cpu Metrics
-      enabled: true                       
+      enabled: false                       
       resourceName: cpu                     
       resourceTargetType: Utilization         
       averageUtilization: 90
@@ -317,9 +317,7 @@ rms:
     # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
     # tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
     # tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
-  storageClassName: standard                # RMS storage className
-  beVersion: 6.1                            # BE RMS version  
-  pvcClaimSize: 1Mi                         # Storage value for rms PVC
+  beVersion: 6.1                            # BE RMS version
   service:
     name: berms-service
     type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP

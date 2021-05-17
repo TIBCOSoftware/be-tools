@@ -5,8 +5,8 @@
 
 #Create persistent volumeClaims for RMS 
 {{- if eq .Values.rms.enabled true }}
-{{- $scName  :=  .Values.rms.storageClassName -}}
-{{- $scStorage  :=  .Values.rms.pvcClaimSize -}}
+{{- $scName  :=  .Values.volumes.storageClass -}}
+{{- $scStorage  :=  .Values.volumes.storage -}}
 {{- range tuple "rms-pvc-security" "rms-pvc-notify" "rms-pvc-webstudio" "rms-pvc-shared" }}
 ---
 kind: PersistentVolumeClaim
