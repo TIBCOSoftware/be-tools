@@ -10,10 +10,11 @@ applications:
     # Uncomment or add required Environment variables
   docker:
     image: <DOCKER_IMAGE>
+    # username: <Docker_username> # Use for Private repositories
   routes:
   - route: cacheapp.apps.internal
   processes:
-  - type: web
+  - type: worker
     instances: 1
     memory: 1G
     disk_quota: 1024M
@@ -29,8 +30,9 @@ applications:
     # Uncomment or add required Environment variables
   docker:
     image: <DOCKER_IMAGE>
+    # username: <Docker_username> # Use for Private repositories
   processes:
-  - type: web
+  - type: worker
     instances: 1
     memory: 1G
     disk_quota: 1024M
