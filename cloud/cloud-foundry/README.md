@@ -39,24 +39,21 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
      
 2)Add required environment variables in manifest.yaml file in both cacheapp and defaultapp env sections.
 
-a)Uncomment environment variables related to your cluster provider.
-
-Example: For FTL cluster uncomment 
+*  Uncomment environment variables related to your cluster provider. Ex:For FTL cluster uncomment 
       
-      FTL/REALM_SERVER: <REALM_URL>
+       FTL/REALM_SERVER: <REALM_URL>
 
-b)In case of store requirement update corresponding env variables.  
- Example: For Mysql store uncomment    
-    
-      BACKINGSTORE_JDBC_URL: <JDBC_URL>
+*  In case of store requirement update corresponding env variables. Ex: For Mysql store uncomment        
+       
+       BACKINGSTORE_JDBC_URL: <JDBC_URL>
 
 3)Use the below command to deploy Business Events application:
     
-*Deploy BE applications without cache using:
+* Deploy BE applications without cache using:
      
       cf push defaultapp -u process
 
-*Deploy BE applications with cache using:
+* Deploy BE applications with cache using:
      
       cf push -f manifest.yaml -u process
 
