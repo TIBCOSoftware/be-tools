@@ -18,12 +18,12 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
 
 2)Target a specific organization and space. 
      
+     cf create-org ORG
+     cf create-space SPACE
      cf target -o ORG -s SPACE
 
        -ORG is the org you want to target.
        -SPACE is the space you want to target.
-
-Note: Required organizations and spaces can be created using the cf commands
 
 3)Enable the diego-docker feature to run docker images. 
      
@@ -31,33 +31,34 @@ Note: Required organizations and spaces can be created using the cf commands
 
 ## Deploying BE application
 
+
+1)Clone the repo:
+
      git clone https://github.com/TIBCOSoftware/be-tools.git
-     cd be-tools/cloud/cloud-foundry/manifests
-     cf push <APP_NAME> -f <Manifest_file> -u process
+     cd be-tools/cloud/cloud-foundry
+     
+2)Add required environment variables in manifest.yaml file in both cacheapp and defaultapp env sections.
 
-Use the respective manifest file:
+a)Uncomment environment variables related to your cluster provider.
 
-| Topology Name | Manifest File |
-| ------------- | :---: |
-| Inmemory | inmemory.yml |
-| Unclustered store AS4 | unclusteras4.yml |
-| Unclustered store Cassandra | unclustercassandra.yml |
-| AS2 Clustered Cache Persistence None | as2pnone.yml |
-| AS2 Clustered Cache Shared Nothing | as2snone.yml |
-| AS2 Clustered Cache Store RDBMS| as2mysql.yml |
-| FTL Clustered Store AS4 | ftlas4.yml |
-| FTL Clustered Store Cassandra | ftlcassandra.yml |
-| FTL Clustered Cache Persistence None | ftlpnone.yml |
-| FTL Clustered Cache Shared Nothing | ftlsnone.yml |
-| FTL Clustered Cache Store RDBMS | ftlmysql.yml |
-| FTL Clustered Cache Store AS4 | ftlcacheas4.yml |
-| FTL Clustered Cache Store Cassandra | ftlcachecassandra.yml |
-| IGNITE Clustered Cache Persistence None | igntpnone.yml |
-| IGNITE Clustered Cache Shared Nothing | igntsnone.yml |
-| IGNITE Clustered Cache Store RDBMS | igntmysql.yml |
-| IGNITE Clustered Cache Store AS4 | igntas4.yml |
-| IGNITE Clustered Cache Store Cassandra | igntcassandra.yml |
+Example: For FTL cluster uncomment 
+      
+      FTL/REALM_SERVER: <REALM_URL>
 
+b)In case of store requirement update corresponding env variables.  
+ Example: For Mysql store uncomment    
+    
+      BACKINGSTORE_JDBC_URL: <JDBC_URL>
+
+3)Use the below command to deploy Business Events application:
+    
+*Deploy BE applications without cache using:
+     
+      cf push defaultapp -u process
+
+*Deploy BE applications with cache using:
+     
+      cf push -f manifest.yaml -u process
 
 ## Service Discovery
 
