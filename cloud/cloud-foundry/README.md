@@ -51,11 +51,13 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
     
 * Deploy BE applications without cache using:
      
-      cf push defaultapp -u process
+      cf push defaultapp
 
 * Deploy BE applications with cache using:
      
-      cf push -f manifest.yaml -u process
+      cf push
+Note: If your docker image is in a Private repository update Docker variables in manifest.Also add 'CF_DOCKER_PASSWORD=PASSWORD' environment variable in above command.
+Ex: CF_DOCKER_PASSWORD=PASSWORD cf push
 
 ## Service Discovery
 
@@ -63,15 +65,15 @@ For Service Discovery add below network policies with respect to application clu
 
 ### Activespaces cluster with Activespaces cache
 
-     cf add-network-policy <CACHE_APP_NAME> <INFERENCE_APP_NAME> --port 50000 --protocol tcp
-     cf add-network-policy <INFERENCE_APP_NAME> <CACHE_APP_NAME> --port 50000 --protocol tcp
+     cf add-network-policy cacheapp defaultapp --port 50000 --protocol tcp
+     cf add-network-policy defaultapp cacheapp --port 50000 --protocol tcp
 
 ### FTL and Ignite Cluster with Ignite cache
 
-     cf add-network-policy <CACHE_APP_NAME> <INFERENCE_APP_NAME> --port 47100-47110 --protocol tcp
-     cf add-network-policy <INFERENCE_APP_NAME> <CACHE_APP_NAME> --port 47100-47110 --protocol tcp
-     cf add-network-policy <CACHE_APP_NAME> <INFERENCE_APP_NAME> --port 47500-47510 --protocol tcp
-     cf add-network-policy <INFERENCE_APP_NAME> <CACHE_APP_NAME> --port 47500-47510 --protocol tcp
+     cf add-network-policy cacheapp defaultapp --port 47100-47110 --protocol tcp
+     cf add-network-policy defaultapp cacheapp --port 47100-47110 --protocol tcp
+     cf add-network-policy cacheapp defaultapp --port 47500-47510 --protocol tcp
+     cf add-network-policy defaultapp cacheapp --port 47500-47510 --protocol tcp
 
 ## Testing the BE application
 
@@ -79,7 +81,7 @@ Add Route for the application port:
 
 1)Get the APP_GUID from the below command:
     
-    cf app <APP_NAME> --guid
+    cf app defaultapp --guid
 
 2)Add the application port: 
     
