@@ -7,12 +7,13 @@
 {{- if eq .Values.rms.enabled true }}
 {{- $scName  :=  .Values.volumes.storageClass -}}
 {{- $scStorage  :=  .Values.volumes.storage -}}
+{{- $release:= .Release.Name -}}
 {{- range tuple "rms-pvc-security" "rms-pvc-notify" "rms-pvc-webstudio" "rms-pvc-shared" }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ . | quote }}
+  name: "{{ $release }}-{{.}}"
   annotations:
     volume.beta.kubernetes.io/storage-class: {{ $scName }}
 spec:
@@ -31,7 +32,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "rms-{{ .Values.volumes.snmountVolume }}"
+  name: "{{ .Release.Name }}-rms-{{ .Values.volumes.snmountVolume }}"
   annotations:
     volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
 spec:
@@ -49,7 +50,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "rms-{{ .Values.volumes.logmountVolume }}"
+  name: "{{ .Release.Name }}-rms-{{ .Values.volumes.logmountVolume }}"
   annotations:
     volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
 spec:
@@ -66,7 +67,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "tea-{{ .Values.volumes.logmountVolume }}"
+  name: "{{ .Release.Name }}-tea-{{ .Values.volumes.logmountVolume }}"
   annotations:
     volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
 spec:

@@ -104,16 +104,16 @@ volumeMounts:
 volumes:
   - name: shared
     persistentVolumeClaim:
-      claimName: rms-pvc-shared
+      claimName: {{ .Release.Name }}-rms-pvc-shared
   - name: security
     persistentVolumeClaim:
-      claimName: rms-pvc-security
+      claimName: {{ .Release.Name }}-rms-pvc-security
   - name: webstudio
     persistentVolumeClaim:
-      claimName: rms-pvc-webstudio
+      claimName: {{ .Release.Name }}-rms-pvc-webstudio
   - name: notify
     persistentVolumeClaim:
-      claimName: rms-pvc-notify
+      claimName: {{ .Release.Name }}-rms-pvc-notify
 {{- end }}
 {{- end -}}
 
@@ -123,12 +123,12 @@ volumes:
 {{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
-      claimName: rms-{{ .Values.volumes.snmountVolume }}
+      claimName: {{ .Release.Name }}-rms-{{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- if eq .Values.mountLogs true }}      
   - name: {{ .Values.volumes.logmountVolume }}
     persistentVolumeClaim:
-      claimName: rms-{{ .Values.volumes.logmountVolume }}
+      claimName: {{ .Release.Name }}-rms-{{ .Values.volumes.logmountVolume }}
 {{- end }}
 {{- end }}
 {{- end -}}
