@@ -14,7 +14,7 @@ applications:
   routes:
   - route: cacheapp.apps.internal
   processes:
-  - type: worker
+  - type: web
     instances: 1
     memory: 1G
     disk_quota: 1024M
@@ -32,7 +32,7 @@ applications:
     image: <DOCKER_IMAGE>
     # username: <Docker_username> # Use for Private repositories
   processes:
-  - type: worker
+  - type: web
     instances: 1
     memory: 1G
     disk_quota: 1024M
