@@ -13,8 +13,9 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
 
      cf login -a API-URL -u USERNAME -p PASSWORD
 
-       -API-URL is your API endpoint, the URL of the Cloud Controller in your TAS for VMs instance.
-       -USERNAME and PASSWORD are the Admin credentials in UAA section from Small footprint TAS tile Credentials tab.
+   * API-URL is your API endpoint, the URL of the Cloud Controller in your TAS for VMs instance.
+   * USERNAME and PASSWORD are the Admin credentials in UAA section from Small footprint TAS tile Credentials tab.
+ 
 
 2)Target a specific organization and space. 
      
@@ -22,8 +23,8 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
      cf create-space SPACE
      cf target -o ORG -s SPACE
 
-       -ORG is the org you want to target.
-       -SPACE is the space you want to target.
+   * ORG is the org you want to target.
+   * SPACE is the space you want to target.
 
 3)Enable the diego-docker feature to run docker images. 
      
@@ -51,11 +52,13 @@ This demonstrates how to run the Business Events applications in Cloud foundry.
     
 * Deploy BE applications without cache using:
      
-      cf push defaultapp
+      cf push defaultapp -u process
 
 * Deploy BE applications with cache using:
      
-      cf push
+      cf push cacheapp -u process
+      cf push defaultapp -u process
+
 Note: If your docker image is in a Private repository update Docker variables in manifest.Also add 'CF_DOCKER_PASSWORD=PASSWORD' environment variable in above command.
 Ex: CF_DOCKER_PASSWORD=PASSWORD cf push
 
