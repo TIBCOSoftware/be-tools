@@ -9,7 +9,7 @@ kind: StatefulSet
 metadata:
   name: {{ include "berms.fullname" . }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.rms.replicas }}
   serviceName: {{ include "bermsservice.fullname" . }}
   selector:
     matchLabels:

@@ -306,6 +306,7 @@ rms:
   enabled: false                        # set to true for rms
   image: rms:6.1.1                      # rms image name
   name: rms                             # rms deployment name
+  replicas: 1
   persistenceType: na        # If Persistence option is sharednothing then set to `sharednothing` , otherwise set to `na`
   # Load RMS GV's from env section
   env:
