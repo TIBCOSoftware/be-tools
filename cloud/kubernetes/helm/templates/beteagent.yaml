@@ -33,5 +33,5 @@ spec:
       volumes:
         - name: tealogs
           persistentVolumeClaim:
-            claimName: "{{ .Release.Name }}-tea-{{ .Values.volumes.logmountVolume }}"            
+            claimName: "{{ .Release.Name }}-tea-pvc-{{ .Values.volumes.logmountVolume }}"            
 {{- end -}}

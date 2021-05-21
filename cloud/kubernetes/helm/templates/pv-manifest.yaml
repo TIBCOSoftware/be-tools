@@ -3,20 +3,8 @@
 # Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
-
-
-{{- if and (eq .Values.cpType "awsfargate" ) (eq .Values.bsType "sharednothing") }}
-apiVersion: storage.k8s.io/v1beta1
-kind: CSIDriver
-metadata:
-  name: efs.csi.aws.com
-spec:
-  attachRequired: false
-{{- end }}
-
----
-
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
+{{- if and (eq .Values.cpType "aws") (ne .Values.volumes.storageClass "gp2") }}
 {{- if or (eq .Values.bsType "sharednothing") (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") (eq .Values.rms.enabled true) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -26,61 +14,151 @@ provisioner: efs.csi.aws.com
 parameters:
   provisioningMode: efs-ap
   fileSystemId: {{ .Values.aws.efsFileSystemId}}
-  directoryPerms: "700"
+  directoryPerms: "755"
 {{- end }}
 {{- end }}
----
+{{- end }}
 
-{{- if and (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
-{{- $root := . -}}
-{{range untilStep 0 (.Values.cachenode.replicaCount | int) 1 }}
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") }}
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "efs-pv-cache-{{.}}"
+  name: "{{ .Release.Name }}-be-pv-{{ .Values.volumes.snmountVolume }}"
 spec:
   capacity:
-    storage: 5Gi
+    storage: "{{ .Values.volumes.storage }}"
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{$root.Values.volumes.storageClass}}"
+  storageClassName: "{{ .Values.volumes.storageClass }}"
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{$root.Values.aws.efsFileSystemId}}"
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
   claimRef:
     namespace: default
-    name: {{$root.Values.volumes.snmountVolume}}-{{ $.Release.Name }}-{{- $root.Values.cachenode.name -}}-{{.}}
+    name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}"
 ---
-{{end}}
-{{- end }}
 {{- end }}
 
-{{- if and (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
-{{- $root := . -}}
-{{range untilStep 0 (.Values.inferencenode.replicaCount | int) 1 }}
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") ( eq .Values.mountLogs true ) }}
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "efs-pv-inference-{{.}}"
+  name: "{{ .Release.Name }}-be-pv-{{ .Values.volumes.logmountVolume }}"
 spec:
   capacity:
-    storage: 5Gi
+    storage: "{{ .Values.volumes.storage }}"
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.volumes.accessModes }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
+  claimRef:
+    namespace: default
+    name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}"
+---
+{{- end }}
+
+{{- if and (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") ( eq .Values.rms.enabled true ) }}
+{{- $root := . -}}
+{{- $releasename:= .Release.Name  -}}
+{{- range tuple "security" "notify" "webstudio" "shared" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ $releasename }}-rms-pv-{{.}}"
+spec:
+  capacity:
+    storage: "{{ $root.Values.volumes.storage }}"
+  volumeMode: Filesystem
+  accessModes:
+    - {{ $root.Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
   storageClassName: "{{$root.Values.volumes.storageClass }}"
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{$root.Values.aws.efsFileSystemId }}"
+    volumeHandle: "{{$root.Values.aws.efsFileSystemId}}:/{{.}}"
   claimRef:
     namespace: default
-    name: {{$root.Values.volumes.snmountVolume}}-{{ $.Release.Name }}-{{- $root.Values.inferencenode.name -}}-{{.}}
+    name: "{{ $releasename }}-rms-pvc-{{.}}"
 ---
-{{end}}
+{{- end }}
+{{- end }}
+
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") ( eq .Values.rms.enabled true ) (eq .Values.rms.persistenceType "sharednothing") }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Release.Name }}-rms-pv-{{ .Values.volumes.snmountVolume }}"
+spec:
+  capacity:
+    storage: "{{ .Values.volumes.storage }}"
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.volumes.accessModes }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
+  claimRef:
+    namespace: default
+    name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}"
+---
+{{- end }}
+
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") ( eq .Values.rms.enabled true ) ( eq .Values.mountLogs true ) }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Release.Name }}-rms-pv-{{ .Values.volumes.logmountVolume }}"
+spec:
+  capacity:
+    storage: "{{ .Values.volumes.storage }}"
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.volumes.accessModes }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
+  claimRef:
+    namespace: default
+    name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}"
+---
+{{- end }}
+
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") }}
+{{- if and ( eq .Values.mountLogs true ) ( eq .Values.tea.enabled true ) }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Release.Name }}-tea-pv-{{ .Values.volumes.logmountVolume }}"
+spec:
+  capacity:
+    storage: "{{ .Values.volumes.storage }}"
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.volumes.accessModes }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
+  claimRef:
+    namespace: default
+    name: "{{ .Release.Name }}-tea-pvc-{{ .Values.volumes.logmountVolume }}"
+---
 {{- end }}
 {{- end }}

@@ -123,18 +123,19 @@ volumes:
 {{- if eq .Values.rms.persistenceType "sharednothing"}}      
   - name: {{ .Values.volumes.snmountVolume }}
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-{{ .Values.volumes.snmountVolume }}
+      claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}
 {{- end }}
 {{- if eq .Values.mountLogs true }}      
   - name: {{ .Values.volumes.logmountVolume }}
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-{{ .Values.volumes.logmountVolume }}
+      claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}
 {{- end }}
 {{- end }}
 {{- end -}}
 
 {{- define "volumeClaim" -}}
 {{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") }}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
   volumeClaimTemplates:
 {{- if eq .Values.bsType "sharednothing" }}  
     - metadata:
@@ -142,7 +143,7 @@ volumes:
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
-        accessModes: {{ .Values.volumes.accessModes }}
+        accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
           requests:
             storage: {{ .Values.volumes.storage }}
@@ -153,10 +154,22 @@ volumes:
         annotations:
           volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
       spec:
-        accessModes: {{ .Values.volumes.accessModes }}
+        accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
           requests:
-            storage: {{ .Values.volumes.logStorage }}
+            storage: {{ .Values.volumes.storage }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.volumes.pvProvisioningMode "static" }}
+{{- if eq .Values.rms.enabled false }}      
+      volumes:
+{{- end }}
+        - name: {{ .Values.volumes.snmountVolume }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}
+        - name: {{ .Values.volumes.logmountVolume }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}        
 {{- end }}
 {{- end }}
 {{- end -}}
