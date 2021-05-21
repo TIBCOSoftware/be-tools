@@ -1,0 +1,47 @@
+---
+applications:
+- name: cache-0
+  env:
+    PU: cache
+    AS_DISCOVER_URL: tcp://cache-0.apps.internal:50000;cache-1.apps.internal:50000   # Use cache-0 application route for service discovery
+    BACKINGSTORE_JDBC_URL: <JDBC_URL>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  routes:
+  - route: cache-0.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: cache-1
+  env:
+    PU: cache
+    AS_DISCOVER_URL: tcp://cache-0.apps.internal:50000;cache-1.apps.internal:50000   # Use cache-0 application route for service discovery
+    BACKINGSTORE_JDBC_URL: <JDBC_URL>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  routes:
+  - route: cache-1.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: inference
+  env:
+    AS_DISCOVER_URL: tcp://cache-0.apps.internal:50000;cache-1.apps.internal:50000   # Use cache-0 application route for service discovery
+    BACKINGSTORE_JDBC_URL: <JDBC_URL>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process

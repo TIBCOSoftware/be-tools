@@ -1,0 +1,43 @@
+---
+applications:
+- name: cache
+  env:
+    PU: cache
+    # FTL/REALM_SERVER: <REALM_URL>
+    # IGNITE/COMMUNICATION_PORT: 47100..47110
+    # IGNITE/LISTEN_PORT: 47500..47510
+    # BACKINGSTORE_JDBC_URL: <JDBC_URL>
+    # AS/REALM_SERVER: <REALM_URL>
+    # AS/GRID_NAME: <GRID_NAME>
+    # Uncomment or add required Environment variables
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  routes:
+  - route: cache.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: inference
+  env:
+    # AS_DISCOVER_URL: tcp://cache.apps.internal:50000   # Use cache application route for service discovery
+    # FTL/REALM_SERVER: <REALM_URL>
+    # IGNITE/DISCOVERY_URL: cache.apps.internal:47500..47510   # Use cache application route for service discovery
+    # IGNITE/COMMUNICATION_PORT: 47100..47110
+    # IGNITE/LISTEN_PORT: 47500..47510
+    # BACKINGSTORE_JDBC_URL: <JDBC_URL>
+    # AS/REALM_SERVER: <REALM_URL>
+    # AS/GRID_NAME: <GRID_NAME>
+    # Uncomment or add required Environment variables
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
