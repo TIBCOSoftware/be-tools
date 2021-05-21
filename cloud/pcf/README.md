@@ -16,8 +16,8 @@ This page demonstrates Pivotal Cloud foundry setup and deployment for TIBCO Busi
    cf login -a API-URL -u USERNAME -p PASSWORD
    ```
 
-   * API-URL is your API endpoint, the URL of the Cloud Controller in your TAS for VMs instance.
-   * USERNAME and PASSWORD are the Admin credentials in UAA section from Small footprint TAS tile Credentials tab.
+   * `API-URL` is your API endpoint, the URL of the Cloud Controller in your TAS for VMs instance.
+   * `USERNAME` and `PASSWORD` are the Admin credentials in UAA section from Small footprint TAS tile Credentials tab.
  
 
 2. Target a specific organization and space. 
@@ -28,8 +28,6 @@ This page demonstrates Pivotal Cloud foundry setup and deployment for TIBCO Busi
      cf target -o ORG -s SPACE
      ```
 
-   * ORG is the org you want to target.
-   * SPACE is the space you want to target.
 
 3. Enable the diego-docker feature to run docker images. 
    
