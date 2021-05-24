@@ -1,12 +1,15 @@
 ## Introduction
 
-This page demonstrates Pivotal Cloud foundry setup and deployment for TIBCO BusinessEvents.
+This document describes how to deploy a `TIBCO BusinessEvents` application container image on [VMware Tanzu Application Service for VMs (TAS for VMs)](https://tanzu.vmware.com/application-service).
+
+`TAS for VMs` is based on [Cloud Foundry](https://www.cloudfoundry.org/) and one of the `Cloud Foundry` certified distributions, which is an open-source cloud app platform, providing a choice of clouds, developer frameworks, and app services.
 
 ## Prerequisites
-* Install Ops Manager on available Iaas platforms referring [Ops Manager](https://docs.pivotal.io/ops-manager/2-10/install/index.html). The following content is verified on Azure Iaas platform, however it would work similarly in all available platforms.
-* Install the Small footprint Tanzu Application Service(TAS) following [here](https://docs.pivotal.io/application-service/2-10/operating/configure-pas.html).
-* Install the cf CLI v7 from [here](https://docs.pivotal.io/application-service/2-10/cf-cli/install-go-cli.html).
-* Docker image of TIBCO BusinessEvents application. See [Building TIBCO BusinessEvents Application Docker Image](https://github.com/TIBCOSoftware/be-tools/wiki/Building-TIBCO-BusinessEvents-Application-Docker-Image). Push the TIBCO BusinessEvents application Docker image to respective cloud Container Registry.
+* `VMware Tanzu Application Service for VMs` environment on your prefered cloud provider (`AWS`, `Azure`, `GCP`, etc) which involves installing [Ops Manager](https://docs.pivotal.io/ops-manager/2-10/install/index.html) and configuring [TAS for VMs](https://docs.pivotal.io/application-service/2-11/operating/configure-pas.html)
+
+Note: We have tried on `Azure` cloud platform with [Small Footprint TAS for VMs](https://docs.pivotal.io/application-service/2-11/operating/small-footprint.html) which is a repackaging of the `TAS for VMs` components into a smaller deployment with fewer virtual machines (VMs), however steps outlined in this document should work similarly with other cloud providers as well as `TAS for VMs`.
+* Install [Cloud Foundry Command Line Interface (cf CLI)](https://docs.pivotal.io/application-service/2-11/cf-cli/install-go-cli.html) on your local machine which is used to interact with Cloud Foundry environment i.e. `TAS for VMs`
+* `TIBCO BusinessEvents` application container image. For more information refer to [Building TIBCO BusinessEvents Application Docker Image](https://github.com/TIBCOSoftware/be-tools/wiki/Building-TIBCO-BusinessEvents-Application-Docker-Image). Once you build the `TIBCO BusinessEvents` application container image, make sure to push the same on to preferred cloud Container Registry.
 
 ## Setup
 
