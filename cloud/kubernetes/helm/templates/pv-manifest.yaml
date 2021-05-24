@@ -32,7 +32,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
@@ -55,7 +55,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
@@ -105,7 +105,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
@@ -128,7 +128,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
@@ -152,7 +152,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"

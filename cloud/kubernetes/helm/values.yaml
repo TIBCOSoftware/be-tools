@@ -229,7 +229,7 @@ volumes:
   snmountVolume: store
   logmountPath: "/mnt/tibco/be/logs"
   logmountVolume: applog
-  accessModes: "ReadWriteOnce"
+  accessModes: "ReadWriteMany"
   storage: 0.5Gi
   storageClass: standard                    #Use one of the available storage classes as per your preference, for aws cluster with  `pvProvisioningMode:dynamic` efs file system it creates a new storageclass, for `pvProvisioningMode:static` leave the storageclass field empty
   snclaimVolume: pv0003

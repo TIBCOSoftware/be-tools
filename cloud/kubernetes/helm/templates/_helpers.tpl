@@ -463,3 +463,12 @@ affinity:
   value: {{ $val }}
 {{- end}}
 {{- end -}}
+
+{{- define "storageclass" -}}
+{{- if eq .Values.volumes.pvProvisioningMode "static" }}  
+  storageClassName: ""
+{{- end}}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
+  storageClassName: "{{ .Values.volumes.storageClass }}"
+{{- end}}
+{{- end -}}
