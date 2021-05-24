@@ -9,7 +9,7 @@
 # Declare variables to be passed into your templates.
 
 #Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
+cpType: minikube      #cpType can be minikube, aws, azure, openshift, gcp or oci
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
 omType: inmemory                        #omType can be inmemory,store,cache
@@ -125,12 +125,12 @@ healthcheck:
     initialDelaySeconds: 5 
     periodSeconds: 5 
 
-# Resource memory for EKS Fargate pods
+# Resource memory for pods
 resources:
   memory: 1Gi
   cpu: 1
 aws:
-  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
+  efsFileSystemId: fs-12345678   #update for aws efs(cpType=aws) - for dynamic provisioning of pv and pvc's set volumes.storageClass=efs-sc
 
 #*************************Service Part****************************************************
 #Required for cache, sharednothing, store in all cloud providers
@@ -224,14 +224,14 @@ as4database:
 #*************************Volumes Part****************************************************
 volumes:
   #Required for sharednothing and store in all cloud providers
+  pvProvisioningMode: dynamic                 # Default set to dynamic, For aws eks(dynamic or static) and fargate set to `static`, and keep the storgeclass empty 
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store
   logmountPath: "/mnt/tibco/be/logs"
   logmountVolume: applog
-  accessModes: ["ReadWriteOnce"]
+  accessModes: "ReadWriteMany"
   storage: 0.5Gi
-  logStorage: 0.5Gi
-  storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
+  storageClass: standard                    #Use one of the available storage classes as per your preference, for aws cluster with  `pvProvisioningMode:dynamic` efs file system it creates a new storageclass, for `pvProvisioningMode:static` leave the storageclass field empty
   snclaimVolume: pv0003
 
 #Required for store in  all cloud providers
@@ -248,10 +248,6 @@ mysql:
   auth:
     rootPassword: password12
     database: BE_DATABASE  #database name
-
-# Required for sharednothing and store data in AWS EFS(Only for volumes.storageClass=efs-sc)
-efs-driver:
-  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "efs-sc" 
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 

@@ -188,9 +188,8 @@ The command removes all the Kubernetes components associated with the chart
 Below dependencies are included in BE helm charts
 
 1. [MySQL chart](https://github.com/bitnami/charts/tree/master/bitnami/mysql): It installs MySQL deployment for the database requirements of the backingstore BE applications.
-2. [efs-provisioner chart](https://github.com/helm/charts/tree/master/stable/efs-provisioner): Used to fulfill PersistentVolumeClaims with EFS PersistentVolumes for the BE applications.
-3.  [influxdb chart](https://github.com/influxdata/helm-charts/tree/master/charts/influxdb):  It's useful for recording metrics, events, and performing analytics.
-4. [Grafana chart](https://github.com/grafana/helm-charts/tree/main/charts/grafana): Used for viewing BE application metrics.
+2.  [influxdb chart](https://github.com/influxdata/helm-charts/tree/master/charts/influxdb):  It's useful for recording metrics, events, and performing analytics.
+3. [Grafana chart](https://github.com/grafana/helm-charts/tree/main/charts/grafana): Used for viewing BE application metrics.
 
 The persisent volumes are created as folders with in an [AWS EFS](https://aws.amazon.com/efs/)
 

@@ -3,23 +3,60 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-#Create persistent volumeClaims for RMS 
-{{- if eq .Values.rms.enabled true }}
-{{- $scName  :=  .Values.volumes.storageClass -}}
-{{- $scStorage  :=  .Values.volumes.storage -}}
-{{- $release:= .Release.Name -}}
-{{- range tuple "rms-pvc-security" "rms-pvc-notify" "rms-pvc-webstudio" "rms-pvc-shared" }}
+
+{{- if and (eq .Values.bsType "sharednothing") (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "{{ $release }}-{{.}}"
-  annotations:
-    volume.beta.kubernetes.io/storage-class: {{ $scName }}
+  name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}"
 spec:
-  storageClassName: {{ $scName }}
+  {{ include "storageclass" . }}
+  accessModes: 
+    - {{ .Values.volumes.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.volumes.storage }}
+{{- end -}}
+
+
+{{- if and (eq .Values.mountLogs true) (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}"
+spec:
+  {{ include "storageclass" . }}
+  accessModes: 
+    - {{ .Values.volumes.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.volumes.storage }}
+{{- end -}}
+
+
+{{- if eq .Values.rms.enabled true }}
+{{- $scName  :=  .Values.volumes.storageClass -}}
+{{- $scStorage  :=  .Values.volumes.storage -}}
+{{- $accessmodes:= .Values.volumes.accessModes -}}
+{{- $releasename:= .Release.Name  -}}
+{{- $pvProvisioningMode := .Values.volumes.pvProvisioningMode -}}
+{{- range tuple "security" "notify" "webstudio" "shared" }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "{{ $releasename}}-rms-pvc-{{.}}"
+spec:
+{{- if eq $pvProvisioningMode "static" }}  
+  storageClassName: ""
+{{- end}}
+{{- if eq $pvProvisioningMode "dynamic" }}
+  storageClassName: "{{ $scName }}"
+{{- end}}
   accessModes:
-    - ReadWriteMany
+    - {{ $accessmodes }}
   resources:
     requests:
       storage: {{ $scStorage }}
@@ -32,16 +69,14 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "{{ .Release.Name }}-rms-{{ .Values.volumes.snmountVolume }}"
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+  name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}"
 spec:
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   accessModes: 
-    - ReadWriteOnce
+    - {{ .Values.volumes.accessModes }}
   resources:
     requests:
-      storage: "{{ .Values.volumes.storage }}"
+      storage: {{ .Values.volumes.storage }}
 {{- end -}}
 
 
@@ -50,16 +85,14 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "{{ .Release.Name }}-rms-{{ .Values.volumes.logmountVolume }}"
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+  name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}"
 spec:
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   accessModes: 
-    - ReadWriteOnce
+    - {{ .Values.volumes.accessModes }}
   resources:
     requests:
-      storage: "{{ .Values.volumes.storage }}"
+      storage: {{ .Values.volumes.storage }}
 {{- end -}}
 
 {{- if and ( eq .Values.mountLogs true ) ( eq .Values.tea.enabled true ) }}
@@ -67,14 +100,12 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: "{{ .Release.Name }}-tea-{{ .Values.volumes.logmountVolume }}"
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "{{ .Values.volumes.storageClass }}"
+  name: "{{ .Release.Name }}-tea-pvc-{{ .Values.volumes.logmountVolume }}"
 spec:
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+  {{ include "storageclass" . }}
   accessModes: 
-    - ReadWriteOnce
+    - {{ .Values.volumes.accessModes }}
   resources:
     requests:
-      storage: "{{ .Values.volumes.storage }}"
+      storage: {{ .Values.volumes.storage }}
 {{- end -}}
