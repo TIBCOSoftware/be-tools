@@ -1,9 +1,3 @@
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -141,7 +135,7 @@ volumes:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
         annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
+          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
       spec:
         accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
@@ -152,7 +146,7 @@ volumes:
     - metadata:
         name: {{ .Values.volumes.logmountVolume }}
         annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
+          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
       spec:
         accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
@@ -465,10 +459,11 @@ affinity:
 {{- end -}}
 
 {{- define "storageclass" -}}
-{{- if eq .Values.volumes.pvProvisioningMode "static" }}  
-  storageClassName: ""
+{{- if and (eq .Values.volumes.pvProvisioningMode "dynamic") (eq .Values.cpType "aws") }}
+{{- if empty .Values.volumes.storageClass }}
+{{ .Release.Name }}-be-sc
+{{- end }}
+{{- else if eq .Values.volumes.pvProvisioningMode "dynamic" }}  
+{{ .Values.volumes.storageClass }}
 {{- end}}
-{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
-  storageClassName: "{{ .Values.volumes.storageClass }}"
-{{- end}}
-{{- end -}}
+{{- end -}} 

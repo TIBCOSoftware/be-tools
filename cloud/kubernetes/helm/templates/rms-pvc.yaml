@@ -1,9 +1,3 @@
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
-
 {{- if and (eq .Values.bsType "sharednothing") (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") }}
 ---
 kind: PersistentVolumeClaim
@@ -11,7 +5,7 @@ apiVersion: v1
 metadata:
   name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}"
 spec:
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   accessModes: 
     - {{ .Values.volumes.accessModes }}
   resources:
@@ -27,7 +21,7 @@ apiVersion: v1
 metadata:
   name: "{{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}"
 spec:
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   accessModes: 
     - {{ .Values.volumes.accessModes }}
   resources:
@@ -41,20 +35,17 @@ spec:
 {{- $scStorage  :=  .Values.volumes.storage -}}
 {{- $accessmodes:= .Values.volumes.accessModes -}}
 {{- $releasename:= .Release.Name  -}}
+{{- $storageclass:= include "storageclass" . | trim  -}}
 {{- $pvProvisioningMode := .Values.volumes.pvProvisioningMode -}}
+{{- $root := . -}}
 {{- range tuple "security" "notify" "webstudio" "shared" }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: "{{ $releasename}}-rms-pvc-{{.}}"
-spec:
-{{- if eq $pvProvisioningMode "static" }}  
-  storageClassName: ""
-{{- end}}
-{{- if eq $pvProvisioningMode "dynamic" }}
-  storageClassName: "{{ $scName }}"
-{{- end}}
+spec:  
+  storageClassName: "{{ $storageclass }}"
   accessModes:
     - {{ $accessmodes }}
   resources:
@@ -71,7 +62,7 @@ apiVersion: v1
 metadata:
   name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}"
 spec:
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   accessModes: 
     - {{ .Values.volumes.accessModes }}
   resources:
@@ -87,7 +78,7 @@ apiVersion: v1
 metadata:
   name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}"
 spec:
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   accessModes: 
     - {{ .Values.volumes.accessModes }}
   resources:
@@ -102,7 +93,7 @@ apiVersion: v1
 metadata:
   name: "{{ .Release.Name }}-tea-pvc-{{ .Values.volumes.logmountVolume }}"
 spec:
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   accessModes: 
     - {{ .Values.volumes.accessModes }}
   resources:

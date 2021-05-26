@@ -33,6 +33,7 @@ Clone be-tools repo and navigate to cloud/kubernetes folder
 ```
 git clone https://github.com/TIBCOSoftware/be-tools.git
 cd cloud/kubernetes
+helm dep update ./helm
 ```
 
 * cpType → Refers to Cloud provider type.Use this flag for awsfargate deployments. For other cloudproviders it is not required.

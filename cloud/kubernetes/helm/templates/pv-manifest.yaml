@@ -1,20 +1,17 @@
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
 {{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
-{{- if and (eq .Values.cpType "aws") (ne .Values.volumes.storageClass "gp2") }}
+{{- if eq .Values.cpType "aws" }}
+{{- if empty .Values.volumes.storageClass }}
 {{- if or (eq .Values.bsType "sharednothing") (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") (eq .Values.rms.enabled true) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: "{{ .Values.volumes.storageClass }}"
+  name: "{{ include "storageclass" . | trim }}"
 provisioner: efs.csi.aws.com
 parameters:
   provisioningMode: efs-ap
   fileSystemId: {{ .Values.aws.efsFileSystemId}}
   directoryPerms: "755"
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -32,7 +29,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  {{ include "storageclass" . }}
+  storageClassName:  "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
@@ -55,7 +52,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
@@ -68,6 +65,7 @@ spec:
 {{- if and (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") ( eq .Values.rms.enabled true ) }}
 {{- $root := . -}}
 {{- $releasename:= .Release.Name  -}}
+{{- $storageclass:= include "storageclass" . | trim  -}}
 {{- range tuple "security" "notify" "webstudio" "shared" }}
 ---
 apiVersion: v1
@@ -81,7 +79,7 @@ spec:
   accessModes:
     - {{ $root.Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{$root.Values.volumes.storageClass }}"
+  storageClassName: "{{ $storageclass }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{$root.Values.aws.efsFileSystemId}}:/{{.}}"
@@ -105,7 +103,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
@@ -128,7 +126,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
@@ -152,7 +150,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  {{ include "storageclass" . }}
+  storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
