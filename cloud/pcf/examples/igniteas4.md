@@ -7,7 +7,7 @@ This page describes deployment steps for Ignite cluster cache Activespaces store
 1. Clone the repo:
      ```sh
      git clone https://github.com/TIBCOSoftware/be-tools.git
-     cd be-tools/cloud/cloud-foundry/examples
+     cd be-tools/cloud/pcf/examples
      ```
      
 2. Update environment variables for your BE image in igniteas4.yml file in both cache and inference env sections.
