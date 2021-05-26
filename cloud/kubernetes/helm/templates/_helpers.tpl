@@ -458,10 +458,6 @@ affinity:
 {{- end}}
 {{- end -}}
 
-{{- define "custom-sc" -}}
-{{ .Release.Name }}-be-sc
-{{- end -}}
-
 {{- define "storageclass" -}}
 {{- if and (eq .Values.volumes.pvProvisioningMode "dynamic") (eq .Values.cpType "aws") }}
 {{- if empty .Values.volumes.storageClass }}
