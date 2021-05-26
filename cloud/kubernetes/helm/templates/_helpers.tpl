@@ -141,7 +141,7 @@ volumes:
     - metadata:
         name: {{ .Values.volumes.snmountVolume }}
         annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
+          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
       spec:
         accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
@@ -152,7 +152,7 @@ volumes:
     - metadata:
         name: {{ .Values.volumes.logmountVolume }}
         annotations:
-          volume.beta.kubernetes.io/storage-class: {{ .Values.volumes.storageClass }}
+          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
       spec:
         accessModes: ["{{ .Values.volumes.accessModes }}"]
         resources:
@@ -464,11 +464,17 @@ affinity:
 {{- end}}
 {{- end -}}
 
+{{- define "custom-sc" -}}
+{{ .Release.Name }}-be-sc
+{{- end -}}
+
 {{- define "storageclass" -}}
 {{- if eq .Values.volumes.pvProvisioningMode "static" }}  
-  storageClassName: ""
+
 {{- end}}
-{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
-  storageClassName: "{{ .Values.volumes.storageClass }}"
+{{- if and (eq .Values.volumes.pvProvisioningMode "dynamic") (eq .Values.cpType "aws") }}
+{{ .Values.volumes.storageClass | default (printf (include "custom-sc" .)) }}
+{{- else if eq .Values.volumes.pvProvisioningMode "dynamic" }}  
+{{ .Values.volumes.storageClass }}
 {{- end}}
-{{- end -}}
+{{- end -}} 
