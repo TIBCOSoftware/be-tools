@@ -7,7 +7,7 @@ This page describes deployment steps for Activespaces store Application with mul
 1. Clone the repo:
      ```sh
      git clone https://github.com/TIBCOSoftware/be-tools.git
-     cd be-tools/cloud/cloud-foundry/examples
+     cd be-tools/cloud/pcf/examples
      ```
 
 2. Update environment variables for your BE image in as2store.yml file in cache and inference env sections.
