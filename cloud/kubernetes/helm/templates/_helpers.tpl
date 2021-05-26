@@ -1,9 +1,3 @@
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -469,11 +463,10 @@ affinity:
 {{- end -}}
 
 {{- define "storageclass" -}}
-{{- if eq .Values.volumes.pvProvisioningMode "static" }}  
-
-{{- end}}
 {{- if and (eq .Values.volumes.pvProvisioningMode "dynamic") (eq .Values.cpType "aws") }}
-{{ .Values.volumes.storageClass | default (printf (include "custom-sc" .)) }}
+{{- if empty .Values.volumes.storageClass }}
+{{ .Release.Name }}-be-sc
+{{- end }}
 {{- else if eq .Values.volumes.pvProvisioningMode "dynamic" }}  
 {{ .Values.volumes.storageClass }}
 {{- end}}

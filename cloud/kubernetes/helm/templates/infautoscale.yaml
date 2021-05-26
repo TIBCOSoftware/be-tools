@@ -1,7 +1,3 @@
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
 {{- if or ( eq .Values.inferencenode.hpa.cpu.enabled true ) ( eq .Values.inferencenode.hpa.memory.enabled true ) }}
 {{- if or (eq .Values.cmType "as2" ) (eq .Values.cmType "ftl" ) (eq .Values.cmType "unclustered" ) (eq .Values.cmType "ignite" ) }}
 apiVersion: autoscaling/v2beta2
