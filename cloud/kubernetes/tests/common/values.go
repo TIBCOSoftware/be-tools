@@ -54,7 +54,7 @@ const (
 	InfReplicas                      int32 = 1
 	CacheReplicas                    int32 = 1
 	ImagePullPolicy                        = "IfNotPresent"
-	AccessMode                             = "ReadWriteOnce"
+	AccessMode                             = "ReadWriteMany"
 	SnmountVolume                          = "store"
 	Snpath                                 = "/mnt/tibco/be/data-store"
 	LogsmountVolume                        = "applog"
