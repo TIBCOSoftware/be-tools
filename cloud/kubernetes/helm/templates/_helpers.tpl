@@ -463,7 +463,8 @@ affinity:
 {{- if empty .Values.volumes.storageClass }}
 {{ .Release.Name }}-be-sc
 {{- end }}
-{{- else if eq .Values.volumes.pvProvisioningMode "dynamic" }}  
+{{- end}}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}  
 {{ .Values.volumes.storageClass }}
 {{- end}}
 {{- end -}} 
