@@ -24,8 +24,13 @@ spec:
           value: "default"
         - name: COMPONENT
           value: "rms"
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
 {{ include "rmsgvs" . | trim | indent 8 }}          
 {{ include "rmsvolumeMount" . | trim | indent 8 }}
 {{ include "rmsvolumes" . | trim | indent 6 }}
+{{- include "rmsvolumeClaim" . }}
 {{- end -}}
 

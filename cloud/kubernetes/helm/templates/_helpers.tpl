@@ -114,56 +114,85 @@ volumes:
 {{- define "rmsvolumes" -}}
 {{- if eq .Values.rms.enabled true }}
 {{- include "volumes" . }}
-{{- if eq .Values.rms.persistenceType "sharednothing"}}      
-  - name: {{ .Values.volumes.snmountVolume }}
-    persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}
-{{- end }}
-{{- if eq .Values.mountLogs true }}      
-  - name: {{ .Values.volumes.logmountVolume }}
-    persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}
-{{- end }}
 {{- end }}
 {{- end -}}
+
+{{- define "mountlogs" -}}
+{{- if eq .Values.mountLogs true }}
+- metadata:
+    name: {{ .Values.volumes.logmountVolume }}
+    annotations:
+      volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
+  spec:
+    accessModes: ["{{ .Values.volumes.accessModes }}"]
+    resources:
+      requests:
+        storage: {{ .Values.volumes.storage }}
+{{- end }}
+{{- end -}}
+
+{{- define "datastore" -}}
+- metadata:
+    name: {{ .Values.volumes.snmountVolume }}
+    annotations:
+      volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
+  spec:
+    accessModes: ["{{ .Values.volumes.accessModes }}"]
+    resources:
+      requests:
+        storage: {{ .Values.volumes.storage }}
+{{- end -}}            
 
 {{- define "volumeClaim" -}}
 {{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") }}
 {{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
   volumeClaimTemplates:
+{{- include "mountlogs" . | indent 4 }}
 {{- if eq .Values.bsType "sharednothing" }}  
-    - metadata:
-        name: {{ .Values.volumes.snmountVolume }}
-        annotations:
-          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
-      spec:
-        accessModes: ["{{ .Values.volumes.accessModes }}"]
-        resources:
-          requests:
-            storage: {{ .Values.volumes.storage }}
+{{ include "datastore" . | indent 4 }}
+{{- end }} 
 {{- end }}
-{{- if eq .Values.mountLogs true }}
-    - metadata:
-        name: {{ .Values.volumes.logmountVolume }}
-        annotations:
-          volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
-      spec:
-        accessModes: ["{{ .Values.volumes.accessModes }}"]
-        resources:
-          requests:
-            storage: {{ .Values.volumes.storage }}
+{{- if eq .Values.volumes.pvProvisioningMode "static" }}
+{{- if eq .Values.rms.enabled false }}      
+      volumes:
+{{- end }}
+        {{- if eq .Values.bsType "sharednothing" }}
+        - name: {{ .Values.volumes.snmountVolume }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}
+        {{- end }}    
+        {{- if eq .Values.mountLogs true }}
+        - name: {{ .Values.volumes.logmountVolume }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}
+        {{- end }}            
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "rmsvolumeClaim" -}}
+{{- if or (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") }}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
+  volumeClaimTemplates:
+{{- include "mountlogs" . | indent 4}}
+{{- if eq .Values.rms.persistenceType "sharednothing" }}  
+{{ include "datastore" . | indent 4}}
 {{- end }}
 {{- end }}
 {{- if eq .Values.volumes.pvProvisioningMode "static" }}
 {{- if eq .Values.rms.enabled false }}      
       volumes:
 {{- end }}
+        {{- if eq .Values.rms.persistenceType "sharednothing" }}
         - name: {{ .Values.volumes.snmountVolume }}
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.snmountVolume }}
+            claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}
+        {{- end }}
+        {{- if eq .Values.mountLogs true }}
         - name: {{ .Values.volumes.logmountVolume }}
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-be-pvc-{{ .Values.volumes.logmountVolume }}        
+            claimName: {{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}
+        {{- end }}            
 {{- end }}
 {{- end }}
 {{- end -}}
