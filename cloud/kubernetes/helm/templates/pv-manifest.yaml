@@ -106,7 +106,7 @@ spec:
   storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/rms-{{ .Values.volumes.snmountVolume }}"
   claimRef:
     namespace: default
     name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.snmountVolume }}"
@@ -129,7 +129,7 @@ spec:
   storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/rms-{{ .Values.volumes.logmountVolume }}"
   claimRef:
     namespace: default
     name: "{{ .Release.Name }}-rms-pvc-{{ .Values.volumes.logmountVolume }}"
@@ -153,7 +153,7 @@ spec:
   storageClassName: "{{ include "storageclass" . | trim }}"
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
+    volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/tea-{{ .Values.volumes.logmountVolume }}"
   claimRef:
     namespace: default
     name: "{{ .Release.Name }}-tea-pvc-{{ .Values.volumes.logmountVolume }}"
