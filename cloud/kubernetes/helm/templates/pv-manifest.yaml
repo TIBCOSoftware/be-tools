@@ -16,7 +16,7 @@ parameters:
 {{- end }}
 {{- end }}
 
-{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") }}
+{{- if and (eq .Values.cpType "aws") (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.rms.persistenceType "sharednothing") }}
 ---
 apiVersion: v1
 kind: PersistentVolume
