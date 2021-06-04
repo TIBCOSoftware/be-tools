@@ -5,7 +5,7 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: "{{ include "storageclass" . | trim }}"
+  name: "{{ include "storageclassname" . | trim }}"
 provisioner: efs.csi.aws.com
 parameters:
   provisioningMode: efs-ap
@@ -29,7 +29,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName:  "{{ include "storageclass" . | trim }}"
+  storageClassName:  "{{ include "storageclassname" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.snmountVolume }}"
@@ -52,7 +52,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ include "storageclass" . | trim }}"
+  storageClassName: "{{ include "storageclassname" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/{{ .Values.volumes.logmountVolume }}"
@@ -65,7 +65,8 @@ spec:
 {{- if and (eq .Values.volumes.pvProvisioningMode "static") (eq .Values.cpType "aws") ( eq .Values.rms.enabled true ) }}
 {{- $root := . -}}
 {{- $releasename:= .Release.Name  -}}
-{{- $storageclass:= include "storageclass" . | trim  -}}
+{{- $rmsname:= include "berms.fullname" . | trim -}}
+{{- $storageclass:= include "storageclassname" . | trim  -}}
 {{- range tuple "security" "notify" "webstudio" "shared" }}
 ---
 apiVersion: v1
@@ -85,7 +86,7 @@ spec:
     volumeHandle: "{{$root.Values.aws.efsFileSystemId}}:/{{.}}"
   claimRef:
     namespace: default
-    name: "{{ $releasename }}-rms-pvc-{{.}}"
+    name: "rms-pvc-{{.}}-{{ $rmsname }}-0"
 ---
 {{- end }}
 {{- end }}
@@ -103,7 +104,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ include "storageclass" . | trim }}"
+  storageClassName: "{{ include "storageclassname" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/rms-{{ .Values.volumes.snmountVolume }}"
@@ -126,7 +127,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ include "storageclass" . | trim }}"
+  storageClassName: "{{ include "storageclassname" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/rms-{{ .Values.volumes.logmountVolume }}"
@@ -150,7 +151,7 @@ spec:
   accessModes:
     - {{ .Values.volumes.accessModes }}
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{ include "storageclass" . | trim }}"
+  storageClassName: "{{ include "storageclassname" . | trim }}"
   csi:
     driver: efs.csi.aws.com
     volumeHandle: "{{ .Values.aws.efsFileSystemId}}:/tea-{{ .Values.volumes.logmountVolume }}"

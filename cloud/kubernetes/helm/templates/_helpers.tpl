@@ -49,13 +49,13 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 {{- define "rmsmounts" -}}
 {{- if eq .Values.rms.enabled true }}
   - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/shared/"
-    name: shared
+    name: rms-pvc-shared
   - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/security/"
-    name: security
+    name: rms-pvc-security
   - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/examples/standard/WebStudio/"
-    name: webstudio
+    name: rms-pvc-webstudio
   - mountPath: "/opt/tibco/be/{{ .Values.rms.beVersion }}/rms/config/notify/"
-    name: notify
+    name: rms-pvc-notify
 {{- end }}
 {{- end -}}
 
@@ -96,23 +96,23 @@ volumeMounts:
 {{- define "volumes" -}}
 {{- if eq .Values.rms.enabled true }}
 volumes:
-  - name: shared
+  - name: rms-pvc-shared
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-shared
-  - name: security
+      claimName: rms-pvc-shared-{{ include "berms.fullname" . }}-0
+  - name: rms-pvc-security
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-security
-  - name: webstudio
+      claimName: rms-pvc-security-{{ include "berms.fullname" . }}-0
+  - name: rms-pvc-webstudio
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-webstudio
-  - name: notify
+      claimName: rms-pvc-webstudio-{{ include "berms.fullname" . }}-0
+  - name: rms-pvc-notify
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-rms-pvc-notify
+      claimName: rms-pvc-notify-{{ include "berms.fullname" . }}-0
 {{- end }}
 {{- end -}}
 
 {{- define "rmsvolumes" -}}
-{{- if eq .Values.rms.enabled true }}
+{{- if and (eq .Values.rms.enabled true)  (eq .Values.volumes.pvProvisioningMode "static") }}
 {{- include "volumes" . }}
 {{- end }}
 {{- end -}}
@@ -122,7 +122,7 @@ volumes:
 - metadata:
     name: {{ .Values.volumes.logmountVolume }}
     annotations:
-      volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
+      volume.beta.kubernetes.io/storage-class: "{{ include "storageclassname" . | trim }}"
   spec:
     accessModes: ["{{ .Values.volumes.accessModes }}"]
     resources:
@@ -135,13 +135,32 @@ volumes:
 - metadata:
     name: {{ .Values.volumes.snmountVolume }}
     annotations:
-      volume.beta.kubernetes.io/storage-class: "{{ include "storageclass" . | trim }}"
+      volume.beta.kubernetes.io/storage-class: "{{ include "storageclassname" . | trim }}"
   spec:
     accessModes: ["{{ .Values.volumes.accessModes }}"]
     resources:
       requests:
         storage: {{ .Values.volumes.storage }}
-{{- end -}}            
+{{- end -}}
+
+
+{{- define "rmsclaims" -}}
+{{- $scStorage  :=  .Values.volumes.storage -}}
+{{- $accessmodes:= .Values.volumes.accessModes -}}
+{{- $storageclass:= include "storageclassname" . | trim  -}}
+{{- range tuple "security" "notify" "webstudio" "shared" }}
+- metadata:
+    name: "rms-pvc-{{.}}"
+    annotations:
+      volume.beta.kubernetes.io/storage-class: "{{ $storageclass }}"
+  spec:
+    accessModes: ["{{ $accessmodes }}"]
+    resources:
+      requests:
+        storage: {{ $scStorage }}
+{{- end }}
+{{- end -}}
+
 
 {{- define "volumeClaim" -}}
 {{- if or (eq .Values.mountLogs true) (eq .Values.bsType "sharednothing") }}
@@ -174,6 +193,7 @@ volumes:
 {{- if or (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") }}
 {{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
   volumeClaimTemplates:
+{{- include "rmsclaims" . | indent 4 }}
 {{- include "mountlogs" . | indent 4}}
 {{- if eq .Values.rms.persistenceType "sharednothing" }}  
 {{ include "datastore" . | indent 4}}
@@ -487,8 +507,8 @@ affinity:
 {{- end}}
 {{- end -}}
 
-{{- define "storageclass" -}}
-{{- if and (eq .Values.volumes.pvProvisioningMode "dynamic") (eq .Values.cpType "aws") }}
+{{- define "storageclassname" -}}
+{{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
 {{- if empty .Values.volumes.storageClass }}
 {{ .Release.Name }}-be-sc
 {{- end }}
