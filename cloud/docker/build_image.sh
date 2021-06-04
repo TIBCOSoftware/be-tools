@@ -773,6 +773,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer 2>/dev/null
     fi
 
+    if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+        find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
+    fi
+
     if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]]; then
         mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/{application/ear,ext}
         cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext
