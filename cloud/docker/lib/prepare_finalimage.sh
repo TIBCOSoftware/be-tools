@@ -38,10 +38,6 @@ if [ "$COMPONENT" != "rms" ]; then
     rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
 fi
 
-if [ "$COMPONENT" = "rms" -o "$COMPONENT" = "tea" ]; then
-    rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws
-fi
-
 rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/eclipse
 rm -rf /home/tibco/be/be_installers-hf
 
