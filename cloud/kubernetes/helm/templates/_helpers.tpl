@@ -427,7 +427,7 @@ readinessProbe:
 {{- define "gvproviders" -}}
 {{- range $key,$val := .Values.env }}
 - name: {{ $key }}
-  value: {{ $val }}
+  value: {{ $val | quote }}
 {{- end}}
 {{- end -}}
 
@@ -479,7 +479,7 @@ affinity:
 {{- define "rmsgvs" }}
 {{- range $key,$val := .Values.rms.env }}
 - name: {{ $key }}
-  value: {{ $val }}
+  value: {{ $val | value }}
 {{- end}}
 {{- end -}}
 
