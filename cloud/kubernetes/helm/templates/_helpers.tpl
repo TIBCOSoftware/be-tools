@@ -517,3 +517,13 @@ affinity:
 {{ .Values.volumes.storageClass }}
 {{- end}}
 {{- end -}} 
+
+{{- define "rms-resource-memory" -}}
+resources:
+  requests:
+    memory: "{{ .Values.resources.memory }}"
+    cpu: "{{ .Values.resources.cpu }}"
+  limits:
+    memory: "{{ .Values.rms.resources.limits.memory }}"
+    cpu: "{{ .Values.rms.resources.limits.cpu }}"
+{{- end -}}

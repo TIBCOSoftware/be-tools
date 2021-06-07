@@ -28,7 +28,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name  
-{{ include "rmsgvs" . | trim | indent 8 }}          
+{{ include "rmsgvs" . | trim | indent 8 }}
+{{ include "rms-resource-memory" . | trim | indent 8 }}          
 {{ include "rmsvolumeMount" . | trim | indent 8 }}
 {{ include "rmsvolumes" . | trim | indent 6 }}
 {{- include "rmsvolumeClaim" . }}
