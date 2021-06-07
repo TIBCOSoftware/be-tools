@@ -479,7 +479,7 @@ affinity:
 {{- define "rmsgvs" }}
 {{- range $key,$val := .Values.rms.env }}
 - name: {{ $key }}
-  value: {{ $val | value }}
+  value: {{ $val | quote }}
 {{- end}}
 {{- end -}}
 
@@ -503,7 +503,7 @@ affinity:
 {{- define "teagvs" }}
 {{- range $key,$val := .Values.tea.env }}
 - name: {{ $key }}
-  value: {{ $val }}
+  value: {{ $val | quote }}
 {{- end}}
 {{- end -}}
 
