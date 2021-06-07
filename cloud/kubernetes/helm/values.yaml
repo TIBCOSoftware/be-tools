@@ -301,8 +301,10 @@ rms:
   # Load RMS GV's from env section
   resources:
     limits:
-      cpu: 1
-      memory: 1.1Gi
+      mincpu: 1
+      maxcpu: 2
+      minmemory: 1.0Gi
+      maxmemory: 2.1Gi
   env:
     # CDD_FILE: /opt/tibco/be/6.1/rms/bin/RMS_FTL.cdd
     # RMS_gv_FTL_gv_url: http://localhost:8585

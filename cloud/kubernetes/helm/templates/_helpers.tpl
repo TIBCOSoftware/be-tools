@@ -521,9 +521,9 @@ affinity:
 {{- define "rms-resource-memory" -}}
 resources:
   requests:
-    memory: "{{ .Values.resources.memory }}"
-    cpu: "{{ .Values.resources.cpu }}"
+    memory: "{{ .Values.rms.resources.limits.minmemory }}"
+    cpu: "{{ .Values.rms.resources.limits.mincpu }}"
   limits:
-    memory: "{{ .Values.rms.resources.limits.memory }}"
-    cpu: "{{ .Values.rms.resources.limits.cpu }}"
+    memory: "{{ .Values.rms.resources.limits.maxmemory }}"
+    cpu: "{{ .Values.rms.resources.limits.maxcpu }}"
 {{- end -}}
