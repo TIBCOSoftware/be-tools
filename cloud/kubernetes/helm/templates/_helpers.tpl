@@ -190,7 +190,7 @@ volumes:
 {{- end -}}
 
 {{- define "rmsvolumeClaim" -}}
-{{- if or (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") }}
+{{- if or (eq .Values.rms.enabled true ) (eq .Values.mountLogs true) (eq .Values.rms.persistenceType "sharednothing") }}
 {{- if eq .Values.volumes.pvProvisioningMode "dynamic" }}
   volumeClaimTemplates:
 {{- include "rmsclaims" . | indent 4 }}
