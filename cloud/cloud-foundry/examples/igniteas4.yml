@@ -1,0 +1,56 @@
+---
+applications:
+- name: cache-0
+  env:
+    PU: cache
+    IGNITE/DISCOVERY_URL: cache-0.apps.internal:47500..47510,cache-1.apps.internal:47500..47510   # Use cache application route for service discovery
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+    AS/REALM_SERVER: <REALM_URL>
+    AS/GRID_NAME: <GRID_NAME>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  routes:
+  - route: cache-0.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: cache-1
+  env:
+    PU: cache
+    IGNITE/DISCOVERY_URL: cache-0.apps.internal:47500..47510,cache-1.apps.internal:47500..47510   # Use cache application route for service discovery
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+    AS/REALM_SERVER: <REALM_URL>
+    AS/GRID_NAME: <GRID_NAME>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  routes:
+  - route: cache-1.apps.internal
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
+- name: inference
+  env:
+    IGNITE/DISCOVERY_URL: cache-0.apps.internal:47500..47510,cache-1.apps.internal:47500..47510   # Use cache application route for service discovery
+    IGNITE/COMMUNICATION_PORT: 47100..47110
+    IGNITE/LISTEN_PORT: 47500..47510
+    AS/REALM_SERVER: <REALM_URL>
+    AS/GRID_NAME: <GRID_NAME>
+  docker:
+    image: <DOCKER_IMAGE>  # Update BE Docker image
+    # username: <Docker_username> # Update for Private repositories
+  processes:
+  - type: web
+    instances: 1
+    memory: 1G
+    disk_quota: 1024M
+    health-check-type: process
