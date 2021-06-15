@@ -1,0 +1,44 @@
+{{- range .Values.agents }}
+{{- if gt (int .replicas) 0 }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Release.Name }}-{{ .name }}
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      name: {{ $.Release.Name }}-{{ .name }}
+  serviceName: {{ include "discoveryservice.fullname" $ }}
+  template:
+    metadata:
+      labels:
+        name: {{ $.Release.Name }}-{{ .name }}
+        {{- if .cacheStorageEnabled }}
+        cacheagent: "yes"
+        {{- end }}
+    spec:
+{{ include "pullsecrets" $ | trim | indent 6 }}
+{{ include "ignitesaname" $ | trim | indent 6 }}          
+      containers:
+      - name: {{ .name }}-container
+        image: {{ $.Values.image }}
+        imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        env:
+        - name: PU
+          value: {{ .PU }}
+        - name: ENGINE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{ include "gvproviders" $ | trim | indent 8 }}                
+{{ include "discovery_url" $ | trim | indent 8 }}
+{{ include "influx-grafana.data" $ | trim | indent 8 }}
+{{ include "store.configMap" $ | trim | indent 8 }}
+{{ include "fargate-resource-memory" $ | trim | indent 8 }}
+{{ include "healthcheck" $ | trim | indent 8 }}
+{{ include "sharednothing.volumeMount" $ | trim | indent 8 }}
+{{ include "sharednothing.volumeClaim" $ }}
+---
+{{- end }}
+{{- end }}

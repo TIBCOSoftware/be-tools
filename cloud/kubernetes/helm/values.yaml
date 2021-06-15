@@ -1,9 +1,4 @@
 
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 # Default values.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -61,20 +56,25 @@ env:
   
 #*************************Agents Part****************************************************
 
-#Required for cache, sharednothing, store in  all cloud providers
-cachenode:
-  name: becacheagent
-  replicaCount: 1       # Number of cache nodes
-  discoveryCount: 1     # Number discovery nodes (applicable only for cmType = as2). It should not be more than number of cache nodes i.e. cachenode.replicaCount
-  containers:
-    name: cachenode
+agents:
+  - name: beinferenceagent
+    PU: default                 # processing unit
+    cacheStorageEnabled: false  # true: marks this as a cache agent
+    replicas: 1                 # desired number of agents
+    discoverableReplicas: 0     # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
+    expose:
+      - name: jmx               # service name
+        port: 5555              # container port to be exposed
+        type: LoadBalancer      # service type. Supported values: NodePort, LoadBalancer or clusterIP
+      - name: httpchannel
+        port: 8109
+        type: LoadBalancer
+  - name: cacheagent
+    PU: cache
+    cacheStorageEnabled: true
+    replicas: 2
+    discoverableReplicas: 2
 
-#Required for all applications in  all cloud providers
-inferencenode:
-  name: beinferenceagent
-  replicaCount: 1       # Number of inference nodes    
-  containers:
-    name: inferencenode
 
 #*************************Health check Part****************************************************
 # Required for cache and inference agent health check
@@ -97,30 +97,6 @@ aws:
   efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
 
 #*************************Service Part****************************************************
-#Required for cache, sharednothing, store in all cloud providers
-cacheservice:
-  name: becache-service
-  ports:
-    port: 50000
-    protocol: TCP
-
-#Required for all applications in all cloud providers
-jmxservice:
-  name: jmx-service
-  ports:
-    protocol: TCP
-    port: 5555
-    targetPort: 5555
-  type: LoadBalancer
-
-#Required for all applications in all cloud providers
-beservice:
-  name: beservice
-  type: NodePort              #supported values: NodePort, LoadBalancer or clusterIP
-  ports:
-    name: port1
-    protocol: TCP
-    port: 8108
 
 ignitePort:
   dis0: 47500

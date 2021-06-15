@@ -1,9 +1,4 @@
 
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -18,24 +13,8 @@ Create a default fully qualified name for deployment, services, configMap, volum
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "beinferenceagent.fullname" -}}
-{{ .Release.Name }}-{{- .Values.inferencenode.name -}}
-{{- end -}}
-
-{{- define "becacheagent.fullname" -}}
-{{ .Release.Name }}-{{- .Values.cachenode.name -}}
-{{- end -}}
-
-{{- define "beservice.fullname" -}}
-{{ .Release.Name }}-{{ .Values.beservice.name }}
-{{- end -}}
-
-{{- define "cacheservice.fullname" -}}
-{{ .Release.Name }}-{{ .Values.cacheservice.name }}
-{{- end -}}
-
-{{- define "jmxservice.fullname" -}}
-{{ .Release.Name }}-{{ .Values.jmxservice.name }}
+{{- define "discoveryservice.fullname" -}}
+{{ .Release.Name }}-discovery-service
 {{- end -}}
 
 {{- define "configmapname.fullname" -}}
@@ -242,7 +221,12 @@ data:
 {{- define "discovery_url" -}}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "as2" ) }}  
 - name: AS_DISCOVER_URL
-  value: tcp://{{range $i, $e := until (int .Values.cachenode.discoveryCount)}}{{ include "becacheagent.fullname" $ }}-{{$i}}.{{ include "cacheservice.fullname" $ }}:50000;{{end}}
+  value: tcp://
+{{- range $i, $agent := $.Values.agents -}}
+{{- range $j, $e := until (int $agent.discoverableReplicas) -}}
+{{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ include "discoveryservice.fullname" $ }}:50000;
+{{- end -}}
+{{- end }}
 {{- end }}
 {{- if or (eq .Values.omType "cache" ) (eq .Values.omType "store" ) }}   
 {{- if eq .Values.cmType "ftl" }}
@@ -254,7 +238,7 @@ data:
 {{- end }}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
 - name: "tra.be.ignite.k8s.service.name"
-  value: "{{ include "cacheservice.fullname" . }}"
+  value: "{{ include "discoveryservice.fullname" $ }}"
 {{- range $key, $val := $.Values.ignite_gv }}
 - name: {{ $key }}
   value: {{ $val }}
