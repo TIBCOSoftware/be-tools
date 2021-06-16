@@ -59,7 +59,7 @@ env:
 agents:
   - name: beinferenceagent
     PU: default                 # processing unit
-    cacheStorageEnabled: false  # true: marks this as a cache agent
+    cacheStorageEnabled: true   # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
     replicas: 1                 # desired number of agents
     discoverableReplicas: 0     # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
     expose:
@@ -72,8 +72,8 @@ agents:
   - name: cacheagent
     PU: cache
     cacheStorageEnabled: true
-    replicas: 2
-    discoverableReplicas: 2
+    replicas: 0
+    discoverableReplicas: 0
 
 
 #*************************Health check Part****************************************************
