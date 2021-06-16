@@ -49,7 +49,6 @@ ENV PU=default \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  AS_VERSION=${AS_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}

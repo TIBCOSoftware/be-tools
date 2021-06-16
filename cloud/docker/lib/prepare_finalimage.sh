@@ -1,3 +1,12 @@
+if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
+    mkdir -p /opt/tibco/openjdk/$JRE_VERSION
+    tar xvf /home/tibco/be/$OPEN_JDK_FILENAME --directory /opt/tibco 1>/dev/null
+    rm -rf /home/tibco/be/$OPEN_JDK_FILENAME
+    mv /opt/tibco/jd*/* /opt/tibco/openjdk/$JRE_VERSION/
+
+    find /opt/tibco -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~tibcojre64~openjdk~g"
+fi
+
 cd /opt/tibco/be/$BE_SHORT_VERSION/bin/
 if [ "$COMPONENT" = "rms" ]; then
     TRA_FILE="../rms/bin/be-rms.tra"
@@ -45,7 +54,11 @@ fi
 rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/eclipse
 rm -rf /home/tibco/be/be_installers-hf
 
-cp -r /opt/tibco/tibcojre64 /tibco_home
+if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
+    cp -r /opt/tibco/openjdk /tibco_home
+else
+    cp -r /opt/tibco/tibcojre64 /tibco_home
+fi
 
 if [ "$COMPONENT" != "tea" ]; then
     cp be-engine be-engine.tra *.idx dbkeywordmap.xml /tibco_home/be/${BE_SHORT_VERSION}/bin

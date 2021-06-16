@@ -8,6 +8,8 @@ if "%ACTIVESPACES_VERSION%" EQU "" set ACTIVESPACES_VERSION=na
 
 if "%COMPONENT%" EQU "rms" (
 	set TRA_FILE=rms/bin/be-rms.tra
+) else if "%COMPONENT%" EQU "tea" (
+	set TRA_FILE=teagent/bin/be-teagent.tra
 ) else (
 	set TRA_FILE=bin/be-engine.tra
 )
@@ -97,10 +99,6 @@ if "%ACTIVESPACES_VERSION%" NEQ "na" (
 	powershell -Command "Copy-Item 'c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.dll','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.jar','c:\tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin\*.lib' -Destination 'c:\_tibco\as\%ACTIVESPACES_SHORT_VERSION%\bin' -Recurse | out-null"
 )
 
-:: Delete installer zip files.
-cd /d c:/working
-powershell -Command "rm -Recurse -Force 'c:/working/TIBCOUniversalInstaller-x86-64.exe' -ErrorAction Ignore | out-null; rm -Recurse -Force 'c:/working/*.zip' -ErrorAction Ignore | out-null"
-
 :: If AS is available append relevent properties to tra.
 if %AS_VERSION% NEQ na (
 	echo java.property.be.engine.cluster.as.discover.url=%%AS_DISCOVER_URL%%>> %BE_HOME%/%TRA_FILE%
@@ -111,6 +109,10 @@ echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> %BE_HOME
 
 :: Perform annotations processing (_annotations.idx)
 cd %BE_HOME%/bin
+REM Identify JRE home
+for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" be-engine.tra') do (
+	set JRE_HOME=%%i
+)
 set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aws/*;%BE_HOME%/lib/ext/tpcl/gwt/*;%BE_HOME%/lib/ext/tpcl/apache/*;%BE_HOME%/lib/ext/tpcl/emf/*;%BE_HOME%/lib/ext/tpcl/tomsawyer/*;%BE_HOME%/lib/ext/tibco/*;%BE_HOME%/lib/eclipse/plugins/*;%BE_HOME%/rms/lib/*;%BE_HOME%/mm/lib/*;%JRE_HOME%/lib/*;%JRE_HOME%/lib/ext/*;
 echo Building annotation indexes..
 %JRE_HOME%/bin/java -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
@@ -127,7 +129,7 @@ if "%COMPONENT%" EQU "rms" (
 	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
 )
 if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
-powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
+
 powershell -Command "Copy-Item '%BE_HOME%/bin/be-engine.tra','%BE_HOME%\bin\be-engine.exe','%BE_HOME%\bin\_annotations.idx','%BE_HOME%\bin\dbkeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
 if exist "%BE_HOME%\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '%BE_HOME%\bin\cassandrakeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
@@ -144,6 +146,16 @@ if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
 if exist "c:\_tibco\be\ext\%EAR_FILE_NAME%" (
 	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%EAR_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL
 	del /S /Q "c:\_tibco\be\ext\%EAR_FILE_NAME%" > NUL
+)
+
+if "%OPEN_JDK_FILENAME%" NEQ "na" (
+	powershell -Command "Expand-Archive -Path c:\working\%OPEN_JDK_FILENAME% -DestinationPath c:\working"
+
+	mkdir c:\_tibco\openjdk\%JRE_VERSION%
+	powershell -Command "Move-Item -Path c:\working\jdk*\* -Destination  c:\_tibco\openjdk\%JRE_VERSION%"
+	powershell -Command "(Get-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%') -replace 'tibcojre64', 'openjdk' | Set-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%'"
+) else (
+	powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
 )
 
 EXIT /B 0
