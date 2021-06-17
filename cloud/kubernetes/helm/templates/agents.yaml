@@ -1,32 +1,32 @@
-{{- range .Values.agents }}
-{{- if gt (int .replicas) 0 }}
+{{- range $i, $agent := .Values.agents }}
+{{- if gt (int $agent.replicas) 0 }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ $.Release.Name }}-{{ .name }}
+  name: {{ $.Release.Name }}-{{ $agent.name }}
 spec:
-  replicas: {{ .replicas }}
+  replicas: {{ $agent.replicas }}
   selector:
     matchLabels:
-      name: {{ $.Release.Name }}-{{ .name }}
+      name: {{ $.Release.Name }}-{{ $agent.name }}
   serviceName: {{ include "discoveryservice.fullname" $ }}
   template:
     metadata:
       labels:
-        name: {{ $.Release.Name }}-{{ .name }}
-        {{- if .cacheStorageEnabled }}
+        name: {{ $.Release.Name }}-{{ $agent.name }}
+        {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}
 {{ include "ignitesaname" $ | trim | indent 6 }}          
       containers:
-      - name: {{ .name }}-container
+      - name: {{ $agent.name }}-container
         image: {{ $.Values.image }}
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
         env:
         - name: PU
-          value: {{ .PU }}
+          value: {{ $agent.PU }}
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
@@ -37,8 +37,8 @@ spec:
 {{ include "store.configMap" $ | trim | indent 8 }}
 {{ include "fargate-resource-memory" $ | trim | indent 8 }}
 {{ include "healthcheck" $ | trim | indent 8 }}
-{{ include "sharednothing.volumeMount" $ | trim | indent 8 }}
-{{ include "sharednothing.volumeClaim" $ }}
+{{ include "bechart.volumeMounts" $ | trim | indent 8 }}
+{{ include "bechart.volumeClaimTemplates" $ | trim | indent 2 }}
 ---
 {{- end }}
 {{- end }}

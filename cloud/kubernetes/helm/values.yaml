@@ -12,6 +12,11 @@ bsType: na                              #BackingStore can be none sharednothing,
 storeType: na                           #storeType can be rdbms, as4, cassandra
 cacheType: as2                          #cacheType can be as2, ignite
 
+## RMS related
+enableRMS: false       # set to true, if it is BE app deployment and want to enable hot deployments using RMS
+rmsDeployment: false   # set to true, if it is RMS app deployment
+beVersion: 6.1
+
 # Image name and pull policy required for be app
 image: befdapp:01
 imagePullPolicy: IfNotPresent
@@ -57,7 +62,7 @@ env:
 #*************************Agents Part****************************************************
 
 agents:
-  - name: beinferenceagent
+  - name: inferenceagent
     PU: default                 # processing unit
     cacheStorageEnabled: true   # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
     replicas: 1                 # desired number of agents
@@ -162,6 +167,15 @@ as4database:
   STORE_POOLSIZE: store_poolsize  
 
 #*************************Volumes Part****************************************************
+persistence:
+  logs: true
+  ## persistence.storageClass:
+  ## If defined,            defined storage class would be used for PV/PVC provisioning
+  ## If set to "-",         disables dynamic PV/PVC provisioning
+  ## If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
+  storageClass:
+  size: 0.5Gi
+
 volumes:
   #Required for sharednothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
