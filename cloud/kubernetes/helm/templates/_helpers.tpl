@@ -34,65 +34,34 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 {{- define "bechart.volumeMounts" }}
 volumeMounts:
 {{- if eq .Values.bsType "sharednothing" }}
-  - name: "store"
-    mountPath: "/mnt/tibco/be/data-store"
+- name: data-store
+  mountPath: "/mnt/tibco/be/data-store"
 {{- end }}
 {{- if .Values.persistence.logs }}
-  - name: "logs"
-    mountPath: "/mnt/tibco/be/logs"
+- name: logs
+  mountPath: "/mnt/tibco/be/logs"
 {{- end }}
 {{- if .Values.enableRMS }}
-  - name: rms-shared
-    mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
+- name: rms-shared
+  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
 {{- end }}
 {{- if .Values.rmsDeployment }}
-  - name: rms-shared
-    mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
-  - name: rms-security
-    mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/config/security"
-  - name: rms-webstudio
-    mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/examples/standard/WebStudio"
-  {{- end }}
+- name: rms-shared
+  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
+- name: rms-security
+  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/config/security"
+- name: rms-webstudio
+  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/examples/standard/WebStudio"
+{{- end }}
 {{- end }}
 
-{{- define "bechart.volumeClaimTemplates.meta" }}
-- metadata:
-    name: {{ . }}
-{{- end }}
-
-{{- define "bechart.volumeClaimTemplates.spec" }}
-spec:
-  accessModes: [ "ReadWriteMany" ]
-  {{- if empty $.Values.persistence.storageClass }}
-  storageClassName:
-  {{- else if eq $.Values.persistence.storageClass "-" }}
-  storageClassName: ""
-  {{- else }}
-  storageClassName: {{ $.Values.persistence.storageClass }}
-  {{- end }}
-  resources:
-    requests:
-      storage: {{ $.Values.persistence.size }}
-{{- end }}
-
-{{- define "bechart.volumeClaimTemplates" }}
-volumeClaimTemplates:
-{{- if eq $.Values.bsType "sharednothing" }}
-{{ include "bechart.volumeClaimTemplates.meta" "store" | trim | indent 2 }}
-{{ include "bechart.volumeClaimTemplates.spec" $ | trim | indent 4 }}
-{{- end }}
-{{- if .Values.persistence.logs }}
-{{ include "bechart.volumeClaimTemplates.meta" "logs" | trim | indent 2 }}
-{{ include "bechart.volumeClaimTemplates.spec" $ | trim | indent 4 }}
-{{- end }}
-{{- if .Values.enableRMS }}
-{{ include "bechart.volumeClaimTemplates.meta" "rms-shared" | trim | indent 2 }}
-{{ include "bechart.volumeClaimTemplates.spec" $ | trim | indent 4 }}
-{{- end }}
-{{- if .Values.rmsDeployment }}
-{{- range $i, $claimName := tuple "rms-shared" "rms-security" "rms-webstudio" }}
-{{ include "bechart.volumeClaimTemplates.meta" $claimName | trim | indent 2 }}
-{{ include "bechart.volumeClaimTemplates.spec" $ | trim | indent 4 }}
+{{- define "bechart.volumes" }}
+volumes:
+{{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
+- name: {{ $vName }}
+  persistentVolumeClaim:
+    claimName: {{ $.Release.Name }}-{{ $vName }}
 {{- end }}
 {{- end }}
 {{- end }}
