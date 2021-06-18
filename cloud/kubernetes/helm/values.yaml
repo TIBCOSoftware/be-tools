@@ -169,14 +169,24 @@ as4database:
 #*************************Volumes Part****************************************************
 persistence:
   logs: true
-  ## persistence.storageClass:
-  ## If defined,            defined storage class would be used for PV/PVC provisioning
-  ## If set to "-",         disables dynamic PV/PVC provisioning
-  ## If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
-  storageClass:
+  
+  # dynamic provisioning
+
+  # If defined,            defined storage class would be used for PV/PVC provisioning
+  # If set to "-",         disables dynamic PV/PVC provisioning
+  # If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
+  storageClass: "standard"
   size: 0.5Gi
 
-volumes:
+  # static provisioning
+  
+  # minikube environment specific section: Use this section, if you want to use 'hostpath' based persistent volume provisioning.
+  # For more information refer: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+  hostpath:
+    path: "/data"               # directory location on the host
+    type: "DirectoryOrCreate"
+
+volumes: 
   #Required for sharednothing and store in all cloud providers
   snmountPath: "/mnt/tibco/be/data-store"
   snmountVolume: store

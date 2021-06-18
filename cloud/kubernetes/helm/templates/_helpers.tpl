@@ -66,6 +66,16 @@ volumes:
 {{- end }}
 {{- end }}
 
+{{- define "bechart.storageclass.name" }}
+{{- if empty .Values.persistence.storageClass }}
+storageClassName:
+{{- else if eq .Values.persistence.storageClass "-" }}
+storageClassName: ""
+{{- else }}
+storageClassName: {{ .Values.persistence.storageClass }}
+{{- end }}
+{{- end }}
+
 {{- define "fargate-resource-memory" -}}
 {{- if eq .Values.cpType "awsfargate" }}
 resources:
