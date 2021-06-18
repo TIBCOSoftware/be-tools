@@ -8,12 +8,7 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/*
-Create a default fully qualified name for deployment, services, configMap, volumes, etc.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "discoveryservice.fullname" -}}
+{{- define "bechart.discoveryservice.name" -}}
 {{ .Release.Name }}-discovery-service
 {{- end -}}
 
@@ -66,7 +61,7 @@ volumes:
 {{- end }}
 {{- end }}
 
-{{- define "bechart.storageclass.name" }}
+{{- define "bechart.storageclass" }}
 {{- if empty .Values.persistence.storageClass }}
 storageClassName:
 {{- else if eq .Values.persistence.storageClass "-" }}
@@ -243,7 +238,7 @@ data:
   value: tcp://
 {{- range $i, $agent := $.Values.agents -}}
 {{- range $j, $e := until (int $agent.discoverableReplicas) -}}
-{{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ include "discoveryservice.fullname" $ }}:50000;
+{{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ include "bechart.discoveryservice.name" $ }}:50000;
 {{- end -}}
 {{- end }}
 {{- end }}
@@ -257,7 +252,7 @@ data:
 {{- end }}
 {{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
 - name: "tra.be.ignite.k8s.service.name"
-  value: "{{ include "discoveryservice.fullname" $ }}"
+  value: "{{ include "bechart.discoveryservice.name" $ }}"
 {{- range $key, $val := $.Values.ignite_gv }}
 - name: {{ $key }}
   value: {{ $val }}

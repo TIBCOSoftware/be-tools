@@ -9,7 +9,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-{{ include "bechart.storageclass.name" $ | trim | indent 2 }}
+{{ include "bechart.storageclass" $ | trim | indent 2 }}
   resources:
     requests:
       storage: {{ $.Values.persistence.size }}

@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       name: {{ $.Release.Name }}-{{ $agent.name }}
-  serviceName: {{ include "discoveryservice.fullname" $ }}
+  serviceName: {{ include "bechart.discoveryservice.name" $ }}
   template:
     metadata:
       labels:

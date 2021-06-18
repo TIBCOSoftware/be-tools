@@ -14,7 +14,7 @@ spec:
   accessModes:
   - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-{{ include "bechart.storageclass.name" $ | trim | indent 2 }}
+{{ include "bechart.storageclass" $ | trim | indent 2 }}
   claimRef:
     namespace: default
     name: {{ $.Release.Name }}-{{ $vName }}
