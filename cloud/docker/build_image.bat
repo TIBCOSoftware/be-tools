@@ -22,6 +22,7 @@ set "ARG_DOCKER_FILE=na"
 set "ARG_GVPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
 
+REM openjdk related vars
 set "OPEN_JDK_VERSION=na"
 set "OPEN_JDK_FILENAME=na"
 
