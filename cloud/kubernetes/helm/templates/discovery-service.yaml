@@ -1,3 +1,4 @@
+{{- if has .Values.cmType (list "as2" "ftl" "ignite") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,5 +17,6 @@ spec:
     - port: {{ $port }}
       name: {{ $key }}
       protocol: TCP
+  {{- end }}
   {{- end }}
   {{- end }}
