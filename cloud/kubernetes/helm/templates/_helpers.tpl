@@ -36,13 +36,11 @@ volumeMounts:
 - name: logs
   mountPath: "/mnt/tibco/be/logs"
 {{- end }}
-{{- if .Values.enableRMS }}
+{{- if or .Values.enableRMS .Values.rmsDeployment }}
 - name: rms-shared
   mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
 {{- end }}
 {{- if .Values.rmsDeployment }}
-- name: rms-shared
-  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
 - name: rms-security
   mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/config/security"
 - name: rms-webstudio

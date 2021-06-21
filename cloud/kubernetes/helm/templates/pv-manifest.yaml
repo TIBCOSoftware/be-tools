@@ -1,82 +1,33 @@
-
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
-
-
-{{- if and (eq .Values.cpType "awsfargate" ) (eq .Values.bsType "sharednothing") }}
-apiVersion: storage.k8s.io/v1beta1
-kind: CSIDriver
-metadata:
-  name: efs.csi.aws.com
-spec:
-  attachRequired: false
-{{- end }}
-
----
-
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: "{{ .Values.volumes.storageClass }}"
-provisioner: efs.csi.aws.com
-{{- end }}
-{{- end }}
----
-
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
-{{- $root := . -}}
-{{range untilStep 0 (.Values.cachenode.replicaCount | int) 1 }}
+{{- if and (eq .Values.persistence.storageClass "-") (or (eq .Values.cpType "minikube") (eq .Values.cpType "aws")) }}
+{{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "efs-pv-cache-{{.}}"
+  name: {{ $.Release.Name }}-{{ $vName }}
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   capacity:
-    storage: 5Gi
+    storage: {{ $.Values.persistence.size }}
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{$root.Values.volumes.storageClass}}"
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: "{{$root.Values.aws.efsFileSystemId}}"
+{{ include "bechart.storageclass" $ | trim | indent 2 }}
   claimRef:
     namespace: default
-    name: {{$root.Values.volumes.snmountVolume}}-{{ $.Release.Name }}-{{- $root.Values.cachenode.name -}}-{{.}}
----
-{{end}}
-{{- end }}
-{{- end }}
-
-{{- if or (eq .Values.cpType "awsfargate") (eq .Values.volumes.storageClass "efs-sc") }}
-{{- if eq .Values.bsType "sharednothing" }}
-{{- $root := . -}}
-{{range untilStep 0 (.Values.inferencenode.replicaCount | int) 1 }}
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "efs-pv-inference-{{.}}"
-spec:
-  capacity:
-    storage: 5Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{$root.Values.volumes.storageClass }}"
+    name: {{ $.Release.Name }}-{{ $vName }}
+{{- if eq $.Values.cpType "minikube" }}
+  hostPath:
+    path: {{ $.Values.persistence.basePath }}/{{ $vName }}
+    type: DirectoryOrCreate
+{{- else if eq $.Values.cpType "aws" }}
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: "{{$root.Values.aws.efsFileSystemId }}"
-  claimRef:
-    namespace: default
-    name: {{$root.Values.volumes.snmountVolume}}-{{ $.Release.Name }}-{{- $root.Values.inferencenode.name -}}-{{.}}
+    volumeHandle: {{ $.Values.persistence.fileSystemId }}:{{ $.Values.persistence.basePath }}/{{ $vName }}
+{{- end }}
 ---
-{{end}}
+{{- end }}
 {{- end }}
 {{- end }}

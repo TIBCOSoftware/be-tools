@@ -98,8 +98,6 @@ healthcheck:
 resources:
   memory: 1.2Gi
   cpu: 1
-aws:
-  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
 
 #*************************Service Part****************************************************
 
@@ -170,30 +168,35 @@ as4database:
 persistence:
   logs: true
   
-  # dynamic provisioning
+  # dynamic provisioning: If you have storage class available in the cluster and want to use it for PV, PVCs provisioning
+  # then update persistence.storageClass value.
 
   # If defined,            defined storage class would be used for PV/PVC provisioning
   # If set to "-",         disables dynamic PV/PVC provisioning
   # If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
-  storageClass: "standard"
-  size: 0.5Gi
+  storageClass: "-"
+  size: 0.5Gi         # desired storage size
 
-  # static provisioning
+  # static provisioning: It offers more control over which directory paths (storage provider like EFS) to be mounted on the pods.
+  # Use this in case of RMS deployments since it is required to mount same RMS shared folder on BE pods aswell as RMS pods.
   
-  # minikube environment specific section: Use this section, if you want to use 'hostpath' based persistent volume provisioning.
-  # For more information refer: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
-  hostpath:
-    path: "/data"               # directory location on the host
-    type: "DirectoryOrCreate"
+  # persistence.basePath It is the obsolute path of the directory on the storage provider's file system (like AWS EFS). At this path
+  # following sub-directories should exist.
+  # .
+  # |--data-store       -> Required in case of sharednothing BE app deployment
+  # |--logs             -> Required if you want to persist logs
+  # |--rms-shared       -> Required in case of RMS deployents
+  # |--rms-security     -> Required in case of RMS deployents
+  # |--rms-webstudio    -> Required in case of RMS deployents
+  #
+  # Dont add trailing slash ('/') at the end of the path. Valid paths:
+  # ""              ->  To represent root folder
+  # "/volume/001"   ->  To represent /volume/001 folder
+  basePath: "/volume1"
 
-volumes: 
-  #Required for sharednothing and store in all cloud providers
-  snmountPath: "/mnt/tibco/be/data-store"
-  snmountVolume: store
-  accessModes: ["ReadWriteOnce"]
-  storage: 0.5Gi
-  storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
-  snclaimVolume: pv0003
+  # persistence.fileSystemId is the AWS EFS file system ID.
+  fileSystemId: fs-beec7f0a
+
 
 #Required for store in  all cloud providers
 mysql:
