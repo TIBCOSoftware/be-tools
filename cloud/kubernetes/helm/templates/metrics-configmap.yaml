@@ -1,7 +1,3 @@
-#
-# Copyright (c) 2019-2020. TIBCO Software Inc.
-# This file is subject to the license terms contained in the license file that is distributed with this file.
-#
 {{- if or (eq .Values.metricsType "influx" ) (eq .Values.metricsType "liveview" ) }}
 apiVersion: v1
 kind: ConfigMap
