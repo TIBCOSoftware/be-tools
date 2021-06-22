@@ -59,6 +59,22 @@ volumes:
 {{- end }}
 {{- end }}
 
+{{- define "bechart.volumeClaimTemplates" }}
+volumeClaimTemplates:
+{{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
+- metadata:
+    name: {{ $vName }}
+  spec:
+    accessModes: [ "ReadWriteOnce" ]
+    storageClassName: {{ $.Values.persistence.storageClass | quote }}
+    resources:
+      requests:
+        storage: {{ $.Values.persistence.size }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "bechart.storageclass" }}
 {{- if empty .Values.persistence.storageClass }}
 storageClassName:

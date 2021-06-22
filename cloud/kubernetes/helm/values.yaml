@@ -166,7 +166,7 @@ as4database:
 
 #*************************Volumes Part****************************************************
 persistence:
-  logs: false
+  logs: false   # Set to true to enable logs persistence
   
   # dynamic provisioning: If you have storage class available in the cluster and want to use it for PV, PVCs provisioning
   # then update persistence.storageClass value.
@@ -194,7 +194,11 @@ persistence:
   # "/volume/001"   ->  To represent /volume/001 folder
   basePath: "/volume1"
 
-  # persistence.fileSystemId is the AWS EFS file system ID.
+  # persistence.fileSystemId is the file system ID
+  #
+  # If your cloud provider is AWS and want to use EFS then it is the EFS file system ID.
+  # For successful PV/PVC provisioing, Refer to https://docs.aws.amazon.com/eks/latest/userguide/efs-cs and create an Amazon EFS file system. 
+  # 
   fileSystemId: fs-beec7f0a
 
 
