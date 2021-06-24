@@ -173,14 +173,17 @@ persistence:
   # dynamic provisioning: If you have storage class available in the cluster and want to use it for PV, PVCs provisioning
   # then update persistence.storageClass value.
 
-  # If defined,            defined storage class would be used for PV/PVC provisioning
-  # If set to "-",         disables dynamic PV/PVC provisioning
-  # If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
+  # persistence.storageClass
+  # Note: For RMS deployment use storage classes which supports ReadWriteMany access mode (Ex: azurefile  )
+  #
+  # If defined,             defined storage class would be used for PV/PVC provisioning
+  # If set to "-",          disables dynamic PV/PVC provisioning
+  # If undefined or empty,  [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
   storageClass: "standard"
   size: 0.5Gi         # desired storage size
 
-  # static provisioning: It offers more control over which directory paths (storage provider like EFS) to be mounted on the pods.
-  # Use this in case of RMS deployments since it is required to mount same RMS shared folder on BE pods aswell as RMS pods.
+
+  # static provisioning: It offers more control over which directory paths (storage provider like EFS) used to generage PVs.
   
   # persistence.basePath It is the obsolute path of the directory on the storage provider's file system (like AWS EFS). At this path
   # following sub-directories should exist.
