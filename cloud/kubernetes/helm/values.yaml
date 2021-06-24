@@ -64,15 +64,15 @@ env:
 agents:
   - name: inferenceagent
     PU: default                 # processing unit
-    cacheStorageEnabled: true   # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
+    cacheStorageEnabled: false  # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
     replicas: 1                 # desired number of agents
     discoverableReplicas: 0     # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
     expose:
       - name: jmx               # service name
         port: 5555              # container port to be exposed
-        type: LoadBalancer      # service type. Supported values: NodePort, LoadBalancer or clusterIP
+        type: ClusterIP      # service type. Supported values: NodePort, LoadBalancer or ClusterIP
       - name: httpchannel
-        port: 8109
+        port: 8090
         type: LoadBalancer
   - name: cacheagent
     PU: cache
@@ -166,7 +166,9 @@ as4database:
 
 #*************************Volumes Part****************************************************
 persistence:
-  logs: false   # Set to true to enable logs persistence
+  logs: false           # Set to true to enable logs persistence
+  rmsSecurity: false    # Set to true to enable RMS security folder persistence
+  rmsWebstudio: false   # Set to true to enable RMS WebStudio folder persistence
   
   # dynamic provisioning: If you have storage class available in the cluster and want to use it for PV, PVCs provisioning
   # then update persistence.storageClass value.
@@ -174,7 +176,7 @@ persistence:
   # If defined,            defined storage class would be used for PV/PVC provisioning
   # If set to "-",         disables dynamic PV/PVC provisioning
   # If undefined or empty, cluster's default storage class would be used for PV/PVC provisioning
-  storageClass: "-"
+  storageClass: "standard"
   size: 0.5Gi         # desired storage size
 
   # static provisioning: It offers more control over which directory paths (storage provider like EFS) to be mounted on the pods.
@@ -197,7 +199,7 @@ persistence:
   # persistence.fileSystemId is the file system ID
   #
   # If your cloud provider is AWS and want to use EFS then it is the EFS file system ID.
-  # For successful PV/PVC provisioing, Refer to https://docs.aws.amazon.com/eks/latest/userguide/efs-cs and create an Amazon EFS file system. 
+  # For successful PV/PVC provisioing, Refer to https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html and create an Amazon EFS file system. 
   # 
   fileSystemId: fs-beec7f0a
 
