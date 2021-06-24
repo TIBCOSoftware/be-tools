@@ -180,6 +180,7 @@ persistence:
   # If set to "-",          disables dynamic PV/PVC provisioning
   # If undefined or empty,  [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
   storageClass: "standard"
+  scSupportsReadWriteMany: true # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
   size: 0.5Gi         # desired storage size
 
 

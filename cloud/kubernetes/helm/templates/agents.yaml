@@ -38,10 +38,10 @@ spec:
 {{ include "fargate-resource-memory" $ | trim | indent 8 }}
 {{ include "healthcheck" $ | trim | indent 8 }}
 {{ include "bechart.volumeMounts" $ | trim | indent 8 }}
-{{- if eq $.Values.persistence.storageClass "gp2" }}
-{{ include "bechart.volumeClaimTemplates" $ | trim | indent 2 }}
-{{- else }}
+{{- if $.Values.persistence.scSupportsReadWriteMany }}
 {{ include "bechart.volumes" $ | trim | indent 6 }}
+{{- else }}
+{{ include "bechart.volumeClaimTemplates" $ | trim | indent 2 }}
 {{- end }}
 ---
 {{- end }}
