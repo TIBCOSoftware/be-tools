@@ -93,8 +93,7 @@ storageClassName: {{ .Values.persistence.storageClass }}
 {{- end }}
 {{- end }}
 
-{{- define "fargate-resource-memory" -}}
-{{- if eq .Values.cpType "awsfargate" }}
+{{- define "bechart.resourceLimits" }}
 resources:
   requests:
     memory: "{{ .Values.resources.memory }}"
@@ -102,8 +101,7 @@ resources:
   limits:
     memory: "{{ .Values.resources.memory }}"
     cpu: "{{ .Values.resources.cpu }}"
-{{- end -}}
-{{- end -}}
+{{- end }}
 
 {{/*
 Create a DB configMap environment details for store

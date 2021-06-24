@@ -94,7 +94,7 @@ healthcheck:
     initialDelaySeconds: 5 
     periodSeconds: 5 
 
-# Resource memory for EKS Fargate pods
+# Update how much of memory, cpu resource a BE app container needs.
 resources:
   memory: 1.2Gi
   cpu: 1

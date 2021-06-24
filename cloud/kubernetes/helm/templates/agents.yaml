@@ -35,7 +35,7 @@ spec:
 {{ include "discovery_url" $ | trim | indent 8 }}
 {{ include "influx-grafana.data" $ | trim | indent 8 }}
 {{ include "store.configMap" $ | trim | indent 8 }}
-{{ include "fargate-resource-memory" $ | trim | indent 8 }}
+{{ include "bechart.resourceLimits" $ | trim | indent 8 }}
 {{ include "healthcheck" $ | trim | indent 8 }}
 {{ include "bechart.volumeMounts" $ | trim | indent 8 }}
 {{- if $.Values.persistence.scSupportsReadWriteMany }}
