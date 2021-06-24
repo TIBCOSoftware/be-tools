@@ -1,10 +1,14 @@
 {{- if ne $.Values.persistence.storageClass "gp2" }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
-{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") $.Values.enableRMS) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+{{- if eq $vName "rms-shared" }}
+  name: {{ $vName }}
+{{- else }}
   name: {{ $.Release.Name }}-{{ $vName }}
+{{- end }}  
   annotations:
     "helm.sh/resource-policy": keep
 spec:

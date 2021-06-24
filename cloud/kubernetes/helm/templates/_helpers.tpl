@@ -54,7 +54,11 @@ volumes:
 {{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.rmsDeployment) }}
 - name: {{ $vName }}
   persistentVolumeClaim:
+{{- if eq $vName "rms-shared" }}
+    claimName: {{ $vName }}
+{{- else }}
     claimName: {{ $.Release.Name }}-{{ $vName }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
