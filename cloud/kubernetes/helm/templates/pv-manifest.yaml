@@ -1,14 +1,10 @@
 {{- if and (eq .Values.persistence.storageClass "-") (or (eq .Values.cpType "minikube") (eq .Values.cpType "aws")) }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
-{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") $.Values.enableRMS) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") $.Values.rmsDeployment) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-{{- if eq $vName "rms-shared" }}
-  name: {{ $vName }}
-{{- else }}
-  name: {{ $.Release.Name }}-{{ $vName }}
-{{- end }}  
+  name: {{ $.Release.Name }}-{{ $vName }}  
   annotations:
     "helm.sh/resource-policy": keep
 spec:
@@ -21,11 +17,7 @@ spec:
 {{ include "bechart.storageclass" $ | trim | indent 2 }}
   claimRef:
     namespace: default
-{{- if eq $vName "rms-shared" }}
-    name: {{ $vName }}
-{{- else }}
-    name: {{ $.Release.Name }}-{{ $vName }}
-{{- end }}      
+    name: {{ $.Release.Name }}-{{ $vName }} 
 {{- if eq $.Values.cpType "minikube" }}
   hostPath:
     path: {{ $.Values.persistence.basePath }}/{{ $vName }}
