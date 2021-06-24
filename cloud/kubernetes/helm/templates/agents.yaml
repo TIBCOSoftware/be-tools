@@ -1,25 +1,29 @@
 {{- range $i, $agent := .Values.agents }}
 {{- if gt (int $agent.replicas) 0 }}
+{{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ $.Release.Name }}-{{ $agent.name }}
+  name: {{ $ssName }}
 spec:
   replicas: {{ $agent.replicas }}
   selector:
     matchLabels:
-      name: {{ $.Release.Name }}-{{ $agent.name }}
+      name: {{ $ssName }}
   serviceName: {{ include "bechart.discoveryservice.name" $ }}
   template:
     metadata:
       labels:
-        name: {{ $.Release.Name }}-{{ $agent.name }}
+        name: {{ $ssName }}
         {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}
-{{ include "ignitesaname" $ | trim | indent 6 }}          
+{{ include "ignitesaname" $ | trim | indent 6 }}
+{{- if $.Values.podAntiAffinity }}
+{{ include "bechart.affinity" $ssName | trim | indent 6 }}
+{{- end }}
       containers:
       - name: {{ $agent.name }}-container
         image: {{ $.Values.image }}

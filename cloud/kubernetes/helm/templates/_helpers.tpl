@@ -312,3 +312,18 @@ imagePullSecrets:
   {{- end  }}
 {{- end}}  
 {{- end -}}
+
+{{- define "bechart.affinity" }}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: name
+              operator: In
+              values:
+              - "{{ . }}"
+          topologyKey: "kubernetes.io/hostname"
+{{- end }}
