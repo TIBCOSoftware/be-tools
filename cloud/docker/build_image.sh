@@ -400,6 +400,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     #get installed jre details
     TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2)
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        TRA_JAVA_HOME=${TRA_JAVA_HOME%?}
+    fi
 else
     #version regex for all products
     VERSION_REGEX=([0-9]\.[0-9]).[0-9]
