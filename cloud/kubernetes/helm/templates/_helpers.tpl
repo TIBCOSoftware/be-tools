@@ -27,7 +27,9 @@ serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
 {{- end -}} 
 
 {{- define "bechart.volumeMounts" }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
 volumeMounts:
+{{- end }}
 {{- if eq .Values.bsType "sharednothing" }}
 - name: data-store
   mountPath: "/mnt/tibco/be/data-store"
@@ -38,22 +40,24 @@ volumeMounts:
 {{- end }}
 {{- if or .Values.enableRMS .Values.rmsDeployment }}
 - name: rms-shared
-  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/shared"
+  mountPath: "/opt/tibco/be/latest/rms/shared"
 {{- end }}
 {{- if .Values.rmsDeployment }}
 {{- if .Values.persistence.rmsSecurity }}
 - name: rms-security
-  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/rms/config/security"
+  mountPath: "/opt/tibco/be/latest/rms/config/security"
 {{- end }}
 {{- if .Values.persistence.rmsWebstudio }}
 - name: rms-webstudio
-  mountPath: "/opt/tibco/be/{{ .Values.beVersion }}/examples/standard/WebStudio"
+  mountPath: "/opt/tibco/be/latest/examples/standard/WebStudio"
 {{- end }}
 {{- end }}
 {{- end }}
 
 {{- define "bechart.volumes" }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
 volumes:
+{{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
 {{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
 - name: {{ $vName }}
@@ -68,7 +72,9 @@ volumes:
 {{- end }}
 
 {{- define "bechart.volumeClaimTemplates" }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
 volumeClaimTemplates:
+{{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
 {{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
 - metadata:

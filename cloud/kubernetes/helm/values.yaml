@@ -15,7 +15,6 @@ cacheType: as2                          #cacheType can be as2, ignite
 ## RMS related
 enableRMS: false       # set to true, if it is BE app deployment and want to enable hot deployments using RMS
 rmsDeployment: false   # set to true, if it is RMS app deployment
-beVersion: 6.1
 
 # Image name and pull policy required for be app
 image: befdapp:01
