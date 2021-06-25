@@ -62,23 +62,31 @@ env:
 #*************************Agents Part****************************************************
 
 agents:
-  - name: inferenceagent
-    PU: default                 # processing unit
-    cacheStorageEnabled: false  # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
-    replicas: 1                 # desired number of agents
-    discoverableReplicas: 0     # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
-    expose:
-      - name: jmx               # service name
-        port: 5555              # container port to be exposed
-        type: ClusterIP      # service type. Supported values: NodePort, LoadBalancer or ClusterIP
-      - name: httpchannel
-        port: 8090
-        type: LoadBalancer
-  - name: cacheagent
-    PU: cache
-    cacheStorageEnabled: true
-    replicas: 0
-    discoverableReplicas: 0
+- name: inferenceagent
+  PU: default                             # processing unit
+  cacheStorageEnabled: false              # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
+  replicas: 1                             # desired number of agents
+  discoverableReplicas: 0                 # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
+  expose:
+  - name: jmx                             # service name
+    port: 5555                            # container port to be exposed
+    type: ClusterIP                       # service type. Supported values: NodePort, LoadBalancer or ClusterIP
+  - name: httpchannel
+    port: 8090
+    type: NodePort
+  hpa:                                    # agents[].hpa: (Horizontal Pod Autoscaler).
+    maxReplicas: 5                        # maximum number of replicas HPA can apply
+    cpuMetric:
+      enable: false                       # Set to true, to enable CPU metric based HPA
+      averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if CPU utilization % reaches above(or below) averageUtilizationPercentage
+    memoryMetric:
+      enable: false                       # Set to true, to enable memory metric based HPA
+      averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if memory utilization % reaches above(or below) averageUtilizationPercentage
+- name: cacheagent
+  PU: cache
+  cacheStorageEnabled: true
+  replicas: 1
+  discoverableReplicas: 0
 
 
 #*************************Health check Part****************************************************
