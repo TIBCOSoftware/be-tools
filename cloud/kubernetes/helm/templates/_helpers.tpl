@@ -12,10 +12,6 @@ Expand the name of the chart.
 {{ .Release.Name }}-discovery-service
 {{- end -}}
 
-{{- define "configmapname.fullname" -}}
-{{ .Release.Name }}-{{ .Values.configmapname }}
-{{- end -}}
-
 {{- define "azurestorageclass.fullname" -}}
 {{ .Values.volumes.azure.storageClassName }}
 {{- end -}}
@@ -109,81 +105,12 @@ resources:
     cpu: "{{ .Values.resources.cpu }}"
 {{- end }}
 
-{{/*
-Create a DB configMap environment details for store
-*/}}
-{{- define "store.configMap" -}}
-{{- $mapName  :=  include "configmapname.fullname" . -}}
-{{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "rdbms" ) }}
-{{- range $key,$val := .Values.database }}
-- name: {{ $key }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ $mapName }}
-      key: {{ $val }}
-{{- end }}
-{{- end }}
-{{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
-{{- if eq .Values.storeType "cassandra"  }}
-{{- range $key,$val := .Values.cassdatabase }}
-- name: {{ $key }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ $mapName }}
-      key: {{ $val }}
-{{- end }}
-{{- end }}
-{{- if eq .Values.storeType "as4"  }}
-{{- range $key,$val := .Values.as4database }}
-- name: {{ $key }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ $mapName }}
-      key: {{ $val }}
-{{- end }}     
-{{- end }}
-{{- end }}
-{{- end -}}
 
 {{- define "ftl.data" -}}
 {{- range $key, $val := $.Values.ftl }}
         - name: {{ $key }}
           value: {{ $val }}
 {{- end }}
-{{- end -}}
-
-{{/*
-Create a common DB configMap data details for store
-*/}}
-{{- define "configmap.data" -}}
-data:
-  {{- $mysqlenabled := .Values.mysql.enabled }}
-  {{- if and (eq .Values.bsType "store" ) (eq .Values.storeType "rdbms" ) }}
-  {{- if eq $mysqlenabled true }}
-  dburl: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.auth.database }}" #db service url generated from release name
-  {{- end }}
-  {{- range $key, $val := $.Values.configmap }}
-  {{- if eq $mysqlenabled true }}
-  {{- if ne "dburl" $key }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- else }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- end }}
-  {{- end -}}
-  {{- if or (eq .Values.bsType "store" ) (eq .Values.omType "store" ) }}
-  {{- if eq .Values.storeType "cassandra"  }}
-  {{- range $key, $val := $.Values.cassconfigmap }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- end -}}
-  {{- if eq .Values.storeType "as4" }}
-  {{- range $key, $val := $.Values.as4configmap }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- end -}}
-  {{- end -}}
 {{- end -}}
 
 {{- define "beimagepullsecret.fullname" }}
@@ -197,65 +124,6 @@ data:
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
-
-# metrics configmap metadata name
-{{- define "metricsname.fullname" -}}
-{{ .Release.Name }}-{{ .Values.metricsType }}
-{{- end -}}
-
-# influx and grafana configmaps
-{{- define "metrics-configmap.data" -}}
-data:
-  {{- if eq .Values.metricsType "influx" }}
-  {{- $metrics := .Values.influxdb.enabled }}
-  {{- if eq $metrics true }}
-  dburl: "http://{{ .Release.Name }}-influxdb:8086"
-  {{- end }}
-  {{- range $key, $val := $.Values.influxconfigmap }}
-  {{- if eq $metrics true }}
-  {{- if ne "dburl" $key }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- else }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- end }}
-  {{- end }}
-  {{- if eq .Values.metricsType "liveview" }}
-  {{- range $key, $val := $.Values.sbconfigmap }}
-  {{ $key }}: {{ $val | quote }}
-  {{- end }}
-{{- end }}
-{{- end -}}
-
-# influx and grafana env for agent yaml files
-{{- define "influx-grafana.data" -}}
-{{- $mapName  :=  include "metricsname.fullname" . -}}
-{{- if eq .Values.metricsType "influx" }}
-{{- range $key,$val := .Values.influxdatabase }}
-- name: {{ $key }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ $mapName }}
-      key: {{ $val }}
-{{- end }}
-{{- end }}
-{{- if eq .Values.metricsType "liveview" }}
-{{- range $key, $val := $.Values.streambase }}
-- name: {{ $key }}
-  valueFrom:
-    configMapKeyRef:
-      name: {{ $mapName }}
-      key: {{ $val }}
-{{- end }}
-{{- end }}
-{{- if eq .Values.metricsType "custom" }}
-{{- range $key, $val := $.Values.metricdetails }}
-- name: {{ $key }}
-  value: {{ $val }}
-{{- end }}
-{{- end }}
-{{- end -}}
 
 
 {{- define "discovery_url" -}}

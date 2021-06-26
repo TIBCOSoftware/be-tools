@@ -33,8 +33,8 @@ imageCredentials:
 
 # envVarsFromConfigMaps:  Load GVs or environment variables from Kubernetes ConfigMaps
 envVarsFromConfigMaps:
-# - config-map-name-1     # Update the ConfigMap name you want to use
-# - config-map-name-2
+# - configmap-1     # Update the ConfigMap name you want to use
+# - configmap-2
 
 # envVarsFromSecrets:     Load GVs or environment variables from Kubernetes Secrets
 envVarsFromSecrets:
@@ -136,53 +136,35 @@ ignitePort:
 
 #*************************ConfigMap****************************************************
 
-#Required for store in all cloud providers
-configmapname: storeconfig
-
-configmap:
-  dbdriver: com.mysql.jdbc.Driver
-  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
-  dbusername: BE_USER
-  dbpwd: BE_USER
-  dbpoolsize: 5
-  dblogintimeout: 0
-
-#Required for store in all cloud providers
-database:
-  BACKINGSTORE_JDBC_DRIVER: dbdriver 
-  BACKINGSTORE_JDBC_URL: dburl
-  BACKINGSTORE_JDBC_USERNAME: dbusername
-  BACKINGSTORE_JDBC_PASSWORD: dbpwd
-  BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
-  BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
-
-cassconfigmap:
-  cass_server: localhost:9042
-  cass_keyspace_name: testdb
-  cass_username: cassandra
-  cass_password: cassandra
-
-cassdatabase:
-  CASS_SERVER: cass_server
-  CASS_KEYSPACE_NAME: cass_keyspace_name
-  CASS_USERNAME: cass_username
-  CASS_PASSWORD: cass_password
-
-as4configmap:
-  realm_url: http://localhost:8585
-  sec_realm_url: http://localhost:8585
-  grid_name: fd_store
-  store_timeout: 5
-  store_waittime: 0.1
-  store_poolsize: 1
-
-as4database:
-  REALM_URL: realm_url
-  SEC_REALM_URL: sec_realm_url
-  GRID_NAME: grid_name
-  STORE_TIMEOUT: store_timeout
-  STORE_WAITTIME: "store_waittime"
-  STORE_POOLSIZE: store_poolsize  
+configs:
+  # # mysql
+  # BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver
+  # BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  # BACKINGSTORE_JDBC_USERNAME: BE_USER
+  # BACKINGSTORE_JDBC_PASSWORD: BE_USER
+  # BACKINGSTORE_JDBC_POOL_SIZE: 5
+  # BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
+  # # Cassandra
+  # CASS_SERVER: localhost:9042
+  # CASS_KEYSPACE_NAME: testdb
+  # CASS_USERNAME: cassandra
+  # CASS_PASSWORD: cassandra
+  # # AS4
+  # REALM_URL: http://localhost:8585
+  # SEC_REALM_URL: http://localhost:8585
+  # GRID_NAME: fd_store
+  # STORE_TIMEOUT: 5
+  # STORE_WAITTIME: 0.1
+  # STORE_POOLSIZE: 1
+  # # metrics - influx config
+  # INFLUXDB_URL: http://influxDB:8086
+  # INFLUXBUCKET: fdmetrics 
+  # INFLUXTOKEN: be-examples-fdmetrics-token
+  # INFLUXORG: be-examples  
+  # # metrics -  streambase LDM
+  # LDM_URL: lv://localhost:10080
+  # # metrics -  custom (ex:elastic, prometheus etc..)
+  # URL: http://localhost:1234
 
 #*************************Volumes Part****************************************************
 persistence:
@@ -236,6 +218,7 @@ persistence:
 #Required for store in  all cloud providers
 mysql:
   enabled: false              #use true for store
+  backingstoreUrlGV: BACKINGSTORE_JDBC_URL    # This GV gets updated with mysql service url
   image:
     repository: "mysql"
     tag: "5.7"
@@ -250,29 +233,15 @@ mysql:
 
 # ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 
-metricsType: na           # metricsType value is strict to "influx","liveview","custom"
-
-influxconfigmap:
-  dburl: http://influxDB:8086
-  bucket: fdmetrics 
-  dbtoken: be-examples-fdmetrics-token
-  dborg: be-examples  
-
-influxdatabase:
-  INFLUXDB_URL: dburl
-  INFLUXBUCKET: bucket
-  INFLUXTOKEN: dbtoken
-  INFLUXORG: dborg
-
 # Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
 influxdb:
   enabled: false
+  influxdbUrlGV: INFLUXDB_URL   # This GV gets updated with influxdb service url
   image:  # Comment influx image, repository and tag for BE version 6.0 
     repository: quay.io/influxdb/influxdb   
     tag: v2.0.1
   persistence:
     enabled: false            # Set to true for persistence
-
 
 # Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
 grafana:
@@ -281,16 +250,3 @@ grafana:
     tag: 7.3.5
   service:
     type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
-
-# --------- Streambase and liveview information ------
-
-sbconfigmap:
-  ldmurl: lv://localhost:10080
-
-streambase:
-  LDM_URL: ldmurl
-
-# custom metrics(ex:elastic, prometheus etc.,)
-
-metricdetails:
-  URL: http://localhost:1234
