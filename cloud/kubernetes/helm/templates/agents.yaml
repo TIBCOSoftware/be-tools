@@ -28,6 +28,17 @@ spec:
       - name: {{ $agent.name }}-container
         image: {{ $.Values.image }}
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        {{- if or (not (empty $.Values.envVarsFromConfigMaps)) (not (empty $.Values.envVarsFromSecrets)) }}
+        envFrom:
+        {{- range $configMapName := $.Values.envVarsFromConfigMaps }}
+        - configMapRef:
+            name: {{ $configMapName }}
+        {{- end }}
+        {{- range $secretName := $.Values.envVarsFromSecrets }}
+        - secretRef:
+            name: {{ $secretName }}
+        {{- end }}
+        {{- end }}
         env:
         - name: PU
           value: {{ $agent.PU }}
@@ -35,7 +46,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-{{ include "gvproviders" $ | trim | indent 8 }}                
+        {{- range $envKey, $envVal := $.Values.envVars }}
+        - name: {{ $envKey }}
+          value: {{ $envVal }}
+        {{- end}}
 {{ include "discovery_url" $ | trim | indent 8 }}
 {{ include "influx-grafana.data" $ | trim | indent 8 }}
 {{ include "store.configMap" $ | trim | indent 8 }}

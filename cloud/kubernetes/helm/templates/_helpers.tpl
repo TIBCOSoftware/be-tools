@@ -301,13 +301,6 @@ readinessProbe:
 {{- end }}
 {{- end -}}
 
-{{- define "gvproviders" -}}
-{{- range $key,$val := .Values.env }}
-- name: {{ $key }}
-  value: {{ $val }}
-{{- end}}
-{{- end -}}
-
 {{- define "pullsecrets" -}}
 {{- if or (.Values.imagepullsecret) (.Values.imageCredentials.registry) }}
 imagePullSecrets:

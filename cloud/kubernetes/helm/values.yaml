@@ -31,6 +31,16 @@ imageCredentials:
 
 #*************************Agents env varaibles****************************************************
 
+# envVarsFromConfigMaps:  Load GVs or environment variables from Kubernetes ConfigMaps
+envVarsFromConfigMaps:
+# - config-map-name-1     # Update the ConfigMap name you want to use
+# - config-map-name-2
+
+# envVarsFromSecrets:     Load GVs or environment variables from Kubernetes Secrets
+envVarsFromSecrets:
+# - secret-1              # Update the Secret name you want to use
+# - secret-2
+
 # ignite.discovery_url is GV of discovery URL
 ignite:
   discovery_url: IGNITE_gv_DISCOVERY_URL
@@ -47,7 +57,7 @@ ftl:
   FTL_gv_REALM_SERVER: http://localhost:8585
   FTL_gv_CLUSTER_NAME: ftl.default.cluster
 
-env:
+envVars:
   # Consul GV provider specific environment variables
   # CONSUL_SERVER_URL: http://192.168.0.1:8500
   # BE_APP_NAME: fd
@@ -84,7 +94,7 @@ agents:
 - name: cacheagent
   PU: cache
   cacheStorageEnabled: true
-  replicas: 1
+  replicas: 0
   discoverableReplicas: 0
 
 
