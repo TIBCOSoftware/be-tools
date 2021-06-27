@@ -12,10 +12,6 @@ Expand the name of the chart.
 {{ .Release.Name }}-discovery-service
 {{- end -}}
 
-{{- define "azurestorageclass.fullname" -}}
-{{ .Values.volumes.azure.storageClassName }}
-{{- end -}}
-
 {{- define "bechart.volumeMounts" }}
 {{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
 volumeMounts:
@@ -98,14 +94,6 @@ resources:
     memory: "{{ .Values.resources.memory }}"
     cpu: "{{ .Values.resources.cpu }}"
 {{- end }}
-
-
-{{- define "ftl.data" -}}
-{{- range $key, $val := $.Values.ftl }}
-        - name: {{ $key }}
-          value: {{ $val }}
-{{- end }}
-{{- end -}}
 
 {{- define "beimagepullsecret.fullname" }}
 {{- if .Values.imageCredentials.registry }}
