@@ -33,4 +33,4 @@ subjects:
 - kind: ServiceAccount
   name: "{{ .Release.Name }}-ignite"
   namespace: default
-{{- end -}}  
+{{- end -}}

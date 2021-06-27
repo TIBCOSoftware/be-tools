@@ -1,24 +1,38 @@
 
-# Default values.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+##################################################
+## BE application topology specific flags
+##################################################
 
-#Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
-#-----------------------------------------
-cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
-# omType: inmemory                        #omType can be inmemory,store,cache
-bsType: na                              #BackingStore can be none sharednothing, store
-storeType: na                           #storeType can be rdbms, as4, cassandra
-# cacheType: as2                          #cacheType can be as2, ignite
+cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, awsfargate, azure, openshift, gcp or oci
+cmType: unclustered     # Specify cluster manager. Valid values: unclustered, as2, ftl or ignite
+# omType: inmemory        # Specify object management. Valid values: inmemory, store or cache
+bsType: none            # Specify backing store. Valid values: none sharednothing or store
+# storeType: na           # Specify store provider. Valid values: rdbms, as4 or cassandra
 
-## RMS related
-enableRMS: false       # set to true, if it is BE app deployment and want to enable hot deployments using RMS
-rmsDeployment: false   # set to true, if it is RMS app deployment
+# RMS related
+enableRMS: false        # set to true, if it is BE app deployment and want to enable hot deployments using RMS
+rmsDeployment: false    # set to true, if it is RMS app deployment
 
-# Image name and pull policy required for be app
-image: befdapp:01
-imagePullPolicy: IfNotPresent
+# ignitePort: Specify ignite listen ports. Update if you have configured different values in the CDD (ignite configuration -> Listen Port)
+ignitePort:
+  dis0: 47500
+  dis1: 47501
+  dis2: 47502
+  dis3: 47503
+  dis4: 47504
+  dis5: 47505
+  dis6: 47506
+  dis7: 47507
+  dis8: 47508
+  dis9: 47509
+  dis10: 47510
+
+##################################################
+## Container image section
+##################################################
+
+image: befdapp:01               # Valid format - image:tag
+imagePullPolicy: IfNotPresent   # Specify image pull policy. Valid option: Always, IfNotPresent or Never
 # imagepullsecret Provide image pull secret name, If the image is available in a private registry. You can create image pull secret manually OR use imageCredentials section to create it. 
 imagepullsecret:
 
@@ -29,7 +43,10 @@ imageCredentials:
   password:
   email:
 
-#*************************Agents env varaibles****************************************************
+
+##################################################
+## Environment variables & GVs
+##################################################
 
 # envVarsFromConfigMaps:  Load GVs or environment variables from Kubernetes ConfigMaps
 envVarsFromConfigMaps:
@@ -41,6 +58,7 @@ envVarsFromSecrets:
 # - secret-1              # Update the Secret name you want to use
 # - secret-2
 
+# envVars Specify environment variables
 envVars:
   # Consul GV provider specific environment variables
   # CONSUL_SERVER_URL: http://192.168.0.1:8500
@@ -51,8 +69,11 @@ envVars:
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
   # custom gv provider specific environment variables
   # other environment variables
-  
-#*************************Agents Part****************************************************
+
+
+##################################################
+## Agents section
+##################################################
 
 agents:
 - name: inferenceagent
@@ -82,10 +103,11 @@ agents:
   discoverableReplicas: 0
 
 
-#*************************Health check Part****************************************************
-# Required for cache and inference agent health check
+##################################################
+## Container runtime
+##################################################
 healthcheck:
-  enabled: false        #Set to true - to enable healthcheck
+  enabled: false            #Set to true - to enable healthcheck
   livenessProbe:
     port: 5555
     initialDelaySeconds: 5
@@ -103,22 +125,10 @@ resources:
   memory: 1.2Gi
   cpu: 1
 
-#*************************Service Part****************************************************
 
-ignitePort:
-  dis0: 47500
-  dis1: 47501
-  dis2: 47502
-  dis3: 47503
-  dis4: 47504
-  dis5: 47505
-  dis6: 47506
-  dis7: 47507
-  dis8: 47508
-  dis9: 47509
-  dis10: 47510  
-
-#*************************ConfigMap****************************************************
+##################################################
+## Config Map
+##################################################
 
 configs:
   # # FTL GVs configs
@@ -156,7 +166,10 @@ configs:
   # # metrics -  custom (ex:elastic, prometheus etc..)
   # URL: http://localhost:1234
 
-#*************************Volumes Part****************************************************
+
+##################################################
+## Persistence
+##################################################
 persistence:
   logs: false           # Set to true to enable logs persistence
   rmsSecurity: false    # Set to true to enable RMS security folder persistence
@@ -167,18 +180,16 @@ persistence:
   # It takes of the form "<rms helm deployment name>-rms-shared"
   rmsSharedPVC: "RMSDEPLOYMENTNAME-rms-shared"
   
-  # dynamic provisioning: If you have storage class available in the cluster and want to use it for PV, PVCs provisioning
-  # then update persistence.storageClass value.
+  # Dynamic provisioning:
 
   # persistence.storageClass
-  # Note: For RMS deployment use storage classes which supports ReadWriteMany access mode (Ex: azurefile  )
-  #
   # If defined,             defined storage class would be used for PV/PVC provisioning
   # If set to "-",          disables dynamic PV/PVC provisioning
   # If undefined or empty,  [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
+  # Note: RMS deployments need a storagecalss which supports the access mode ReadWriteMany (Ex: azurefile  )
   storageClass: "standard"
-  scSupportsReadWriteMany: true # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
-  size: 0.5Gi         # desired storage size
+  scSupportsReadWriteMany: true   # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
+  size: 0.5Gi                     # desired storage size
 
 
   # static provisioning: It offers more control over which directory paths (storage provider like EFS) used to generage PVs.
@@ -205,7 +216,9 @@ persistence:
   fileSystemId: fs-beec7f0a
 
 
-#Required for store in  all cloud providers
+##################################################
+## mysql subchat specific section
+##################################################
 mysql:
   enabled: false              #use true for store
   backingstoreUrlGV: BACKINGSTORE_JDBC_URL    # This GV gets updated with mysql service url
@@ -221,22 +234,26 @@ mysql:
     rootPassword: password12
     database: BE_DATABASE  #database name
 
-# ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
 
-# Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
+##################################################
+## Metrics (influx, liveview, grafana) related
+##################################################
+
+# Custom values for InfluxDB chart.
 influxdb:
-  enabled: false
-  influxdbUrlGV: INFLUXDB_URL   # This GV gets updated with influxdb service url
-  image:  # Comment influx image, repository and tag for BE version 6.0 
+  enabled: false                            # Set to true, to deploy InfluxDB sub chart chart
+  influxdbUrlGV: INFLUXDB_URL               # This GV gets updated with influxdb service url
+  image:
     repository: quay.io/influxdb/influxdb   
     tag: v2.0.1
   persistence:
-    enabled: false            # Set to true for persistence
+    enabled: false                          # Set to true for persistence
 
-# Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
+
+# Custom values for Grafana chart.
 grafana:
-  enabled: false
+  enabled: false            # Set to true, to deploy grafana sub chart
   image:
     tag: 7.3.5
   service:
-    type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
+    type: NodePort          # Service type. Supported values: NodePort, LoadBalancer or ClusterIP
