@@ -16,12 +16,6 @@ Expand the name of the chart.
 {{ .Values.volumes.azure.storageClassName }}
 {{- end -}}
 
-{{- define "ignitesaname" -}}
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}
-serviceAccount: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
-{{- end }}
-{{- end -}} 
-
 {{- define "bechart.volumeMounts" }}
 {{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
 volumeMounts:
@@ -125,34 +119,24 @@ resources:
 {{- end }}
 {{- end }}
 
-
-{{- define "discovery_url" -}}
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "as2" ) }}  
+{{- define "bechart.discovery.env" }}
+{{- if eq .Values.cmType "as2" }}
 - name: AS_DISCOVER_URL
   value: tcp://
 {{- range $i, $agent := $.Values.agents -}}
 {{- range $j, $e := until (int $agent.discoverableReplicas) -}}
 {{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ include "bechart.discoveryservice.name" $ }}:50000;
-{{- end -}}
 {{- end }}
 {{- end }}
-{{- if or (eq .Values.omType "cache" ) (eq .Values.omType "store" ) }}   
-{{- if eq .Values.cmType "ftl" }}
-{{- range $key, $val := $.Values.ftl }}
-- name: {{ $key }}
-  value: {{ $val }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }}  
+{{- else if eq .Values.cmType "ignite" }}
 - name: "tra.be.ignite.k8s.service.name"
   value: "{{ include "bechart.discoveryservice.name" $ }}"
-{{- range $key, $val := $.Values.ignite_gv }}
-- name: {{ $key }}
-  value: {{ $val }}
-{{- end }}  
+- name: "tra.be.ignite.discovery.type"
+  value: "k8s"
+- name: "tra.be.ignite.k8s.namespace"
+  value: "default"
 {{- end }}
-{{- end -}}        
+{{- end }}
 
 {{- define "healthcheck" -}}
 {{- if eq .Values.healthcheck.enabled true }}

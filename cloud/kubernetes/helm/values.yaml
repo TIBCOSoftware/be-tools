@@ -7,10 +7,10 @@
 cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
 #-----------------------------------------
 cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
-omType: inmemory                        #omType can be inmemory,store,cache
+# omType: inmemory                        #omType can be inmemory,store,cache
 bsType: na                              #BackingStore can be none sharednothing, store
 storeType: na                           #storeType can be rdbms, as4, cassandra
-cacheType: as2                          #cacheType can be as2, ignite
+# cacheType: as2                          #cacheType can be as2, ignite
 
 ## RMS related
 enableRMS: false       # set to true, if it is BE app deployment and want to enable hot deployments using RMS
@@ -40,22 +40,6 @@ envVarsFromConfigMaps:
 envVarsFromSecrets:
 # - secret-1              # Update the Secret name you want to use
 # - secret-2
-
-# ignite.discovery_url is GV of discovery URL
-ignite:
-  discovery_url: IGNITE_gv_DISCOVERY_URL
-  serviceaccount: ignitecache
-
-# ignite_gv requires to define in key as GV and value as value, define all gv's except ignite URL and update the ignite listen ports as per requirement
-ignite_gv:
-  IGNITE_gv_LISTEN_PORT: "47500..47510"
-  IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
-  tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
-  tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
-  
-ftl:
-  FTL_gv_REALM_SERVER: http://localhost:8585
-  FTL_gv_CLUSTER_NAME: ftl.default.cluster
 
 envVars:
   # Consul GV provider specific environment variables
@@ -137,6 +121,12 @@ ignitePort:
 #*************************ConfigMap****************************************************
 
 configs:
+  # # FTL GVs configs
+  # FTL_gv_REALM_SERVER: http://20.62.216.186:8585
+  # FTL_gv_CLUSTER_NAME: ftl.default.cluster
+  # # ignite GVs configs
+  # IGNITE_gv_LISTEN_PORT: "47500..47510"
+  # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
   # # mysql
   # BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver
   # BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE

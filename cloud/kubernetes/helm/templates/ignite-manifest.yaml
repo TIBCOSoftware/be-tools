@@ -1,14 +1,14 @@
-{{- if and (eq .Values.omType "cache" ) (eq .Values.cmType "ignite" ) }} 
+{{- if eq .Values.cmType "ignite" }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  name: "{{ .Release.Name }}-ignite"
   namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  name: "{{ .Release.Name }}-ignite"
   namespace: default
 rules:
 - apiGroups:
@@ -24,13 +24,13 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  name: "{{ .Release.Name }}-ignite"
 roleRef:
   kind: ClusterRole
-  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  name: "{{ .Release.Name }}-ignite"
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: "{{ .Release.Name }}-{{ .Values.ignite.serviceaccount }}"
+  name: "{{ .Release.Name }}-ignite"
   namespace: default
 {{- end -}}  

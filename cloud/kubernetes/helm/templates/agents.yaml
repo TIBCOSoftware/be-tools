@@ -20,7 +20,9 @@ spec:
         {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}
-{{ include "ignitesaname" $ | trim | indent 6 }}
+      {{- if eq $.Values.cmType "ignite"}}
+      serviceAccount: {{ $.Release.Name }}-ignite
+      {{- end }}
 {{- if $.Values.podAntiAffinity }}
 {{ include "bechart.affinity" $ssName | trim | indent 6 }}
 {{- end }}
@@ -54,7 +56,7 @@ spec:
         - name: {{ $envKey }}
           value: {{ $envVal }}
         {{- end}}
-{{ include "discovery_url" $ | trim | indent 8 }}
+{{ include "bechart.discovery.env" $ | trim | indent 8 }}
         {{- if and (eq $.Values.bsType "store") (eq $.Values.storeType "rdbms") $.Values.mysql.enabled }}
         - name: {{ $.Values.mysql.backingstoreUrlGV }}
           value: "jdbc:mysql://{{ $.Release.Name }}-mysql:3306/{{ $.Values.mysql.auth.database }}"
