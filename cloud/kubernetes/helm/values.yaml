@@ -3,11 +3,11 @@
 ## BE application topology specific flags
 ##################################################
 
-cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, awsfargate, azure, openshift, gcp or oci
+cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, azure, openshift, gcp or oci
 cmType: unclustered     # Specify cluster manager. Valid values: unclustered, as2, ftl or ignite
-# omType: inmemory        # Specify object management. Valid values: inmemory, store or cache
+# omType: inmemory      # Specify object management. Valid values: inmemory, store or cache
 bsType: none            # Specify backing store. Valid values: none sharednothing or store
-# storeType: na           # Specify store provider. Valid values: rdbms, as4 or cassandra
+# storeType: na         # Specify store provider. Valid values: rdbms, as4 or cassandra
 
 # RMS related
 enableRMS: false        # set to true, if it is BE app deployment and want to enable hot deployments using RMS
@@ -48,17 +48,17 @@ imageCredentials:
 ## Environment variables & GVs
 ##################################################
 
-# envVarsFromConfigMaps:  Load GVs or environment variables from Kubernetes ConfigMaps
+# envVarsFromConfigMaps: Specify configmap names (yaml array format) from which you want to load GVs or environment variables
 envVarsFromConfigMaps:
-# - configmap-1     # Update the ConfigMap name you want to use
+# - configmap-1
 # - configmap-2
 
-# envVarsFromSecrets:     Load GVs or environment variables from Kubernetes Secrets
+# envVarsFromSecrets: Specify Secrets names (yaml array format) from which you want to Load GVs or environment variables
 envVarsFromSecrets:
-# - secret-1              # Update the Secret name you want to use
+# - secret-1
 # - secret-2
 
-# envVars Specify environment variables
+# envVars Specify environment variables (yaml key value format) you want to pass on to BE agents (pods)
 envVars:
   # Consul GV provider specific environment variables
   # CONSUL_SERVER_URL: http://192.168.0.1:8500
@@ -75,6 +75,10 @@ envVars:
 ## Agents section
 ##################################################
 
+# agents: Specify BE agents configurations (yaml array format).
+# You can add additional agents (copy from agents[0] and adapt values as per the need)
+# Note that agent[].expose & agent[].hpa are optional sections
+#
 agents:
 - name: inferenceagent
   PU: default                             # processing unit
@@ -106,6 +110,7 @@ agents:
 ##################################################
 ## Container runtime
 ##################################################
+
 healthcheck:
   enabled: false            #Set to true - to enable healthcheck
   livenessProbe:
@@ -130,6 +135,9 @@ resources:
 ## Config Map
 ##################################################
 
+# configs Specify Specify environment variables (yaml key value format), So that
+# configmap gets generated and injected in to the BE agents (pods)
+#
 configs:
   # # FTL GVs configs
   # FTL_gv_REALM_SERVER: http://20.62.216.186:8585
@@ -170,6 +178,10 @@ configs:
 ##################################################
 ## Persistence
 ##################################################
+
+# persistence Enable requied flags as per the need, so that corresponding volument mounts, volume claims and persistent volumes
+# gets generated.
+#
 persistence:
   logs: false           # Set to true to enable logs persistence
   rmsSecurity: false    # Set to true to enable RMS security folder persistence
@@ -219,6 +231,7 @@ persistence:
 ##################################################
 ## mysql subchat specific section
 ##################################################
+
 mysql:
   enabled: false              #use true for store
   backingstoreUrlGV: BACKINGSTORE_JDBC_URL    # This GV gets updated with mysql service url
