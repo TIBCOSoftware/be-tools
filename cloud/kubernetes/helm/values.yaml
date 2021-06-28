@@ -209,7 +209,7 @@ persistence:
   # persistence.storageClass
   # If defined,             defined storage class would be used for PV/PVC provisioning
   # If set to "-",          disables dynamic PV/PVC provisioning
-  # If undefined or empty,  [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
+  # If empty(i.e ""),       [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
   # Note: RMS deployments need a storagecalss which supports the access mode ReadWriteMany (Ex: azurefile  )
   storageClass: "standard"
   scSupportsReadWriteMany: true   # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.

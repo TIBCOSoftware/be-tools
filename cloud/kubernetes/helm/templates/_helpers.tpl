@@ -67,7 +67,7 @@ volumeClaimTemplates:
     name: {{ $vName }}
   spec:
     accessModes: [ "ReadWriteOnce" ]
-    storageClassName: {{ $.Values.persistence.storageClass | quote }}
+{{- include "bechart.storageclass" $ | indent 4 }}
     resources:
       requests:
         storage: {{ $.Values.persistence.size }}
