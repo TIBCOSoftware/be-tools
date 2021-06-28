@@ -60,15 +60,18 @@ envVarsFromSecrets:
 
 # envVars Specify environment variables (yaml key value format) you want to pass on to BE agents (pods)
 envVars:
-  # Consul GV provider specific environment variables
+  # # env flag to specify which CDD file to use.
+  # # In case RMS container, It contains 3 different CDD files with RMS.cdd as default. You can use this flag to run BE app with diffent CDD.
+  # CDD_FILE: "<CDD file path>"
+  # # Consul GV provider specific environment variables
   # CONSUL_SERVER_URL: http://192.168.0.1:8500
   # BE_APP_NAME: fd
   # APP_CONFIG_PROFILE: test
-  # HTTP GV provider specific environment variables
+  # # HTTP GV provider specific environment variables
   # GVP_HTTP_SERVER_URL: URL
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
-  # custom gv provider specific environment variables
-  # other environment variables
+  # # custom gv provider specific environment variables
+  # # other environment variables
 
 
 ##################################################
@@ -105,6 +108,15 @@ agents:
   cacheStorageEnabled: true
   replicas: 0
   discoverableReplicas: 0
+  expose:
+  hpa:
+    maxReplicas: 5
+    cpuMetric:
+      enable: false
+      averageUtilizationPercentage: 90
+    memoryMetric:
+      enable: false
+      averageUtilizationPercentage: 90
 
 
 ##################################################
@@ -127,7 +139,7 @@ podAntiAffinity: false
 
 # Update how much of memory, cpu resource a BE app container needs.
 resources:
-  memory: 1.2Gi
+  memory: 1.2Gi     # In case of RMS, You may need to update this to 4Gi
   cpu: 1
 
 
