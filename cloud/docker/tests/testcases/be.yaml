@@ -56,6 +56,9 @@ fileExistenceTests:
   - name: 'Ear file'
     path: '$EAR_FILE'
     shouldExist: true
+  - name: 'JAVA Home'
+    path: '/opt/tibco/JAVA_HOME_DIR_NAME/$JRE_VERSION'
+    shouldExist: true
 commandTests:
     - name: "beengine without cdd"
       command: "sh"

@@ -14,11 +14,12 @@ ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
 ARG_GV_PROVIDER=na
+ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,as.yaml,aslegacy.yaml,ftl.yaml,consulgv.yaml,httpgv.yaml"
+FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,consulgv.yaml,httpgv.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -32,6 +33,8 @@ USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format e
 USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]"
+USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
+USAGE+="\n\n [--openjdk]                  : Mention true if openjdk is used (default is \"false\") [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
@@ -82,6 +85,20 @@ while [[ $# -gt 0 ]]; do
         -f=*|--ftl-version=*)
         ARG_FTL_SHORT_VERSION="${key#*=}"
         ;;
+        --image-type)
+        shift # past the key and to the value
+        ARG_IMAGE_TYPE="$1"
+        ;;
+        --image-type=*)
+        ARG_IMAGE_TYPE="${key#*=}"
+        ;;
+        --openjdk)
+        shift # past the key and to the value
+        ARG_OPENJDK="$1"
+        ;;
+        --openjdk=*)
+        ARG_OPENJDK="${key#*=}"
+        ;;
         -kv|--key-value-pair)
         shift # past the key and to the value
         ARG_KEY_VALUE_PAIRS+=" $1"
@@ -130,8 +147,19 @@ SED_EXP=''
 ## be version validation
 if [ $ARG_BE_SHORT_VERSION != na ]; then
   echo "INFO: be version:          [${ARG_BE_SHORT_VERSION}]"
-  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be.yaml "
+  if [ $ARG_IMAGE_TYPE = rms ]; then
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-rms.yaml "
+  elif [ $ARG_IMAGE_TYPE = teagent ]; then
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-teagent.yaml "
+  else
+    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be.yaml "
+  fi
   SED_EXP+=" -e s/BE_SHORT_VERSION/${ARG_BE_SHORT_VERSION}/g "
+  if [ $ARG_OPENJDK == "true" ];then
+    SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/openjdk/g "
+  else
+    SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/tibcojre64/g "
+  fi
 else
   echo "ERROR: Be version is mandatory "
   printf " ${USAGE} "
