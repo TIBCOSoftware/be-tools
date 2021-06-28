@@ -57,7 +57,7 @@ spec:
           value: {{ $envVal }}
         {{- end}}
 {{ include "bechart.discovery.env" $ | trim | indent 8 }}
-        {{- if and (eq $.Values.bsType "store") $.Values.mysql.enabled }}
+        {{- if and (not (empty $.Values.mysql.backingstoreUrlGV)) $.Values.mysql.enabled }}
         - name: {{ $.Values.mysql.backingstoreUrlGV }}
           value: "jdbc:mysql://{{ $.Release.Name }}-mysql:3306/{{ $.Values.mysql.auth.database }}"
         {{- end }}
