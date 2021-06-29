@@ -88,11 +88,11 @@ storageClassName: {{ .Values.persistence.storageClass }}
 {{- define "bechart.resourceLimits" }}
 resources:
   requests:
-    memory: "{{ .Values.resources.memory }}"
-    cpu: "{{ .Values.resources.cpu }}"
+    memory: "{{ .resources.memoryRequest }}"
+    cpu: "{{ .resources.cpuRequest }}"
   limits:
-    memory: "{{ .Values.resources.memory }}"
-    cpu: "{{ .Values.resources.cpu }}"
+    memory: "{{ .resources.memoryLimit }}"
+    cpu: "{{ .resources.cpuLimit }}"
 {{- end }}
 
 {{- define "beimagepullsecret.fullname" }}
