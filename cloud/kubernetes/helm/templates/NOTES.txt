@@ -6,7 +6,7 @@ Release name:              {{ .Release.Name }}
 Cloud provider:            {{ .Values.cpType }}
 Cluster provider:          {{ .Values.cmType }}
 Hot deployments:           {{ if .Values.enableRMS }}enabled{{ else }}not enabled{{ end }}
-This is a RMS deployment:  {{ if .Values.enableRMS }}yes{{ else }}no{{ end }}
+This is a RMS deployment:  {{ if .Values.rmsDeployment }}yes{{ else }}no{{ end }}
 
 Following services have been exposed for external access:
 {{ range $i, $agent := .Values.agents }}
