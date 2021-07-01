@@ -774,7 +774,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws 2>/dev/null
+        find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
     fi
 
     if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]]; then
@@ -826,9 +826,9 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg JRE_VERSION=$ARG_JRE_VERSION -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg JRE_VERSION=$ARG_JRE_VERSION -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
