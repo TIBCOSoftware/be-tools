@@ -42,5 +42,11 @@ for /f %%i in ('dir /b !OPEN_JDK_INSTALLER_LOCATION! ^| findstr /I "!OPEN_JDK_RE
     )
 )
 
+if !OPEN_JDK_VERSION! EQU na (
+    echo ERROR: Openjdk installer archive not found at the specified location:[!OPEN_JDK_INSTALLER_LOCATION!].
+    SET "%~7=true"
+    EXIT /B 1
+)
+
 SET "%5=!OPEN_JDK_VERSION!" & SET "%6=!OPEN_JDK_FILENAME!" & SET "%7=false"
 EXIT /B 0

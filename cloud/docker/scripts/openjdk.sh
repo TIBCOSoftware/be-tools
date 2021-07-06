@@ -14,4 +14,7 @@ if [ $openJdkPckgsCnt -gt 0 ]; then
         FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$OPEN_JDK_FILENAME"
         FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
     fi
+else
+    printf "\nERROR: Openjdk installer archive not found at the specified location:[$ARG_INSTALLER_LOCATION].\n"
+	exit 1;
 fi

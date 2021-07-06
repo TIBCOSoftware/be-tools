@@ -93,8 +93,8 @@ USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created ima
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
 USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
-USAGE+="                           Note: This is boolean flag.\n"
-USAGE+="                                 Place OpenJDK file along with TIBCO installers."
+USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
+USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -102,28 +102,28 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-        -s|--source) 
+        -s|--source)
             shift # past the key and to the value
             ARG_SOURCE="$1"
             ;;
         -s=*|--source=*)
             ARG_SOURCE="${key#*=}"
             ;;
-        -i|--image-type) 
+        -i|--image-type)
             shift # past the key and to the value
             ARG_TYPE="$1"
             ;;
         -i=*|--image-type=*)
             ARG_TYPE="${key#*=}"
 	        ;;
-        -a|--app-location) 
+        -a|--app-location)
             shift # past the key and to the value
             ARG_APP_LOCATION="$1"
             ;;
         -a=*|--app-location=*)
             ARG_APP_LOCATION="${key#*=}"
 	        ;;
-        -t|--tag) 
+        -t|--tag)
             shift # past the key and to the value
             ARG_TAG="$1"
             ;;
@@ -157,7 +157,7 @@ while [[ $# -gt 0 ]]; do
         -o|--openjdk)
             ARG_USE_OPEN_JDK="true"
             ;;
-        -h|--help) 
+        -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
             exit 0
@@ -185,11 +185,11 @@ fi
 if [ "$MISSING_ARGS" != "" ]; then
     printf "\nERROR: Missing mandatory argument : $MISSING_ARGS\n"
     printf "$USAGE"
-    exit 1; 
+    exit 1;
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l) 
+    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l)
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -443,11 +443,11 @@ else
 fi
 
 #Find JRE Version for given BE Version
-length=${#BE_VERSION_AND_JRE_MAP[@]}	
+length=${#BE_VERSION_AND_JRE_MAP[@]}
 for (( i = 0; i < length; i++ )); do
     if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
         ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-        break;	
+        break;
     fi
 done
 
@@ -509,11 +509,12 @@ if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
 fi
 
 if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
-    if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-        OPEN_JDK_VERSION=$ARG_JRE_VERSION
-    else
-        # validate as
+    if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
         source ./scripts/openjdk.sh
+        if [ "$ARG_JRE_VERSION" != "$OPEN_JDK_VERSION" ]; then
+            echo "ERROR: OpenJDK Version [$OPEN_JDK_VERSION] and BE supported JRE Runtime Version [$ARG_JRE_VERSION] mismatch"
+            exit 1
+        fi
     fi
 fi
 
@@ -735,7 +736,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     RANDM_FOLDER="tmp$RANDOM"
     mkdir $TEMP_FOLDER/$RANDM_FOLDER
 
-    # Exract it
+    # Extract it
     tar -C $TEMP_FOLDER/$RANDM_FOLDER -xf $TEMP_FOLDER/be.tar
 
     OPT_TIBCO="/opt/tibco"
@@ -824,12 +825,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
     fi
 
-    if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
-        JAVA_HOME_DIR_NAME=openjdk
-    else
-        JAVA_HOME_DIR_NAME=tibcojre64
+    if [ "$ARG_USE_OPEN_JDK" = "true" ]; then
+        ARG_USE_OPEN_JDK=false
     fi
-    
+    JAVA_HOME_DIR_NAME=tibcojre64
     mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     cp -r $TRA_JAVA_HOME/* $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
@@ -856,7 +855,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 else
     for i in "${FILE_LIST[@]}" ; do
         echo "INFO: Copying package: [$i]"
-        cp $i $TEMP_FOLDER/installers 
+        cp $i $TEMP_FOLDER/installers
     done
 fi
 

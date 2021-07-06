@@ -377,11 +377,6 @@ if !INSTALLATION_TYPE! EQU fromlocal (
             set "ARG_JRE_VERSION=%%~nxf"
         )
     )
-
-    REM check openjdk details
-    if "!ARG_USE_OPEN_JDK!" EQU "true" (
-        set OPEN_JDK_VERSION=!ARG_JRE_VERSION!
-    )
     
     REM Check AS_HOME from tra file it is as legacy home
     for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.AS_HOME=" !BE_HOME!\!TRA_FILE!') do (
@@ -674,13 +669,8 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe','!BE_HOME!\bin\dbkeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
-    if "!ARG_USE_OPEN_JDK!" EQU "true" (
-        mkdir !TEMP_FOLDER!\tibcoHome\openjdk
-        set JAVA_HOME_DIR_NAME=openjdk
-    ) else (
-        mkdir !TEMP_FOLDER!\tibcoHome\tibcojre64
-        set JAVA_HOME_DIR_NAME=tibcojre64
-    )
+    set JAVA_HOME_DIR_NAME=tibcojre64
+    mkdir !TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!
     powershell -Command "Copy-Item '!TRA_JAVA_HOME!' -Destination '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!' -Recurse | out-null"
 
     if exist "!BE_HOME!\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '!BE_HOME!\bin\cassandrakeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
@@ -861,8 +851,9 @@ EXIT /B 0
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
     echo  [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]
-    echo                            Note: This is boolean flag.
-    echo                                  Place OpenJDK file along with TIBCO installers.
+    echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
+    echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
+    echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
     echo  NOTE: Encapsulate all the arguments between double quotes.
