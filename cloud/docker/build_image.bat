@@ -428,6 +428,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         )
     )
 
+    if "!ARG_USE_OPEN_JDK!" EQU "true" set "ARG_USE_OPEN_JDK=false"
 ) else (
     REM Creating an empty file
     break>"!TEMP_FOLDER!/package_files.txt"
