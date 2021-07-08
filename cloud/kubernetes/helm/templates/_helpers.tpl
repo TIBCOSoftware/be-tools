@@ -26,16 +26,16 @@ volumeMounts:
 {{- end }}
 {{- if or .Values.enableRMS .Values.rmsDeployment }}
 - name: rms-shared
-  mountPath: "/opt/tibco/be/latest/rms/shared"
+  mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/rms/shared"
 {{- end }}
 {{- if .Values.rmsDeployment }}
 {{- if .Values.persistence.rmsSecurity }}
 - name: rms-security
-  mountPath: "/opt/tibco/be/latest/rms/config/security"
+  mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/rms/config/security"
 {{- end }}
 {{- if .Values.persistence.rmsWebstudio }}
 - name: rms-webstudio
-  mountPath: "/opt/tibco/be/latest/examples/standard/WebStudio"
+  mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/examples/standard/WebStudio"
 {{- end }}
 {{- end }}
 {{- end }}

@@ -5,13 +5,12 @@
 
 cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, azure, openshift, gcp or oci
 cmType: unclustered     # Specify cluster manager. Valid values: unclustered, as2, ftl or ignite
-# omType: inmemory      # Specify object management. Valid values: inmemory, store or cache
 bsType: none            # Specify backing store. Valid values: none sharednothing or store
-# storeType: na         # Specify store provider. Valid values: rdbms, as4 or cassandra
 
 # RMS related
 enableRMS: false        # set to true, if it is BE app deployment and want to enable hot deployments using RMS
 rmsDeployment: false    # set to true, if it is RMS app deployment
+beShortVersion: 6.1     # Required in case of RMS deployments. It is the BE product short version with which container image is created.
 
 # ignitePort: Specify ignite listen ports. Update if you have configured different values in the CDD (ignite configuration -> Listen Port)
 ignitePort:
