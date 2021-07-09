@@ -57,18 +57,19 @@ def discoverInstanceDatails(appManagementFilePath):
                     if(not appname):
                         appname=item["spec"]["containers"][0]["image"]
                     
-                    parts=appname.split('/')
-                    appname=parts[len(parts)-1]
-                    appname=appname.replace('.','_').replace(':','_')
-                    machinename=podIp+"_"+podname
-                    instancename="Instance_"+podIp+"_"+podname
-                    logger.info("Adding Machine %s:" %machinename)
-                    addMachine(machinename,podIp,appManagementFilePath)
-                    logger.info("Adding Application %s:" %appname)
-                    addApplication(appname,appManagementFilePath)
-                    logger.info("Adding Instance  %s:" %instancename)
-                    addInstance(appname,machinename,instancename,str(jmxport),jmxusername,jmxpassword,appManagementFilePath,puname)
-			   
+                    if(puname and jmxport>0):
+                        parts=appname.split('/')
+                        appname=parts[len(parts)-1]
+                        appname=appname.replace('.','_').replace(':','_')
+                        machinename=podIp+"_"+podname
+                        instancename="Instance_"+podIp+"_"+podname
+                        logger.info("Adding Machine %s:" %machinename)
+                        addMachine(machinename,podIp,appManagementFilePath)
+                        logger.info("Adding Application %s:" %appname)
+                        addApplication(appname,appManagementFilePath)
+                        logger.info("Adding Instance  %s:" %instancename)
+                        addInstance(appname,machinename,instancename,str(jmxport),jmxusername,jmxpassword,appManagementFilePath,puname)
+
   
 #Add machine
 def addMachine(machinename,hostname,appManagementFilePath):
