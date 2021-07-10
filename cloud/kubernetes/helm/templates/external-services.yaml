@@ -1,0 +1,16 @@
+{{- range $i, $agent := .Values.agents }}
+{{- range $j, $service := $agent.expose }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ $agent.name }}-{{ $service.name }}
+spec:
+  ports:
+    - port: {{ $service.port }}
+      protocol: TCP
+  selector:
+    name: {{ $.Release.Name }}-{{ $agent.name }}
+  type: {{ $service.type }}
+---
+{{- end }}
+{{- end }}

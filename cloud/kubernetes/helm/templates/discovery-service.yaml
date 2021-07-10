@@ -1,0 +1,22 @@
+{{- if has .Values.cmType (list "as2" "ftl" "ignite") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bechart.discoveryservice.name" . }}
+spec:
+  selector:
+    cacheagent: "yes"
+  clusterIP: None
+  ports:
+  {{- if eq .Values.cmType "as2" }}
+    - port: 50000
+      protocol: TCP
+  {{- end }}
+  {{- if or (eq .Values.cmType "ftl" )  (eq .Values.cmType "ignite" ) }}
+  {{- range $key, $port := $.Values.ignitePort }}
+    - port: {{ $port }}
+      name: {{ $key }}
+      protocol: TCP
+  {{- end }}
+  {{- end }}
+  {{- end }}

@@ -1,0 +1,38 @@
+{{- range $i, $agent := .Values.agents }}
+{{- if gt (int $agent.replicas) 0 }}
+{{- if $agent.hpa }}
+{{- if or $agent.hpa.cpuMetric.enable $agent.hpa.memoryMetric.enable }}
+{{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $ssName }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: {{ $ssName }}
+  minReplicas: {{ $agent.replicas }}
+  maxReplicas: {{ $agent.hpa.maxReplicas }}
+  metrics:
+{{- if $agent.hpa.cpuMetric.enable }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ $agent.hpa.cpuMetric.averageUtilizationPercentage }}
+{{- end }}
+{{- if $agent.hpa.memoryMetric.enable }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ $agent.hpa.memoryMetric.averageUtilizationPercentage }}
+{{- end }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
