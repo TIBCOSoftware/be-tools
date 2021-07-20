@@ -791,7 +791,11 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../rms/bin/be-rms.tra
     fi
-    cp "$BE_HOME/bin/dbkeywordmap.xml" .
+
+    if [ -e $BE_HOME/bin/dbkeywordmap.xml ]; then
+        cp "$BE_HOME/bin/dbkeywordmap.xml" .
+    fi
+    
     if [ -e "$BE_HOME/bin/cassandrakeywordmap.xml" ]; then
         cp "$BE_HOME/bin/cassandrakeywordmap.xml" .
     fi
