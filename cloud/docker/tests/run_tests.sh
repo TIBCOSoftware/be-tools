@@ -34,7 +34,7 @@ USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [o
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
-USAGE+="\n\n [--openjdk]                  : Mention true if openjdk is used (default is \"false\") [optional]"
+USAGE+="\n\n [--java-dir-name]            : Java home directory name (default is \"tibcojre64\") [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
@@ -92,12 +92,12 @@ while [[ $# -gt 0 ]]; do
         --image-type=*)
         ARG_IMAGE_TYPE="${key#*=}"
         ;;
-        --openjdk)
+        --java-dir-name)
         shift # past the key and to the value
-        ARG_OPENJDK="$1"
+        ARG_JAVA_HOME_DIR_NAME="$1"
         ;;
-        --openjdk=*)
-        ARG_OPENJDK="${key#*=}"
+        --java-dir-name=*)
+        ARG_JAVA_HOME_DIR_NAME="${key#*=}"
         ;;
         -kv|--key-value-pair)
         shift # past the key and to the value
@@ -125,6 +125,10 @@ DOCKER_HOST=$(docker context inspect -f="{{.Endpoints.docker.Host}}")
 if [[ $DOCKER_CONTEXT_TLS =~ pem  && $DOCKER_HOST =~ tcp:// ]]; then
   echo "Skipping docker container structure tests, as docker context is not pointing to local docker daemon"
   exit 0
+fi
+
+if [ $ARG_JAVA_HOME_DIR_NAME = "" ];then
+    ARG_JAVA_HOME_DIR_NAME=tibcojre64
 fi
 
 echo ""
@@ -155,11 +159,7 @@ if [ $ARG_BE_SHORT_VERSION != na ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be.yaml "
   fi
   SED_EXP+=" -e s/BE_SHORT_VERSION/${ARG_BE_SHORT_VERSION}/g "
-  if [ $ARG_OPENJDK == "true" ];then
-    SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/openjdk/g "
-  else
-    SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/tibcojre64/g "
-  fi
+  SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/$ARG_JAVA_HOME_DIR_NAME/g "
 else
   echo "ERROR: Be version is mandatory "
   printf " ${USAGE} "
