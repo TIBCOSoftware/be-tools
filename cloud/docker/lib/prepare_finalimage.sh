@@ -10,6 +10,8 @@ fi
 cd /opt/tibco/be/$BE_SHORT_VERSION/bin/
 if [ "$COMPONENT" = "rms" ]; then
     TRA_FILE="../rms/bin/be-rms.tra"
+elif [ "$COMPONENT" = "tea" ]; then
+    TRA_FILE="../teagent/bin/be-teagent.tra"
 else
     TRA_FILE="be-engine.tra"
 fi
