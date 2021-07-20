@@ -53,7 +53,8 @@ ENV PU=default \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
 RUN mkdir -p /mnt/tibco/be/logs \ 
- && mkdir -p /mnt/tibco/be/data-store
+ && mkdir -p /mnt/tibco/be/data-store \
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 VOLUME /mnt/tibco/be/logs \
  /mnt/tibco/be/data-store

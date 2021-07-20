@@ -1,7 +1,8 @@
+{{- if has .Values.cmType (list "as2" "ftl" "ignite") }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "discoveryservice.fullname" . }}
+  name: {{ include "bechart.discoveryservice.name" . }}
 spec:
   selector:
     cacheagent: "yes"
@@ -16,5 +17,6 @@ spec:
     - port: {{ $port }}
       name: {{ $key }}
       protocol: TCP
+  {{- end }}
   {{- end }}
   {{- end }}

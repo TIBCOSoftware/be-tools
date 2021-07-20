@@ -59,7 +59,8 @@ ENV PU=default \
  BE_INSTANCE_POLLAR_INTERVAL=30 
 
 RUN mkdir -p /mnt/tibco/be/logs \
- && mkdir -p /mnt/tibco/be/data-store
+ && mkdir -p /mnt/tibco/be/data-store \
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 #Logs
 VOLUME /mnt/tibco/be/ \
@@ -71,4 +72,3 @@ EXPOSE 5555
 WORKDIR /home/tibco/be
 RUN chmod +x *.py
 CMD ["./run"]
-

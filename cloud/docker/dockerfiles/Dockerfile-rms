@@ -110,7 +110,8 @@ ENV PU=default \
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 RUN mkdir -p /mnt/tibco/be/logs \
- && mkdir -p /mnt/tibco/be/data-store
+ && mkdir -p /mnt/tibco/be/data-store \
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \

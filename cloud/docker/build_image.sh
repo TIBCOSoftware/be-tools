@@ -807,7 +807,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws 2>/dev/null
+        find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
     fi
 
     if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]]; then

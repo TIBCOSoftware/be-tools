@@ -26,50 +26,50 @@ def isKeyExist(key,arr):
 
 #discover containers
 def discoverInstanceDatails(appManagementFilePath):
-  logger.info("****************************** Get the container host name and ip address ******************************")
-  try:
-    output = check_output(["cat","/var/run/secrets/kubernetes.io/serviceaccount/token"])
-    headers={'Content-Type' : 'application/jsoncharset=UTF-8','Authorization': 'Bearer '+output}
-    result = requests.get("https://kubernetes.default.svc/api/v1/pods",headers=headers,verify="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
-    result=json.loads(result.content) 
-  except CalledProcessError as e:
-	logger.error(str(e))
-  
-  if result and isKeyExist("items",result):
-          items=result["items"]
-          if items and len(items)>0:               
-	  	for item in items:			
-	      		if(isKeyExist("status",item) and isKeyExist("status",item)  and "Running"==item["status"]["phase"] and "env" in item["spec"]["containers"][0]):
-	        	  podname=item["metadata"]["name"]
-			  podIp=item["status"]["podIP"]
-			  environment=item["spec"]["containers"][0]["env"]
-			  puname=getEnvironmentVariable(environment,'PU')                         
-                          #Get JMX details
-                    	  jmxport=getEnvironmentVariable(environment,'JMX_PORT')      
-	                  if(not jmxport):
-        	                jmxport=5555 
-			  if(puname and jmxport>0):                                  
-				  jmxusername=getEnvironmentVariable(environment,'JMX_USERNAME')
-                    		  jmxpassword=getEnvironmentVariable(environment,'JMX_PASSWORD')
-				  appname=getEnvironmentVariable(environment,'APPLICATION_NAME')
-                    		  if(not appname):
-				  	appname=item["spec"]["containers"][0]["image"]
-                                        parts=appname.split('/')
-	                          	appname=parts[len(parts)-1]
-	                    	  	appname=appname.replace('.','_').replace(':','_') 
+    logger.info("****************************** Get the container host name and ip address ******************************")
+    try:
+        output = open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r').read()
+        headers={'Content-Type' : 'application/jsoncharset=UTF-8','Authorization': 'Bearer '+output}
+        result = requests.get("https://kubernetes.default.svc/api/v1/pods",headers=headers,verify="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+        result=json.loads(result.content)
+    except CalledProcessError as e:
+        logger.error(e)
+    
+    if result and isKeyExist("items",result):
+        items=result["items"]
+        if items and len(items)>0:
+            for item in items:
+                if(isKeyExist("status",item) and isKeyExist("status",item)  and "Running"==item["status"]["phase"] and "env" in item["spec"]["containers"][0]):
+                    podname=item["metadata"]["name"]
+                    podIp=item["status"]["podIP"]
+                    environment=item["spec"]["containers"][0]["env"]
+                    puname=getEnvironmentVariable(environment,'PU')
+                    
+                    #Get JMX details
+                    jmxport=getEnvironmentVariable(environment,'JMX_PORT')
+                    if(not jmxport):
+                        jmxport=5555
+                    
+                    jmxusername=getEnvironmentVariable(environment,'JMX_USERNAME')
+                    jmxpassword=getEnvironmentVariable(environment,'JMX_PASSWORD')
+                    
+                    appname=getEnvironmentVariable(environment,'APPLICATION_NAME')
+                    if(not appname):
+                        appname=item["spec"]["containers"][0]["image"]
+                    
+                    if(puname and jmxport>0):
+                        parts=appname.split('/')
+                        appname=parts[len(parts)-1]
+                        appname=appname.replace('.','_').replace(':','_')
+                        machinename=podIp+"_"+podname
+                        instancename="Instance_"+podIp+"_"+podname
+                        logger.info("Adding Machine %s:" %machinename)
+                        addMachine(machinename,podIp,appManagementFilePath)
+                        logger.info("Adding Application %s:" %appname)
+                        addApplication(appname,appManagementFilePath)
+                        logger.info("Adding Instance  %s:" %instancename)
+                        addInstance(appname,machinename,instancename,str(jmxport),jmxusername,jmxpassword,appManagementFilePath,puname)
 
-				  machinename=podIp+"_"+podname 
-                        	  instancename="Instance_"+podIp+"_"+podname
-                                  logger.info("Adding Machine %s:" %machinename)
-                            	  addMachine(machinename,podIp,appManagementFilePath)
-                                                 
-                                  logger.info("Adding Application %s:" %appname)
-                                  addApplication(appname,appManagementFilePath)
-
-                                  logger.info("Adding Instance  %s:" %instancename)
-                                  addInstance(appname,machinename,instancename,str(jmxport),jmxusername,jmxpassword,appManagementFilePath,puname)
-
-			   
   
 #Add machine
 def addMachine(machinename,hostname,appManagementFilePath):
@@ -97,46 +97,46 @@ def getEnvironmentVariable(environment,name):
     return ""
 
 def registerTEAgent(serverURL,username,userPwd,teaagenturl):
-	url=serverURL+"/teas/task"
-	teaagenturl=teaagenturl+"/beTeaAgent"
-	payload='{"operation":"registerAgentWithReferenceReturn","params":{"name":"BE","url":\"'+teaagenturl+'\","description":""},"methodType":"UPDATE","objectId":":tea::agents:"}'
-	headers={ 'Accept':'application/json, text/plain, */*','Content-Type' : 'application/jsoncharset=UTF-8' }
-	success =False
-	while (not success):
-		try:
-			resp=requests.put(url, data=payload,auth=HTTPBasicAuth(username,userPwd),headers =headers )
-			if resp.status_code != 200:
-				message=resp.json()[ 'message' ]
-				if "Agent 'BE' is already registered " in message:
-					success=True
-                                        logger.info(message)
-                                else:
-                                        logger.error(resp.json())	
-			else:
-				success=True
-				logger.info("TEA agent registered successfully")
-		except ConnectionError as e:
-			pass
-		if not success:	
-			time.sleep(30)
+    url=serverURL+"/teas/task"
+    teaagenturl=teaagenturl+"/beTeaAgent"
+    payload='{"operation":"registerAgentWithReferenceReturn","params":{"name":"BE","url":\"'+teaagenturl+'\","description":""},"methodType":"UPDATE","objectId":":tea::agents:"}'
+    headers={ 'Accept':'application/json, text/plain, */*','Content-Type' : 'application/jsoncharset=UTF-8' }
+    success =False
+    while (not success):
+        try:
+            resp=requests.put(url, data=payload,auth=HTTPBasicAuth(username,userPwd),headers =headers )
+            if resp.status_code != 200:
+                message=resp.json()[ 'message' ]
+                if "Agent 'BE' is already registered " in message:
+                    success=True
+                    logger.info(message)
+                else:
+                    logger.error(resp.json())
+            else:
+                success=True
+                logger.info("TEA agent registered successfully")
+        except ConnectionError as e:
+            pass
+        
+        if not success:
+            time.sleep(30)
 
-	
 def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,teaagenturl,pythonpath,pollarinterval):
- logger.info("Python path:"+pythonpath)
- appManagementFilePath="python "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\""
- applications=[]
- machines=[]
- instances=[]
- 
- while True:
-	try:
-		registerTEAgent(serverURL,userName,userPwd,teaagenturl)
-                discoverInstanceDatails(appManagementFilePath)	                	   
+    logger.info("Python path:"+pythonpath)
+    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\""
+    applications=[]
+    machines=[]
+    instances=[]
+
+    while True:
+        try:
+            registerTEAgent(serverURL,userName,userPwd,teaagenturl)
+            discoverInstanceDatails(appManagementFilePath)
         except Exception  as e:
-		logger.error(str(e))
-    	
-	time.sleep(int(pollarinterval))	     
-                             
+            logger.error(str(e))
+        
+        time.sleep(int(pollarinterval))	     
+                     
 def createCommandParser():
     #create the top-level parser
     commandParser = argparse.ArgumentParser(add_help = False, description = 'Applications Management Operations CLI.')

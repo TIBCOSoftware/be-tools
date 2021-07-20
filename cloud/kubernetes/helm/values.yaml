@@ -1,103 +1,18 @@
 
-# Default values.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+##################################################
+## BE application topology specific flags
+##################################################
 
-#Required parameter to be passed for all cloud providers
-cpType: minikube      #cpType can be minikube, aws, awsfargate, azure, openshift, gcp or oci
-#-----------------------------------------
-cmType: unclustered                     #cmType can be unclustered,as2,ftl,ignite
-omType: inmemory                        #omType can be inmemory,store,cache
-bsType: na                              #BackingStore can be none sharednothing, store
-storeType: na                           #storeType can be rdbms, as4, cassandra
-cacheType: as2                          #cacheType can be as2, ignite
+cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, azure, openshift, gcp or oci
+cmType: unclustered     # Specify cluster manager. Valid values: unclustered, as2, ftl or ignite
+bsType: none            # Specify backing store. Valid values: none sharednothing or store
 
-# Image name and pull policy required for be app
-image: befdapp:01
-imagePullPolicy: IfNotPresent
-# imagepullsecret Provide image pull secret name, If the image is available in a private registry. You can create image pull secret manually OR use imageCredentials section to create it. 
-imagepullsecret:
+# RMS related
+enableRMS: false        # set to true, if it is BE app deployment and want to enable hot deployments using RMS
+rmsDeployment: false    # set to true, if it is RMS app deployment
+beShortVersion: 6.1     # Required in case of RMS deployments. It is the BE product short version with which container image is created.
 
-# imageCredentials Credentials to pull image from a private registry. You can skip this if you want create image pull secret manually.
-imageCredentials:
-  registry:                             #Ex: hub.docker.com
-  username:
-  password:
-  email:
-
-#*************************Agents env varaibles****************************************************
-
-# ignite.discovery_url is GV of discovery URL
-ignite:
-  discovery_url: IGNITE_gv_DISCOVERY_URL
-  serviceaccount: ignitecache
-
-# ignite_gv requires to define in key as GV and value as value, define all gv's except ignite URL and update the ignite listen ports as per requirement
-ignite_gv:
-  IGNITE_gv_LISTEN_PORT: "47500..47510"
-  IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
-  tra.be.ignite.discovery.type: k8s     # Do not edit this property, It is used for Ignite Service Discovery
-  tra.be.ignite.k8s.namespace: default  # Do not edit this property, It is used for Ignite Service Discovery
-  
-ftl:
-  FTL_gv_REALM_SERVER: http://localhost:8585
-  FTL_gv_CLUSTER_NAME: ftl.default.cluster
-
-env:
-  # Consul GV provider specific environment variables
-  # CONSUL_SERVER_URL: http://192.168.0.1:8500
-  # BE_APP_NAME: fd
-  # APP_CONFIG_PROFILE: test
-  # HTTP GV provider specific environment variables
-  # GVP_HTTP_SERVER_URL: URL
-  # GVP_HTTP_HEADERS: "Content-Type:application/json"
-  # custom gv provider specific environment variables
-  # other environment variables
-  
-#*************************Agents Part****************************************************
-
-agents:
-  - name: beinferenceagent
-    PU: default                 # processing unit
-    cacheStorageEnabled: false  # true: marks this as a cache agent
-    replicas: 1                 # desired number of agents
-    discoverableReplicas: 0     # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
-    expose:
-      - name: jmx               # service name
-        port: 5555              # container port to be exposed
-        type: LoadBalancer      # service type. Supported values: NodePort, LoadBalancer or clusterIP
-      - name: httpchannel
-        port: 8109
-        type: LoadBalancer
-  - name: cacheagent
-    PU: cache
-    cacheStorageEnabled: true
-    replicas: 2
-    discoverableReplicas: 2
-
-
-#*************************Health check Part****************************************************
-# Required for cache and inference agent health check
-healthcheck:
-  enabled: false        #Set to true - to enable healthcheck
-  livenessProbe:
-    port: 5555
-    initialDelaySeconds: 5
-    periodSeconds: 5
-  readinessProbe:
-    port: 5555
-    initialDelaySeconds: 5 
-    periodSeconds: 5 
-
-# Resource memory for EKS Fargate pods
-resources:
-  memory: 1.2Gi
-  cpu: 1
-aws:
-  efsFileSystemId: fs-12345678   #update for awsfargate(cpType=awsfargate) - for EKS and KOPS cluster with efs set volumes.storageClass=efs-sc
-
-#*************************Service Part****************************************************
-
+# ignitePort: Specify ignite listen ports. Update if you have configured different values in the CDD (ignite configuration -> Listen Port)
 ignitePort:
   dis0: 47500
   dis1: 47501
@@ -109,71 +24,233 @@ ignitePort:
   dis7: 47507
   dis8: 47508
   dis9: 47509
-  dis10: 47510  
+  dis10: 47510
 
-#*************************ConfigMap****************************************************
+##################################################
+## Container image section
+##################################################
 
-#Required for store in all cloud providers
-configmapname: storeconfig
+image: befdapp:01               # Valid format - image:tag
+imagePullPolicy: IfNotPresent   # Specify image pull policy. Valid option: Always, IfNotPresent or Never
+# imagepullsecret Provide image pull secret name, If the image is available in a private registry. You can create image pull secret manually OR use imageCredentials section to create it. 
+imagepullsecret:
 
-configmap:
-  dbdriver: com.mysql.jdbc.Driver
-  dburl: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
-  dbusername: BE_USER
-  dbpwd: BE_USER
-  dbpoolsize: 5
-  dblogintimeout: 0
+# imageCredentials Credentials to pull image from a private registry. You can skip this if you want create image pull secret manually.
+imageCredentials:
+  registry:                             #Ex: hub.docker.com
+  username:
+  password:
+  email:
 
-#Required for store in all cloud providers
-database:
-  BACKINGSTORE_JDBC_DRIVER: dbdriver 
-  BACKINGSTORE_JDBC_URL: dburl
-  BACKINGSTORE_JDBC_USERNAME: dbusername
-  BACKINGSTORE_JDBC_PASSWORD: dbpwd
-  BACKINGSTORE_JDBC_POOL_SIZE: dbpoolsize 
-  BACKINGSTORE_JDBC_LOGIN_TIMEOUT: dblogintimeout 
 
-cassconfigmap:
-  cass_server: localhost:9042
-  cass_keyspace_name: testdb
-  cass_username: cassandra
-  cass_password: cassandra
+##################################################
+## Environment variables & GVs
+##################################################
 
-cassdatabase:
-  CASS_SERVER: cass_server
-  CASS_KEYSPACE_NAME: cass_keyspace_name
-  CASS_USERNAME: cass_username
-  CASS_PASSWORD: cass_password
+# envVarsFromConfigMaps: Specify configmap names (yaml array format) from which you want to load GVs or environment variables
+envVarsFromConfigMaps:
+# - configmap-1
+# - configmap-2
 
-as4configmap:
-  realm_url: http://localhost:8585
-  sec_realm_url: http://localhost:8585
-  grid_name: fd_store
-  store_timeout: 5
-  store_waittime: 0.1
-  store_poolsize: 1
+# envVarsFromSecrets: Specify Secrets names (yaml array format) from which you want to Load GVs or environment variables
+envVarsFromSecrets:
+# - secret-1
+# - secret-2
 
-as4database:
-  REALM_URL: realm_url
-  SEC_REALM_URL: sec_realm_url
-  GRID_NAME: grid_name
-  STORE_TIMEOUT: store_timeout
-  STORE_WAITTIME: "store_waittime"
-  STORE_POOLSIZE: store_poolsize  
+# envVars Specify environment variables (yaml key value format) you want to pass on to BE agents (pods)
+envVars:
+  # # env flag to specify which CDD file to use.
+  # # In case RMS container, It contains 3 different CDD files with RMS.cdd as default. You can use this flag to run BE app with diffent CDD.
+  # CDD_FILE: "<CDD file path>"
+  # # Consul GV provider specific environment variables
+  # CONSUL_SERVER_URL: http://192.168.0.1:8500
+  # BE_APP_NAME: fd
+  # APP_CONFIG_PROFILE: test
+  # # HTTP GV provider specific environment variables
+  # GVP_HTTP_SERVER_URL: URL
+  # GVP_HTTP_HEADERS: "Content-Type:application/json"
+  # # custom gv provider specific environment variables
+  # # other environment variables
 
-#*************************Volumes Part****************************************************
-volumes:
-  #Required for sharednothing and store in all cloud providers
-  snmountPath: "/mnt/tibco/be/data-store"
-  snmountVolume: store
-  accessModes: ["ReadWriteOnce"]
-  storage: 0.5Gi
-  storageClass: standard                    #Use one of the available storage classes as per your preference, for aws efs file system set storageclass: efs-sc
-  snclaimVolume: pv0003
 
-#Required for store in  all cloud providers
+##################################################
+## Agents section
+##################################################
+
+# agents: Specify BE agents configurations (yaml array format).
+# You can add additional agents (copy from agents[0] and adapt values as per the need)
+# Note that agent[].expose & agent[].hpa are optional sections
+#
+agents:
+- name: inferenceagent
+  PU: default                             # processing unit
+  cacheStorageEnabled: false              # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
+  replicas: 1                             # desired number of agents
+  discoverableReplicas: 0                 # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
+  expose:
+  - name: jmx                             # service name
+    port: 5555                            # container port to be exposed
+    type: ClusterIP                       # service type. Supported values: NodePort, LoadBalancer or ClusterIP
+  - name: httpchannel
+    port: 8090
+    type: NodePort
+  resources:                              # Update how much of memory, cpu resource a agent container needs.
+    memoryRequest: 1.2Gi                  # In case of RMS, You may need to update this to 4Gi
+    memoryLimit: 1.5Gi
+    cpuRequest: 1
+    cpuLimit: 2
+  hpa:                                    # agents[].hpa: (Horizontal Pod Autoscaler).
+    maxReplicas: 5                        # maximum number of replicas HPA can apply
+    cpuMetric:
+      enable: false                       # Set to true, to enable CPU metric based HPA
+      averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if CPU utilization % reaches above(or below) averageUtilizationPercentage
+    memoryMetric:
+      enable: false                       # Set to true, to enable memory metric based HPA
+      averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if memory utilization % reaches above(or below) averageUtilizationPercentage
+- name: cacheagent
+  PU: cache
+  cacheStorageEnabled: true
+  replicas: 0
+  discoverableReplicas: 0
+  expose:
+  resources:                  
+    memoryRequest: 1.2Gi
+    memoryLimit: 1.5Gi    
+    cpuRequest: 1
+    cpuLimit: 2
+  hpa:
+    maxReplicas: 5
+    cpuMetric:
+      enable: false
+      averageUtilizationPercentage: 90
+    memoryMetric:
+      enable: false
+      averageUtilizationPercentage: 90
+
+
+##################################################
+## Container runtime
+##################################################
+
+healthcheck:
+  enabled: false            #Set to true - to enable healthcheck
+  livenessProbe:
+    port: 5555
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  readinessProbe:
+    port: 5555
+    initialDelaySeconds: 5 
+    periodSeconds: 5 
+
+# podAntiAffinity: Set to true to allow evenly distribution of pods across available nodes
+podAntiAffinity: false
+
+
+##################################################
+## Config Map
+##################################################
+
+# configs Specify Specify environment variables (yaml key value format), So that
+# configmap gets generated and injected in to the BE agents (pods)
+#
+configs:
+  # # FTL GVs configs
+  # FTL_gv_REALM_SERVER: http://20.62.216.186:8585
+  # FTL_gv_CLUSTER_NAME: ftl.default.cluster
+  # # ignite GVs configs
+  # IGNITE_gv_LISTEN_PORT: "47500..47510"
+  # IGNITE_gv_COMMUNICATION_PORT: "47100..47110"
+  # # mysql
+  # BACKINGSTORE_JDBC_DRIVER: com.mysql.jdbc.Driver
+  # BACKINGSTORE_JDBC_URL: jdbc:mysql://mysql-0.mysql.default.svc.cluster.local:3306/BE_DATABASE
+  # BACKINGSTORE_JDBC_USERNAME: BE_USER
+  # BACKINGSTORE_JDBC_PASSWORD: BE_USER
+  # BACKINGSTORE_JDBC_POOL_SIZE: 5
+  # BACKINGSTORE_JDBC_LOGIN_TIMEOUT: 0
+  # # Cassandra
+  # CASS_SERVER: localhost:9042
+  # CASS_KEYSPACE_NAME: testdb
+  # CASS_USERNAME: cassandra
+  # CASS_PASSWORD: cassandra
+  # # AS4
+  # REALM_URL: http://localhost:8585
+  # SEC_REALM_URL: http://localhost:8585
+  # GRID_NAME: fd_store
+  # STORE_TIMEOUT: 5
+  # STORE_WAITTIME: 0.1
+  # STORE_POOLSIZE: 1
+  # # metrics - influx config
+  # INFLUXDB_URL: http://influxDB:8086
+  # INFLUXBUCKET: fdmetrics 
+  # INFLUXTOKEN: be-examples-fdmetrics-token
+  # INFLUXORG: be-examples  
+  # # metrics -  streambase LDM
+  # LDM_URL: lv://localhost:10080
+  # # metrics -  custom (ex:elastic, prometheus etc..)
+  # URL: http://localhost:1234
+
+
+##################################################
+## Persistence
+##################################################
+
+# persistence Enable requied flags as per the need, so that corresponding volument mounts, volume claims and persistent volumes
+# gets generated.
+#
+persistence:
+  logs: false           # Set to true to enable logs persistence
+  rmsSecurity: false    # Set to true to enable RMS security folder persistence
+  rmsWebstudio: false   # Set to true to enable RMS WebStudio folder persistence
+
+  # persistence.rmsSharedPVC: It is used when enableRMS is set to true. It is the PVC (generated by the RMS deployment) points to rms-shared folder.
+  # By using this PVC current deployment's pods able to mount to the same rms-shared folder so that hot deployments can happen.
+  # It takes of the form "<rms helm deployment name>-rms-shared"
+  rmsSharedPVC: "RMSDEPLOYMENTNAME-rms-shared"
+  
+  # Dynamic provisioning:
+
+  # persistence.storageClass
+  # If defined,             defined storage class would be used for PV/PVC provisioning
+  # If set to "-",          disables dynamic PV/PVC provisioning
+  # If empty(i.e ""),       [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
+  # Note: RMS deployments need a storagecalss which supports the access mode ReadWriteMany (Ex: azurefile  )
+  storageClass: "standard"
+  scSupportsReadWriteMany: true   # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
+  size: 0.5Gi                     # desired storage size
+
+
+  # static provisioning: It offers more control over which directory paths (storage provider like EFS) used to generage PVs.
+  
+  # persistence.basePath It is the obsolute path of the directory on the storage provider's file system (like AWS EFS). At this path
+  # following sub-directories should exist.
+  # .
+  # |--data-store       -> Required in case of sharednothing BE app deployment
+  # |--logs             -> Required if you want to persist logs
+  # |--rms-shared       -> Required in case of RMS deployents
+  # |--rms-security     -> Required in case of RMS deployents
+  # |--rms-webstudio    -> Required in case of RMS deployents
+  #
+  # Dont add trailing slash ('/') at the end of the path. Valid paths:
+  # ""              ->  To represent root folder
+  # "/volume/001"   ->  To represent /volume/001 folder
+  basePath: "/volume1"
+
+  # persistence.fileSystemId is the file system ID
+  #
+  # If your cloud provider is AWS and want to use EFS then it is the EFS file system ID.
+  # For successful PV/PVC provisioing, Refer to https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html and create an Amazon EFS file system. 
+  # 
+  fileSystemId: fs-beec7f0a
+
+
+##################################################
+## mysql subchat specific section
+##################################################
+
 mysql:
   enabled: false              #use true for store
+  backingstoreUrlGV: BACKINGSTORE_JDBC_URL    # This GV gets updated with mysql service url
   image:
     repository: "mysql"
     tag: "5.7"
@@ -186,53 +263,26 @@ mysql:
     rootPassword: password12
     database: BE_DATABASE  #database name
 
-# Required for sharednothing and store data in AWS EFS(Only for volumes.storageClass=efs-sc)
-efs-driver:
-  enabled: false              #use true to create aws-efs provisioner.If you enable this, update volumes.storageClass to "aws-sc" 
 
-# ---------------------------------Information related to metrics(influx/liveview)-------------------------------------------------
+##################################################
+## Metrics (influx, liveview, grafana) related
+##################################################
 
-metricsType: na           # metricsType value is strict to "influx","liveview","custom"
-
-influxconfigmap:
-  dburl: http://influxDB:8086
-  bucket: fdmetrics 
-  dbtoken: be-examples-fdmetrics-token
-  dborg: be-examples  
-
-influxdatabase:
-  INFLUXDB_URL: dburl
-  INFLUXBUCKET: bucket
-  INFLUXTOKEN: dbtoken
-  INFLUXORG: dborg
-
-# Custom values for InfluxDB chart, setting influxdb.enabled to true will deploy influxDB helm chart
+# Custom values for InfluxDB chart.
 influxdb:
-  enabled: false
-  image:  # Comment influx image, repository and tag for BE version 6.0 
+  enabled: false                            # Set to true, to deploy InfluxDB sub chart chart
+  influxdbUrlGV: INFLUXDB_URL               # This GV gets updated with influxdb service url
+  image:
     repository: quay.io/influxdb/influxdb   
     tag: v2.0.1
   persistence:
-    enabled: false            # Set to true for persistence
+    enabled: false                          # Set to true for persistence
 
 
-# Custom values for Grafana chart, setting influxdb.enabled to true will deploy grafana helm chart
+# Custom values for Grafana chart.
 grafana:
-  enabled: false
+  enabled: false            # Set to true, to deploy grafana sub chart
   image:
     tag: 7.3.5
   service:
-    type: NodePort          # Default is clusterIP, Loadbalancer for Azure(Change as per requirement)
-
-# --------- Streambase and liveview information ------
-
-sbconfigmap:
-  ldmurl: lv://localhost:10080
-
-streambase:
-  LDM_URL: ldmurl
-
-# custom metrics(ex:elastic, prometheus etc.,)
-
-metricdetails:
-  URL: http://localhost:1234
+    type: NodePort          # Service type. Supported values: NodePort, LoadBalancer or ClusterIP

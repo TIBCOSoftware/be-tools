@@ -1,3 +1,29 @@
-Thank you for installing {{ .Chart.Name }}.
+Thank you for using {{ .Chart.Name }}.
 
-# Your release is named '{{ .Release.Name }}' and deployed into '{{.Values.cpType}}' with Cluster type '{{.Values.cmType}}' and OM type '{{.Values.omType}}'.
+TIBCO BusinessEvents application has been deployed with the following details:
+
+Release name:              {{ .Release.Name }}
+Cloud provider:            {{ .Values.cpType }}
+Cluster provider:          {{ .Values.cmType }}
+Hot deployments:           {{ if .Values.enableRMS }}enabled{{ else }}not enabled{{ end }}
+This is a RMS deployment:  {{ if .Values.rmsDeployment }}yes{{ else }}no{{ end }}
+
+Following services have been exposed for external access:
+{{ range $i, $agent := .Values.agents }}
+{{- range $j, $service := $agent.expose }}
+{{- $serviceName := printf "%s-%s-%s" $.Release.Name $agent.name $service.name }}
+  Service name: {{ $serviceName }}
+    To connect to this service from outside the cluster, use below details:
+    {{- if contains "NodePort" $service.type }}
+    echo NODE_IP: $(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+    echo NODE_PORT: $(kubectl get -o jsonpath="{.spec.ports[0].nodePort}" services {{ $serviceName }})
+    {{- else if contains "LoadBalancer" $service.type }}
+    NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+          Watch the status with: 'kubectl get svc -w {{ $serviceName }}'
+    echo SERVICE_IP: $(kubectl get svc {{ $serviceName }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+    {{- else if contains "ClusterIP" $service.type }}
+    NOTE: This service type is ClusterIP. Execute the following command to forward local port to this service, so that you can access it on localhost:{{ $service.port }}
+    kubectl port-forward svc/{{ $serviceName }} {{ $service.port }}
+    {{- end }}
+{{ end }}
+{{- end }}

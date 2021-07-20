@@ -1,44 +1,78 @@
-{{- range .Values.agents }}
-{{- if gt (int .replicas) 0 }}
+{{- range $i, $agent := .Values.agents }}
+{{- if gt (int $agent.replicas) 0 }}
+{{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ $.Release.Name }}-{{ .name }}
+  name: {{ $ssName }}
 spec:
-  replicas: {{ .replicas }}
+  replicas: {{ $agent.replicas }}
   selector:
     matchLabels:
-      name: {{ $.Release.Name }}-{{ .name }}
-  serviceName: {{ include "discoveryservice.fullname" $ }}
+      name: {{ $ssName }}
+  serviceName: {{ include "bechart.discoveryservice.name" $ }}
   template:
     metadata:
       labels:
-        name: {{ $.Release.Name }}-{{ .name }}
-        {{- if .cacheStorageEnabled }}
+        name: {{ $ssName }}
+        {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}
-{{ include "ignitesaname" $ | trim | indent 6 }}          
+      {{- if eq $.Values.cmType "ignite"}}
+      serviceAccount: {{ $.Release.Name }}-ignite
+      {{- end }}
+{{- if $.Values.podAntiAffinity }}
+{{ include "bechart.affinity" $ssName | trim | indent 6 }}
+{{- end }}
       containers:
-      - name: {{ .name }}-container
+      - name: {{ $agent.name }}-container
         image: {{ $.Values.image }}
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        {{- if or (not (empty $.Values.envVarsFromConfigMaps)) (not (empty $.Values.envVarsFromSecrets)) (not (empty $.Values.configs)) }}
+        envFrom:
+        {{- if $.Values.configs }}
+        - configMapRef:
+            name: {{ $.Release.Name }}-configmap
+        {{- end}}
+        {{- range $configMapName := $.Values.envVarsFromConfigMaps }}
+        - configMapRef:
+            name: {{ $configMapName }}
+        {{- end }}
+        {{- range $secretName := $.Values.envVarsFromSecrets }}
+        - secretRef:
+            name: {{ $secretName }}
+        {{- end }}
+        {{- end }}
         env:
         - name: PU
-          value: {{ .PU }}
+          value: {{ $agent.PU }}
         - name: ENGINE_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-{{ include "gvproviders" $ | trim | indent 8 }}                
-{{ include "discovery_url" $ | trim | indent 8 }}
-{{ include "influx-grafana.data" $ | trim | indent 8 }}
-{{ include "store.configMap" $ | trim | indent 8 }}
-{{ include "fargate-resource-memory" $ | trim | indent 8 }}
+        {{- range $envKey, $envVal := $.Values.envVars }}
+        - name: {{ $envKey }}
+          value: {{ $envVal }}
+        {{- end}}
+{{ include "bechart.discovery.env" $ | trim | indent 8 }}
+        {{- if and (not (empty $.Values.mysql.backingstoreUrlGV)) $.Values.mysql.enabled }}
+        - name: {{ $.Values.mysql.backingstoreUrlGV }}
+          value: "jdbc:mysql://{{ $.Release.Name }}-mysql:3306/{{ $.Values.mysql.auth.database }}"
+        {{- end }}
+        {{- if $.Values.influxdb.enabled }}
+        - name: {{ $.Values.influxdb.influxdbUrlGV }}
+          value: "http://{{ $.Release.Name }}-influxdb:8086"
+        {{- end }}
+{{ include "bechart.resourceLimits" $agent | trim | indent 8 }}
 {{ include "healthcheck" $ | trim | indent 8 }}
-{{ include "sharednothing.volumeMount" $ | trim | indent 8 }}
-{{ include "sharednothing.volumeClaim" $ }}
+{{ include "bechart.volumeMounts" $ | trim | indent 8 }}
+{{- if $.Values.persistence.scSupportsReadWriteMany }}
+{{ include "bechart.volumes" $ | trim | indent 6 }}
+{{- else }}
+{{ include "bechart.volumeClaimTemplates" $ | trim | indent 2 }}
+{{- end }}
 ---
 {{- end }}
 {{- end }}

@@ -48,7 +48,7 @@ if [ "$COMPONENT" != "rms" ]; then
 fi
 
 if [ "$COMPONENT" = "rms" -o "$COMPONENT" = "tea" ]; then
-    rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws
+    find /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
 fi
 
 rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/eclipse
