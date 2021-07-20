@@ -825,10 +825,11 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
     fi
 
-    if [ "$ARG_USE_OPEN_JDK" = "true" ]; then
-        ARG_USE_OPEN_JDK=false
+    ARG_USE_OPEN_JDK=false
+    if [ "$JAVA_HOME_DIR_NAME" = "" ]; then
+        JAVA_HOME_DIR_NAME=java
     fi
-    JAVA_HOME_DIR_NAME=tibcojre64
+    
     mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     cp -r $TRA_JAVA_HOME/* $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"

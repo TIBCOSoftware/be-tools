@@ -428,7 +428,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         )
     )
 
-    if "!ARG_USE_OPEN_JDK!" EQU "true" set "ARG_USE_OPEN_JDK=false"
+    set "ARG_USE_OPEN_JDK=false"
 ) else (
     REM Creating an empty file
     break>"!TEMP_FOLDER!/package_files.txt"
@@ -670,7 +670,8 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe','!BE_HOME!\bin\dbkeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
-    set JAVA_HOME_DIR_NAME=tibcojre64
+    if "!JAVA_HOME_DIR_NAME!" EQU "" set JAVA_HOME_DIR_NAME=java
+    
     mkdir !TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!
     powershell -Command "Copy-Item '!TRA_JAVA_HOME!' -Destination '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!' -Recurse | out-null"
 
