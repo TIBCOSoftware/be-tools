@@ -29,11 +29,9 @@ volumeMounts:
   mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/rms/shared"
 {{- end }}
 {{- if .Values.rmsDeployment }}
-{{- if .Values.persistence.rmsSecurity }}
+{{- if .Values.persistence.rmsWebstudio }}
 - name: rms-security
   mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/rms/config/security"
-{{- end }}
-{{- if .Values.persistence.rmsWebstudio }}
 - name: rms-webstudio
   mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/examples/standard/WebStudio"
 {{- end }}
@@ -45,7 +43,7 @@ volumeMounts:
 volumes:
 {{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
-{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
 - name: {{ $vName }}
   persistentVolumeClaim:
 {{- if and (eq $vName "rms-shared") $.Values.enableRMS }}
@@ -62,7 +60,7 @@ volumes:
 volumeClaimTemplates:
 {{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
-{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsSecurity $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
+{{- if or (and (eq $vName "data-store") (eq $.Values.bsType "sharednothing")) (and (eq $vName "logs") $.Values.persistence.logs) (and (eq $vName "rms-shared") (or $.Values.enableRMS $.Values.rmsDeployment)) (and (eq $vName "rms-security") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) (and (eq $vName "rms-webstudio") $.Values.persistence.rmsWebstudio $.Values.rmsDeployment) }}
 - metadata:
     name: {{ $vName }}
   spec:
