@@ -699,7 +699,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         if !ARG_APP_LOCATION! NEQ na (
             mkdir !TEMP_FOLDER!\tibcoHome\be\ext
             powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
-            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' '!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!','!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
             del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
         )
     ) else (
