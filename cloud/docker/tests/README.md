@@ -30,7 +30,7 @@ Usage: run_tests.sh
 
  [--image-type]               : BE Image type use ("app"|"s2ibuilder"|"rms"|"teagent") (default is "app") [optional]
 
- [--openjdk]                  : Mention true if openjdk is used (default is "false") [optional]
+ [--java-dir-name]            : Java home directory name (default is "tibcojre64") [optional]
 
  [ -h|--help]                 : Print the usage of script [optional]
 
