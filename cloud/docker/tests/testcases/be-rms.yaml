@@ -31,8 +31,8 @@ fileExistenceTests:
   - name: 'BE Path'
     path: '/opt/tibco/be/BE_SHORT_VERSION/bin/'
     shouldExist: true
-  - name: 'BE rms Binary'
-    path: '/opt/tibco/be/BE_SHORT_VERSION/rms/bin/be-rms'
+  - name: 'BE engine Binary'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine'
     shouldExist: true
   - name: 'BE rms TRA File'
     path: '/opt/tibco/be/BE_SHORT_VERSION/rms/bin/be-rms.tra'
