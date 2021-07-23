@@ -13,7 +13,7 @@ Expand the name of the chart.
 {{- end -}}
 
 {{- define "bechart.volumeMounts" }}
-{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certSecrets $.Values.loadSecrets }}
 volumeMounts:
 {{- end }}
 {{- if eq .Values.bsType "sharednothing" }}
@@ -36,10 +36,20 @@ volumeMounts:
   mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/examples/standard/WebStudio"
 {{- end }}
 {{- end }}
+{{- if $.Values.certSecrets }}
+- name: "secret"
+  mountPath: "/opt/tibco/certs/secrets"
+{{- end }}
+{{- if $.Values.loadSecrets }}
+{{- range $j, $value := $.Values.loadSecrets }}
+- name: "{{ $value.secretName }}"
+  mountPath: "/opt/tibco/certs/{{ $value.secretName }}"
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- define "bechart.volumes" }}
-{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certSecrets $.Values.loadSecrets }}
 volumes:
 {{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
@@ -51,6 +61,18 @@ volumes:
 {{- else }}
     claimName: {{ $.Release.Name }}-{{ $vName }}
 {{- end }}
+{{- end }}
+{{- end }}
+{{- if $.Values.certSecrets }}
+- name: "secret"
+  secret:
+    secretName: "{{ $.Release.Name }}-secret"
+{{- end }}
+{{- if $.Values.loadSecrets }}
+{{- range $j, $value := $.Values.loadSecrets }}
+- name: {{ $value.secretName }}
+  secret:
+    secretName: "{{ $value.secretName }}"
 {{- end }}
 {{- end }}
 {{- end }}

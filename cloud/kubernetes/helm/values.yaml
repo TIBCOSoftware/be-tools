@@ -72,6 +72,30 @@ envVars:
   # # custom gv provider specific environment variables
   # # other environment variables
 
+##################################################
+## secret using file section
+##################################################
+
+# Default path for load existing secrets for certificates is: /opt/tibco/certs/<secretName>
+# load an existing secret from file
+loadSecrets:
+# - secretName: mysecret
+# - secretName: mysqlsecret
+
+
+# Default path for creating new secret using certificates is: /opt/tibco/certs/secrets
+# create a new secret from file(s)
+certSecrets:
+# - name: ftl-trust.pem
+#   pem: |-
+#     -----BEGIN CERTIFICATE-----
+#     ---
+#     -----END CERTIFICATE-----
+# - name: ftl.pem
+#   pem: |-
+#     -----BEGIN CERTIFICATE-----
+#     ---
+#     -----END CERTIFICATE-----
 
 ##################################################
 ## Agents section
