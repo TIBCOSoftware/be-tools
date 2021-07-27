@@ -11,7 +11,7 @@ source /home/tibco/be/gvproviders/gvutils.sh
 REQUIRED_PKGS="curl unzip less groff"
 
 # fill this variable with packages used only during build time. Multiple packages can be represented in a space separated format ex: "curl unzip".
-BUILD_PKGS="curl unzip"
+BUILD_PKGS="unzip"
 
 INSTALL_PKGS_LIST=$( getInstallPkgs "$REQUIRED_PKGS" )
 CLEANUP_PKGS_LIST=$( getCleanupPkgs "$BUILD_PKGS" "$INSTALL_PKGS_LIST" )
