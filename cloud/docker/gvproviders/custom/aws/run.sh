@@ -8,33 +8,36 @@
 if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
     json=$(curl 169.254.170.2$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)
     AWS_ACCESS_KEY_ID=$(echo "$json" | /home/tibco/be/gvproviders/jq -r '.AccessKeyId')
-    #AWS_ROLE_ARN=$(echo "$json" | /home/tibco/be/gvproviders/jq -r '.RoleArn')
     AWS_SECRET_ACCESS_KEY=$(echo "$json" | /home/tibco/be/gvproviders/jq -r '.SecretAccessKey')
     AWS_SESSION_TOKEN=$(echo "$json" | /home/tibco/be/gvproviders/jq -r '.Token')
-else
-    if [[ -z "$AWS_SM_SECRET_ID" ]]; then
-      echo "WARN: GV provider[custom/aws] is configured but env variable AWS_SM_SECRET_ID is empty OR not supplied."
-      echo "WARN: Skip fetching GV values from AWS Secrets Manager."
-      exit 0
-    fi
-    
-    if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
-      echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
-      echo "ERROR: Specify env variable AWS_ACCESS_KEY_ID"
+    if [[ -z "$AWS_ACCESS_KEY_ID" ]] || [[ -z "$AWS_SECRET_ACCESS_KEY" ]] || [[ -z "$AWS_SESSION_TOKEN" ]]; then
+      echo "ERROR: Failed reading GVs from AWS Secrets Manager.."
       exit 1
     fi
-    
-    if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
-      echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
-      echo "ERROR: Specify env variable AWS_SECRET_ACCESS_KEY"
-      exit 1
-    fi
-    
-    if [[ -z "$AWS_DEFAULT_REGION" ]]; then
-      echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
-      echo "ERROR: Specify env variable AWS_DEFAULT_REGION"
-      exit 1
-    fi
+fi
+
+if [[ -z "$AWS_SM_SECRET_ID" ]]; then
+  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_SM_SECRET_ID is empty OR not supplied."
+  echo "WARN: Skip fetching GV values from AWS Secrets Manager."
+  exit 0
+fi
+
+if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_ACCESS_KEY_ID"
+  exit 1
+fi
+
+if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_SECRET_ACCESS_KEY"
+  exit 1
+fi
+
+if [[ -z "$AWS_DEFAULT_REGION" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager.."
+  echo "ERROR: Specify env variable AWS_DEFAULT_REGION"
+  exit 1
 fi
 
 touch /home/tibco/be/gvproviders/output.json
