@@ -20,7 +20,7 @@ func TestBeservice(t *testing.T) {
 		SetValues: values,
 	}
 	releaseName := "TestBeservice-cmType=XYZ"
-	output, err := helm.RenderTemplateE(t, options, common.HelmChartPath, releaseName, []string{common.Beappservice})
+	output, err := helm.RenderTemplateE(t, options, common.HelmChartPath, releaseName, []string{"templates/discovery-service.yaml"})
 	require.NoError(t, err)
 	var service v1.Service
 	helm.UnmarshalK8SYaml(t, output, &service)
