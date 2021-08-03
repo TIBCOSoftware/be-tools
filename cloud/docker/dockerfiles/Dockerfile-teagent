@@ -9,6 +9,7 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
+ARG OPEN_JDK_FILENAME
 
 FROM docker.io/library/ubuntu:20.04 as intermediate
 
@@ -17,22 +18,20 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
-ARG DOCKERFILE_NAME
 ARG JRE_VERSION
-ARG TEMP_FOLDER
+ARG OPEN_JDK_FILENAME
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL be-intermediate-image=true
 
 RUN apt-get update \
- && apt-get install -y unzip procps findutils hostname
+ && apt-get install -y unzip procps findutils hostname tar
 
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  COMPONENT=tea
 
@@ -41,8 +40,7 @@ RUN chmod +x *.sh *.pm
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','na','$BE_PRODUCT_HOTFIX','na','na')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip \
- && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
+ && rm -rf as_installers be_installers *.zip
 
 RUN ./prepare_finalimage.sh
 
@@ -79,7 +77,6 @@ ENV PU=default \
  TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  COMPONENT=tea \
  BE_TEA_AGENT_AUTO_REGISTER_ENABLE=false \

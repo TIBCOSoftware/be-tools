@@ -18,6 +18,19 @@ fi
 
 BE_HOME=/opt/tibco/be/$SHORT_VERSION
 
+COMPONENT_PARSED="${COMPONENT%\"}"
+COMPONENT_PARSED="${COMPONENT_PARSED#\"}"
+
+echo "COMPONENT: $COMPONENT_PARSED"
+
+if [ "$COMPONENT_PARSED" = "tea" ]; then
+	TRA_FILE=$BE_HOME/teagent/bin/be-teagent.tra
+elif [ "$COMPONENT_PARSED" = "rms" ]; then
+	TRA_FILE=$BE_HOME/rms/bin/be-rms.tra
+else
+	TRA_FILE=$BE_HOME/bin/be-engine.tra
+fi
+
 if [[ -f "$BE_HOME/bin/be-engine.tra.original" ]]; then
 	rm -f $BE_HOME/bin/be-engine.tra
 	cp $BE_HOME/bin/be-engine.tra.original $BE_HOME/bin/be-engine.tra
@@ -29,9 +42,6 @@ CURRENT_DIR=$(pwd)
 BE_PROPS_FILE=beprops_all.props
 APP_HOME=/opt/tibco/be/application
 
-TRA_FILE=$BE_HOME/bin/be-engine.tra
-
-
 export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
@@ -41,9 +51,6 @@ if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
 fi
 
 /bin/cat $BE_PROPS_FILE
-
-COMPONENT_PARSED="${COMPONENT%\"}"
-COMPONENT_PARSED="${COMPONENT_PARSED#\"}"
 
 JMX_PORT_PARSED="${JMX_PORT%\"}"
 JMX_PORT_PARSED="${JMX_PORT_PARSED#\"}"
@@ -67,7 +74,6 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
   BE_TEA_AGENT_MONITORING_ONLY_PARSED="${BE_TEA_AGENT_MONITORING_ONLY_PARSED#\"}"
 
   TEA_PROPS_FILE="$BE_HOME/teagent/config/be-teagent.props"
-  TRA_FILE="$BE_HOME/teagent/bin/be-teagent.tra"
 
   echo "" >> $TEA_PROPS_FILE
   echo "be.tea.agent.monitoring.application=$BE_TEA_AGENT_MONITORING_ONLY_PARSED" >> $TEA_PROPS_FILE
@@ -146,7 +152,6 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
 else
 
 	if [ "$COMPONENT_PARSED" = "rms" ]; then
-  		TRA_FILE=$BE_HOME/rms/bin/be-rms.tra
 		mkdir -p $BE_HOME/eclipse-platform/eclipse/dropins && echo "path=/opt/tibco/be/$SHORT_VERSION/studio" > $BE_HOME/eclipse-platform/eclipse/dropins/TIBCOBusinessEvents-Studio-plugins.link
 	fi
 
@@ -222,7 +227,6 @@ else
 	fi
 fi
 
-
 #adding host addr entry
 if [ -z "$DOCKER_HOST" ]; then
 	DOCKER_HOST=$(grep $(hostname) /etc/hosts|awk '{print $1}')
@@ -248,7 +252,6 @@ if [[ -n "$STACK_SIZE" ]]; then
 	output="${output%%*( )}"
    	val="$val -Xss$output"
 fi
-
 
 #add properties prefixed with tra
 args="$(grep '^tra' $BE_PROPS_FILE)";
@@ -276,7 +279,6 @@ if [[  -n "$MAX_HEAP_SIZE" ]]; then
     	MAX_HEAP_SIZE="${MAX_HEAP_SIZE/tra./$blank}"
     	echo $MAX_HEAP_SIZE >> $TRA_FILE
 fi
-
 
 echo "$RUNCMD"
 exec $RUNCMD

@@ -1,0 +1,40 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+metadataTest:
+  env:
+    - key: TIBCO_HOME
+      value: /opt/tibco
+    - key: BE_HOME
+      value: /opt/tibco/be/BE_SHORT_VERSION
+    - key: PU
+      value: default
+    - key: ENGINE_NAME
+      value: be-engine   
+    - key: LOG_LEVEL
+      value: na
+    - key: COMPONENT
+      value: tea
+  exposedPorts: ["5555"]
+fileContentTests:
+  - name: 'BE TRA Updated with AS home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/teagent/bin/be-teagent.tra'
+    expectedContents: ['BE_HOME=/opt/tibco/be/BE_SHORT_VERSION']
+fileExistenceTests:
+  - name: 'BE Path'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/'
+    shouldExist: true
+  - name: 'BE Engine teagent Binary'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/teagent/bin/be-teagent'
+    shouldExist: true
+  - name: 'BE Engine teagent TRA File'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/teagent/bin/be-teagent.tra'
+    shouldExist: true
+  - name: 'Docker Run File'
+    path: '/home/tibco/be/run'
+    shouldExist: true
+  - name: 'JAVA Home'
+    path: '/opt/tibco/JAVA_HOME_DIR_NAME/$JRE_VERSION'
+    shouldExist: true

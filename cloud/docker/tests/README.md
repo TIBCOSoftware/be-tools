@@ -28,6 +28,10 @@ Usage: run_tests.sh
 
  [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]
 
+ [--image-type]               : BE Image type use ("app"|"s2ibuilder"|"rms"|"teagent") (default is "app") [optional]
+
+ [--java-dir-name]            : Java home directory name (default is "tibcojre64") [optional]
+
  [ -h|--help]                 : Print the usage of script [optional]
 
  NOTE : supply long options with '='
@@ -43,9 +47,9 @@ Sample run command:
 
 ## Test Cases
 Various test cases are developed and organized in different yaml files. File names are self explanatory.
-* `betestcases.yaml` Contains BE artifacts related test cases
-* `astestcases.yaml/aslegacytestcases.yaml` Contains Active Spaces artifacts related test cases
-* `ftltestcases.yaml` Contains FTL artifacts related test cases
+* `be.yaml/be-rms.yaml/be-teagent.yaml` Contains BE artifacts related test cases
+* `as.yaml/aslegacy.yaml` Contains Active Spaces artifacts related test cases
+* `ftl.yaml` Contains FTL artifacts related test cases
 * `consulgv.yaml` Contains `consul` gvprovider related test cases
 * `httpgv.yaml` Contains `http` gvprovider related test cases
 <br><br>

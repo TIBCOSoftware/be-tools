@@ -26,6 +26,7 @@ ARG_DOCKER_FILE="na"
 ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
+ARG_USE_OPEN_JDK="false"
 
 # be related args
 BE_HOME="na"
@@ -70,6 +71,10 @@ S2I_DOCKER_FILE_APP="./dockerfiles/Dockerfile-s2i"
 # default installation type fromlocal
 INSTALLATION_TYPE="fromlocal"
 
+# openjdk related vars
+OPEN_JDK_VERSION="na"
+OPEN_JDK_FILENAME="na"
+
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
@@ -87,6 +92,9 @@ USAGE+="                           Note: This flag is ignored if --image-type is
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
 USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
+USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
+USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
+USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -94,28 +102,28 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-        -s|--source) 
+        -s|--source)
             shift # past the key and to the value
             ARG_SOURCE="$1"
             ;;
         -s=*|--source=*)
             ARG_SOURCE="${key#*=}"
             ;;
-        -i|--image-type) 
+        -i|--image-type)
             shift # past the key and to the value
             ARG_TYPE="$1"
             ;;
         -i=*|--image-type=*)
             ARG_TYPE="${key#*=}"
 	        ;;
-        -a|--app-location) 
+        -a|--app-location)
             shift # past the key and to the value
             ARG_APP_LOCATION="$1"
             ;;
         -a=*|--app-location=*)
             ARG_APP_LOCATION="${key#*=}"
 	        ;;
-        -t|--tag) 
+        -t|--tag)
             shift # past the key and to the value
             ARG_TAG="$1"
             ;;
@@ -146,7 +154,10 @@ while [[ $# -gt 0 ]]; do
         --disable-tests)
             ARG_ENABLE_TESTS="false"
             ;;
-        -h|--help) 
+        -o|--openjdk)
+            ARG_USE_OPEN_JDK="true"
+            ;;
+        -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
             exit 0
@@ -174,11 +185,11 @@ fi
 if [ "$MISSING_ARGS" != "" ]; then
     printf "\nERROR: Missing mandatory argument : $MISSING_ARGS\n"
     printf "$USAGE"
-    exit 1; 
+    exit 1;
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l) 
+    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l)
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -300,6 +311,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         TRA_FILE="rms/bin/be-rms.tra"
+    elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+        TRA_FILE="teagent/bin/be-teagent.tra"
     else
         TRA_FILE="bin/be-engine.tra"
     fi
@@ -384,6 +397,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             fi
         fi
     fi
+
+    #get installed jre details
+    TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2)
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        TRA_JAVA_HOME=${TRA_JAVA_HOME%?}
+    fi
 else
     #version regex for all products
     VERSION_REGEX=([0-9]\.[0-9]).[0-9]
@@ -424,11 +443,11 @@ else
 fi
 
 #Find JRE Version for given BE Version
-length=${#BE_VERSION_AND_JRE_MAP[@]}	
+length=${#BE_VERSION_AND_JRE_MAP[@]}
 for (( i = 0; i < length; i++ )); do
     if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
         ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
-        break;	
+        break;
     fi
 done
 
@@ -486,6 +505,16 @@ if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
         exit 1
     else
         echo "INFO: Building container image with the build tool[buildah]."
+    fi
+fi
+
+if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
+    if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
+        source ./scripts/openjdk.sh
+        if [ "$ARG_JRE_VERSION" != "$OPEN_JDK_VERSION" ]; then
+            echo "ERROR: OpenJDK Version [$OPEN_JDK_VERSION] and BE supported JRE Runtime Version [$ARG_JRE_VERSION] mismatch"
+            exit 1
+        fi
     fi
 fi
 
@@ -562,7 +591,14 @@ if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
     echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
 fi
 
-echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
+if [ "$OPEN_JDK_VERSION" != "na" ]; then
+    echo "INFO: OPEN JDK VERSION             : [$OPEN_JDK_VERSION]"
+    if [ "$OPEN_JDK_FILENAME" != "na" ]; then
+        echo "INFO: OPEN JDK FILENAME            : [$OPEN_JDK_FILENAME]"
+    fi
+else
+    echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
+fi
 
 echo "------------------------------------------------------------------------------"
 
@@ -658,7 +694,7 @@ fi
 # create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
-    BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar tibcojre64 $BE_DIR/lib $BE_DIR/bin "
+    BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar $BE_DIR/lib $BE_DIR/bin "
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
@@ -700,7 +736,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     RANDM_FOLDER="tmp$RANDOM"
     mkdir $TEMP_FOLDER/$RANDM_FOLDER
 
-    # Exract it
+    # Extract it
     tar -C $TEMP_FOLDER/$RANDM_FOLDER -xf $TEMP_FOLDER/be.tar
 
     OPT_TIBCO="/opt/tibco"
@@ -751,18 +787,23 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     CURR_DIR=$PWD
     cd $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/bin
     ls | grep -v "be-engine*" | xargs rm 2>/dev/null
-    echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
+    
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../rms/bin/be-rms.tra
+    elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../teagent/bin/be-teagent.tra
+    else
+        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
     fi
-    cp "$BE_HOME/bin/dbkeywordmap.xml" .
+
+    if [ -e $BE_HOME/bin/dbkeywordmap.xml ]; then
+        cp "$BE_HOME/bin/dbkeywordmap.xml" .
+    fi
+    
     if [ -e "$BE_HOME/bin/cassandrakeywordmap.xml" ]; then
         cp "$BE_HOME/bin/cassandrakeywordmap.xml" .
     fi
     cd $CURR_DIR
-
-    # removing all .bak files
-    find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
     rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse 2>/dev/null
     rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$FTL_DIR/lib/simplejson 2>/dev/null
@@ -792,8 +833,20 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
     fi
 
+    ARG_USE_OPEN_JDK=false
+    if [ "$JAVA_HOME_DIR_NAME" = "" ]; then
+        JAVA_HOME_DIR_NAME=java
+    fi
+    
+    mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
+    cp -r $TRA_JAVA_HOME/* $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
+
+    # removing all .bak files
+    find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
+
     # re create be.tar
-    TAR_CMD="tar -C $TEMP_FOLDER/$RANDM_FOLDER -cf $TEMP_FOLDER/be.tar be tibcojre64 "
+    TAR_CMD="tar -C $TEMP_FOLDER/$RANDM_FOLDER -cf $TEMP_FOLDER/be.tar be $JAVA_HOME_DIR_NAME "
 
     if [ "$FTL_HOME" != "na" ]; then
         TAR_CMD="$TAR_CMD ftl"
@@ -811,7 +864,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 else
     for i in "${FILE_LIST[@]}" ; do
         echo "INFO: Copying package: [$i]"
-        cp $i $TEMP_FOLDER/installers 
+        cp $i $TEMP_FOLDER/installers
     done
 fi
 
@@ -826,15 +879,15 @@ fi
 
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg JRE_VERSION=$ARG_JRE_VERSION -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg DOCKERFILE_NAME="$ARG_DOCKER_FILE" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg JRE_VERSION=$ARG_JRE_VERSION -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg DOCKERFILE_NAME=$ARG_DOCKER_FILE --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg TEMP_FOLDER=$TEMP_FOLDER -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi
 fi
 
@@ -877,9 +930,14 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
     echo "INFO: Container build successfull using the build tool[$ARG_BUILD_TOOL]. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
     if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
-        if [[ ($ARG_ENABLE_TESTS = "true") && (("$IMAGE_NAME" = "$BUILDER_IMAGE") || ("$IMAGE_NAME" = "$APP_IMAGE")) ]]; then
+        if [ $ARG_ENABLE_TESTS = "true" ]; then
+            if [ "$ARG_USE_OPEN_JDK" = "true" ]; then
+                JAVA_HOME_DIR_NAME=openjdk
+            elif [ "$JAVA_HOME_DIR_NAME" = "" ]; then
+                JAVA_HOME_DIR_NAME=tibcojre64
+            fi
             cd ./tests
-            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
         fi
     fi
 fi

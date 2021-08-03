@@ -11,7 +11,6 @@ MAINTAINER Tibco Software Inc tsi@tibco.com
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
-ARG DOCKERFILE_NAME
 ARG JRE_VERSION
 ARG GVPROVIDER
 ARG CDD_FILE_NAME
@@ -30,12 +29,6 @@ WORKDIR /home/tibco/be
 RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
  && chmod +x run
 
-WORKDIR /opt/tibco/be/${BE_SHORT_VERSION}/bin/
-RUN echo "java.property.be.engine.cluster.as.discover.url=%AS_DISCOVER_URL%" >> be-engine.tra  \
- && echo "java.property.be.engine.cluster.as.listen.url=%AS_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
- && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
-
 ENV PU=default \
  ENGINE_NAME=be-engine \
  LOG_LEVEL=na \
@@ -45,7 +38,6 @@ ENV PU=default \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  AS_VERSION=${AS_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}  \
  CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
