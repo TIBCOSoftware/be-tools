@@ -13,7 +13,7 @@ Expand the name of the chart.
 {{- end -}}
 
 {{- define "bechart.volumeMounts" }}
-{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certSecrets $.Values.loadSecrets }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certificates $.Values.certificatesFromSecrets }}
 volumeMounts:
 {{- end }}
 {{- if eq .Values.bsType "sharednothing" }}
@@ -36,12 +36,12 @@ volumeMounts:
   mountPath: "/opt/tibco/be/{{ .Values.beShortVersion }}/examples/standard/WebStudio"
 {{- end }}
 {{- end }}
-{{- if $.Values.certSecrets }}
+{{- if $.Values.certificates }}
 - name: "secret"
   mountPath: "/opt/tibco/certs/secrets"
 {{- end }}
-{{- if $.Values.loadSecrets }}
-{{- range $j, $value := $.Values.loadSecrets }}
+{{- if $.Values.certificatesFromSecrets }}
+{{- range $j, $value := $.Values.certificatesFromSecrets }}
 - name: "{{ $value.secretName }}"
   mountPath: "/opt/tibco/certs/{{ $value.secretName }}"
 {{- end }}
@@ -49,7 +49,7 @@ volumeMounts:
 {{- end }}
 
 {{- define "bechart.volumes" }}
-{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certSecrets $.Values.loadSecrets }}
+{{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certificates $.Values.certificatesFromSecrets }}
 volumes:
 {{- end }}
 {{- range $i, $vName := tuple "data-store" "logs" "rms-shared" "rms-security" "rms-webstudio" }}
@@ -63,13 +63,13 @@ volumes:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- if $.Values.certSecrets }}
+{{- if $.Values.certificates }}
 - name: "secret"
   secret:
     secretName: "{{ $.Release.Name }}-secret"
 {{- end }}
-{{- if $.Values.loadSecrets }}
-{{- range $j, $value := $.Values.loadSecrets }}
+{{- if $.Values.certificatesFromSecrets }}
+{{- range $j, $value := $.Values.certificatesFromSecrets }}
 - name: {{ $value.secretName }}
   secret:
     secretName: "{{ $value.secretName }}"

@@ -73,26 +73,27 @@ envVars:
   # # other environment variables
 
 ##################################################
-## secret using file section
+## Certificates
 ##################################################
-
-# Default path for load existing secrets for certificates is: /opt/tibco/certs/<secretName>
-# load an existing secret from file
-loadSecrets:
+# certificatesFromSecrets: Specify Secrets names (yaml array format) which contains certificates. These secrets gets mounted inside the
+# pod at the location "/opt/tibco/certs/<secretName>"
+# Note: Secret should be of type 'Opaque' Refer: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types and
+#       Secret's data key should be certificate filename and value should be certificate file content.
+certificatesFromSecrets: []
 # - secretName: mysecret
 # - secretName: mysqlsecret
 
 
-# Default path for creating new secret using certificates is: /opt/tibco/certs/secrets
-# create a new secret from file(s)
-certSecrets:
-# - name: ftl-trust.pem
-#   pem: |-
+# certificates: Specify certificates raw data (for multiple certs, use yaml array format) so that Chart creates a Secret out of it and
+# mounts inside the pod at the location "/opt/tibco/certs/secrets"
+certificates: []
+# - name: cert-filename1.pem
+#   rawCertificate: |-
 #     -----BEGIN CERTIFICATE-----
 #     ---
 #     -----END CERTIFICATE-----
-# - name: ftl.pem
-#   pem: |-
+# - name: cert-filename2.crt
+#   rawCertificate: |-
 #     -----BEGIN CERTIFICATE-----
 #     ---
 #     -----END CERTIFICATE-----
