@@ -83,21 +83,6 @@ certificatesFromSecrets: []
 # - secretName: mysecret
 # - secretName: mysqlsecret
 
-
-# certificates: Specify certificates raw data (for multiple certs, use yaml array format) so that Chart creates a Secret out of it and
-# mounts inside the pod at the location "/opt/tibco/certs/secrets"
-certificates: []
-# - name: cert-filename1.pem
-#   rawCertificate: |-
-#     -----BEGIN CERTIFICATE-----
-#     ---
-#     -----END CERTIFICATE-----
-# - name: cert-filename2.crt
-#   rawCertificate: |-
-#     -----BEGIN CERTIFICATE-----
-#     ---
-#     -----END CERTIFICATE-----
-
 ##################################################
 ## Agents section
 ##################################################
