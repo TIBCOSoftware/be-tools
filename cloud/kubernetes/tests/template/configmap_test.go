@@ -11,28 +11,38 @@ import (
 )
 
 func TestConfigMap(t *testing.T) {
-	helmFilePath, err := filepath.Abs("../../helm")
-	releaseName := "testrelease"
+	helmChartPath, err := filepath.Abs("../../helm")
+	releaseName := "TestConfigMap"
 
 	require.NoError(t, err)
 
-	values := map[string]string{
-		"configs.FTL": "https://ftlserver:8585",
-	}
-
+	// test case: dont generate configmap in case of empty configs
+	values := map[string]string{}
 	options := &helm.Options{
 		SetValues: values,
 	}
+	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/configmap.yaml"})
+	require.NotNil(t, err)
+	require.Equal(t, "Error: could not find template templates/configmap.yaml in chart", output)
 
-	output, err := helm.RenderTemplateE(t, options, helmFilePath, releaseName, []string{"templates/configmap.yaml"})
+	// test case: non empty configmap
+	values = map[string]string{
+		"configs.FTL":  "https://ftlserver:8585",
+		"configs.KEY1": "VALUE1",
+		"configs.KEY2": "VALUE2",
+	}
+	options = &helm.Options{
+		SetValues: values,
+	}
+	output, err = helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/configmap.yaml"})
 	require.NoError(t, err)
-	var configMap v1.ConfigMap
-	helm.UnmarshalK8SYaml(t, output, &configMap)
+	var actualConfigMap v1.ConfigMap
+	helm.UnmarshalK8SYaml(t, output, &actualConfigMap)
 
-	expectedConfigMap := fmt.Sprintf("%s-configmap", releaseName)
-	require.Equal(t, expectedConfigMap, configMap.Name)
-	require.Equal(t, "ConfigMap", configMap.Kind)
-	require.Equal(t, "v1", configMap.APIVersion)
-	require.NotEmpty(t, configMap.Data)
-	require.Equal(t, "https://ftlserver:8585", configMap.Data["FTL"])
+	expectedConfigMapName := fmt.Sprintf("%s-configmap", releaseName)
+	require.Equal(t, expectedConfigMapName, actualConfigMap.Name)
+	require.Equal(t, expectedConfigMapName, actualConfigMap.Labels["name"])
+	require.Equal(t, 3, len(actualConfigMap.Data))
+	require.Equal(t, "https://ftlserver:8585", actualConfigMap.Data["FTL"])
+	require.Equal(t, "VALUE1", actualConfigMap.Data["KEY1"])
 }
