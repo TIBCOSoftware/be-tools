@@ -48,17 +48,17 @@ imageCredentials:
 ##################################################
 
 # envVarsFromConfigMaps: Specify configmap names (yaml array format) from which you want to load GVs or environment variables
-envVarsFromConfigMaps:
+envVarsFromConfigMaps: []
 # - configmap-1
 # - configmap-2
 
 # envVarsFromSecrets: Specify Secrets names (yaml array format) from which you want to Load GVs or environment variables
-envVarsFromSecrets:
+envVarsFromSecrets: []
 # - secret-1
 # - secret-2
 
 # envVars Specify environment variables (yaml key value format) you want to pass on to BE agents (pods)
-envVars:
+envVars: {}
   # # env flag to specify which CDD file to use.
   # # In case RMS container, It contains 3 different CDD files with RMS.cdd as default. You can use this flag to run BE app with diffent CDD.
   # CDD_FILE: "<CDD file path>"
@@ -72,6 +72,16 @@ envVars:
   # # custom gv provider specific environment variables
   # # other environment variables
 
+##################################################
+## Certificates
+##################################################
+# certificatesFromSecrets: Specify Secrets names (yaml array format) which contains certificates. These secrets gets mounted inside the
+# pod at the location "/opt/tibco/certs/<secretName>"
+# Note: Secret should be of type 'Opaque' Refer: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types and
+#       Secret's data key should be certificate filename and value should be certificate file content.
+certificatesFromSecrets: []
+# - secretName: mysecret
+# - secretName: mysqlsecret
 
 ##################################################
 ## Agents section
@@ -154,7 +164,7 @@ podAntiAffinity: false
 # configs Specify Specify environment variables (yaml key value format), So that
 # configmap gets generated and injected in to the BE agents (pods)
 #
-configs:
+configs: {}
   # # FTL GVs configs
   # FTL_gv_REALM_SERVER: http://20.62.216.186:8585
   # FTL_gv_CLUSTER_NAME: ftl.default.cluster

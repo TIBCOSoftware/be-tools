@@ -20,6 +20,11 @@ set "ARG_APP_LOCATION=na"
 set "ARG_TAG=na"
 set "ARG_DOCKER_FILE=na"
 set "ARG_GVPROVIDER=na"
+set "ARG_USE_OPEN_JDK=false"
+
+REM openjdk related vars
+set "OPEN_JDK_VERSION=na"
+set "OPEN_JDK_FILENAME=na"
 
 REM be related args
 set "BE_HOME=na"
@@ -124,6 +129,14 @@ for %%x in (%*) do (
         shift
         call set "ARG_DOCKER_FILE=%%!counter!"
         set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+    )
+
+    if !currentArg! EQU -o (
+        set "ARG_USE_OPEN_JDK=true"
+    )
+
+    if !currentArg! EQU --openjdk (
+        set "ARG_USE_OPEN_JDK=true"
     )
 
     if !currentArg! EQU --gv-provider (
@@ -336,6 +349,7 @@ for /f "delims=" %%i in ('docker version --format {{.Server.Os}}') do (
     )
 )
 
+mkdir !TEMP_FOLDER!
 if !INSTALLATION_TYPE! EQU fromlocal (
     REM Identify BE version
     for /F "tokens=2,2 delims==" %%i in ('findstr /i "beVersion=" !BE_HOME!\uninstaller_scripts\post-install.properties') do (
@@ -347,18 +361,21 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         EXIT /B 1
     )
 
-    REM Identify JRE version
-    for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" !BE_HOME!\bin\be-engine.tra') do (
-        for %%f in (%%i) do (
-            set "ARG_JRE_VERSION=%%~nxf"
-        )
-    )
-
     call .\scripts\util.bat :ValidateFTLAndAS !ARG_BE_VERSION! !IMAGE_NAME! !RMS_IMAGE! !VALIDATE_FTL_AS!
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
         SET "TRA_FILE=rms\bin\be-rms.tra"
+    ) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
+        SET "TRA_FILE=teagent\bin\be-teagent.tra"
     ) else (
         SET "TRA_FILE=bin\be-engine.tra"
+    )
+
+    REM Identify JRE version
+    for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" !BE_HOME!\!TRA_FILE!') do (
+        set TRA_JAVA_HOME=%%i
+        for %%f in (%%i) do (
+            set "ARG_JRE_VERSION=%%~nxf"
+        )
     )
     
     REM Check AS_HOME from tra file it is as legacy home
@@ -411,10 +428,8 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         )
     )
 
+    set "ARG_USE_OPEN_JDK=false"
 ) else (
-
-    mkdir !TEMP_FOLDER!
-
     REM Creating an empty file
     break>"!TEMP_FOLDER!/package_files.txt"
 
@@ -452,6 +467,20 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         if !ERROR_VAL! EQU true GOTO END-withError
 
         if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+    )
+
+    REM check openjdk details
+    if "!ARG_USE_OPEN_JDK!" EQU "true" (
+        call .\scripts\openjdk.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_JRE_VERSION! OPEN_JDK_VERSION OPEN_JDK_FILENAME ERROR_VAL
+        if !ERROR_VAL! EQU true GOTO END-withError
+        echo OPENJDK#!OPEN_JDK_FILENAME! >> !TEMP_FOLDER!/package_files.txt
+    )
+)
+
+if "!ARG_USE_OPEN_JDK!" EQU "true" (
+    if "!ARG_JRE_VERSION!" NEQ "!OPEN_JDK_VERSION!" (
+        echo ERROR: OpenJDK Version [!OPEN_JDK_VERSION!] and BE supported JRE Runtime Version [!ARG_JRE_VERSION!] mismatch
+        GOTO END-withError
     )
 )
 
@@ -535,9 +564,15 @@ if !ARG_GVPROVIDER! NEQ na (
     echo INFO: GV PROVIDER                  : [!ARG_GVPROVIDER!]
 )
 
-if !ARG_JRE_VERSION! NEQ na (
+if "!OPEN_JDK_VERSION!" NEQ "na" (
+    echo INFO: OPEN JDK VERSION             : [!OPEN_JDK_VERSION!]
+    if "!OPEN_JDK_FILENAME!" NEQ "na" (
+        echo INFO: OPEN JDK FILE NAME           : [!OPEN_JDK_FILENAME!]
+    )
+) else (
     echo INFO: JRE VERSION                  : [!ARG_JRE_VERSION!]
 )
+
 echo ------------------------------------------------------------------------------
 echo.
 
@@ -560,8 +595,6 @@ if !INSTALLATION_TYPE! EQU fromlocal if "!BE6!" EQU "false" if !ARG_AS_LEG_SHORT
 if !INSTALLATION_TYPE! EQU frominstallers if "!BE6!" EQU "false" if !IMAGE_NAME! NEQ !TEA_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na echo WARN: TIBCO Activespaces^(legacy^) will not be installed as no package found in the installer location.
 
 if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS_LEG_VERSION! NEQ na echo WARN: The directory: [!ARG_INSTALLER_LOCATION!] contains both FTL and Activespaces^(legacy^) installers. Removing unused installer improves the docker image size.
-
-if !INSTALLATION_TYPE! EQU fromlocal mkdir !TEMP_FOLDER!
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
@@ -634,10 +667,14 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     mkdir !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin
 
     echo INFO: Adding [be\!ARG_BE_SHORT_VERSION!] to tibcohome.
-    powershell -Command "Copy-Item '!BE_HOME!\..\..\tibcojre64' -Destination '!TEMP_FOLDER!\tibcoHome' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\lib' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
     powershell -Command "Copy-Item '!BE_HOME!\bin\be-engine.tra','!BE_HOME!\bin\be-engine.exe','!BE_HOME!\bin\dbkeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
+
+    if "!JAVA_HOME_DIR_NAME!" EQU "" set JAVA_HOME_DIR_NAME=java
     
+    mkdir !TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!
+    powershell -Command "Copy-Item '!TRA_JAVA_HOME!' -Destination '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!' -Recurse | out-null"
+
     if exist "!BE_HOME!\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '!BE_HOME!\bin\cassandrakeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
     REM replace tibco home path
@@ -662,7 +699,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         if !ARG_APP_LOCATION! NEQ na (
             mkdir !TEMP_FOLDER!\tibcoHome\be\ext
             powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
-            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' '!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!','!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
             del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
         )
     ) else (
@@ -719,8 +756,8 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     echo INFO: Generating annotation indexes.
     cd !TEMP_FOLDER!
-    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\tibcojre64\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
-    tibcoHome\tibcojre64\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
+    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
+    tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
     if EXIST tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
         powershell -Command "(Get-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx'"
     )
@@ -729,6 +766,8 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "Copy-Item '.\lib\runbe.bat','.\lib\vcredist_install.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
 
     powershell -Command "Copy-Item '!TEMP_FOLDER!\gvproviders' -Destination '!TEMP_FOLDER!\tibcoHome\be' -Recurse | out-null"
+
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
     rd /S /Q !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app !TEMP_FOLDER!\installers 
 
@@ -755,12 +794,12 @@ for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg TEMP_FOLDER=!TEMP_FOLDER! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
-    docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg DOCKERFILE_NAME=!ARG_DOCKER_FILE! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 )
 
 if %ERRORLEVEL% NEQ 0 (
@@ -812,6 +851,10 @@ EXIT /B 0
     echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"custom") [optional]
     echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
+    echo.
+    echo  [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]
+    echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
+    echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.

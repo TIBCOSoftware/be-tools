@@ -11,6 +11,7 @@ ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG AS_VERSION
 ARG JRE_VERSION
+ARG OPEN_JDK_FILENAME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
@@ -34,9 +35,8 @@ ARG FTL_PRODUCT_HOTFIX
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 ARG ACTIVESPACES_PRODUCT_HOTFIX
-ARG DOCKERFILE_NAME
 ARG JRE_VERSION
-ARG TEMP_FOLDER
+ARG OPEN_JDK_FILENAME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG AS_SHORT_VERSION
@@ -44,7 +44,7 @@ ARG AS_SHORT_VERSION
 LABEL be-intermediate-image=true
 
 RUN apt-get update \
- && apt-get install -y unzip procps findutils
+ && apt-get install -y unzip procps findutils tar
 
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
 COPY gvproviders /home/tibco/be/gvproviders
@@ -53,7 +53,6 @@ COPY app/* /opt/tibco/be/ext/
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  AS_VERSION=${AS_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
 
@@ -64,9 +63,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$A
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip \
- && find . -regex "./Dockerfile.*" ! -name '$DOCKERFILE_NAME' -delete
-
+ && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip
 RUN ./prepare_finalimage.sh
 
 #Discard intermediate image and just copy the installation to a new image.
@@ -103,7 +100,6 @@ ENV PU=default \
  AS_VERSION=${AS_VERSION} \
  AS_HOME=/opt/tibco/as/${AS_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
- JRE_HOME=/opt/tibco/tibcojre64/${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
