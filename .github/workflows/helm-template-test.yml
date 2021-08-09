@@ -1,0 +1,36 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+        
+    - name: Install Helm
+      run: |
+          sudo apt-get update -y 
+          sudo apt-get install wget tar
+          wget https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz
+          tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+        
+    - name: Helm Template Test
+      run: |
+            pwd
+            ls
+            cd cloud/kubernetes/helm
+            helm dep up
+            cd ../tests/template
+            go test -v ./...
