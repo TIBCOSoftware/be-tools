@@ -739,12 +739,6 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     # Extract it
     tar -C $TEMP_FOLDER/$RANDM_FOLDER -xf $TEMP_FOLDER/be.tar
 
-    OPT_TIBCO="/opt/tibco"
-    # Replace be home in tra files with opt/tibco
-    echo "INFO: Replacing base directory in the files from [$BE_HOME_BASE] to [/opt/tibco]."
-
-    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
-
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         # Replace in props files
         find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
@@ -842,6 +836,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     cp -r $TRA_JAVA_HOME/* $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
 
+    OPT_TIBCO="/opt/tibco"
+    # Replace be home in tra files with opt/tibco
+    echo "INFO: Replacing base directory in the files from [$BE_HOME_BASE] to [/opt/tibco]."
+
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+    
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
