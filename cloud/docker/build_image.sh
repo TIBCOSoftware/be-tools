@@ -46,7 +46,7 @@ VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" )
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.2.0" "11" )
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -656,6 +656,7 @@ fi
 
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "./lib" $TEMP_FOLDER/
+touch $TEMP_FOLDER/lib/deletelist.txt
 
 if [ "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
