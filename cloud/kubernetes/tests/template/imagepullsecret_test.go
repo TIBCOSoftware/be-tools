@@ -11,23 +11,31 @@ import (
 )
 
 func TestImagePullSecret(t *testing.T) {
-	helmFilePath, err := filepath.Abs("../../helm")
+	helmChartPath, err := filepath.Abs("../../helm")
 	releaseName := "testrelease"
 
 	require.NoError(t, err)
 
-	values := map[string]string{
+	values := map[string]string{}
+	options := &helm.Options{
+		SetValues: values,
+	}
+	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/imagepullsecret.yaml"})
+	require.NotNil(t, err)
+	require.Equal(t, "Error: could not find template templates/imagepullsecret.yaml in chart", output)
+
+	values = map[string]string{
 		"imageCredentials.registry": "docker.io",
 		"imageCredentials.username": "test",
 		"imageCredentials.password": "test",
 		"imageCredentials.email":    "test@test.com",
 	}
 
-	options := &helm.Options{
+	options = &helm.Options{
 		SetValues: values,
 	}
 
-	output, err := helm.RenderTemplateE(t, options, helmFilePath, releaseName, []string{"templates/imagepullsecret.yaml"})
+	output, err = helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/imagepullsecret.yaml"})
 	require.NoError(t, err)
 	var imagePullSecret v1.Secret
 	helm.UnmarshalK8SYaml(t, output, &imagePullSecret)

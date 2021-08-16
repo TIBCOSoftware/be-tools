@@ -14,12 +14,20 @@ import (
 
 //  Template test for HPA
 func TestHPA(t *testing.T) {
-	helmFilePath, err := filepath.Abs("../../helm")
+	helmChartPath, err := filepath.Abs("../../helm")
 	releaseName := "TestHPA"
 
 	require.NoError(t, err)
 
-	values := map[string]string{
+	values := map[string]string{}
+	options := &helm.Options{
+		SetValues: values,
+	}
+	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/hpa.yaml"})
+	require.NotNil(t, err)
+	require.Equal(t, "Error: could not find template templates/hpa.yaml in chart", output)
+
+	values = map[string]string{
 		"cmType":                                                  "as2",
 		"bsType":                                                  "none",
 		"agents[0].name":                                          "inferenceagent",
@@ -68,11 +76,11 @@ func TestHPA(t *testing.T) {
 		"agents[1].hpa.memoryMetric.averageUtilizationPercentage": "90",
 	}
 
-	options := &helm.Options{
+	options = &helm.Options{
 		SetValues: values,
 	}
 
-	output, err := helm.RenderTemplateE(t, options, helmFilePath, releaseName, []string{"templates/hpa.yaml"})
+	output, err = helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/hpa.yaml"})
 	require.NoError(t, err)
 	rawHPAs := strings.Split(output, "---")
 	var actualHPAs []v2beta2.HorizontalPodAutoscaler
