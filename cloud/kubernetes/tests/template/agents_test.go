@@ -12,7 +12,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// Temolate test for rms aws static provisioning
+// Template test for rms aws static provisioning
 func TestAgents(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
 	releaseName := "TestAgents"
@@ -55,7 +55,7 @@ func TestAgents(t *testing.T) {
 	require.Equal(t, "inferenceagent-container", actualAgents[0].Spec.Template.Spec.Containers[0].Name)
 	require.Equal(t, "befdapp:01", actualAgents[0].Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, v1.PullPolicy("IfNotPresent"), actualAgents[0].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "default", valueFromEnv(actualAgents[0].Spec.Template.Spec.Containers[0].Env, "PU"))
+	require.Equal(t, "default", findEnv(actualAgents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
 	require.Equal(t, "/mnt/tibco/be/data-store", valueFromVolumeMount(actualAgents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(actualAgents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 	require.Equal(t, "/opt/tibco/be/6.1/rms/shared", valueFromVolumeMount(actualAgents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
@@ -164,12 +164,9 @@ func TestAgentsNone(t *testing.T) {
 		agents = append(agents, agent)
 	}
 
-	// fmt.Println("------------", agents, "------------------------------")
-
 	// agent 0
 	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
 	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
-	// val := "tcp://persistencenone-inferenceagent-0.persistencenone-discovery-service:50000;persistencenone-cacheagent-0.persistencenone-discovery-service:50000;"
 	require.Equal(t, "StatefulSet", agents[0].Kind)
 	require.Equal(t, "apps/v1", agents[0].APIVersion)
 	require.Equal(t, int32(1), *agents[0].Spec.Replicas)
@@ -183,13 +180,13 @@ func TestAgentsNone(t *testing.T) {
 	require.Equal(t, "befdapp:01", agents[0].Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, v1.PullIfNotPresent, agents[0].Spec.Template.Spec.Containers[0].ImagePullPolicy)
 	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
-	require.Equal(t, "default", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU"))
-	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL"))
-	require.Equal(t, "http://persistencenone-influxdb:8086", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL"))
-	// require.Equal(t, 5555, agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port)
+	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
+	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
+	require.Equal(t, "http://persistencenone-influxdb:8086", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
+	require.Equal(t, int32(5555), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
 	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
 	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
-	// require.Equal(t, 5555, agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port)
+	require.Equal(t, int32(5555), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port.IntVal)
 	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
 	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
@@ -212,13 +209,13 @@ func TestAgentsNone(t *testing.T) {
 	require.Equal(t, "cacheagent-container", agents[1].Spec.Template.Spec.Containers[0].Name)
 	require.Equal(t, "befdapp:01", agents[1].Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, v1.PullIfNotPresent, agents[1].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "cache", valueFromEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU"))
-	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL"))
-	require.Equal(t, "http://persistencenone-influxdb:8086", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL"))
-	// require.Equal(t, 5555, agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port)
+	require.Equal(t, "cache", findEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU").Value)
+	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
+	require.Equal(t, "http://persistencenone-influxdb:8086", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
+	require.Equal(t, int32(5555), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
 	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
 	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
-	// require.Equal(t, 5555, agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port)
+	require.Equal(t, int32(5555), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port.IntVal)
 	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
 	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
@@ -307,12 +304,9 @@ func TestAgentsSharedNothing(t *testing.T) {
 		agents = append(agents, agent)
 	}
 
-	// fmt.Println("------------", agents, "------------------------------")
-
 	// agent 0
 	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
 	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
-	// val := "tcp://persistencenone-inferenceagent-0.persistencenone-discovery-service:50000;persistencenone-cacheagent-0.persistencenone-discovery-service:50000;"
 	require.Equal(t, "StatefulSet", agents[0].Kind)
 	require.Equal(t, "apps/v1", agents[0].APIVersion)
 	require.Equal(t, int32(1), *agents[0].Spec.Replicas)
@@ -327,8 +321,8 @@ func TestAgentsSharedNothing(t *testing.T) {
 	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
 	require.Equal(t, "myconfigmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
 	require.Equal(t, "mysecret", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
-	require.Equal(t, "default", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU"))
-	require.Equal(t, "http://ftlserver:8585", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER"))
+	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
+	require.Equal(t, "http://ftlserver:8585", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 	require.Equal(t, "/mnt/tibco/be/data-store", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
 	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "logs"))
@@ -350,8 +344,8 @@ func TestAgentsSharedNothing(t *testing.T) {
 	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
 	require.Equal(t, "myconfigmap", agents[1].Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
 	require.Equal(t, "mysecret", agents[1].Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
-	require.Equal(t, "cache", valueFromEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU"))
-	require.Equal(t, "http://ftlserver:8585", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER"))
+	require.Equal(t, "cache", findEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU").Value)
+	require.Equal(t, "http://ftlserver:8585", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 	require.Equal(t, "/mnt/tibco/be/data-store", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
 	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[1].Spec.Template.Spec.Volumes, "logs"))
@@ -395,8 +389,6 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 		agents = append(agents, agent)
 	}
 
-	// fmt.Println("------------", agents, "------------------------------")
-
 	// agent 0
 	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
 	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
@@ -412,13 +404,15 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	require.Equal(t, "inferenceagent-container", agents[0].Spec.Template.Spec.Containers[0].Name)
 	require.Equal(t, "befdapp:01", agents[0].Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, v1.PullIfNotPresent, agents[0].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "default", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU"))
-	// require.Equal(t, "123", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "ENGINE_NAME"))
-	require.Equal(t, "testdb", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_KEYSPACE_NAME"))
-	require.Equal(t, "localhost:9042", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_SERVER"))
-	require.Equal(t, "persistencenone-discovery-service", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name"))
-	require.Equal(t, "k8s", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.discovery.type"))
-	require.Equal(t, "default", valueFromEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace"))
+	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
+	actualEnvEngineName := findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "ENGINE_NAME")
+	require.NotNil(t, actualEnvEngineName.ValueFrom)
+	require.Equal(t, "metadata.name", actualEnvEngineName.ValueFrom.FieldRef.FieldPath)
+	require.Equal(t, "testdb", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_KEYSPACE_NAME").Value)
+	require.Equal(t, "localhost:9042", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_SERVER").Value)
+	require.Equal(t, "persistencenone-discovery-service", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
+	require.Equal(t, "k8s", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.discovery.type").Value)
+	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "logs"))
 	require.Equal(t, "/opt/tibco/be/6.1/rms/shared", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
@@ -430,13 +424,13 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 
 }
 
-func valueFromEnv(data []v1.EnvVar, key string) string {
-	for _, d1 := range data {
-		if d1.Name == key {
-			return d1.Value
+func findEnv(envs []v1.EnvVar, key string) v1.EnvVar {
+	for _, env := range envs {
+		if env.Name == key {
+			return env
 		}
 	}
-	return ""
+	return v1.EnvVar{Name: ""}
 }
 
 func valueFromVolumeMount(data []v1.VolumeMount, key string) string {
