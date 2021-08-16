@@ -67,3 +67,10 @@ validateFTLandAS()
 
     echo $VALIDATE_FTL_AS
 }
+
+getXpathValueFrom(){
+    FILE_NAME=$1
+    XPATH=$2
+
+    echo $(sed -e 's/xmlns="[^"]*"//g' ${FILE_NAME} | xmllint --xpath "/cluster/${XPATH}/text()" - 2>/dev/null)
+}

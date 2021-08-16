@@ -1,0 +1,3 @@
+BE_HOME/lib/cep-kinesis-channel.jar
+BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar
+BE_HOME/lib/ext/tpcl/aws/*

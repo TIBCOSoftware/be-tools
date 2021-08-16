@@ -27,6 +27,8 @@ ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
+ARG_OPTIMIZE="false"
+ARG_INCLUDE_MODULES="na"
 
 # be related args
 BE_HOME="na"
@@ -95,6 +97,10 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
+USAGE+="\n\n [--optimize]         :    Enable to auto optimize image size based on cdd content [optional]"
+USAGE+="\n\n [--include]          :    Module names to be included in image [optional]\n"
+USAGE+="                           To add more than one Module use comma separated format ex: \"http,kafka\" \n"
+USAGE+="                           Note: Modules not given are deleted from image."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -156,6 +162,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         -o|--openjdk)
             ARG_USE_OPEN_JDK="true"
+            ;;
+        --optimize)
+            ARG_OPTIMIZE="true"
+            ;;
+        --include)
+            shift # past the key and to the value
+            ARG_INCLUDE_MODULES="$1"
+            ;;
+        --include=*)
+            ARG_INCLUDE_MODULES="${key#*=}"
             ;;
         -h|--help)
             shift # past the key and to the value
@@ -290,6 +306,10 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
 
     EAR_FILE_NAME="$(basename -- ${ears[0]})"
     CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+
+    if [ "$ARG_OPTIMIZE" = "true" ]; then
+        source ./scripts/optimize.sh
+    fi
 fi
 
 # assign image tag to ARG_IMAGE_VERSION variable
@@ -691,6 +711,25 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
+if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
+    oIFS="$IFS"; IFS=',';
+    for i in $ARG_INCLUDE_MODULES ; do
+        rm -rf $TEMP_FOLDER/lib/optimize/$i.txt
+    done
+    IFS="$oIFS"; unset oIFS
+
+    for i in `ls $TEMP_FOLDER/lib/optimize/*.txt` ; do
+        cat $i >> $TEMP_FOLDER/lib/deletelist.txt
+        echo "" >> $TEMP_FOLDER/lib/deletelist.txt
+    done
+
+    if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+        sed -i  "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+        sed -i  "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    fi
+fi
+rm -rf $TEMP_FOLDER/lib/optimize
+
 # create be tar/ copy installers to temp folder
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
@@ -841,6 +880,15 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+
+    if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
+        sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+        sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+
+        for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
+            rm -rf $filename 2>/dev/null
+        done
+    fi
     
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
