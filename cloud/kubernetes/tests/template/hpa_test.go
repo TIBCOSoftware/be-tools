@@ -9,7 +9,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/require"
 	"k8s.io/api/autoscaling/v2beta2"
-	v1 "k8s.io/api/core/v1"
 )
 
 //  Template test for HPA
@@ -93,20 +92,35 @@ func TestHPA(t *testing.T) {
 		actualHPAs = append(actualHPAs, actualHPA)
 	}
 
+	expectedHPAMap := map[string]map[string]interface{}{
+		"TestHPA-cacheagent": {
+			"releaseName":                      "TestHPA-cacheagent",
+			"minreplicas":                      int32(1),
+			"maxreplicas":                      int32(5),
+			"resourceCPUAverageUtilization":    int32(90),
+			"resourceMemoryAverageUtilization": int32(90),
+		},
+		"TestHPA-inferenceagent": {
+			"releaseName":                      "TestHPA-inferenceagent",
+			"minreplicas":                      int32(1),
+			"maxreplicas":                      int32(5),
+			"resourceCPUAverageUtilization":    int32(90),
+			"resourceMemoryAverageUtilization": int32(90),
+		},
+	}
+
 	require.Equal(t, 2, len(actualHPAs))
-	hpaName := [5]string{"inferenceagent", "cacheagent"}
-	for i := 0; i < len(actualHPAs); i++ {
-		expectedReleaseName := fmt.Sprintf("TestHPA-%s", hpaName[i])
-		require.Equal(t, expectedReleaseName, actualHPAs[i].ObjectMeta.Name)
-		require.Equal(t, expectedReleaseName, actualHPAs[i].Spec.ScaleTargetRef.Name)
-		require.Equal(t, int32(1), *actualHPAs[i].Spec.MinReplicas)
-		require.Equal(t, int32(5), actualHPAs[i].Spec.MaxReplicas)
-		require.Equal(t, v2beta2.MetricSourceType("Resource"), actualHPAs[i].Spec.Metrics[i].Type)
-		resourceName := [2]string{"cpu", "memory"}
-		for j := 0; j < len(resourceName); j++ {
-			require.Equal(t, v1.ResourceName(resourceName[j]), actualHPAs[i].Spec.Metrics[j].Resource.Name)
-			require.Equal(t, v2beta2.MetricTargetType("Utilization"), actualHPAs[i].Spec.Metrics[j].Resource.Target.Type)
-			require.Equal(t, int32(90), *actualHPAs[i].Spec.Metrics[j].Resource.Target.AverageUtilization)
-		}
+
+	for _, actualHPA := range actualHPAs {
+		actualHPAName := actualHPA.ObjectMeta.Name
+		expectedHPA, found := expectedHPAMap[actualHPAName]
+		require.Truef(t, found, fmt.Sprintf("HPA name[%s] is not expected", expectedHPA))
+		require.Equal(t, expectedHPA["releaseName"], actualHPA.ObjectMeta.Name)
+
+		require.Equal(t, expectedHPA["releaseName"], actualHPA.Spec.ScaleTargetRef.Name)
+		require.Equal(t, expectedHPA["minreplicas"], *actualHPA.Spec.MinReplicas)
+		require.Equal(t, expectedHPA["maxreplicas"], actualHPA.Spec.MaxReplicas)
+		require.Equal(t, expectedHPA["resourceCPUAverageUtilization"], *actualHPA.Spec.Metrics[0].Resource.Target.AverageUtilization)
+		require.Equal(t, expectedHPA["resourceMemoryAverageUtilization"], *actualHPA.Spec.Metrics[1].Resource.Target.AverageUtilization)
 	}
 }
