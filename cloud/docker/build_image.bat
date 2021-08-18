@@ -598,6 +598,7 @@ if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
+type NUL > !TEMP_FOLDER!\lib\deletelist.txt
 
 if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
     if !ARG_INSTALLERS_PLATFORM! EQU win (
