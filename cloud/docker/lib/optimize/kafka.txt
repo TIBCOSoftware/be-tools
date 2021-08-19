@@ -1,8 +1,0 @@
-BE_HOME/lib/cep-kafka.jar
-BE_HOME/lib/cep-kafka-streams.jar
-BE_HOME/lib/ext/tpcl/kafka-clients-*.jar
-BE_HOME/lib/ext/tpcl/kafka-streams-*.jar
-BE_HOME/lib/ext/tpcl/snappy-java-*.jar
-BE_HOME/lib/ext/tpcl/lz4-java-*.jar
-BE_HOME/lib/ext/tpcl/rocksdbjni-*.jar
-BE_HOME/lib/ext/tpcl/zstd-jni-*.jar

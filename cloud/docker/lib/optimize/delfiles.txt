@@ -1,5 +1,0 @@
-JAVA_HOME/lib/src.zip
-/home/tibco/be/be_docker_install.bat
-/home/tibco/be/be_docker_install.pm
-/home/tibco/be/prepare_finalimage.sh
-/home/tibco/be/deletelist.txt

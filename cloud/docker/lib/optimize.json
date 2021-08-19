@@ -1,0 +1,30 @@
+[
+    {
+        "mustdel": [
+            "JAVA_HOME/lib/src.zip",
+            "/home/tibco/be/be_docker_install.bat",
+            "/home/tibco/be/be_docker_install.pm",
+            "/home/tibco/be/prepare_finalimage.sh",
+            "/home/tibco/be/deletelist.txt"
+        ]
+    },
+    {
+        "kafka": [
+            "BE_HOME/lib/cep-kafka.jar",
+            "BE_HOME/lib/cep-kafka-streams.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-clients-*.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-streams-*.jar",
+            "BE_HOME/lib/ext/tpcl/snappy-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/lz4-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/rocksdbjni-*.jar",
+            "BE_HOME/lib/ext/tpcl/zstd-jni-*.jar"
+        ]
+    },
+    {
+        "kinesis": [
+            "BE_HOME/lib/cep-kinesis-channel.jar",
+            "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/*"
+        ]
+    }
+]
