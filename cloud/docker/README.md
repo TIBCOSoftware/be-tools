@@ -12,4 +12,4 @@ By using the scripts provided in the `docker` folder, you can containerize and r
 
 ## Documentation
 
-TIBCO BusinessEvents® documentation is available at [Dockerize TIBCO BusinessEvents](https://github.com/TIBCOSoftware/be-tools/wiki/Dockerize%20TIBCO%20BusinessEvents).
+TIBCO BusinessEvents® documentation is available at [Containerize TIBCO BusinessEvents](https://github.com/TIBCOSoftware/be-tools/wiki/Containerize-TIBCO-BusinessEvents).
