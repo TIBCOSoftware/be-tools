@@ -28,7 +28,7 @@ ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="false"
-ARG_EXCLUDE_MODULES="na"
+ARG_INCLUDE_MODULES="na"
 
 # be related args
 BE_HOME="na"
@@ -98,9 +98,9 @@ USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
 USAGE+="\n\n [--optimize]         :    Enable to auto optimize image size based on cdd content [optional]"
-USAGE+="\n\n [--exclude]          :    Module names to be excluded from image [optional]\n"
+USAGE+="\n\n [--include]          :    Module names to be included in image [optional]\n"
 USAGE+="                           To add more than one Module use comma separated format ex: \"http,kafka\" \n"
-USAGE+="                           Note: Modules given here are deleted from image."
+USAGE+="                           Note: Modules not given here are deleted from image."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -166,12 +166,12 @@ while [[ $# -gt 0 ]]; do
         --optimize)
             ARG_OPTIMIZE="true"
             ;;
-        --exclude)
+        --include)
             shift # past the key and to the value
-            ARG_EXCLUDE_MODULES="$1"
+            ARG_INCLUDE_MODULES="$1"
             ;;
-        --exclude=*)
-            ARG_EXCLUDE_MODULES="${key#*=}"
+        --include=*)
+            ARG_INCLUDE_MODULES="${key#*=}"
             ;;
         -h|--help)
             shift # past the key and to the value
@@ -712,13 +712,17 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
-if ! [ "$ARG_EXCLUDE_MODULES" = "na" -o -z "${ARG_EXCLUDE_MODULES// }" ]; then
-    ARG_EXCLUDE_MODULES="$ARG_EXCLUDE_MODULES,mustdel"
+if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
+    EXCLUDE_MODULES=$(cat $TEMP_FOLDER/lib/optimize.json | sed  ':a; N; s/\n/ /; ta' | grep -oP '(?<=\{).*?(?=\:)' |  sed -e 's/^[ \t]*//;/^$/d' | sed s~\"~~g)
     oIFS="$IFS"; IFS=',';
-    for i in $ARG_EXCLUDE_MODULES ; do
-        cat $TEMP_FOLDER/lib/optimize.json | sed -n "/$i.*\[/,/\]/p" | sed "s~.*\[~~g;s~\]~~g;s~,~\n~g;s~\"~~g"| sed -e 's/^[ \t]*//;/^$/d' >> $TEMP_FOLDER/lib/deletelist.txt
+    for i in $ARG_INCLUDE_MODULES ; do
+        EXCLUDE_MODULES=$( echo $EXCLUDE_MODULES | sed s/$i//g )
     done
     IFS="$oIFS"; unset oIFS
+
+    for i in $EXCLUDE_MODULES ; do
+        cat $TEMP_FOLDER/lib/optimize.json |  sed  ':a; N; s/\n/ /; ta'  | grep -oP "(?<=$i).*?(?=\])" | sed "s~.*\[~~g;s~\]~~g;s~,~\n~g;s~\"~~g"| sed -e 's/^[ \t]*//;/^$/d' >> $TEMP_FOLDER/lib/deletelist.txt
+    done
 
     sed -i -e 's/^[ \t]*//;/^$/d' $TEMP_FOLDER/lib/deletelist.txt
 
@@ -879,7 +883,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
-    if ! [ "$ARG_EXCLUDE_MODULES" = "na" -o -z "${ARG_EXCLUDE_MODULES// }" ]; then
+    if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
         sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
         sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
 
