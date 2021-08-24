@@ -164,70 +164,87 @@ func TestAgentsNone(t *testing.T) {
 		agents = append(agents, agent)
 	}
 
-	// agent 0
-	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
-	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
-	require.Equal(t, "StatefulSet", agents[0].Kind)
-	require.Equal(t, "apps/v1", agents[0].APIVersion)
-	require.Equal(t, int32(1), *agents[0].Spec.Replicas)
-	require.Equal(t, expectedSVCName, agents[0].Spec.ServiceName)
-	require.Equal(t, expectedReleaseName, agents[0].Spec.Template.Labels["name"])
-	require.Equal(t, expectedReleaseName, agents[0].Name)
-	require.Equal(t, expectedReleaseName, agents[0].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, int32(100), agents[0].Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight)
-	require.Equal(t, []string([]string{"persistencenone-inferenceagent"}), agents[0].Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
-	require.Equal(t, "inferenceagent-container", agents[0].Spec.Template.Spec.Containers[0].Name)
-	require.Equal(t, "befdapp:01", agents[0].Spec.Template.Spec.Containers[0].Image)
-	require.Equal(t, v1.PullIfNotPresent, agents[0].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
-	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
-	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
-	require.Equal(t, "http://persistencenone-influxdb:8086", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
-	require.Equal(t, int32(5555), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
-	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
-	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
-	require.Equal(t, int32(5555), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port.IntVal)
-	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
-	require.Equal(t, int32(5), agents[0].Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
-	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
-	require.Equal(t, "/opt/tibco/be/6.1/rms/shared", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
-	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "logs"))
-	require.Equal(t, "RMSDEPLOYMENTNAME-rms-shared", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "rms-shared"))
+	expectedagentsMap := map[string]map[string]interface{}{
+		"persistencenone-inferenceagent": {
+			"release":                      "persistencenone-inferenceagent",
+			"replicas":                     int32(1),
+			"serviceName":                  "persistencenone-discovery-service",
+			"containerName":                "inferenceagent-container",
+			"image":                        "befdapp:01",
+			"configmap":                    "persistencenone-configmap",
+			"PU":                           "default",
+			"JDBC_URL_VAL":                 "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE",
+			"INFLUX_DB_VAL":                "http://persistencenone-influxdb:8086",
+			"livenessPort":                 int32(5555),
+			"livenessInitialDelaySeconds":  int32(5),
+			"livenessPeriodSeconds":        int32(5),
+			"readinessPort":                int32(5555),
+			"readinessInitialDelaySeconds": int32(5),
+			"readinessPeriodSeconds":       int32(5),
+			"logMountPath":                 "/mnt/tibco/be/logs",
+			"rmsSharedMountPath":           "/opt/tibco/be/6.1/rms/shared",
+			"logsVolumeName":               "persistencenone-logs",
+			"rmsVolumeName":                "RMSDEPLOYMENTNAME-rms-shared",
+		},
+		"persistencenone-cacheagent": {
+			"release":                      "persistencenone-cacheagent",
+			"replicas":                     int32(1),
+			"serviceName":                  "persistencenone-discovery-service",
+			"containerName":                "cacheagent-container",
+			"image":                        "befdapp:01",
+			"configmap":                    "persistencenone-configmap",
+			"PU":                           "cache",
+			"JDBC_URL_VAL":                 "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE",
+			"INFLUX_DB_VAL":                "http://persistencenone-influxdb:8086",
+			"livenessPort":                 int32(5555),
+			"livenessInitialDelaySeconds":  int32(5),
+			"livenessPeriodSeconds":        int32(5),
+			"readinessPort":                int32(5555),
+			"readinessInitialDelaySeconds": int32(5),
+			"readinessPeriodSeconds":       int32(5),
+			"logMountPath":                 "/mnt/tibco/be/logs",
+			"rmsSharedMountPath":           "/opt/tibco/be/6.1/rms/shared",
+			"logsVolumeName":               "persistencenone-logs",
+			"rmsVolumeName":                "RMSDEPLOYMENTNAME-rms-shared",
+		},
+	}
+	require.Equal(t, 2, len(agents))
 
-	// agent 1
-	expectedCacheReleaseName := fmt.Sprintf("%s-cacheagent", releaseName)
-	require.Equal(t, "StatefulSet", agents[1].Kind)
-	require.Equal(t, "apps/v1", agents[1].APIVersion)
-	require.Equal(t, int32(1), *agents[1].Spec.Replicas)
-	require.Equal(t, expectedSVCName, agents[1].Spec.ServiceName)
-	require.Equal(t, expectedCacheReleaseName, agents[1].Spec.Template.Labels["name"])
-	require.Equal(t, "yes", agents[1].Spec.Template.Labels["cacheagent"])
-	require.Equal(t, expectedCacheReleaseName, agents[1].Name)
-	require.Equal(t, expectedCacheReleaseName, agents[1].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, int32(100), agents[0].Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight)
-	require.Equal(t, []string([]string{"persistencenone-cacheagent"}), agents[1].Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
-	require.Equal(t, "cacheagent-container", agents[1].Spec.Template.Spec.Containers[0].Name)
-	require.Equal(t, "befdapp:01", agents[1].Spec.Template.Spec.Containers[0].Image)
-	require.Equal(t, v1.PullIfNotPresent, agents[1].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "cache", findEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU").Value)
-	require.Equal(t, "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
-	require.Equal(t, "http://persistencenone-influxdb:8086", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
-	require.Equal(t, int32(5555), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
-	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
-	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
-	require.Equal(t, int32(5555), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port.IntVal)
-	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
-	require.Equal(t, int32(5), agents[1].Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
-	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
-	require.Equal(t, "/opt/tibco/be/6.1/rms/shared", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
-	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[1].Spec.Template.Spec.Volumes, "logs"))
-	require.Equal(t, "RMSDEPLOYMENTNAME-rms-shared", valueFromVolumes(agents[1].Spec.Template.Spec.Volumes, "rms-shared"))
+	for _, agent := range agents {
+		agentName := agent.ObjectMeta.Name
+		expectedagentName, found := expectedagentsMap[agentName]
+		require.Truef(t, found, fmt.Sprintf("agent name[%s] is not expected", agentName))
+		require.Equal(t, expectedagentName["release"], agent.ObjectMeta.Name)
+		require.Equal(t, expectedagentName["replicas"], *agent.Spec.Replicas)
+		require.Equal(t, expectedagentName["serviceName"], agent.Spec.ServiceName)
+		require.Equal(t, expectedagentName["release"], agent.Name)
+		require.Equal(t, expectedagentName["release"], agent.Spec.Template.Labels["name"])
+		require.Equal(t, expectedagentName["release"], agent.Spec.Selector.MatchLabels["name"])
+		require.Equal(t, []string([]string{fmt.Sprintf("%s", expectedagentName["release"])}), agent.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
+		require.Equal(t, expectedagentName["containerName"], agent.Spec.Template.Spec.Containers[0].Name)
+		require.Equal(t, expectedagentName["image"], agent.Spec.Template.Spec.Containers[0].Image)
+		require.Equal(t, v1.PullIfNotPresent, agent.Spec.Template.Spec.Containers[0].ImagePullPolicy)
+		require.Equal(t, expectedagentName["configmap"], agent.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
+		require.Equal(t, expectedagentName["PU"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "PU").Value)
+		require.Equal(t, expectedagentName["JDBC_URL_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
+		require.Equal(t, expectedagentName["INFLUX_DB_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
+		require.Equal(t, expectedagentName["livenessPort"], agent.Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
+		require.Equal(t, expectedagentName["livenessInitialDelaySeconds"], agent.Spec.Template.Spec.Containers[0].LivenessProbe.InitialDelaySeconds)
+		require.Equal(t, expectedagentName["livenessPeriodSeconds"], agent.Spec.Template.Spec.Containers[0].LivenessProbe.PeriodSeconds)
+		require.Equal(t, expectedagentName["readinessPort"], agent.Spec.Template.Spec.Containers[0].ReadinessProbe.TCPSocket.Port.IntVal)
+		require.Equal(t, expectedagentName["readinessInitialDelaySeconds"], agent.Spec.Template.Spec.Containers[0].ReadinessProbe.InitialDelaySeconds)
+		require.Equal(t, expectedagentName["readinessPeriodSeconds"], agent.Spec.Template.Spec.Containers[0].ReadinessProbe.PeriodSeconds)
+		require.Equal(t, expectedagentName["logMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
+		require.Equal(t, expectedagentName["rmsSharedMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
+		require.Equal(t, expectedagentName["logsVolumeName"], valueFromVolumes(agent.Spec.Template.Spec.Volumes, "logs"))
+		require.Equal(t, expectedagentName["rmsVolumeName"], valueFromVolumes(agent.Spec.Template.Spec.Volumes, "rms-shared"))
+	}
 }
 
 // Template Test for cmType=ftl, persistence type sharednothing, envVars for ftl, enable logs, envVarsFromSecrets,envVarsFromConfigMaps,configs
 func TestAgentsSharedNothing(t *testing.T) {
 	helmFilePath, err := filepath.Abs("../../helm")
-	releaseName := "persistencenone"
+	releaseName := "sharednothing"
 
 	require.NoError(t, err)
 
@@ -304,52 +321,70 @@ func TestAgentsSharedNothing(t *testing.T) {
 		agents = append(agents, agent)
 	}
 
-	// agent 0
-	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
-	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
-	require.Equal(t, "StatefulSet", agents[0].Kind)
-	require.Equal(t, "apps/v1", agents[0].APIVersion)
-	require.Equal(t, int32(1), *agents[0].Spec.Replicas)
-	require.Equal(t, expectedSVCName, agents[0].Spec.ServiceName)
-	require.Equal(t, expectedReleaseName, agents[0].Spec.Template.Labels["name"])
-	require.Equal(t, expectedReleaseName, agents[0].Name)
-	require.Equal(t, expectedReleaseName, agents[0].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, "inferenceagent-container", agents[0].Spec.Template.Spec.Containers[0].Name)
-	require.Equal(t, "befdapp:01", agents[0].Spec.Template.Spec.Containers[0].Image)
-	require.Equal(t, "besecret", agents[1].Spec.Template.Spec.ImagePullSecrets[0].Name)
-	require.Equal(t, v1.PullIfNotPresent, agents[0].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
-	require.Equal(t, "myconfigmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
-	require.Equal(t, "mysecret", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
-	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "PU").Value)
-	require.Equal(t, "http://ftlserver:8585", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
-	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
-	require.Equal(t, "/mnt/tibco/be/data-store", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
-	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "logs"))
-	require.Equal(t, "persistencenone-data-store", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "data-store"))
+	expectedagentsMap := map[string]map[string]interface{}{
+		"sharednothing-inferenceagent": {
+			"release":             "sharednothing-inferenceagent",
+			"replicas":            int32(1),
+			"serviceName":         "sharednothing-discovery-service",
+			"containerName":       "inferenceagent-container",
+			"image":               "befdapp:01",
+			"pullsecret":          "besecret",
+			"configmap":           "sharednothing-configmap",
+			"configmapName":       "myconfigmap",
+			"secretName":          "mysecret",
+			"PU":                  "default",
+			"FTL_URL_VAL":         "http://ftlserver:8585",
+			"logMountPath":        "/mnt/tibco/be/logs",
+			"dataStoreMountPath":  "/mnt/tibco/be/data-store",
+			"logsVolumeName":      "sharednothing-logs",
+			"datastoreVolumeName": "sharednothing-data-store",
+		},
+		"sharednothing-cacheagent": {
+			"release":             "sharednothing-cacheagent",
+			"replicas":            int32(1),
+			"serviceName":         "sharednothing-discovery-service",
+			"containerName":       "cacheagent-container",
+			"image":               "befdapp:01",
+			"pullsecret":          "besecret",
+			"configmap":           "sharednothing-configmap",
+			"configmapName":       "myconfigmap",
+			"secretName":          "mysecret",
+			"PU":                  "cache",
+			"FTL_URL_VAL":         "http://ftlserver:8585",
+			"logMountPath":        "/mnt/tibco/be/logs",
+			"dataStoreMountPath":  "/mnt/tibco/be/data-store",
+			"logsVolumeName":      "sharednothing-logs",
+			"datastoreVolumeName": "sharednothing-data-store",
+		},
+	}
+	require.Equal(t, 2, len(agents))
 
-	// agent 1
-	expectedCacheReleaseName := fmt.Sprintf("%s-cacheagent", releaseName)
-	require.Equal(t, "StatefulSet", agents[1].Kind)
-	require.Equal(t, "apps/v1", agents[1].APIVersion)
-	require.Equal(t, int32(1), *agents[1].Spec.Replicas)
-	require.Equal(t, expectedSVCName, agents[1].Spec.ServiceName)
-	require.Equal(t, expectedCacheReleaseName, agents[1].Spec.Template.Labels["name"])
-	require.Equal(t, expectedCacheReleaseName, agents[1].Name)
-	require.Equal(t, expectedCacheReleaseName, agents[1].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, "cacheagent-container", agents[1].Spec.Template.Spec.Containers[0].Name)
-	require.Equal(t, "befdapp:01", agents[1].Spec.Template.Spec.Containers[0].Image)
-	require.Equal(t, "besecret", agents[1].Spec.Template.Spec.ImagePullSecrets[0].Name)
-	require.Equal(t, v1.PullIfNotPresent, agents[1].Spec.Template.Spec.Containers[0].ImagePullPolicy)
-	require.Equal(t, "persistencenone-configmap", agents[0].Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
-	require.Equal(t, "myconfigmap", agents[1].Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
-	require.Equal(t, "mysecret", agents[1].Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
-	require.Equal(t, "cache", findEnv(agents[1].Spec.Template.Spec.Containers[0].Env, "PU").Value)
-	require.Equal(t, "http://ftlserver:8585", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
-	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
-	require.Equal(t, "/mnt/tibco/be/data-store", valueFromVolumeMount(agents[1].Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
-	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[1].Spec.Template.Spec.Volumes, "logs"))
-	require.Equal(t, "persistencenone-data-store", valueFromVolumes(agents[1].Spec.Template.Spec.Volumes, "data-store"))
+	for _, agent := range agents {
+		agentName := agent.ObjectMeta.Name
+		expectedagentName, found := expectedagentsMap[agentName]
+		require.Truef(t, found, fmt.Sprintf("agent name[%s] is not expected", agentName))
+		require.Equal(t, expectedagentName["release"], agent.ObjectMeta.Name)
+		require.Equal(t, expectedagentName["replicas"], *agent.Spec.Replicas)
+		require.Equal(t, expectedagentName["serviceName"], agent.Spec.ServiceName)
+		require.Equal(t, expectedagentName["release"], agent.Name)
+		require.Equal(t, expectedagentName["release"], agent.Spec.Template.Labels["name"])
+		require.Equal(t, expectedagentName["release"], agent.Spec.Selector.MatchLabels["name"])
+		// require.Equal(t, []string([]string{"persistencenone-inferenceagent"}), agent.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
+		require.Equal(t, expectedagentName["containerName"], agent.Spec.Template.Spec.Containers[0].Name)
+		require.Equal(t, expectedagentName["image"], agent.Spec.Template.Spec.Containers[0].Image)
+		require.Equal(t, expectedagentName["pullsecret"], agent.Spec.Template.Spec.ImagePullSecrets[0].Name)
+		require.Equal(t, v1.PullIfNotPresent, agent.Spec.Template.Spec.Containers[0].ImagePullPolicy)
+		require.Equal(t, expectedagentName["configmap"], agent.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
+		require.Equal(t, expectedagentName["configmapName"], agent.Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
+		require.Equal(t, expectedagentName["secretName"], agent.Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
+		require.Equal(t, expectedagentName["PU"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "PU").Value)
+		require.Equal(t, expectedagentName["FTL_URL_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
+		require.Equal(t, expectedagentName["logMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
+		require.Equal(t, expectedagentName["dataStoreMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))
+		require.Equal(t, expectedagentName["logsVolumeName"], valueFromVolumes(agent.Spec.Template.Spec.Volumes, "logs"))
+		require.Equal(t, expectedagentName["datastoreVolumeName"], valueFromVolumes(agent.Spec.Template.Spec.Volumes, "data-store"))
+	}
+
 }
 
 //  Template test for rms deployment with ignite cassandra
