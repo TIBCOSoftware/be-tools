@@ -15,22 +15,10 @@ if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
   fi
 
   ecs_metadata=$(curl ${ECS_CONTAINER_METADATA_URI_V4}/task)
-  echo $ecs_metadata
   cluster=$(echo "$ecs_metadata" | jq -r ".Cluster" | rev | cut -d '/' -f 1 | rev )
-  output="json"
-
-  echo $cluster $output 
   if [ "$8" != "nil" ]; then
-    echo $8
 	  cluster="$8"
 	fi
-
-  if [ "${11}" != "nil" ]; then
-    echo ${11}
-	  output="${11}"
-	fi  
-
-  echo $cluster $output 
 fi
 
 if [[ "$9" == "AWS_ECS_FARGATE"  || "$9" == "AWS_ECS_EC2" ]]; then
@@ -39,21 +27,15 @@ if [[ "$9" == "AWS_ECS_FARGATE"  || "$9" == "AWS_ECS_EC2" ]]; then
   && aws configure set default.region ${10} \
   && aws configure set default.output ${11}
   aws configure set aws_session_token $AWS_SESSION_TOKEN
-fi
 
-if [[ "$9" == "AWS_ECS_FARGATE" ]]; then
-    launchType="FARGATE"
-elif [[ "$9" == "AWS_ECS_EC2" ]]; then
-    launchType="EC2"
-fi    
-              
-if [[ "$9" == "AWS_ECS_FARGATE"  || "$9" == "AWS_ECS_EC2" ]]; then
-  echo "IN be_docker_container_discovery_fargate"
-  echo $3 $4 $5 $6 $7 $clustername
+  if [[ "$9" == "AWS_ECS_FARGATE" ]]; then
+      launchType="FARGATE"
+  elif [[ "$9" == "AWS_ECS_EC2" ]]; then
+      launchType="EC2"
+  fi    
+
   nohup python3 be_docker_container_discovery_aws_ecs.py  -t $3 -u $4 -p $5 -py $6 -pi $7 -c $cluster -lt $launchType > discovery.logs 2>&1 &
 elif [[ "$9" == "k8s" ]]; then
-  echo "IN be_docker_container_discovery_k8s"
-  echo $3 $4 $5 $6 $7 $8
   nohup python3 be_docker_container_discovery_k8s.py  -t $3 -u $4 -p $5 -py $6 -pi $7 -ta $8 > discovery.logs 2>&1 &
 fi
 $1/teagent/bin/be-teagent --propFile $2
