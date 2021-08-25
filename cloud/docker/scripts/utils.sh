@@ -74,3 +74,16 @@ getXpathValueFrom(){
 
     echo $(sed -e 's/xmlns="[^"]*"//g' ${FILE_NAME} | xmllint --xpath "/cluster/${XPATH}/text()" - 2>/dev/null)
 }
+
+assignToList(){
+    NAME=$1
+    INCLUDE_LIST=$2
+
+    if [ $INCLUDE_LIST = "" -o $INCLUDE_LIST = "na" ]; then
+        INCLUDE_LIST="$NAME"
+    else
+        INCLUDE_LIST="$INCLUDE_LIST,$NAME"
+    fi
+
+    echo $INCLUDE_LIST
+}

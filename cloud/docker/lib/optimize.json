@@ -1,1 +1,175 @@
-[ { "mustdel": [ "JAVA_HOME/lib/src.zip", "/home/tibco/be/be_docker_install.bat", "/home/tibco/be/be_docker_install.pm", "/home/tibco/be/prepare_finalimage.sh", "/home/tibco/be/deletelist.txt" ] }, { "kafka": [ "BE_HOME/lib/cep-kafka.jar", "BE_HOME/lib/cep-kafka-streams.jar", "BE_HOME/lib/ext/tpcl/kafka-clients-*.jar", "BE_HOME/lib/ext/tpcl/kafka-streams-*.jar", "BE_HOME/lib/ext/tpcl/snappy-java-*.jar", "BE_HOME/lib/ext/tpcl/lz4-java-*.jar", "BE_HOME/lib/ext/tpcl/rocksdbjni-*.jar", "BE_HOME/lib/ext/tpcl/zstd-jni-*.jar" ] }, { "kinesis": [ "BE_HOME/lib/cep-kinesis-channel.jar", "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar", "BE_HOME/lib/ext/tpcl/aws/*" ] } ]
+[
+    {
+        "mustdel": [
+            "JAVA_HOME/lib/src.zip",
+            "/home/tibco/be/be_docker_install.bat",
+            "/home/tibco/be/be_docker_install.pm",
+            "/home/tibco/be/prepare_finalimage.sh",
+            "/home/tibco/be/deletelist.txt",
+            "BE_HOME/lib/cep-docker.jar"
+        ]
+    },
+    {
+        "kinesis": [
+            "BE_HOME/lib/cep-kinesis-channel.jar",
+            "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/*"
+        ]
+    },
+    {
+        "as2": [
+            "BE_HOME/lib/cep-datagrid-tibco.jar",
+            "BE_HOME/lib/cep-as-channel.jar"
+        ]
+    },
+    {
+        "ftl": [
+            "BE_HOME/lib/cep-ftl-cluster.jar",
+            "BE_HOME/lib/cep-ftl.jar",
+            "BE_HOME/lib/cep-ftl-channel.jar"
+        ]
+    },
+    {
+        "ignite": [
+            "BE_HOME/lib/cep-store-ignite.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite-core-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/indexing/ignite-indexing-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/indexing/h2-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/cache-api-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/optional/ignite-compress/ignite-compress-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/optional/ignite-gce/commons-logging-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite-kubernetes-*.jar"
+        ]
+    },
+    {
+        "cassandra": [
+            "BE_HOME/lib/cep-store-cassandra.jar",
+            "BE_HOME/lib/ext/tpcl/cassandra-driver-core*.jar",
+            "BE_HOME/lib/ext/tpcl/metrics-core-*.jar",
+            "BE_HOME/lib/ext/tpcl/netty-all-*.jar",
+            "BE_HOME/lib/ext/tpcl/cassandra-driver-extras-*.jar"
+        ]
+    },
+    {
+        "as4": [
+            "BE_HOME/lib/cep-store-as.jar",
+            "BE_HOME/lib/cep-activespaces-channel.jar"
+        ]
+    },
+    {
+        "sqlserver": [
+            "BE_HOME/lib/etx/tibco/TIsqlserver.jar"
+        ]
+    },
+    {
+        "liveview": [
+            "BE_HOME/lib/cep-liveview.jar",
+            "BE_HOME/lib/etx/tibco/lv-client.jar"
+        ]
+    },
+    {
+        "influx": [
+            "BE_HOME/lib/cep-influxdb.jar",
+            "BE_HOME/lib/ext/tpcl/influxdb-client-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/influxdb-client-core-*.jar",
+            "BE_HOME/lib/ext/tpcl/rxjava-*.jar",
+            "BE_HOME/lib/ext/tpcl/kotlin-stdlib-*.jar",
+            "BE_HOME/lib/ext/tpcl/kotlin-stdlib-common-*.jar",
+            "BE_HOME/lib/ext/tpcl/okio-*.jar",
+            "BE_HOME/lib/ext/tpcl/retrofit-*.jar",
+            "BE_HOME/lib/ext/tpcl/converter-scalars-*.jar",
+            "BE_HOME/lib/ext/tpcl/converter-gson-*.jar",
+            "BE_HOME/lib/ext/tpcl/okhttp-*.jar",
+            "BE_HOME/lib/ext/tpcl/logging-interceptor-*.jar",
+            "BE_HOME/lib/ext/tpcl/gson-fire-*.jar",
+            "BE_HOME/lib/ext/tpcl/gson-*.jar",
+            "BE_HOME/lib/ext/tpcl/reactive-streams-*.jar"
+        ]
+    },
+    {
+        "opentelemetry": [
+            "BE_HOME/lib/ext/tpcl/opentelemetry-api-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-context-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-semconv-*.jar",
+            "BE_HOME/lib/ext/tpcl/byte-buddy-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-otlp-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-proto-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-jaeger-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-zipkin-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-extension-trace-propagators-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-protobuf-*.jar",
+            "BE_HOME/lib/ext/tpcl/jsr305-*.jar",
+            "BE_HOME/lib/ext/tpcl/proto-google-common-protos-*.jar",
+            "BE_HOME/lib/ext/tpcl/guava-30.0-android.jar",
+            "BE_HOME/lib/ext/tpcl/failureaccess-*.jar",
+            "BE_HOME/lib/ext/tpcl/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+            "BE_HOME/lib/ext/tpcl/checker-compat-qual-*.jar",
+            "BE_HOME/lib/ext/tpcl/j2objc-annotations-*.jar",
+            "BE_HOME/lib/ext/tpcl/error_prone_annotations-*.jar",
+            "BE_HOME/lib/ext/tpcl/animal-sniffer-annotations-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-stub-*.jar",
+            "BE_HOME/lib/ext/tpcl/protobuf-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/gson-*.jar",
+            "BE_HOME/lib/ext/tpcl/zipkin-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-netty-shaded-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-core-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-api-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-context-*.jar",
+            "BE_HOME/lib/ext/tpcl/annotations-*.jar",
+            "BE_HOME/lib/ext/tpcl/perfmark-api-*.jar"
+        ]
+    },
+    {
+        "http": [
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-core-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-jasper-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ecj*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/catalina-ha*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/httpmime-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/commons-logging*.jar"
+        ]
+    },
+    {
+        "kafka": [
+            "BE_HOME/lib/cep-kafka.jar",
+            "BE_HOME/lib/cep-kafka-streams.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-clients-*.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-streams-*.jar",
+            "BE_HOME/lib/ext/tpcl/snappy-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/rocksdbjni-*.jar",
+            "BE_HOME/lib/ext/tpcl/zstd-jni-*.jar"
+        ]
+    },
+    {
+        "mqtt": [
+            "BE_HOME/lib/cep-mqtt-channel.jar",
+            "BE_HOME/lib/ext/tpcl/org.eclipse.paho.client.mqttv3-*.jar"
+        ]
+    },
+    {
+        "streambase": [
+            "BE_HOME/lib/cep-sb-channel.jar",
+            "BE_HOME/lib/ext/tibco/sbclient-no-logging.jar"
+        ]
+    },
+    {
+        "analytics": [
+            "BE_HOME/lib/cep-analytics.jar",
+            "BE_HOME/lib/ext/tpcl/pmml/*"
+        ]
+    },
+    {
+        "dt": [
+            "BE_HOME/lib/ext/tpcl/apache/poi-*.jar"
+        ]
+    },
+    {
+        "json": [
+            "BE_HOME/lib/ext/tpcl/jackson-datatype-json-org-*.jar",
+            "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar"
+        ]
+    }
+]
