@@ -104,3 +104,62 @@ Clean up:
 ```sh
 helm uninstall consulapp
 ```
+## Telemetry
+
+### OTLP
+
+Install OpenTelemetry collector using [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector) 
+
+```
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm install -f otlp-collector-values.yaml my-opentelemetry-collector open-telemetry/opentelemetry-collector
+```
+
+Note: update the Zipkin and jaeger endpoints in config->exporters section of otlp-collector-values.yaml file.
+
+Access Jaeger/zipking using the Jaeger or zipkin services.
+
+Clean up:
+```sh
+helm uninstall my-opentelemetry-collector
+```
+
+
+### Jaeger
+
+Install Jaeger tracing using [Jaeger Operator](https://github.com/jaegertracing/jaeger-operator)
+
+```
+
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/crds/jaegertracing.io_jaegers_crd.yaml
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/service_account.yaml
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/role.yaml
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/role_binding.yaml
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/operator.yaml
+
+
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role.yaml
+kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role_binding.yaml
+
+```
+Once the jaeger-operator deployment in the namespace default is ready, create a Jaeger instance, like:
+
+```
+kubectl apply -n observability -f - <<EOF
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: simplest
+EOF
+```
+
+
+### Zipkin
+
+
+Install zipkin in kubernetes cluster
+
+```
+kubectl create deployment zipkin --image openzipkin/zipkin
+kubectl expose deployment zipkin --type ClusterIP --port 9411
+```
