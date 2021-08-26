@@ -803,13 +803,15 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
     cd $CURR_DIR
 
-    rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse 2>/dev/null
+    # rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse 2>/dev/null
+    find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse/plugins -type f -not -name '*bpmn*' -delete 2>/dev/null
     rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$FTL_DIR/lib/simplejson 2>/dev/null
 
     #removing tomsawyer and gwt
     if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
         rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt 2>/dev/null
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer 2>/dev/null
+        # rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer 2>/dev/null
+        find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer -type f -not -name 'xml*' -delete 2>/dev/null
     fi
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
