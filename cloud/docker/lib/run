@@ -103,7 +103,8 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
 	  CLUSTER_NAME_PARSED="${CLUSTER_NAME%}"
 	  CLUSTER_NAME_PARSED="${CLUSTER_NAME_PARSED#\"}"
 	else
-	  CLUSTER_NAME_PARSED="nil"
+	  ecs_metadata=$(curl ${ECS_CONTAINER_METADATA_URI_V4}/task)
+      CLUSTER_NAME_PARSED=$(echo "$ecs_metadata" | jq -r ".Cluster" | rev | cut -d '/' -f 1 | rev )
 	fi
 	
 	if [ "$AWS_OUTPUT_FORMAT" != "" ]; then
