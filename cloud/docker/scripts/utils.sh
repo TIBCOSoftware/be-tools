@@ -79,11 +79,23 @@ assignToList(){
     NAME=$1
     INCLUDE_LIST=$2
 
-    if [ $INCLUDE_LIST = "" -o $INCLUDE_LIST = "na" ]; then
+    if [ "$INCLUDE_LIST" = "" -o "$INCLUDE_LIST" = "na" ]; then
         INCLUDE_LIST="$NAME"
     else
         INCLUDE_LIST="$INCLUDE_LIST,$NAME"
     fi
 
-    echo $INCLUDE_LIST
+    echo "$INCLUDE_LIST"
+}
+
+displayFilesList(){
+    PATH=$1
+    BE_FILES=""
+
+    echo "DEBUG: Files present under $PATH "
+    echo "========================================"
+    BE_FILES=$(docker run $IMAGE_NAME find $PATH -type f)
+    for i in $BE_FILES ; do echo $i ; done | sort
+    echo "========================================"
+    echo ""
 }

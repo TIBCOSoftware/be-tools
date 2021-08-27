@@ -13,7 +13,12 @@
         "kinesis": [
             "BE_HOME/lib/cep-kinesis-channel.jar",
             "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar",
-            "BE_HOME/lib/ext/tpcl/aws/*"
+            "BE_HOME/lib/ext/tpcl/aws/aws-java-sdk-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/commons-codec-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/guava-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/ion-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/joda-time-*.jar",
+            "BE_HOME/lib/ext/tpcl/aws/protobuf-java-*.jar"
         ]
     },
     {
@@ -33,8 +38,8 @@
         "ignite": [
             "BE_HOME/lib/cep-store-ignite.jar",
             "BE_HOME/lib/ext/tpcl/apache/ignite-core-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/indexing/ignite-indexing-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/indexing/h2-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite-indexing/ignite-indexing-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite-indexing/h2-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/cache-api-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/optional/ignite-compress/ignite-compress-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/optional/ignite-gce/commons-logging-*.jar",
@@ -44,7 +49,7 @@
     {
         "cassandra": [
             "BE_HOME/lib/cep-store-cassandra.jar",
-            "BE_HOME/lib/ext/tpcl/cassandra-driver-core*.jar",
+            "BE_HOME/lib/ext/tpcl/cassandra-driver-core-*.jar",
             "BE_HOME/lib/ext/tpcl/metrics-core-*.jar",
             "BE_HOME/lib/ext/tpcl/netty-all-*.jar",
             "BE_HOME/lib/ext/tpcl/cassandra-driver-extras-*.jar"
@@ -58,13 +63,13 @@
     },
     {
         "sqlserver": [
-            "BE_HOME/lib/etx/tibco/TIsqlserver.jar"
+            "BE_HOME/lib/ext/tibco/TIsqlserver.jar"
         ]
     },
     {
         "liveview": [
             "BE_HOME/lib/cep-liveview.jar",
-            "BE_HOME/lib/etx/tibco/lv-client.jar"
+            "BE_HOME/lib/ext/tibco/lv-client.jar"
         ]
     },
     {
@@ -73,8 +78,8 @@
             "BE_HOME/lib/ext/tpcl/influxdb-client-java-*.jar",
             "BE_HOME/lib/ext/tpcl/influxdb-client-core-*.jar",
             "BE_HOME/lib/ext/tpcl/rxjava-*.jar",
-            "BE_HOME/lib/ext/tpcl/kotlin-stdlib-*.jar",
             "BE_HOME/lib/ext/tpcl/kotlin-stdlib-common-*.jar",
+            "BE_HOME/lib/ext/tpcl/kotlin-stdlib-*.jar",
             "BE_HOME/lib/ext/tpcl/okio-*.jar",
             "BE_HOME/lib/ext/tpcl/retrofit-*.jar",
             "BE_HOME/lib/ext/tpcl/converter-scalars-*.jar",
@@ -88,20 +93,26 @@
     },
     {
         "opentelemetry": [
-            "BE_HOME/lib/ext/tpcl/opentelemetry-api-*.jar",
-            "BE_HOME/lib/ext/tpcl/opentelemetry-context-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-api-metrics-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-trace-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-common-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-metrics-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-extension-autoconfigure-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-sdk-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-semconv-*.jar",
             "BE_HOME/lib/ext/tpcl/byte-buddy-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-otlp-trace-*.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-otlp-common-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-otlp-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-proto-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-jaeger-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-exporter-zipkin-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry-extension-trace-propagators-*.jar",
+            "BE_HOME/lib/ext/tpcl/grpc-protobuf-lite-*.jar",
             "BE_HOME/lib/ext/tpcl/grpc-protobuf-*.jar",
             "BE_HOME/lib/ext/tpcl/jsr305-*.jar",
             "BE_HOME/lib/ext/tpcl/proto-google-common-protos-*.jar",
-            "BE_HOME/lib/ext/tpcl/guava-30.0-android.jar",
+            "BE_HOME/lib/ext/tpcl/guava-*-android.jar",
             "BE_HOME/lib/ext/tpcl/failureaccess-*.jar",
             "BE_HOME/lib/ext/tpcl/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
             "BE_HOME/lib/ext/tpcl/checker-compat-qual-*.jar",
@@ -109,8 +120,12 @@
             "BE_HOME/lib/ext/tpcl/error_prone_annotations-*.jar",
             "BE_HOME/lib/ext/tpcl/animal-sniffer-annotations-*.jar",
             "BE_HOME/lib/ext/tpcl/grpc-stub-*.jar",
+            "BE_HOME/lib/ext/tpcl/protobuf-java-util-*.jar",
             "BE_HOME/lib/ext/tpcl/protobuf-java-*.jar",
+            "BE_HOME/lib/ext/tpcl/gson-fire-*.jar",
             "BE_HOME/lib/ext/tpcl/gson-*.jar",
+            "BE_HOME/lib/ext/tpcl/zipkin-reporter-*.jar",
+            "BE_HOME/lib/ext/tpcl/zipkin-sender-okhttp*.jar",
             "BE_HOME/lib/ext/tpcl/zipkin-*.jar",
             "BE_HOME/lib/ext/tpcl/grpc-netty-shaded-*.jar",
             "BE_HOME/lib/ext/tpcl/grpc-core-*.jar",
@@ -122,14 +137,13 @@
     },
     {
         "http": [
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-core-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-jasper-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-jasper*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp*.jar",
             "BE_HOME/lib/ext/tpcl/apache/ecj*.jar",
             "BE_HOME/lib/ext/tpcl/apache/catalina-ha*.jar",
             "BE_HOME/lib/ext/tpcl/apache/httpmime-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/commons-logging*.jar"
+            "BE_HOME/lib/ext/tpcl/apache/optional/ignite-gce/commons-logging-*.jar"
         ]
     },
     {
@@ -158,11 +172,18 @@
     {
         "analytics": [
             "BE_HOME/lib/cep-analytics.jar",
-            "BE_HOME/lib/ext/tpcl/pmml/*"
+            "BE_HOME/lib/ext/tpcl/pmml/commons-math3-*.jar",
+            "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-*.jar",
+            "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-extension-*.jar",
+            "BE_HOME/lib/ext/tpcl/pmml/pmml-model-*.jar",
+            "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar"
         ]
     },
     {
         "dt": [
+            "BE_HOME/lib/ext/tpcl/apache/poi-scratchpad-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-schemas-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/poi-*.jar"
         ]
     },

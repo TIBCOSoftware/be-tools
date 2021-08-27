@@ -77,6 +77,9 @@ INSTALLATION_TYPE="fromlocal"
 OPEN_JDK_VERSION="na"
 OPEN_JDK_FILENAME="na"
 
+#DEBUG LOGS -- Value 1 enables debug logs, Value 0 disables debug logs
+DEBUG_LOGS=0
+
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
@@ -538,6 +541,21 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
+## Removing duplicates from optimise modules list
+if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
+    ARG_INCLUDE_MODULES=$(echo $ARG_INCLUDE_MODULES | sed -e 's/\,/ /g' )
+    TEMP_MODULES=$ARG_INCLUDE_MODULES
+    for i in $ARG_INCLUDE_MODULES ; do
+        TEMP_MODULES=$( echo $TEMP_MODULES | sed s/$i//g )
+        TEMP_MODULES="$i,$TEMP_MODULES"
+    done
+    ARG_INCLUDE_MODULES=${TEMP_MODULES// }
+    while [[ "$ARG_INCLUDE_MODULES" = *"," ]]; do
+        ARG_INCLUDE_MODULES=$( echo $ARG_INCLUDE_MODULES | sed 's/.$//g' )
+    done
+
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
@@ -618,6 +636,10 @@ if [ "$OPEN_JDK_VERSION" != "na" ]; then
     fi
 else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
+fi
+
+if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
+    echo "INFO: MODULES SUPPLIED/DETECTED    : [$ARG_INCLUDE_MODULES]"
 fi
 
 echo "------------------------------------------------------------------------------"
@@ -719,12 +741,28 @@ if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
         EXCLUDE_MODULES=$( echo $EXCLUDE_MODULES | sed s/$i//g )
     done
     IFS="$oIFS"; unset oIFS
+    
+    if [ "$DEBUG_LOGS" = "1" ]; then
+        echo "DEBUG: List of delete modules"
+        echo "============================================================================="
+        echo $EXCLUDE_MODULES
+        echo "============================================================================="
+        echo ""
+    fi
 
     for i in $EXCLUDE_MODULES ; do
-        cat $TEMP_FOLDER/lib/optimize.json |  sed  ':a; N; s/\n/ /; ta'  | grep -oP "(?<=$i).*?(?=\])" | sed "s~.*\[~~g;s~\]~~g;s~,~\n~g;s~\"~~g"| sed -e 's/^[ \t]*//;/^$/d' >> $TEMP_FOLDER/lib/deletelist.txt
+        cat $TEMP_FOLDER/lib/optimize.json |  sed  ':a; N; s/\n/ /; ta'  | grep -oP "(?<=\"$i\").*?(?=\])" | sed "s~.*\[~~g;s~\]~~g;s~,~\n~g;s~\"~~g"| sed -e 's/^[ \t]*//;/^$/d' >> $TEMP_FOLDER/lib/deletelist.txt
     done
 
     sed -i -e 's/^[ \t]*//;/^$/d' $TEMP_FOLDER/lib/deletelist.txt
+
+    if [ "$DEBUG_LOGS" = "1" ]; then
+        echo "DEBUG: List of jars that can be deleted"
+        echo "======================================="
+        cat $TEMP_FOLDER/lib/deletelist.txt
+        echo "======================================="
+        echo ""
+    fi
 
     if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
         sed -i  "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
@@ -988,6 +1026,53 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
             fi
             cd ./tests
             source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
+        fi
+    fi
+
+    # getting files list from container
+    if [ "$DEBUG_LOGS" = "1" ]; then
+        if [ "$ARG_BUILD_TOOL" = "docker" ]; then
+
+            echo "DEBUG: Files present under /opt/tibco/be "
+            echo "========================================"
+            BE_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/be -type f)
+            for i in $BE_FILES ; do echo $i ; done | sort
+            echo "========================================"
+            echo ""
+
+            echo "DEBUG: Files present under /opt/tibco/$JAVA_HOME_DIR_NAME "
+            echo "========================================"
+            JAVA_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/$JAVA_HOME_DIR_NAME -type f)
+            for i in $JAVA_FILES ; do echo $i ; done | sort
+            echo "========================================"
+            echo ""
+            
+            if ! [ "$ARG_AS_LEG_SHORT_VERSION" = "" -o "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
+                echo "DEBUG: Files present under /opt/tibco/as/$ARG_AS_LEG_SHORT_VERSION "
+                echo "========================================"
+                AS_LEG_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/as/$ARG_AS_LEG_SHORT_VERSION -type f)
+                for i in $AS_LEG_FILES ; do echo $i ; done | sort
+                echo "========================================"
+                echo ""
+            fi
+
+            if ! [ "$ARG_AS_SHORT_VERSION" = "" -o "$ARG_AS_SHORT_VERSION" = "na" ]; then
+                echo "DEBUG: Files present under /opt/tibco/as/$ARG_AS_SHORT_VERSION "
+                echo "========================================"
+                AS_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/as/$ARG_AS_SHORT_VERSION -type f)
+                for i in $AS_FILES ; do echo $i ; done | sort
+                echo "========================================"
+                echo ""
+            fi
+
+            if ! [ "$ARG_FTL_SHORT_VERSION" = "" -o "$ARG_FTL_SHORT_VERSION" = "na" ]; then
+                echo "DEBUG: Files present under /opt/tibco/ftl/$ARG_FTL_SHORT_VERSION "
+                echo "========================================"
+                FTL_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/ftl/$ARG_FTL_SHORT_VERSION -type f)
+                for i in $FTL_FILES ; do echo $i ; done | sort
+                echo "========================================"
+                echo ""
+            fi
         fi
     fi
 fi
