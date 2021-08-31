@@ -126,7 +126,7 @@ if "%COMPONENT%" EQU "rms" (
 ) else (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin
 	powershell -Command "Copy-Item '%BE_HOME%\lib' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
-	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
+	@REM rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
 )
 if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 
@@ -134,9 +134,9 @@ powershell -Command "Copy-Item '%BE_HOME%/bin/be-engine.tra','%BE_HOME%\bin\be-e
 
 if exist "%BE_HOME%\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '%BE_HOME%\bin\cassandrakeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
-if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
-	rd /S /Q "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" > NUL
-)
+@REM if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
+@REM 	rd /S /Q "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" > NUL
+@REM )
 
 if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
 	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%CDD_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL

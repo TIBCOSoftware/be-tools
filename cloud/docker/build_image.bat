@@ -703,7 +703,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
             del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
         )
     ) else (
-        rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
+        @REM rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
         mkdir !TEMP_FOLDER!\tibcoHome\be\application\ear !TEMP_FOLDER!\tibcoHome\be\ext
         powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
         powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\application' -Recurse | out-null"
@@ -711,9 +711,9 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
     )
     
-    if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" (
-        rd /S /Q "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" > NUL
-    )
+    @REM if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" (
+    @REM     rd /S /Q "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" > NUL
+    @REM )
 
     if EXIST !BE_HOME!\hotfix (
         powershell -Command "Copy-Item '!BE_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
