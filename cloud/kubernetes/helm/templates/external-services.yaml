@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $.Release.Name }}-{{ $agent.name }}-{{ $service.name }}
+  namespace: {{ include "chartnamespace" $ }}
 spec:
   ports:
     - port: {{ $service.port }}

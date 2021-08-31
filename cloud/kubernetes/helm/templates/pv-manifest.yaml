@@ -4,7 +4,8 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ $.Release.Name }}-{{ $vName }}  
+  name: {{ $.Release.Name }}-{{ $vName }}
+  namespace: {{ include "chartnamespace" $ }}  
   annotations:
     "helm.sh/resource-policy": keep
 spec:

@@ -6,6 +6,7 @@
 cpType: minikube        # Specify cloud porvider. Valid values: minikube, aws, azure, openshift, gcp or oci
 cmType: unclustered     # Specify cluster manager. Valid values: unclustered, as2, ftl or ignite
 bsType: none            # Specify backing store. Valid values: none sharednothing or store
+namespace:              # Update namespace default is `default` namespace
 
 # RMS related
 enableRMS: false        # set to true, if it is BE app deployment and want to enable hot deployments using RMS

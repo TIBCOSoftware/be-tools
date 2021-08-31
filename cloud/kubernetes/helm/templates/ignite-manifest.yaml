@@ -3,13 +3,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: "{{ .Release.Name }}-ignite"
-  namespace: default
+  namespace: {{ include "chartnamespace" $ }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: "{{ .Release.Name }}-ignite"
-  namespace: default
+  namespace: {{ include "chartnamespace" $ }}
 rules:
 - apiGroups:
   - ""
@@ -32,5 +32,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "{{ .Release.Name }}-ignite"
-  namespace: default
+  namespace: {{ include "chartnamespace" $ }}
 {{- end -}}

@@ -8,6 +8,10 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "chartnamespace" -}}
+{{ $.Values.namespace | default .Release.Namespace }}
+{{- end -}}
+
 {{- define "bechart.discoveryservice.name" -}}
 {{ .Release.Name }}-discovery-service
 {{- end -}}
@@ -133,7 +137,7 @@ resources:
 - name: "tra.be.ignite.discovery.type"
   value: "k8s"
 - name: "tra.be.ignite.k8s.namespace"
-  value: "default"
+  value: "{{ include "chartnamespace" $ }}"
 {{- end }}
 {{- end }}
 
