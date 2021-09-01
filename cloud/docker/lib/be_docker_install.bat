@@ -120,13 +120,13 @@ echo Building annotation indexes..
 if "%COMPONENT%" EQU "rms" (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio
 	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm','%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
-	rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\aws
+	powershell -Command "Get-ChildItem -Path 'c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\aws' -exclude guava*.jar | Remove-Item -force"
 	powershell -Command "Copy-Item '%BE_HOME%\examples\standard\WebStudio' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio' -Recurse | out-null"
 	if exist "%BE_HOME%\decisionmanager" powershell -Command "Copy-Item '%BE_HOME%\decisionmanager' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 ) else (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin
 	powershell -Command "Copy-Item '%BE_HOME%\lib' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
-	@REM rd /S /Q c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer
+	powershell -Command "Get-ChildItem -Path 'c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\tomsawyer' -exclude xml-*.jar | Remove-Item -force"
 )
 if exist "%BE_HOME%\hotfix" powershell -Command "Copy-Item '%BE_HOME%\hotfix' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 
@@ -134,9 +134,9 @@ powershell -Command "Copy-Item '%BE_HOME%/bin/be-engine.tra','%BE_HOME%\bin\be-e
 
 if exist "%BE_HOME%\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '%BE_HOME%\bin\cassandrakeywordmap.xml' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\bin' -Recurse | out-null"
 
-@REM if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
-@REM 	rd /S /Q "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" > NUL
-@REM )
+if exist "c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse" (
+	powershell -Command "Get-ChildItem -Path 'c:\_tibco\be\%BE_SHORT_VERSION%\lib\eclipse\plugins\' -exclude *.bpmn*.jar | Remove-Item -force"
+)
 
 if exist "c:\_tibco\be\ext\%CDD_FILE_NAME%" (
 	if "%COMPONENT%" EQU "rms" copy "c:\_tibco\be\ext\%CDD_FILE_NAME%"  "c:\_tibco\be\%BE_SHORT_VERSION%\rms\bin"  > NUL

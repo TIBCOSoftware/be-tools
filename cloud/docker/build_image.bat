@@ -695,7 +695,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
         
-        rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws
+        powershell -Command "Get-ChildItem -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws' -exclude guava*.jar | Remove-Item -force"
         if !ARG_APP_LOCATION! NEQ na (
             mkdir !TEMP_FOLDER!\tibcoHome\be\ext
             powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
@@ -703,7 +703,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
             del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
         )
     ) else (
-        @REM rd /S /Q !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer
+        powershell -Command "Get-ChildItem -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer' -exclude xml-*.jar | Remove-Item -force"
         mkdir !TEMP_FOLDER!\tibcoHome\be\application\ear !TEMP_FOLDER!\tibcoHome\be\ext
         powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
         powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\application' -Recurse | out-null"
@@ -711,9 +711,9 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
     )
     
-    @REM if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" (
-    @REM     rd /S /Q "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" > NUL
-    @REM )
+    if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse" (
+        powershell -Command "Get-ChildItem -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\' -exclude *.bpmn*.jar | Remove-Item -force"
+    )
 
     if EXIST !BE_HOME!\hotfix (
         powershell -Command "Copy-Item '!BE_HOME!\hotfix' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
