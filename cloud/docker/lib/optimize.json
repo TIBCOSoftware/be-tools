@@ -137,7 +137,6 @@
     },
     {
         "http": [
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-jasper*.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el*.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp*.jar",
             "BE_HOME/lib/ext/tpcl/apache/ecj*.jar",
