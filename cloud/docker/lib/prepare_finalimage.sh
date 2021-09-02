@@ -52,14 +52,14 @@ fi
 
 if [ "$COMPONENT" != "rms" ]; then
     rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt
-    rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer
+    find /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer -type f -not -name 'xml*' -delete 2>/dev/null
 fi
 
 if [ "$COMPONENT" = "rms" -o "$COMPONENT" = "tea" ]; then
     find /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
 fi
 
-rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/eclipse
+find /opt/tibco/be/${BE_SHORT_VERSION}/lib/eclipse/plugins -type f -not -name '*bpmn*' -delete 2>/dev/null
 rm -rf /home/tibco/be/be_installers-hf
 
 if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
