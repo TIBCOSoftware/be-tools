@@ -46,6 +46,7 @@ func TestAgents(t *testing.T) {
 
 	require.Equal(t, 1, len(actualAgents))
 	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Name)
+	require.Equal(t, "default", actualAgents[0].Namespace)
 	require.Equal(t, int32(1), *actualAgents[0].Spec.Replicas)
 	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Spec.Selector.MatchLabels["name"])
 	require.Equal(t, "TestAgents-discovery-service", actualAgents[0].Spec.ServiceName)
@@ -251,6 +252,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 	values := map[string]string{
 		"cmType":                                                  "ftl",
 		"bsType":                                                  "sharednothing",
+		"namespace":                                               "be-tools",
 		"imagepullsecret":                                         "besecret",
 		"envVars.FTL_REALM_SERVER":                                "http://ftlserver:8585",
 		"agents[0].name":                                          "inferenceagent",
@@ -364,6 +366,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 		expectedagentName, found := expectedagentsMap[agentName]
 		require.Truef(t, found, fmt.Sprintf("agent name[%s] is not expected", agentName))
 		require.Equal(t, expectedagentName["release"], agent.ObjectMeta.Name)
+		require.Equal(t, "be-tools", agent.Namespace)
 		require.Equal(t, expectedagentName["replicas"], *agent.Spec.Replicas)
 		require.Equal(t, expectedagentName["serviceName"], agent.Spec.ServiceName)
 		require.Equal(t, expectedagentName["release"], agent.Name)

@@ -168,6 +168,7 @@ func TestPVManifestMinikube(t *testing.T) {
 	require.Equal(t, 1, len(actualPVs))
 	expectedReleaseName := fmt.Sprintf("%s-%s", releaseName, "data-store")
 	require.Equal(t, expectedReleaseName, actualPVs[0].ObjectMeta.Name)
+	require.Equal(t, "default", actualPVs[0].ObjectMeta.Namespace)
 	actualMemQty := actualPVs[0].Spec.Capacity["storage"]
 	require.Equal(t, "512Mi", actualMemQty.String())
 	require.Equal(t, "", actualPVs[0].Spec.StorageClassName)
@@ -186,6 +187,7 @@ func TestPVManifestSNLogs(t *testing.T) {
 		"bsType":                   "sharednothing",
 		"persistence.logs":         "true",
 		"persistence.storageClass": "-",
+		"namespace":                "be-tools",
 	}
 	options := &helm.Options{
 		SetValues: values,
@@ -227,6 +229,7 @@ func TestPVManifestSNLogs(t *testing.T) {
 		expectedPV, found := expectedPVsMap[actualPVName]
 		require.Truef(t, found, fmt.Sprintf("PV name[%s] is not expected", actualPVName))
 		require.Equal(t, expectedPV["releaseName"], actualPV.ObjectMeta.Name)
+		require.Equal(t, "be-tools", actualPV.ObjectMeta.Namespace)
 		actualMemQty := actualPV.Spec.Capacity["storage"]
 		require.Equal(t, expectedPV["memoryQty"], actualMemQty.String())
 		require.Equal(t, expectedPV["scName"], actualPV.Spec.StorageClassName)

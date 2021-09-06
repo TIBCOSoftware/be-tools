@@ -122,6 +122,7 @@ func TestPVC(t *testing.T) {
 		expectedPVC, found := expectedPVCsMap[actualPVCName]
 		require.Truef(t, found, fmt.Sprintf("PVC name[%s] is not expected", actualPVCName))
 		require.Equal(t, expectedPVC["releaseName"], actualPVC.ObjectMeta.Name)
+		require.Equal(t, "default", actualPVC.ObjectMeta.Namespace)
 		require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{"ReadWriteMany"}), actualPVC.Spec.AccessModes)
 		require.Equal(t, expectedPVC["storageClassName"], *actualPVC.Spec.StorageClassName)
 		actualMemQty := PVC.Spec.Resources.Requests["storage"]

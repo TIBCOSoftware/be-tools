@@ -38,6 +38,7 @@ func TestDiscoveryService(t *testing.T) {
 	helm.UnmarshalK8SYaml(t, output, &service)
 	expectedSName := fmt.Sprintf("%s-discovery-service", releaseName)
 	require.Equal(t, expectedSName, service.Name)
+	require.Equal(t, "default", service.Namespace)
 	require.Equal(t, 1, len(service.Spec.Ports))
 	require.Equal(t, int32(50000), service.Spec.Ports[0].Port)
 	require.Equal(t, v1.Protocol("TCP"), service.Spec.Ports[0].Protocol)
@@ -60,7 +61,8 @@ func TestDiscoveryService(t *testing.T) {
 
 	// case: cmType = ignite
 	values = map[string]string{
-		"cmType": "ignite",
+		"cmType":    "ignite",
+		"namespace": "be-tools",
 	}
 	options = &helm.Options{
 		SetValues: values,
@@ -68,6 +70,7 @@ func TestDiscoveryService(t *testing.T) {
 	output, err = helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/discovery-service.yaml"})
 	require.NoError(t, err)
 	helm.UnmarshalK8SYaml(t, output, &service)
+	require.Equal(t, "be-tools", service.Namespace)
 	require.Equal(t, 11, len(service.Spec.Ports))
 	require.Equal(t, int32(47500), service.Spec.Ports[0].Port)
 	require.Equal(t, v1.Protocol("TCP"), service.Spec.Ports[0].Protocol)

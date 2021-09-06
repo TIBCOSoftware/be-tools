@@ -29,6 +29,7 @@ func TestHPA(t *testing.T) {
 	values = map[string]string{
 		"cmType":                                                  "as2",
 		"bsType":                                                  "none",
+		"namespace":                                               "be-tools",
 		"agents[0].name":                                          "inferenceagent",
 		"agents[0].PU":                                            "default",
 		"agents[0].cacheStorageEnabled":                           "false",
@@ -116,6 +117,7 @@ func TestHPA(t *testing.T) {
 		expectedHPA, found := expectedHPAMap[actualHPAName]
 		require.Truef(t, found, fmt.Sprintf("HPA name[%s] is not expected", expectedHPA))
 		require.Equal(t, expectedHPA["releaseName"], actualHPA.ObjectMeta.Name)
+		require.Equal(t, "be-tools", actualHPA.ObjectMeta.Namespace)
 
 		require.Equal(t, expectedHPA["releaseName"], actualHPA.Spec.ScaleTargetRef.Name)
 		require.Equal(t, expectedHPA["minreplicas"], *actualHPA.Spec.MinReplicas)

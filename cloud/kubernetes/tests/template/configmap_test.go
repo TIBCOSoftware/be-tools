@@ -41,6 +41,7 @@ func TestConfigMap(t *testing.T) {
 
 	expectedConfigMapName := fmt.Sprintf("%s-configmap", releaseName)
 	require.Equal(t, expectedConfigMapName, actualConfigMap.Name)
+	require.Equal(t, "default", actualConfigMap.Namespace)
 	require.Equal(t, expectedConfigMapName, actualConfigMap.Labels["name"])
 	require.Equal(t, 3, len(actualConfigMap.Data))
 	require.Equal(t, "https://ftlserver:8585", actualConfigMap.Data["FTL"])
