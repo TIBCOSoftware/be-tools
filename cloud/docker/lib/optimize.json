@@ -137,12 +137,15 @@
     },
     {
         "http": [
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/ecj*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/catalina-ha*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ecj.jar",
+            "BE_HOME/lib/ext/tpcl/apache/catalina-ha.jar",
             "BE_HOME/lib/ext/tpcl/apache/httpmime-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/optional/ignite-gce/commons-logging-*.jar"
+            "BE_HOME/lib/ext/tpcl/apache/optional/ignite-gce/commons-logging-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/commons-httpclient-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/httpcore-nio-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-websocket.jar"
         ]
     },
     {
@@ -153,7 +156,8 @@
             "BE_HOME/lib/ext/tpcl/kafka-streams-*.jar",
             "BE_HOME/lib/ext/tpcl/snappy-java-*.jar",
             "BE_HOME/lib/ext/tpcl/rocksdbjni-*.jar",
-            "BE_HOME/lib/ext/tpcl/zstd-jni-*.jar"
+            "BE_HOME/lib/ext/tpcl/zstd-jni-*.jar",
+            "BE_HOME/lib/ext/tpcl/lz4-java-*.jar"
         ]
     },
     {
@@ -171,6 +175,7 @@
     {
         "analytics": [
             "BE_HOME/lib/cep-analytics.jar",
+            "BE_HOME/lib/ext/tpcl/apache/commons-math3-3.6.1.jar",
             "BE_HOME/lib/ext/tpcl/pmml/commons-math3-*.jar",
             "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-*.jar",
             "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-extension-*.jar",
@@ -180,6 +185,9 @@
     },
     {
         "dt": [
+            "BE_HOME/lib/ext/tpcl/apache/commons-compress-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/SparseBitSet-*.jar",
+            "BE_HOME/lib/ext/tpcl/apache/xmlbeans-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/poi-scratchpad-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-schemas-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-*.jar",
@@ -189,7 +197,89 @@
     {
         "json": [
             "BE_HOME/lib/ext/tpcl/jackson-datatype-json-org-*.jar",
-            "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar"
+            "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar",
+            "BE_HOME/lib/ext/tpcl/json-*.jar"
+        ]
+    },
+    {
+        "bw": [
+            "BE_HOME/lib/ext/tibco/com.tibco.genxdm.bridge.xinode_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.genxdm.extras_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.genxdm.processor.xslt.functions_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.genxdm.processor.xslt.processor_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.lex.yap.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.net.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.xml.ae2xsd.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.xml.soap.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.xml.transform.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.tibcoxml.xml.xdata.eclipse_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.cxf.common_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.cxf.ootb_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.cxf.ootb.runtime_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.cxf.runtime_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.cxf.wizard_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.dictionaryapi_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.mappermodel_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.mappermodel.emfapi_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.mapperui_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.mapperui.emfapi_*.jar",
+            "BE_HOME/lib/ext/tibco/com.tibco.xml.xmodel_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.api_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.bridge.axiom_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.bridge.dom_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.bridgekit_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.convert_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.io_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.w3c.xs_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.w3c.xs.validation_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.wsdl_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.xop_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.processor.xpath.*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.wsdl.api_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.xop.api_*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.xpath.*.jar",
+            "BE_HOME/lib/ext/tibco/org.genxdm.xslt2.api_*.jar"
+        ]
+    },
+    {
+        "eclipse_optional": [
+            "BE_HOME/lib/ext/tpcl/emf/org.eclipse.core.resources_*.jar",
+            "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.common_*.jar",
+            "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.types_*.jar",
+            "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.uml_*.jar"
+        ]
+    },
+    {
+        "hawk": [
+            "BE_HOME/lib/cep-hawk-channel.jar"
+        ]
+    },
+    {
+        "pattern": [
+            "BE_HOME/lib/cep-pattern.jar",
+            "BE_HOME/lib/ext/tpcl/apache/commons-jexl3-*.jar"
+        ]
+    },
+    {
+        "query": [
+            "BE_HOME/lib/be-q.jar",
+            "BE_HOME/lib/cep-query.jar"
+        ]
+    },
+    {
+        "soap": [
+            "BE_HOME/lib/ext/tpcl/jakarta.xml.soap-api.jar",
+            "BE_HOME/lib/ext/tpcl/saaj-impl.jar",
+            "BE_HOME/lib/ext/tpcl/stax2-api.jar",
+            "BE_HOME/lib/ext/tpcl/stax-ex.jar"
+        ]
+    },
+    {
+        "store": [
+            "BE_HOME/lib/cep-backingstore.jar",
+            "BE_HOME/lib/cep-data-migration.jar",
+            "BE_HOME/lib/cep-migration.jar",
+            "BE_HOME/lib/cep-store.jar"
         ]
     }
 ]
