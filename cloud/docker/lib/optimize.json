@@ -279,7 +279,6 @@
             "JAVA_HOME/lib/libmanagement_agent.so",
             "JAVA_HOME/lib/libmlib_image.so",
             "JAVA_HOME/lib/libprefs.so",
-            "JAVA_HOME/lib/librmi.so",
             "JAVA_HOME/lib/libsaproc.so",
             "JAVA_HOME/lib/libsctp.so",
             "JAVA_HOME/lib/libsplashscreen.so",
