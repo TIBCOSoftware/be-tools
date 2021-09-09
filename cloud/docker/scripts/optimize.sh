@@ -58,6 +58,6 @@ fi
 
 XPATH="telemetry-config/span-exporter/type"
 TELEMETRY=$(getXpathValueFrom $ARG_APP_LOCATION/$CDD_FILE_NAME $XPATH)
-if [ "$TELEMETRY" != "" ]; then
+if [ "$TELEMETRY" != "" -a "$TELEMETRY" != "always_off" ]; then
     ARG_INCLUDE_MODULES=$(assignToList opentelemetry $ARG_INCLUDE_MODULES )
 fi
