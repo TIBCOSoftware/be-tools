@@ -12,6 +12,7 @@ Expand the name of the chart.
 {{ .Release.Name }}-discovery-service
 {{- end -}}
 
+
 {{- define "bechart.volumeMounts" }}
 {{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certificatesFromSecrets }}
 volumeMounts:
@@ -133,7 +134,7 @@ resources:
 - name: "tra.be.ignite.discovery.type"
   value: "k8s"
 - name: "tra.be.ignite.k8s.namespace"
-  value: "default"
+  value: "{{ .Release.Namespace }}"
 {{- end }}
 {{- end }}
 
