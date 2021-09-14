@@ -1,6 +1,6 @@
 #supported FTL versions for be version
-FTL_VERSION_MAP_MIN=( "6.0.0:6.4.0" "6.1.0:6.5.0" "6.1.1:6.5.0" )
-FTL_VERSION_MAP_MAX=( "6.0.0:6.4.x" "6.1.0:6.5.0" "6.1.1:6.6.1" )
+FTL_VERSION_MAP_MIN=( "6.0.0:6.4.0" "6.1.0:6.5.0" "6.1.1:6.5.0" "6.2.0:6.5.0" )
+FTL_VERSION_MAP_MAX=( "6.0.0:6.4.x" "6.1.0:6.5.0" "6.1.1:6.6.1" "6.2.0:6.6.1" )
 
 # Validate and get TIBCO FTL base and hf versions
 ftlPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_ftl_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
