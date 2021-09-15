@@ -142,13 +142,16 @@
         "BE_HOME/lib/ext/tpcl/retrofit-*.jar",
         "BE_HOME/lib/ext/tpcl/rxjava-*.jar"
     ],
-    "jackson": [
+    "json": [
         "BE_HOME/lib/ext/tpcl/jackson-annotations-*.jar",
         "BE_HOME/lib/ext/tpcl/jackson-core-*.jar",
         "BE_HOME/lib/ext/tpcl/jackson-databind-*.jar",
         "BE_HOME/lib/ext/tpcl/jackson-dataformat-yaml-*.jar",
         "BE_HOME/lib/ext/tpcl/jackson-module-jaxb-annotations-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-module-jsonSchema-*.jar"
+        "BE_HOME/lib/ext/tpcl/jackson-module-jsonSchema-*.jar",
+        "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar",
+        "BE_HOME/lib/ext/tpcl/jackson-datatype-json-org-*.jar",
+        "BE_HOME/lib/ext/tpcl/json-*.jar"
     ],
     "java": [
         "JAVA_HOME/bin",
@@ -262,11 +265,6 @@
         "JAVA_HOME/lib/server/Xusage.txt",
         "JAVA_HOME/lib/server/libjsig.so"
     ],
-    "json": [
-        "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-datatype-json-org-*.jar",
-        "BE_HOME/lib/ext/tpcl/json-*.jar"
-    ],
     "kafka": [
         "BE_HOME/lib/cep-kafka-streams.jar",
         "BE_HOME/lib/cep-kafka.jar",
@@ -289,7 +287,8 @@
     ],
     "liveview": [
         "BE_HOME/lib/cep-liveview.jar",
-        "BE_HOME/lib/ext/tibco/lv-client.jar"
+        "BE_HOME/lib/ext/tibco/lv-client.jar",
+        "BE_HOME/lib/ext/tibco/lv-client-wwwdeps.jar"
     ],
     "mqtt": [
         "BE_HOME/lib/cep-mqtt-channel.jar",
