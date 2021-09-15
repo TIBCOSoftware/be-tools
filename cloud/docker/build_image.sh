@@ -539,8 +539,8 @@ fi
 
 if ! [ -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" ]; then
     if [ "$ARG_OPTIMIZE" = "true" ]; then
-        if [ $(echo "${ARG_BE_VERSION//.}") -lt 610 ]; then
-            printf "\nWARN: Optimization is supported only for be version 6.1.0 and above.\n\n"
+        if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
+            printf "\nWARN: Optimization is supported only for be version 6.2.0 and above.\n\n"
             ARG_INCLUDE_MODULES=""
             ARG_OPTIMIZE="false"
         else
@@ -550,8 +550,8 @@ if ! [ -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" ]; then
 fi
 
 if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
-    if [ $(echo "${ARG_BE_VERSION//.}") -lt 610 ]; then
-        printf "\nWARN: Optimization is supported only for be version 6.1.0 and above.\n\n"
+    if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
+        printf "\nWARN: Optimization is supported only for be version 6.2.0 and above.\n\n"
         ARG_INCLUDE_MODULES=""
         ARG_OPTIMIZE="false"
     else
