@@ -240,17 +240,9 @@
         "BE_HOME/lib/ext/tibco/lv-client.jar",
         "BE_HOME/lib/ext/tibco/lv-client-wwwdeps.jar"
     ],
-    "mqqt": [
+    "mqtt": [
         "BE_HOME/lib/cep-mqtt-channel.jar",
         "BE_HOME/lib/ext/tpcl/org.eclipse.paho.client.mqttv*.jar"
-    ],
-    "mustdel": [
-        "JAVA_HOME/lib/src.zip",
-        "BE_HOME/lib/cep-docker.jar",
-        "/home/tibco/be/be_docker_install.bat",
-        "/home/tibco/be/be_docker_install.pm",
-        "/home/tibco/be/deletelist.txt",
-        "/home/tibco/be/prepare_finalimage.sh"
     ],
     "opentelemetry": [
         "BE_HOME/lib/ext/tpcl/byte-buddy-*.jar",

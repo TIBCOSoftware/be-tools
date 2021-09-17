@@ -767,19 +767,18 @@ if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
 
     sed -i -e 's/^[ \t]*//;/^$/d' $TEMP_FOLDER/lib/deletelist.txt
     sed -i -e 's/\"//g' $TEMP_FOLDER/lib/deletelist.txt
+fi
 
-    if [ "$DEBUG_LOGS" = "1" ]; then
-        echo "DEBUG: List of jars that can be deleted"
-        echo "======================================="
-        cat $TEMP_FOLDER/lib/deletelist.txt
-        echo "======================================="
-        echo ""
-    fi
+# including files list that should be deleted
+MAND_DEL_FILES="JAVA_HOME/lib/src.zip BE_HOME/lib/cep-docker.jar"
+for i in $MAND_DEL_FILES; do
+    echo $i >> $TEMP_FOLDER/lib/deletelist.txt
+done
 
-    if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
-        sed -i  "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-        sed -i  "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    fi
+if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    rm $TEMP_FOLDER/lib/deletelist.txt.bak 2>/dev/null
 fi
 
 # create be tar/ copy installers to temp folder
@@ -933,14 +932,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
-    if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
-        sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-        sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    
+    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
 
-        for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
-            rm -rf $filename 2>/dev/null
-        done
-    fi
+    for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
+        rm -rf $filename 2>/dev/null
+    done
     
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
@@ -966,6 +964,16 @@ else
         echo "INFO: Copying package: [$i]"
         cp $i $TEMP_FOLDER/installers
     done
+fi
+
+if [ "$DEBUG_LOGS" = "1" ]; then
+    echo ""
+    echo ""
+    echo "DEBUG: List of files that can be deleted"
+    echo "======================================="
+    cat $TEMP_FOLDER/lib/deletelist.txt
+    echo "======================================="
+    echo ""
 fi
 
 # building docker image
