@@ -28,6 +28,7 @@ ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="false"
+ARG_OPTIMIZE_FOR="na"
 ARG_INCLUDE_MODULES="na"
 
 # be related args
@@ -77,8 +78,11 @@ INSTALLATION_TYPE="fromlocal"
 OPEN_JDK_VERSION="na"
 OPEN_JDK_FILENAME="na"
 
+# container image size optimize related vars
+OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+
 #DEBUG LOGS -- Value 1 enables debug logs, Value 0 disables debug logs
-DEBUG_LOGS=0
+DEBUG_LOGS=1
 
 USAGE="\nUsage: $FILE_NAME"
 
@@ -100,10 +104,10 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
-USAGE+="\n\n [--optimize]         :    Enable to auto optimize image size based on cdd content [optional]"
-USAGE+="\n\n [--include]          :    Module names to be included in image [optional]\n"
-USAGE+="                           To add more than one Module use comma separated format ex: \"http,kafka\" \n"
-USAGE+="                           Note: Modules not given here are deleted from image."
+USAGE+="\n\n [--optimize]         :    Enables container image optimization based on CDD configurations [optional]"
+USAGE+="\n\n [--optimize-for]     :    Module names for which container image has to be optimized. [optional]\n"
+USAGE+="                           To add more than one module use comma separated format ex: \"http,kafka\" \n"
+USAGE+="                           Supported moudules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
@@ -169,12 +173,12 @@ while [[ $# -gt 0 ]]; do
         --optimize)
             ARG_OPTIMIZE="true"
             ;;
-        --include)
+        --optimize-for)
             shift # past the key and to the value
-            ARG_INCLUDE_MODULES="$1"
+            ARG_OPTIMIZE_FOR="$1"
             ;;
-        --include=*)
-            ARG_INCLUDE_MODULES="${key#*=}"
+        --optimize-for=*)
+            ARG_OPTIMIZE_FOR="${key#*=}"
             ;;
         -h|--help)
             shift # past the key and to the value
@@ -537,24 +541,16 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
-if ! [ -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" ]; then
-    if [ "$ARG_OPTIMIZE" = "true" ]; then
-        if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
-            printf "\nWARN: Optimization is supported only for be version 6.2.0 and above.\n\n"
-            ARG_INCLUDE_MODULES=""
-            ARG_OPTIMIZE="false"
-        else
+if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$ARG_OPTIMIZE_FOR" = "" -o "$ARG_OPTIMIZE_FOR" = "na" \) ]; then
+    if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
+        printf "\nWARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...\n\n"
+        ARG_OPTIMIZE="false"
+        ARG_OPTIMIZE_FOR=""
+    else
+        ARG_INCLUDE_MODULES=$ARG_OPTIMIZE_FOR
+        if [ "$ARG_OPTIMIZE" = "true" -a ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             source ./scripts/optimize.sh
         fi
-    fi
-fi
-
-if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
-    if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
-        printf "\nWARN: Optimization is supported only for be version 6.2.0 and above.\n\n"
-        ARG_INCLUDE_MODULES=""
-        ARG_OPTIMIZE="false"
-    else
         ## Removing duplicates from optimise modules list
         ARG_INCLUDE_MODULES=$(echo $ARG_INCLUDE_MODULES | sed -e 's/\,/ /g' )
         ARG_INCLUDE_MODULES=$(echo "$ARG_INCLUDE_MODULES" | xargs -n1 | sort -u | xargs)
@@ -645,7 +641,7 @@ else
 fi
 
 if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
-    echo "INFO: MODULES SUPPLIED/DETECTED    : [$ARG_INCLUDE_MODULES]"
+    echo "INFO: CONTAINER OPTIMIZING FOR     : [$ARG_INCLUDE_MODULES]"
 fi
 
 echo "------------------------------------------------------------------------------"

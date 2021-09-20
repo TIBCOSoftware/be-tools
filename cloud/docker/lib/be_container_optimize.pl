@@ -13,10 +13,6 @@ local $/ ;
 my $OPTIMIZE_DATA = "";
 my $SPACE_SEP_DATA = "";
 
-# print "INFO: Optimizing BE container...\n";
-# print_all_deps();
-# print_all_deps_summary();
-
 sub print_all_deps{
     my @modules = get_all_modules();
     my $modules_count = @modules;
@@ -52,7 +48,14 @@ sub print_all_deps_summary{
 sub get_all_modules{
     my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
     my @modules = $OPTIMIZE_DATA =~ /\s*"(\S*)":\s*\[/g;
-    return @modules
+    return sort(@modules);
+}
+
+sub get_all_modules_print_friendly{
+    my @modules = get_all_modules();
+    my $result = join(", ", @modules[0..$#modules-1]);
+    $result = "$result & @modules[$#modules]";
+    return $result;
 }
 
 sub get_all_modules_spacesep{
