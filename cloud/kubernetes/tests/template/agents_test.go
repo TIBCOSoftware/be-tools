@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -407,7 +408,8 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	}
 
 	options := &helm.Options{
-		SetValues: values,
+		SetValues:      values,
+		KubectlOptions: k8s.NewKubectlOptions("", "", "betools"),
 	}
 
 	output, err := helm.RenderTemplateE(t, options, helmFilePath, releaseName, []string{"templates/agents.yaml"})
@@ -447,7 +449,7 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	require.Equal(t, "localhost:9042", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_SERVER").Value)
 	require.Equal(t, "persistencenone-discovery-service", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
 	require.Equal(t, "k8s", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.discovery.type").Value)
-	require.Equal(t, "default", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace").Value)
+	require.Equal(t, "betools", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 	require.Equal(t, "persistencenone-logs", valueFromVolumes(agents[0].Spec.Template.Spec.Volumes, "logs"))
 	require.Equal(t, "/opt/tibco/be/6.1/rms/shared", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "rms-shared"))
