@@ -29,7 +29,7 @@ ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="false"
 ARG_OPTIMIZE_FOR="na"
-ARG_INCLUDE_MODULES="na"
+
 
 # be related args
 BE_HOME="na"
@@ -80,6 +80,7 @@ OPEN_JDK_FILENAME="na"
 
 # container image size optimize related vars
 OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+INCLUDE_MODULES="na"
 
 #DEBUG LOGS -- Value 1 enables debug logs, Value 0 disables debug logs
 DEBUG_LOGS=1
@@ -547,14 +548,14 @@ if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$ARG_OPTIMIZE_FOR" = "" -o "$ARG_OPTIMIZE
         ARG_OPTIMIZE="false"
         ARG_OPTIMIZE_FOR=""
     else
-        ARG_INCLUDE_MODULES=$ARG_OPTIMIZE_FOR
+        INCLUDE_MODULES=$ARG_OPTIMIZE_FOR
         if [ "$ARG_OPTIMIZE" = "true" -a ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             source ./scripts/optimize.sh
         fi
         ## Removing duplicates from optimise modules list
-        ARG_INCLUDE_MODULES=$(echo $ARG_INCLUDE_MODULES | sed -e 's/\,/ /g' )
-        ARG_INCLUDE_MODULES=$(echo "$ARG_INCLUDE_MODULES" | xargs -n1 | sort -u | xargs)
-        ARG_INCLUDE_MODULES=$(echo $ARG_INCLUDE_MODULES | sed -e 's/ /\,/g' )
+        INCLUDE_MODULES=$(echo $INCLUDE_MODULES | sed -e 's/\,/ /g' )
+        INCLUDE_MODULES=$(echo "$INCLUDE_MODULES" | xargs -n1 | sort -u | xargs)
+        INCLUDE_MODULES=$(echo $INCLUDE_MODULES | sed -e 's/ /\,/g' )
     fi
 fi
 
@@ -640,8 +641,8 @@ else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 fi
 
-if ! [ "$ARG_INCLUDE_MODULES" = "" -o "$ARG_INCLUDE_MODULES" = "na" ]; then
-    echo "INFO: CONTAINER OPTIMIZING FOR     : [$ARG_INCLUDE_MODULES]"
+if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
+    echo "INFO: CONTAINER OPTIMIZING FOR     : [$INCLUDE_MODULES]"
 fi
 
 echo "------------------------------------------------------------------------------"
@@ -736,12 +737,12 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
-if ! [ "$ARG_INCLUDE_MODULES" = "na" -o -z "${ARG_INCLUDE_MODULES// }" ]; then
+if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
     
     EXCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_spacesep()')
     
     oIFS="$IFS"; IFS=',';
-    for i in $ARG_INCLUDE_MODULES ; do
+    for i in $INCLUDE_MODULES ; do
         EXCLUDE_MODULES=$( echo $EXCLUDE_MODULES | sed s/$i//g )
     done
     IFS="$oIFS"; unset oIFS
