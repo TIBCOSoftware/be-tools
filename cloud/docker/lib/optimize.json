@@ -205,17 +205,6 @@
         "JAVA_HOME/lib/jvm.cfg",
         "JAVA_HOME/bin"
     ],
-    "json": [
-        "BE_HOME/lib/ext/tpcl/jackson-annotations-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-core-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-databind-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-dataformat-yaml-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-datatype-json-org-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-module-jaxb-annotations-*.jar",
-        "BE_HOME/lib/ext/tpcl/jackson-module-jsonSchema-*.jar",
-        "BE_HOME/lib/ext/tpcl/json-*.jar"
-    ],
     "kafka": [
         "BE_HOME/lib/cep-kafka.jar",
         "BE_HOME/lib/cep-kafka-streams.jar",
@@ -245,6 +234,7 @@
         "BE_HOME/lib/ext/tpcl/org.eclipse.paho.client.mqttv*.jar"
     ],
     "opentelemetry": [
+        "BE_HOME/lib/cep-telemetry.jar",
         "BE_HOME/lib/ext/tpcl/byte-buddy-*.jar",
         "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/animal-sniffer-annotations-*.jar",
         "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/annotations-*.jar",
