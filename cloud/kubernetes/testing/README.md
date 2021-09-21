@@ -145,7 +145,7 @@ kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operato
 Once the jaeger-operator deployment in the namespace default is ready, create a Jaeger instance, like:
 
 ```
-kubectl apply -n observability -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
