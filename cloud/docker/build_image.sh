@@ -748,7 +748,7 @@ if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
     IFS="$oIFS"; unset oIFS
     
     if [ "$DEBUG_LOGS" = "1" ]; then
-        echo "DEBUG: List of delete modules"
+        echo "DEBUG: Container Optimization is enabled -- List of modules that are not part of final image"
         echo "============================================================================="
         echo $EXCLUDE_MODULES
         echo "============================================================================="
@@ -963,14 +963,16 @@ else
     done
 fi
 
-if [ "$DEBUG_LOGS" = "1" ]; then
-    echo ""
-    echo ""
-    echo "DEBUG: List of files that can be deleted"
-    echo "======================================="
-    cat $TEMP_FOLDER/lib/deletelist.txt
-    echo "======================================="
-    echo ""
+if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
+    if [ "$DEBUG_LOGS" = "1" ]; then
+        echo ""
+        echo ""
+        echo "DEBUG: Container Optimization is enabled -- List of files that are not part of final image "
+        echo "==========================================================================================="
+        cat $TEMP_FOLDER/lib/deletelist.txt
+        echo "==========================================================================================="
+        echo ""
+    fi
 fi
 
 # building docker image
@@ -1043,53 +1045,6 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
             fi
             cd ./tests
             source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
-        fi
-    fi
-
-    # getting files list from container
-    if [ "$DEBUG_LOGS" = "1" ]; then
-        if [ "$ARG_BUILD_TOOL" = "docker" ]; then
-
-            echo "DEBUG: Files present under /opt/tibco/be "
-            echo "========================================"
-            BE_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/be -type f)
-            for i in $BE_FILES ; do echo $i ; done | sort
-            echo "========================================"
-            echo ""
-
-            echo "DEBUG: Files present under /opt/tibco/$JAVA_HOME_DIR_NAME "
-            echo "========================================"
-            JAVA_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/$JAVA_HOME_DIR_NAME -type f)
-            for i in $JAVA_FILES ; do echo $i ; done | sort
-            echo "========================================"
-            echo ""
-            
-            if ! [ "$ARG_AS_LEG_SHORT_VERSION" = "" -o "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
-                echo "DEBUG: Files present under /opt/tibco/as/$ARG_AS_LEG_SHORT_VERSION "
-                echo "========================================"
-                AS_LEG_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/as/$ARG_AS_LEG_SHORT_VERSION -type f)
-                for i in $AS_LEG_FILES ; do echo $i ; done | sort
-                echo "========================================"
-                echo ""
-            fi
-
-            if ! [ "$ARG_AS_SHORT_VERSION" = "" -o "$ARG_AS_SHORT_VERSION" = "na" ]; then
-                echo "DEBUG: Files present under /opt/tibco/as/$ARG_AS_SHORT_VERSION "
-                echo "========================================"
-                AS_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/as/$ARG_AS_SHORT_VERSION -type f)
-                for i in $AS_FILES ; do echo $i ; done | sort
-                echo "========================================"
-                echo ""
-            fi
-
-            if ! [ "$ARG_FTL_SHORT_VERSION" = "" -o "$ARG_FTL_SHORT_VERSION" = "na" ]; then
-                echo "DEBUG: Files present under /opt/tibco/ftl/$ARG_FTL_SHORT_VERSION "
-                echo "========================================"
-                FTL_FILES=$(docker run $ARG_IMAGE_VERSION find /opt/tibco/ftl/$ARG_FTL_SHORT_VERSION -type f)
-                for i in $FTL_FILES ; do echo $i ; done | sort
-                echo "========================================"
-                echo ""
-            fi
         fi
     fi
 fi
