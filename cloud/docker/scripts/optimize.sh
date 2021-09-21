@@ -26,7 +26,7 @@ PERSISTANCE_OPT=$(getXpathValueFrom $ARG_APP_LOCATION/$CDD_FILE_NAME $XPATH)
 if [ "$PERSISTANCE_OPT" = "Store" ]; then
     XPATH="object-management/cache-manager/backing-store/type"
     BACKNG_STORE=$(getXpathValueFrom $ARG_APP_LOCATION/$CDD_FILE_NAME $XPATH)
-
+    INCLUDE_MODULES=$(assignToList store $INCLUDE_MODULES )
     if [ "$BACKNG_STORE" = "SQL Server" ]; then
         INCLUDE_MODULES=$(assignToList sqlserver $INCLUDE_MODULES )
     elif [ "$BACKNG_STORE" = "Cassandra" ]; then
@@ -39,6 +39,7 @@ fi
 XPATH="object-management/store-manager/type"
 INMEM_BACKNG_STORE=$(getXpathValueFrom $ARG_APP_LOCATION/$CDD_FILE_NAME $XPATH)
 if [ "$INMEM_BACKNG_STORE" != "" ]; then
+    INCLUDE_MODULES=$(assignToList store $INCLUDE_MODULES )
     if [ "$INMEM_BACKNG_STORE" = "Cassandra" ]; then
         INCLUDE_MODULES=$(assignToList cassandra $INCLUDE_MODULES )
     elif [ "$INMEM_BACKNG_STORE" = "ActiveSpaces" ]; then
