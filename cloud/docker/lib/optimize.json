@@ -32,7 +32,7 @@
         "BE_HOME/lib/ext/tpcl/apache/SparseBitSet-*.jar",
         "BE_HOME/lib/ext/tpcl/apache/xmlbeans-*.jar"
     ],
-    "eclipse_optional": [
+    "eclipse": [
         "BE_HOME/lib/ext/tpcl/emf/org.eclipse.core.resources_*.jar",
         "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.common_*.jar",
         "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.types_*.jar",
