@@ -16,7 +16,7 @@ from subprocess import check_output
 
 #Get the task defination
 def getTaskDefinitions(clustername,launchType):
-   logger.info("****************************** Get the service details and task definations ******************************")
+   print("****************************** Get the service details and task definations ******************************")
    services=get_services(clustername,launchType)
    taskDefinitions=[]
    if(services):
@@ -28,19 +28,19 @@ def getTaskDefinitions(clustername,launchType):
 #Add machine
 def addMachine(machinename,hostname,appManagementFilePath):
     command=appManagementFilePath+" docker_addmachine -m \""+machinename+"\" -i \""+hostname+"\"";
-    logger.info("Executing :"+command)
+    print("Executing :"+command)
     os.system(command)
 
 #Add instance
 def addInstance(appname,machinename, instancename,jmxport,jmxusername,jmxpassword,appManagementFilePath):
     command=appManagementFilePath+ " docker_createinstance -d \""+appname+"\" -i \""+instancename+"\" -m \""+machinename+"\" -p "+jmxport+" -ju \""+jmxusername+"\" -jp \""+jmxpassword+"\""
-    logger.info("Executing :"+command)
+    print("Executing :"+command)
     os.system(command)
 
 #Add application
 def addApplication(appname,appManagementFilePath):
     command=appManagementFilePath+" docker_createdeployment -d   \""+appname+"\"";
-    logger.info("Executing :"+command)
+    print("Executing :"+command)
     os.system(command)
 
 #Get the environment variable value
@@ -81,7 +81,7 @@ def process_taskDefinition(taskDefinition,address,appManagementFilePath):
         name=taskDefinition['containerDefinitions'][0]['name'];
         environment=taskDefinition['containerDefinitions'][0]['environment'];
         puname=getEnvironmentVariable(environment,'PU');
-        logger.info("puname: ",puname)
+        print("puname: ",puname)
         #Get JMX details
         jmxport=getEnvironmentVariable(environment,'JMX_PORT');
         if(not jmxport):
@@ -93,16 +93,16 @@ def process_taskDefinition(taskDefinition,address,appManagementFilePath):
             appname=taskDefinition['containerDefinitions'][0]['image']
         appname=appname.split('/')[1]
         appname=appname.replace('.','_').replace(':','_');
-        logger.info("jmxport: ",jmxport)
-        if(puname and jmxport>0):
+        print("jmxport: ",jmxport)
+        if(puname and int(jmxport)>0):
             host=address
             machinename=address+"_"+name;
             instancename="Instance_"+address+"_"+name
-            logger.info("Adding Machine "+machinename);
+            print("Adding Machine "+machinename);
             addMachine(machinename,address,appManagementFilePath)
-            logger.info("Adding Application "+appname);
+            print("Adding Application "+appname);
             addApplication(appname,appManagementFilePath)
-            logger.info("Adding Instance  "+instancename);
+            print("Adding Instance  "+instancename);
             addInstance(appname,machinename,instancename,str(jmxport),jmxusername,jmxpassword,appManagementFilePath)
 
 
@@ -140,7 +140,7 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
                                 ec2Data=ec2client.describe_instances(InstanceIds=[ec2Id])
                                 publicIp=ec2Data["Reservations"][0]["Instances"][0]["PublicIpAddress"]
                                 ipAddress=publicIp
-                    logger.info("ipAddress: ",ipAddress)
+                    print("ipAddress: ",ipAddress)
                     taskDefinitionArn=task['taskDefinitionArn']
                     if(isKeyExist(taskDefinitionArn,taskDefinitions)):
                         response=ecs_client.describe_task_definition(taskDefinition=taskDefinitionArn)
@@ -150,7 +150,7 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
                                 process_taskDefinition(taskDefinition,ipAddress,appManagementFilePath)
 
         except Exception  as e:
-            logger.error(str(e))
+            print(str(e))
     
         time.sleep(int(pollarinterval))
 
@@ -169,8 +169,6 @@ def createCommandParser():
     commandParser.add_argument('-pi', required = True, default = '30', dest = 'pollarinterval', help = 'Interval to poll instance discovery')
     return commandParser;
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 #ECS cluster name
 ecs_client=client = boto3.client('ecs');

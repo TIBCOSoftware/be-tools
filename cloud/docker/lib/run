@@ -80,6 +80,12 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
   echo "be.tea.agent.host=$TEA_AGENT_HOST_PARSED" >> $TEA_PROPS_FILE
   echo "be.tea.server.url=$TEA_SERVER_URL_PARSED/tea" >> $TEA_PROPS_FILE
   echo "be.tea.agent.auto.registration.enabled=$BE_TEA_AGENT_AUTO_REGISTER_ENABLE_PARSED" >> $TEA_PROPS_FILE
+  
+  if [[ "$AWS_EXECUTION_ENV" == "AWS_ECS_EC2" ]]; then
+	HOST_NAME=$(cat /etc/hostname)
+	echo "be.tea.agent.host=$HOST_NAME" >> $TEA_PROPS_FILE
+  fi	
+
 
   RUNCMD="./run_teagent.sh $BE_HOME $TRA_FILE"
 
@@ -219,6 +225,10 @@ INITIAL_HEAP_SIZE="$(grep 'tra.java.heap.size.initial' $BE_PROPS_FILE)";
 MAX_HEAP_SIZE="$(grep 'tra.java.heap.size.max' $BE_PROPS_FILE)";
 STACK_SIZE="$(grep 'tra.java.stack.size' $BE_PROPS_FILE)";
 JAVA_EXTENDED_PROPERTIES="$(grep 'tra.java.extended.properties' $BE_PROPS_FILE)";
+if [[ "$AWS_EXECUTION_ENV" == "AWS_ECS_EC2" ]]; then
+	HOST_NAME=$(cat /etc/hostname)
+	echo "java.property.java.rmi.server.hostname $HOST_NAME" >> $TRA_FILE
+fi
 
 if [[  -n "$JAVA_EXTENDED_PROPERTIES" ]]; then
 	val="${JAVA_EXTENDED_PROPERTIES/tra./$blank}"
