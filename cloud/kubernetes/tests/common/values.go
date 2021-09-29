@@ -14,36 +14,14 @@ var ConfigmapName = ReleaseName + "-" + "storeconfig"
 var SecretName = ReleaseName + "-" + "beimagepullsecret"
 
 const (
-	HelmChartPath                  = "../../helm"
-	Bejmx                          = "templates/bejmx-service.yaml"
-	Beappservice                   = "templates/beservice.yaml"
-	Beinferenceagent               = "templates/beinferenceagent.yaml"
-	Configmap                      = "templates/configmap.yaml"
-	Becacheagent                   = "templates/becacheagent.yaml"
-	Becacheservice                 = "templates/becache-service.yaml"
-	SecretFile                     = "templates/imagepullsecret.yaml"
+	HelmChartPath = "../../helm"
+
 	FTLPATH                        = "../utils/ftl4be.yml"
 	AS4PATH                        = "../utils/asdg.yml"
 	SecretType                     = "kubernetes.io/dockerconfigjson"
 	ImgPullSecret                  = "besecret"
 	ImageName                      = "s2ifd:01"
-	BeServicePort            int32 = 8108
-	BeAS2CacheServicePort    int32 = 50000
-	BeIgniteCacheServicePort int32 = 47500
-	BeJmxServicePort         int32 = 5555
-	InfServicePortType             = "NodePort"
-	JmxServicePortType             = "LoadBalancer"
-	InfReplicas              int32 = 1
-	CacheReplicas            int32 = 1
-	ImagePullPolicy                = "IfNotPresent"
-	AccessMode                     = "ReadWriteOnce"
-	SnmountVolume                  = "store"
-	Snpath                         = "/mnt/tibco/be/data-store"
-	StorageClass                   = "standard"
-	DefaultPU                      = "default"
-	CachePU                        = "cache"
-	IgniteURL                      = "IGNITE_gv_DISCOVERY_URL"
-	AsURL                          = "AS_DISCOVER_URL"
+	
 	// As4ReamURLKey constants
 	As4ReamURLKey    = "realm_url"
 	As4ReamURLVal    = "localhost"
@@ -92,17 +70,6 @@ const (
 	AS4realm         = "http://ftlserver-0.ftlservers:30080"
 	AS4grid          = "_default"
 
-	// InfluxDriverKey database constants
-	InfluxDbURL   = "dburl"
-	InfluxBucket  = "bucket"
-	InfluxDBToken = "dbtoken"
-	InfluxOrg     = "dborg"
-
-	// LdmDbURL LiveView url
-	LdmDbURL = "ldmurl"
-
-	//CustomMetricsURL for metrics Type Custom
-	CustomMetricsURL = "URL"
 	// imagename for Integration tests
 	UnclInmemory = "unclinmem"
 	Unclas4      = "unclas4"

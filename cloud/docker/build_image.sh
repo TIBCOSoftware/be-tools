@@ -44,7 +44,7 @@ VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" )
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.2.0" "11" )
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -743,8 +743,6 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     # Replace be home in tra files with opt/tibco
     echo "INFO: Replacing base directory in the files from [$BE_HOME_BASE] to [/opt/tibco]."
 
-    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
-
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         # Replace in props files
         find $TEMP_FOLDER/$RANDM_FOLDER -name 'be-teagent.props' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
@@ -805,13 +803,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
     cd $CURR_DIR
 
-    rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse 2>/dev/null
+    find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/eclipse/plugins -type f -not -name '*bpmn*' -delete 2>/dev/null
     rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$FTL_DIR/lib/simplejson 2>/dev/null
 
     #removing tomsawyer and gwt
     if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
         rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/gwt 2>/dev/null
-        rm -rf $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer 2>/dev/null
+        find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/tomsawyer -type f -not -name 'xml*' -delete 2>/dev/null
     fi
 
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
@@ -842,6 +840,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     cp -r $TRA_JAVA_HOME/* $TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
 
+    find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+    
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;
 
