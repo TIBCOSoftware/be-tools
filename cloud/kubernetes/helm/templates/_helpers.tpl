@@ -144,12 +144,12 @@ resources:
 {{- if eq .Values.healthcheck.enabled true }}
 livenessProbe:
   tcpSocket:
-    port: {{ .Values.healthcheck.livenessProbe.port }}
+    port: {{ .Values.healthcheck.livenessProbe.port | default (.Values.httpservice.port | default 8180) }}
   initialDelaySeconds: {{ .Values.healthcheck.livenessProbe.initialDelaySeconds }}
   periodSeconds: {{ .Values.healthcheck.livenessProbe.periodSeconds }} 
 readinessProbe:
   tcpSocket:
-    port: {{ .Values.healthcheck.readinessProbe.port }}
+    port: {{ .Values.healthcheck.readinessProbe.port | default (.Values.httpservice.port | default 8180) }}
   initialDelaySeconds: {{ .Values.healthcheck.readinessProbe.initialDelaySeconds }}
   periodSeconds: {{ .Values.healthcheck.readinessProbe.periodSeconds }} 
 {{- end }}

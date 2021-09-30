@@ -1,0 +1,14 @@
+{{- if .Values.httpservice.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-http-service
+spec:
+  ports:
+    - port: {{ .Values.httpservice.port | default "8180" }}
+      protocol: TCP
+  selector:
+    implicithttpserver: "yes"
+  type: {{ .Values.httpservice.type }}
+---
+{{- end }}
