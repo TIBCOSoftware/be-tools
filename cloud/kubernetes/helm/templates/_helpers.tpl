@@ -129,6 +129,8 @@ resources:
 {{- end }}
 {{- end }}
 {{- else if eq .Values.cmType "ignite" }}
+- name: "tra.tibco.env.CUSTOM_EXT_APPEND_CP"
+  value: "/opt/tibco/be/latest/lib/ext/tpcl/apache/ignite/optional/ignite-kubernetes"
 - name: "tra.be.ignite.k8s.service.name"
   value: "{{ include "bechart.discoveryservice.name" $ }}"
 - name: "tra.be.ignite.discovery.type"
