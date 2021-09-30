@@ -6,7 +6,8 @@
         "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-*.jar",
         "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-extension-*.jar",
         "BE_HOME/lib/ext/tpcl/pmml/pmml-model-*.jar",
-        "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar"
+        "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar",
+        "BE_HOME/lib/ext/tpcl/aws/guava-*.jar"
     ],
     "as2": [
         "BE_HOME/lib/cep-as-channel.jar",
@@ -21,7 +22,8 @@
         "BE_HOME/lib/ext/tpcl/cassandra-driver-core-*.jar",
         "BE_HOME/lib/ext/tpcl/cassandra-driver-extras-*.jar",
         "BE_HOME/lib/ext/tpcl/metrics-core-*.jar",
-        "BE_HOME/lib/ext/tpcl/netty-all-*jar"
+        "BE_HOME/lib/ext/tpcl/netty-all-*jar",
+        "BE_HOME/lib/ext/tpcl/aws/guava-*.jar"
     ],
     "dt": [
         "BE_HOME/lib/ext/tpcl/apache/commons-compress-*.jar",
