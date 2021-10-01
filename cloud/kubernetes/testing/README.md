@@ -152,7 +152,8 @@ metadata:
   name: simplest
 EOF
 ```
-
+* Configure BE app with simplest-collector service to collect BE app logs
+* Access the Jaeger UI running on port 16686 from simplest-query service 
 
 ### Zipkin
 
@@ -163,3 +164,6 @@ Install zipkin in kubernetes cluster
 kubectl create deployment zipkin --image openzipkin/zipkin
 kubectl expose deployment zipkin --type ClusterIP --port 9411
 ```
+
+* Configure BE app with zipkin service to collect BE app logs
+* Access zipkin UI on 9411 port from zipkin service
