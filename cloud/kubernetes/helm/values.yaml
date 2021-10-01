@@ -71,6 +71,10 @@ envVars: {}
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
   # # custom gv provider specific environment variables
   # # other environment variables
+  ## OpenTelemetry specific environment variables
+  # TELEMETRY_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+  # TELEMETRY_JAEGER_ENDPOINT: http://simple-collector:14250
+  # TELEMETRY_ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans 
 
 ##################################################
 ## Certificates
