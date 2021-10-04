@@ -25,7 +25,7 @@ Following services have been exposed for external access:
       echo SERVICE_IP: $(kubectl get svc {{ .Release.Name }}-http-service --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
       {{- else if contains "ClusterIP" .Values.httpservice.type }}
       NOTE: This service type is ClusterIP. Execute the following command to forward local port to this service, so that you can access it on localhost:{{ .Values.httpservice.port }}
-      kubectl port-forward svc/{{ .Release.Name }}-http-service {{ .Values.httpservice.port }}
+      kubectl port-forward svc/{{ .Release.Name }}-http-service {{ .Values.httpservice.port | default 8180 }}
       {{- end }}
 {{ end }}
 {{- range $i, $agent := .Values.agents }}
