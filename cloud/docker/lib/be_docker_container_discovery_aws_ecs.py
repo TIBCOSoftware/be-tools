@@ -94,7 +94,7 @@ def process_taskDefinition(taskDefinition,address,appManagementFilePath):
         appname=appname.split('/')[1]
         appname=appname.replace('.','_').replace(':','_');
         logger.info("jmxport: ",jmxport)
-        if(puname and jmxport>0):
+        if(puname and int(jmxport)>0):
             host=address
             machinename=address+"_"+name;
             instancename="Instance_"+address+"_"+name
@@ -127,19 +127,9 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
                 ipAddress=""
                 if(task['launchType']==launchType and  'RUNNING'==task['desiredStatus']):
                     containers=task['containers']
+                    privateIp=containers[0]['networkInterfaces'][0]['privateIpv4Address']
+                    ipAddress=privateIp
 
-                    if task['launchType']=="FARGATE":
-                        privateIp=containers[0]['networkInterfaces'][0]['privateIpv4Address']
-                        ipAddress=privateIp
-                    else:
-                        contrInstcs=ecs_client.describe_container_instances(cluster=clustername,containerInstances=[task["containerInstanceArn"]])
-                        if len(contrInstcs["containerInstances"]) != 0 :
-                            ec2Id=contrInstcs["containerInstances"][0]["ec2InstanceId"]
-                            if ec2Id != "":
-                                ec2client = boto3.client('ec2')
-                                ec2Data=ec2client.describe_instances(InstanceIds=[ec2Id])
-                                publicIp=ec2Data["Reservations"][0]["Instances"][0]["PublicIpAddress"]
-                                ipAddress=publicIp
                     logger.info("ipAddress: ",ipAddress)
                     taskDefinitionArn=task['taskDefinitionArn']
                     if(isKeyExist(taskDefinitionArn,taskDefinitions)):
