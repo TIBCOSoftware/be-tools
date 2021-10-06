@@ -738,32 +738,8 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
 fi
 
 if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
-    
-    EXCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_spacesep()')
-    
-    oIFS="$IFS"; IFS=',';
-    for i in $INCLUDE_MODULES ; do
-        EXCLUDE_MODULES=$( echo $EXCLUDE_MODULES | sed s/$i//g )
-    done
-    IFS="$oIFS"; unset oIFS
-    
-    if [ "$DEBUG_LOGS" = "1" ]; then
-        echo "DEBUG: Container Optimization is enabled -- List of modules that are not part of final image"
-        echo "============================================================================="
-        echo $EXCLUDE_MODULES
-        echo "============================================================================="
-        echo ""
-    fi
-
-    for i in $EXCLUDE_MODULES ; do
-        MODULE_FILES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_deps_by_module_spacesep('$i')')
-        for i in $MODULE_FILES; do
-            echo $i >> $TEMP_FOLDER/lib/deletelist.txt
-        done
-    done
-
-    sed -i -e 's/^[ \t]*//;/^$/d' $TEMP_FOLDER/lib/deletelist.txt
-    sed -i -e 's/\"//g' $TEMP_FOLDER/lib/deletelist.txt
+    DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
+    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
 fi
 
 # including files list that should be deleted

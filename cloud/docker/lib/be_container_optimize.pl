@@ -13,6 +13,54 @@ local $/ ;
 my $OPTIMIZE_DATA = "";
 my $SPACE_SEP_DATA = "";
 
+sub prepare_delete_list{
+    my $optimize_for_modules = shift;
+    my $delete_file_name = shift;
+    my @required_modules = split(/,/, $optimize_for_modules);
+    my @all_modules = get_all_modules();
+    open(DELETELISTFILE, '>', $delete_file_name) or die $!;
+    
+    # process optimize.json -> "modules" section
+    foreach my $m (@all_modules) {
+        my $append_to_deletefile = 1;   # 1: append, 0: dont append
+        foreach my $rm (@required_modules) {
+            if ($m eq $rm) {
+                $append_to_deletefile = 0;
+                last;
+            }
+        }
+        if ($append_to_deletefile) {
+            my @deps = get_deps_by_module($m);
+            foreach my $d (@deps) {
+                print DELETELISTFILE "$d\n";
+            }
+        }
+    }
+
+    # process optimize.json -> "dependencies" section
+    my @all_deps = get_all_deps();
+    foreach my $d (@all_deps) {
+        my $append_to_deletefile = 1;   # 1: append, 0: dont append
+        my @modules = get_modules_by_dep($d);
+        foreach my $m (@modules) {
+            foreach my $rm (@required_modules) {
+                if ($m eq $rm) {
+                    $append_to_deletefile = 0;
+                    last;
+                }
+            }
+            if (!$append_to_deletefile) {
+                last;
+            }
+        }
+        if ($append_to_deletefile) {
+            print DELETELISTFILE "\"$d\"\n";
+        }
+    }
+
+    close(DELETELISTFILE);
+}
+
 sub print_all_deps{
     my @modules = get_all_modules();
     my $modules_count = @modules;
@@ -47,7 +95,8 @@ sub print_all_deps_summary{
 
 sub get_all_modules{
     my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
-    my @modules = $OPTIMIZE_DATA =~ /\s*"(\S*)":\s*\[/g;
+    my @MODULES_DATA = $OPTIMIZE_DATA =~ /"modules":\s*(\{[\s\S]*\}),\s*"dependencies"/g;
+    my @modules = @MODULES_DATA[0] =~ /\s*"(\S*)":\s*\[/g;
     return sort(@modules);
 }
 
@@ -84,6 +133,27 @@ sub get_deps_by_module_spacesep{
         $SPACE_SEP_DATA="$d $SPACE_SEP_DATA";
     }
     return $SPACE_SEP_DATA
+}
+
+sub get_all_deps{
+    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
+    my @DEPS_DATA = $OPTIMIZE_DATA =~ /"dependencies":\s*(\{[\s\S]*\})\s*\}/g;
+    my @deps = @DEPS_DATA[0] =~ /\s*"(\S*)":\s*\[/g;
+    return sort(@deps);
+}
+
+sub get_modules_by_dep{
+    my $dep_name = shift;
+    $dep_name =~ s/\*/\\\*/g;
+    $dep_name =~ s/\./\\\./g;
+    $dep_name =~ s/\//\\\//g;
+    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
+    my $modulessregex = '\s*"'.$dep_name.'":\s*\[([\w\s"\/.\-\,*]*)\]\s*';
+    my @modules;
+    if ($OPTIMIZE_DATA =~ /$modulessregex/) {
+        @modules = $1 =~ /"([\w.\/*-]*)",?/g;
+    }
+    return @modules;
 }
 
 1;
