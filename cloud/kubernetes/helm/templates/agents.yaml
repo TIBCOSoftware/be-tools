@@ -65,7 +65,7 @@ spec:
         {{- end }}
         {{- range $envKey, $envVal := $.Values.envVars }}
         - name: "{{ $envKey }}"
-          value: "{{ $envVal }}"
+          value: "{{ $envVal | quote }}"
         {{- end}}
 {{ include "bechart.discovery.env" $ | trim | indent 8 }}
         {{- if and (not (empty $.Values.mysql.backingstoreUrlGV)) $.Values.mysql.enabled }}
