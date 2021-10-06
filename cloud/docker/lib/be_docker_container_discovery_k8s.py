@@ -57,7 +57,7 @@ def discoverInstanceDatails(appManagementFilePath):
                     if(not appname):
                         appname=item["spec"]["containers"][0]["image"]
                     
-                    if(puname and jmxport>0):
+                    if(puname and int(jmxport)>0):
                         parts=appname.split('/')
                         appname=parts[len(parts)-1]
                         appname=appname.replace('.','_').replace(':','_')
