@@ -7,8 +7,7 @@
             "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-*.jar",
             "BE_HOME/lib/ext/tpcl/pmml/pmml-evaluator-extension-*.jar",
             "BE_HOME/lib/ext/tpcl/pmml/pmml-model-*.jar",
-            "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar",
-            "BE_HOME/lib/ext/tpcl/aws/guava-*.jar"
+            "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar"
         ],
         "as2": [
             "BE_HOME/lib/cep-as-channel.jar",
@@ -23,8 +22,7 @@
             "BE_HOME/lib/ext/tpcl/cassandra-driver-core-*.jar",
             "BE_HOME/lib/ext/tpcl/cassandra-driver-extras-*.jar",
             "BE_HOME/lib/ext/tpcl/metrics-core-*.jar",
-            "BE_HOME/lib/ext/tpcl/netty-all-*jar",
-            "BE_HOME/lib/ext/tpcl/aws/guava-*.jar"
+            "BE_HOME/lib/ext/tpcl/netty-all-*jar"
         ],
         "dt": [
             "BE_HOME/lib/ext/tpcl/apache/commons-compress-*.jar",
@@ -53,7 +51,6 @@
             "BE_HOME/lib/ext/tpcl/apache/catalina-tribes.jar",
             "BE_HOME/lib/ext/tpcl/apache/commons-httpclient-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/ecj.jar",
-            "BE_HOME/lib/ext/tpcl/apache/httpcore-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/httpcore-nio-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/httpmime-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp.jar",
@@ -221,7 +218,6 @@
             "BE_HOME/lib/cep-kinesis-channel.jar",
             "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/aws-java-sdk-bundle-*.jar",
-            "BE_HOME/lib/ext/tpcl/aws/guava-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/ion-java-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/joda-time-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/protobuf-java-*.jar"
@@ -310,12 +306,16 @@
     "dependencies": {
         "BE_HOME/lib/ext/tpcl/aws/guava-*.jar": [
             "analytics",
-            "kinesis",
-            "cassandra"
+            "cassandra",
+            "kinesis"
         ],
         "BE_HOME/lib/ext/tpcl/apache/httpclient-*.jar": [
-            "http",
-            "ftl"
+            "ftl",
+            "http"
+        ],
+        "BE_HOME/lib/ext/tpcl/apache/httpcore-*.jar": [
+            "ftl",
+            "http"
         ]
     }
 }
