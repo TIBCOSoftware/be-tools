@@ -68,7 +68,7 @@ REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
 REM container image size optimize related vars
-for /f "delims=" %%i in ('perl .\lib\be_container_optimize_win.pl win printfriendly ') do (
+for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
     set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
 )
 set "INCLUDE_MODULES=na"
@@ -543,7 +543,7 @@ if "!CHECK_OPTIMISE_DEPS!" EQU "true" (
                 set "CDD_FILE_PATH=na"
             )
 
-            for /f "delims=" %%i in ('perl .\lib\be_container_optimize_win.pl win readcdd "!ARG_OPTIMIZE_FOR!" "!CDD_FILE_PATH!" ') do (
+            for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE_FOR!" "!CDD_FILE_PATH!" ') do (
                 set "INCLUDE_MODULES=%%i"
             )
         )
@@ -724,8 +724,8 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
 )
 
 if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
-    perl .\lib\be_container_optimize_win.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
-) else if "!ARG_OPTIMIZE!" EQU "true" perl .\lib\be_container_optimize_win.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+) else if "!ARG_OPTIMIZE!" EQU "true" perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
 
 REM including files list that should be deleted
 set "MAND_DEL_FILES=JAVA_HOME/lib/src.zip BE_HOME/lib/cep-docker.jar"

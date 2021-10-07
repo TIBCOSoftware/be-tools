@@ -82,9 +82,6 @@ OPEN_JDK_FILENAME="na"
 OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
 INCLUDE_MODULES="na"
 
-#DEBUG LOGS -- Value 1 enables debug logs, Value 0 disables debug logs
-DEBUG_LOGS=1
-
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
@@ -553,6 +550,9 @@ if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$ARG_OPTIMIZE_FOR" = "" -o "$ARG_OPTIMIZE
         else
             CDDFILE="na"
         fi
+        if [ "$ARG_OPTIMIZE_FOR" = "na"  ]; then
+            ARG_OPTIMIZE_FOR=""
+        fi
         INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE_FOR'","'$CDDFILE'")')
     fi
 fi
@@ -637,6 +637,10 @@ if [ "$OPEN_JDK_VERSION" != "na" ]; then
     fi
 else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
+fi
+
+if [ "$ARG_OPTIMIZE" = "true" ]; then
+    echo "INFO: AUTO CONTAINER OPTIMIZATION ENABLED"
 fi
 
 if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
@@ -735,7 +739,7 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
-if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
+if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" \) ]; then
     DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
     perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
 fi
@@ -935,18 +939,6 @@ else
         echo "INFO: Copying package: [$i]"
         cp $i $TEMP_FOLDER/installers
     done
-fi
-
-if ! [ "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" ]; then
-    if [ "$DEBUG_LOGS" = "1" ]; then
-        echo ""
-        echo ""
-        echo "DEBUG: Container Optimization is enabled -- List of files that are not part of final image "
-        echo "==========================================================================================="
-        cat $TEMP_FOLDER/lib/deletelist.txt
-        echo "==========================================================================================="
-        echo ""
-    fi
 fi
 
 # building docker image

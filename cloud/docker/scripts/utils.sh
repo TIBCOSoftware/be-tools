@@ -67,35 +67,3 @@ validateFTLandAS()
 
     echo $VALIDATE_FTL_AS
 }
-
-getXpathValueFrom(){
-    FILE_NAME=$1
-    XPATH=$2
-
-    echo $(sed -e 's/xmlns="[^"]*"//g' ${FILE_NAME} | xmllint --xpath "/cluster/${XPATH}/text()" - 2>/dev/null)
-}
-
-assignToList(){
-    NAME=$1
-    INCLUDE_LIST=$2
-
-    if [ "$INCLUDE_LIST" = "" -o "$INCLUDE_LIST" = "na" ]; then
-        INCLUDE_LIST="$NAME"
-    else
-        INCLUDE_LIST="$INCLUDE_LIST,$NAME"
-    fi
-
-    echo "$INCLUDE_LIST"
-}
-
-displayFilesList(){
-    PATH=$1
-    BE_FILES=""
-
-    echo "DEBUG: Files present under $PATH "
-    echo "========================================"
-    BE_FILES=$(docker run $IMAGE_NAME find $PATH -type f)
-    for i in $BE_FILES ; do echo $i ; done | sort
-    echo "========================================"
-    echo ""
-}

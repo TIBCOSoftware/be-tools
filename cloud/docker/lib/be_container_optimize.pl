@@ -12,6 +12,29 @@ local $/ ;
 
 my $OPTIMIZE_DATA = "";
 my $SPACE_SEP_DATA = "";
+my $CDD_DATA = "";
+
+# use this var for identifying os type
+my $INPUT_VAR1 = shift;
+my $INPUT_VAR2 = shift;
+my $INPUT_VAR3 = shift;
+my $INPUT_VAR4 = shift;
+
+if ("$INPUT_VAR1" eq "win"){
+    $OPTIMIZE_DATA = `type .\\lib\\optimize.json`;
+}else{
+    $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
+}
+
+if ("$INPUT_VAR2" eq "printfriendly"){
+    print get_all_modules_print_friendly();
+}
+if ("$INPUT_VAR2" eq "createfile"){
+    prepare_delete_list("$INPUT_VAR4",".\\$INPUT_VAR3\\lib\\deletelist.txt");
+}
+if ("$INPUT_VAR2" eq "readcdd"){
+    print parse_optimize_modules("$INPUT_VAR3","$INPUT_VAR4");
+}
 
 sub prepare_delete_list{
     my $optimize_for_modules = shift;
@@ -61,40 +84,7 @@ sub prepare_delete_list{
     close(DELETELISTFILE);
 }
 
-sub print_all_deps{
-    my @modules = get_all_modules();
-    my $modules_count = @modules;
-    print "TOTAL NUMBER OF MODULES: $modules_count\n";
-    foreach (@modules) {
-        print "====================\n";
-        print "Module[$_]\n";
-        print "====================\n";
-        my @deps = get_deps_by_module($_);
-        foreach (@deps) {
-            print "$_\n";
-        }
-    }
-}
-
-sub print_all_deps_summary{
-    my @modules = get_all_modules();
-    my $modules_count = @modules;
-    my $total_deps_count = 0;
-    print "\t==========\t\t==============\n";
-    print "\tMODULE\t\t\tDPENDENCIES(#)\n";
-    print "\t==========\t\t==============\n";
-    foreach (@modules) {
-        my @deps = get_deps_by_module($_);
-        my $deps_count = @deps;
-        $total_deps_count += $deps_count;
-        print "\t$_\t\t\t$deps_count\n"
-    }
-    print "\nTOTAL NUMBER OF MODULES:\t $modules_count";
-    print "\nTOTAL NUMBER OF DEPENDENCIES:\t $total_deps_count\n\n";
-}
-
 sub get_all_modules{
-    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
     my @MODULES_DATA = $OPTIMIZE_DATA =~ /"modules":\s*(\{[\s\S]*\}),\s*"dependencies"/g;
     my @modules = @MODULES_DATA[0] =~ /\s*"(\S*)":\s*\[/g;
     return sort(@modules);
@@ -107,17 +97,8 @@ sub get_all_modules_print_friendly{
     return $result;
 }
 
-sub get_all_modules_spacesep{
-    my @modules = get_all_modules();
-    for my $d (@modules) {
-        $SPACE_SEP_DATA="$d $SPACE_SEP_DATA";
-    }
-    return $SPACE_SEP_DATA
-}
-
 sub get_deps_by_module{
     my $module_name = shift;
-    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
     my $depsregex = '\s*"'.$module_name.'":\s*\[([\w\s"\/.\-\,*]*)\]\s*';
     my @deps;
     if ($OPTIMIZE_DATA =~ /$depsregex/) {
@@ -126,17 +107,7 @@ sub get_deps_by_module{
     return @deps;
 }
 
-sub get_deps_by_module_spacesep{
-    my $module_name = shift;
-    my @files = get_deps_by_module($module_name);
-    for my $d (@files) {
-        $SPACE_SEP_DATA="$d $SPACE_SEP_DATA";
-    }
-    return $SPACE_SEP_DATA
-}
-
 sub get_all_deps{
-    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
     my @DEPS_DATA = $OPTIMIZE_DATA =~ /"dependencies":\s*(\{[\s\S]*\})\s*\}/g;
     my @deps = @DEPS_DATA[0] =~ /\s*"(\S*)":\s*\[/g;
     return sort(@deps);
@@ -147,7 +118,6 @@ sub get_modules_by_dep{
     $dep_name =~ s/\*/\\\*/g;
     $dep_name =~ s/\./\\\./g;
     $dep_name =~ s/\//\\\//g;
-    my $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
     my $modulessregex = '\s*"'.$dep_name.'":\s*\[([\w\s"\/.\-\,*]*)\]\s*';
     my @modules;
     if ($OPTIMIZE_DATA =~ /$modulessregex/) {
@@ -174,7 +144,12 @@ sub parse_optimize_modules{
 
 sub get_modules_from_cdd{
     my $arg_cdd_file = shift;
-    my $CDD_DATA = `cat $arg_cdd_file`;
+
+    if ("$INPUT_VAR1" eq "win"){
+        $CDD_DATA = `type $arg_cdd_file`;
+    } else {
+        $CDD_DATA = `cat $arg_cdd_file`;
+    }
     my @modules = ();
     
     # XPATH="provider/type"
