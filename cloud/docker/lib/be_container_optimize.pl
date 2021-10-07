@@ -54,7 +54,7 @@ sub prepare_delete_list{
             }
         }
         if ($append_to_deletefile) {
-            print DELETELISTFILE "\"$d\"\n";
+            print DELETELISTFILE "$d\n";
         }
     }
 
@@ -121,7 +121,7 @@ sub get_deps_by_module{
     my $depsregex = '\s*"'.$module_name.'":\s*\[([\w\s"\/.\-\,*]*)\]\s*';
     my @deps;
     if ($OPTIMIZE_DATA =~ /$depsregex/) {
-        @deps = $1 =~ /("[\w.\/*-]*"),?/g;
+        @deps = $1 =~ /"([\w.\/*-]*)",?/g;
     }
     return @deps;
 }
