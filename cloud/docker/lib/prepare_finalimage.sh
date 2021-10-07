@@ -8,6 +8,7 @@ if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
 fi
 
 if [ -e "/home/tibco/be/deletelist.txt" ]; then
+    sed -i 's/\r$//' /home/tibco/be/deletelist.txt
     for filename in $(cat "/home/tibco/be/deletelist.txt" ) ; do
         rm -rf $filename 2>/dev/null
     done
@@ -69,9 +70,15 @@ else
 fi
 
 if [ "$COMPONENT" != "tea" ]; then
-    cp be-engine be-engine.tra *.idx dbkeywordmap.xml /tibco_home/be/${BE_SHORT_VERSION}/bin
+    cp be-engine be-engine.tra /tibco_home/be/${BE_SHORT_VERSION}/bin
     if [ -e cassandrakeywordmap.xml ]; then
         cp cassandrakeywordmap.xml /tibco_home/be/${BE_SHORT_VERSION}/bin
+    fi
+    if [ -e *.idx ]; then
+        cp *.idx /tibco_home/be/${BE_SHORT_VERSION}/bin
+    fi
+    if [ -e dbkeywordmap.xml ]; then
+        cp dbkeywordmap.xml /tibco_home/be/${BE_SHORT_VERSION}/bin
     fi
     cp -r /opt/tibco/be/${BE_SHORT_VERSION}/lib /tibco_home/be/${BE_SHORT_VERSION}
     cp -r /opt/tibco/be/ext /tibco_home/be    

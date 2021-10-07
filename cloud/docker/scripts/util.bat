@@ -90,3 +90,30 @@ GOTO :EOF
         )
     )
     EXIT /B 0
+
+:RemoveDuplicatesAndFormat
+    set INCLUDE_MODULES=%~1
+    set ARG__RESULT=
+
+    set VALUS=!INCLUDE_MODULES:,= !
+    for %%j in (!VALUS!) do (
+
+        SET VALU=%%j
+
+        SET DUPLICATE_FOUND=false
+        if "!ARG__RESULT!" EQU "" (
+            set ARG__RESULT=!VALU!
+        ) else (
+            set GVS2=!ARG__RESULT:,= !
+            for %%k in (!GVS2!) do (
+                if "!VALU!" EQU "%%k" (
+                    SET DUPLICATE_FOUND=true
+                )
+            )
+            if "!DUPLICATE_FOUND!" EQU "false" (
+                SET "ARG__RESULT=!ARG__RESULT!,!VALU!"
+            )
+        )
+    )
+    set INCLUDE_MODULES=!ARG__RESULT!
+    EXIT /B 0
