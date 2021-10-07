@@ -548,14 +548,12 @@ if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$ARG_OPTIMIZE_FOR" = "" -o "$ARG_OPTIMIZE
         ARG_OPTIMIZE="false"
         ARG_OPTIMIZE_FOR=""
     else
-        INCLUDE_MODULES=$ARG_OPTIMIZE_FOR
         if [ "$ARG_OPTIMIZE" = "true" -a ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
-            source ./scripts/optimize.sh
+            CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
+        else
+            CDDFILE="na"
         fi
-        ## Removing duplicates from optimise modules list
-        INCLUDE_MODULES=$(echo $INCLUDE_MODULES | sed -e 's/\,/ /g' )
-        INCLUDE_MODULES=$(echo "$INCLUDE_MODULES" | xargs -n1 | sort -u | xargs)
-        INCLUDE_MODULES=$(echo $INCLUDE_MODULES | sed -e 's/ /\,/g' )
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE_FOR'","'$CDDFILE'")')
     fi
 fi
 

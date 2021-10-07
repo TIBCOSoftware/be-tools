@@ -156,4 +156,97 @@ sub get_modules_by_dep{
     return @modules;
 }
 
+sub parse_optimize_modules{
+    my $arg_optimize_for = shift;
+    my $arg_cdd_file = shift;
+    my @modules = split(/,/, $arg_optimize_for);
+
+    if ($arg_cdd_file ne "na") {
+        my @modules_from_cdd = get_modules_from_cdd($arg_cdd_file);
+        push(@modules, @modules_from_cdd);
+    }
+
+    @modules = sort(@modules);
+    @modules = unique(@modules);
+    my $result = join(",", @modules);
+    return $result;
+}
+
+sub get_modules_from_cdd{
+    my $arg_cdd_file = shift;
+    my $CDD_DATA = `cat $arg_cdd_file`;
+    my @modules = ();
+    
+    # XPATH="provider/type"
+    my @cluster_manager = $CDD_DATA =~ /<provider>[\s\S]*<type>(.*)<\/type>[\s\S]*<\/provider>/g;
+    if (@cluster_manager[0] eq "AS2x") {
+        push(@modules, "as2");
+    } elsif (@cluster_manager[0] eq "Ignite") {
+        push(@modules, "ignite");
+    } elsif (@cluster_manager[0] eq "FTL") {
+        push(@modules, "ftl");
+    }
+
+    # XPATH="object-management/cache-manager/type"
+    my @object_manager = $CDD_DATA =~ /<cache-manager>\s*<type>(\w*)<\/type>/g;
+    if (@object_manager[0] eq "AS2x") {
+        push(@modules, "as2");
+    } elsif (@object_manager[0] eq "Ignite") {
+        push(@modules, "ignite");
+    }
+
+    # XPATH="object-management/cache-manager/backing-store/persistence-option"
+    my @persistence_option = $CDD_DATA =~ /<backing-store>[\s\S]*<persistence-option>(.*)<\/persistence-option>/g;
+    if (@persistence_option[0] eq "Store") {
+        push(@modules, "store");
+        # XPATH="object-management/cache-manager/backing-store/type"
+        my @backing_store = $CDD_DATA =~ /<object-management>[\s\S]*<cache-manager>[\s\S]*<backing-store>[\s\S]*<type>(.*)<\/type>[\s\S]*<\/backing-store>[\s\S]*<\/cache-manager>[\s\S]*<\/object-management>/g;
+        if (@backing_store[0] eq "SQL Server") {
+            push(@modules, "sqlserver");
+        } elsif (@backing_store[0] eq "Cassandra") {
+            push(@modules, "cassandra");
+        } elsif (@backing_store[0] eq "ActiveSpaces") {
+            push(@modules, "as4");
+        }
+    }
+
+    # XPATH="object-management/store-manager/type"
+    my @store_provider = $CDD_DATA =~ /<object-management>[\s\S]*<store-manager>[\s\S]*<type>(.*)<\/type>[\s\S]*<\/store-manager>[\s\S]*<\/object-management>/g;
+    if (@store_provider[0] eq "Cassandra") {
+        push(@modules, "store");
+        push(@modules, "cassandra");
+    } elsif (@store_provider[0] eq "ActiveSpaces") {
+        push(@modules, "store");
+        push(@modules, "as4");
+    }
+
+    # XPATH="app-metrics-config/store-provider/type"
+    my @metrics_store_provider = $CDD_DATA =~ /<app-metrics-config>[\s\S]*<store-provider>[\s\S]*<type>(.*)<\/type>[\s\S]*<\/store-provider>[\s\S]*<\/app-metrics-config>/g;
+    if (@metrics_store_provider[0] eq "LDM") {
+        push(@modules, "liveview");
+    } elsif (@metrics_store_provider[0] eq "InfluxDB") {
+        push(@modules, "influx");
+    }
+
+    # XPATH="telemetry-config/sampler"
+    my @telemetry_sampler = $CDD_DATA =~ /<telemetry-config>[\s\S]*<sampler>(.*)<\/sampler>[\s\S]*<\/telemetry-config>/g;
+    if ((@telemetry_sampler[0] ne "") and (@telemetry_sampler[0] ne "always_off")) {
+        push(@modules, "opentelemetry");
+    }
+
+    return @modules;
+}
+
+sub unique{
+    my %datamap;
+    my @result = ();
+    foreach my $i (@_) {
+        if (! %datamap{$i} ) {
+            push @result, $i;
+            $datamap{$i} = 1;
+        }
+    }
+    return @result;
+}
+
 1;
