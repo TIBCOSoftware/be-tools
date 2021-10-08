@@ -532,20 +532,17 @@ if "!ARG_OPTIMIZE_FOR!" NEQ "" if "!ARG_OPTIMIZE_FOR!" NEQ "na"  (
 
 if "!CHECK_OPTIMISE_DEPS!" EQU "true" (
     if "!BE620!" EQU "true" (
-        set "INCLUDE_MODULES=!ARG_OPTIMIZE_FOR!"
-        if "!ARG_OPTIMIZE!" EQU "true" (
-            if "!ARG_OPTIMIZE_FOR!" EQU "na" (
-                set "ARG_OPTIMIZE_FOR="
-            )                
-            if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
-                set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
-            ) else (
-                set "CDD_FILE_PATH=na"
-            )
+        if "!ARG_OPTIMIZE_FOR!" EQU "na" (
+            set "ARG_OPTIMIZE_FOR="
+        )                
+        if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" if "!ARG_OPTIMIZE!" EQU "true" (
+            set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+        ) else (
+            set "CDD_FILE_PATH=na"
+        )
 
-            for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE_FOR!" "!CDD_FILE_PATH!" ') do (
-                set "INCLUDE_MODULES=%%i"
-            )
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE_FOR!" "!CDD_FILE_PATH!" ') do (
+            set "INCLUDE_MODULES=%%i"
         )
     ) else (
         echo WARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...
@@ -643,7 +640,6 @@ if "!ARG_OPTIMIZE!" EQU "true" (
 )
 
 if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
-    call .\scripts\util.bat :RemoveDuplicatesAndFormat "!INCLUDE_MODULES!"
     echo INFO: CONTAINER OPTIMIZING FOR     : [!INCLUDE_MODULES!]
 )
 

@@ -344,10 +344,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
 
         ## get as legacy details
-        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            AS_LEG_HOME=${AS_LEG_HOME%?}
-        fi
+        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         
         if [ "$AS_LEG_HOME" = "" ]; then
             AS_LEG_HOME="na"
@@ -371,10 +368,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     if [ "$VALIDATE_FTL_AS" = "true" ]; then
         # get ftl details
-        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            FTL_HOME=${FTL_HOME%?}
-        fi
+        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$FTL_HOME" = "" ]; then
             FTL_HOME="na"
         else
@@ -395,10 +389,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
 
         # get as details
-        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            AS_HOME=${AS_HOME%?}
-        fi
+        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$AS_HOME" = "" ]; then
             AS_HOME="na"
         else
@@ -420,10 +411,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     #get installed jre details
-    TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2)
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
-        TRA_JAVA_HOME=${TRA_JAVA_HOME%?}
-    fi
+    TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
 else
     #version regex for all products
     VERSION_REGEX=([0-9]\.[0-9]).[0-9]
