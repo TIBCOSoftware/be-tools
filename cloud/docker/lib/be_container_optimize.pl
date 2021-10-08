@@ -216,7 +216,7 @@ sub unique{
     my %datamap;
     my @result = ();
     foreach my $i (@_) {
-        if (! %datamap{$i} ) {
+        if (! $datamap{$i} ) {
             push @result, $i;
             $datamap{$i} = 1;
         }
