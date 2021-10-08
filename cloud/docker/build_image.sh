@@ -628,7 +628,7 @@ else
 fi
 
 if [ "$ARG_OPTIMIZE" = "true" ]; then
-    echo "INFO: AUTO CONTAINER OPTIMIZATION ENABLED"
+    echo "INFO: AUTO CONTAINER OPTIMIZATION  : [true]"
 fi
 
 if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
