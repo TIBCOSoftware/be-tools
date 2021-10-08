@@ -671,7 +671,6 @@ fi
 
 mkdir -p $TEMP_FOLDER/{installers,app}
 cp -a "./lib" $TEMP_FOLDER/
-touch $TEMP_FOLDER/lib/deletelist.txt
 
 if [ "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
@@ -731,12 +730,6 @@ if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE
     DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
     perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
 fi
-
-# including files list that should be deleted
-MAND_DEL_FILES="JAVA_HOME/lib/src.zip BE_HOME/lib/cep-docker.jar"
-for i in $MAND_DEL_FILES; do
-    echo $i >> $TEMP_FOLDER/lib/deletelist.txt
-done
 
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
     sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt

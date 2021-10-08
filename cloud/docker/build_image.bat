@@ -663,7 +663,6 @@ if !INSTALLATION_TYPE! EQU frominstallers if !ARG_FTL_VERSION! NEQ na if !ARG_AS
 
 mkdir !TEMP_FOLDER!\installers !TEMP_FOLDER!\app !TEMP_FOLDER!\lib
 xcopy /Q /C /R /Y /E .\lib !TEMP_FOLDER!\lib > NUL
-type NUL > !TEMP_FOLDER!\lib\deletelist.txt
 
 if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
     if !ARG_INSTALLERS_PLATFORM! EQU win (
@@ -722,12 +721,6 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
 if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
     perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
 ) else if "!ARG_OPTIMIZE!" EQU "true" perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
-
-REM including files list that should be deleted
-set "MAND_DEL_FILES=JAVA_HOME/lib/src.zip BE_HOME/lib/cep-docker.jar"
-for %%i in (!MAND_DEL_FILES!) do (
-    echo %%i >> !TEMP_FOLDER!\lib\deletelist.txt
-)
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (

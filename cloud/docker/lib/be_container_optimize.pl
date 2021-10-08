@@ -41,7 +41,7 @@ sub prepare_delete_list{
     my $delete_file_name = shift;
     my @required_modules = split(/,/, $optimize_for_modules);
     my @all_modules = get_all_modules();
-    open(DELETELISTFILE, '>', $delete_file_name) or die $!;
+    open(DELETELISTFILE, '>>', $delete_file_name) or die $!;
     
     # process optimize.json -> "modules" section
     foreach my $m (@all_modules) {

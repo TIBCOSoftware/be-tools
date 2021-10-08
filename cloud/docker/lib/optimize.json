@@ -24,15 +24,6 @@
             "BE_HOME/lib/ext/tpcl/metrics-core-*.jar",
             "BE_HOME/lib/ext/tpcl/netty-all-*jar"
         ],
-        "dt": [
-            "BE_HOME/lib/ext/tpcl/apache/commons-compress-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/poi-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/poi-ooxml-schemas-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/poi-scratchpad-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/SparseBitSet-*.jar",
-            "BE_HOME/lib/ext/tpcl/apache/xmlbeans-*.jar"
-        ],
         "eclipse": [
             "BE_HOME/lib/ext/tpcl/emf/org.eclipse.core.resources_*.jar",
             "BE_HOME/lib/ext/tpcl/emf/org.eclipse.uml2.common_*.jar",
