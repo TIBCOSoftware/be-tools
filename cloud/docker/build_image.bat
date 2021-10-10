@@ -531,6 +531,11 @@ if "!ARG_OPTIMIZE_FOR!" NEQ "" if "!ARG_OPTIMIZE_FOR!" NEQ "na"  (
 )
 
 if "!CHECK_OPTIMISE_DEPS!" EQU "true" (
+    perl -e1 2>NUL
+    if "!errorlevel!" NEQ "0" (
+        echo ERROR: Please install perl utility.
+        GOTO END-withError
+    )
     if "!BE620!" EQU "true" (
         if "!ARG_OPTIMIZE_FOR!" EQU "na" (
             set "ARG_OPTIMIZE_FOR="
