@@ -29,10 +29,10 @@ Example usage:
 
 You can use this option, if the CDD file is available during BE container image build time (i.e --image-type is "app" or "rms").
 
-Note that this option alone may not be able to identify all modules required by the application. In such cases, the option `--optimize-for` option can be used along with `--optimize`.
+Note that this option alone may not be able to identify all modules required by the application. In such cases, the option `--optimize-for` can be used along with `--optimize`.
 
 ### --optimize-for
-This option allows you to supply required module names as comma separated string.
+This option allows you to supply required module names as a comma separated string.
 
 Example usage:
 ```
