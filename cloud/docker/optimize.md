@@ -10,7 +10,7 @@ When this option is used, scripts automatically parse the CDD file to extract va
 
 Below table illustrates how various CDD configurations are associated with various modules.
 
-| CDD Configuration | Possible Module Name |
+| CDD Configuration | Module Names |
 | ----------- | ----------- |
 | Cluster Provider | as2, ignite or ftl |
 | Cache provider | as2 or ignite |
