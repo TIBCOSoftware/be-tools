@@ -91,7 +91,14 @@ sub get_all_modules{
 }
 
 sub get_all_modules_print_friendly{
-    my @modules = get_all_modules();
+    my @all_modules = get_all_modules();
+    # remove module "java" from the list
+    my @modules = ();
+    foreach my $m (@all_modules) {
+        if ($m ne "java") {
+            push(@modules, $m);
+        }
+    }
     my $result = join(", ", @modules[0..$#modules-1]);
     $result = "$result & @modules[$#modules]";
     return $result;
