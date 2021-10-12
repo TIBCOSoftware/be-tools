@@ -40,6 +40,7 @@ sub prepare_delete_list{
     my $optimize_for_modules = shift;
     my $delete_file_name = shift;
     my @required_modules = split(/,/, $optimize_for_modules);
+    @required_modules = unique(@required_modules);
     my @all_modules = get_all_modules();
     open(DELETELISTFILE, '>>', $delete_file_name) or die $!;
     
