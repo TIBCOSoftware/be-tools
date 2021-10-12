@@ -964,9 +964,10 @@ EXIT /B 0
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
-    echo  [--optimize]         :    Module names for which container image has to be optimized. [optional]
-    echo                            To add more than one module use comma separated format ex: "http,kafka"
-    echo                            Supported moudules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
+    echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
+    echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
     echo  NOTE: Encapsulate all the arguments between double quotes.
