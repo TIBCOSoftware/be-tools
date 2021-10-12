@@ -652,8 +652,11 @@ if "!OPEN_JDK_VERSION!" NEQ "na" (
     echo INFO: JRE VERSION                  : [!ARG_JRE_VERSION!]
 )
 
-if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
-    echo INFO: CONTAINER OPTIMIZING FOR     : [!INCLUDE_MODULES!]
+if "!INCLUDE_MODULES!" NEQ "na" (
+    echo INFO: CONTAINER OPTIMIZATION       : [Enabled]
+    if "!INCLUDE_MODULES!" NEQ "" (
+        echo INFO: CONTAINER OPTIMIZING FOR     : [!INCLUDE_MODULES!]
+    )
 )
 
 echo ------------------------------------------------------------------------------
