@@ -135,9 +135,9 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
-USAGE+="\n\n [--optimize]         :    Module names for which container image has to be optimized. [optional]\n"
-USAGE+="                           To add more than one module use comma separated format ex: \"http,kafka\" \n"
-USAGE+="                           Supported moudules: $OPTIMIZATION_SUPPORTED_MODULES."
+USAGE+="\n\n [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]\n"
+USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"http,kafka\" \n"
+USAGE+="                           Supported modules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 

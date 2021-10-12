@@ -3,12 +3,11 @@ BE application for which you want to build a container image, may not need all B
 
 Various dependencies (jars, libs, etc...) pertaining to all optional BE runtime capabilities are classified and tagged under appropriate module names depending on the nature of the functionality they offer. For instance all AS2 dependencies are tagged with a module name "as2".
 
-You can use following options to enable optimization:
+You can enable optimization using the option `--optimize`
 
-### --optimize
-When this option is used, scripts automatically parse the CDD file to extract various configurations and identify modules required for the application. Once required modules are identified, build script excludes all other modules dependencies from the container image.
+When this option is used, scripts automatically parse the CDD/EAR to extract various configurations and identify modules required for the application. Once required modules are identified, build script excludes all other modules dependencies from the container image.
 
-Below table illustrates how various CDD configurations are associated with various modules.
+Below table illustrates how various CDD/EAR configurations are associated with various modules.
 
 | CDD Configuration | Module Names |
 | ----------- | ----------- |
@@ -27,12 +26,7 @@ Example usage:
 -t fdapp:01
 ```
 
-You can use this option, if the CDD file is available during BE container image build time (i.e --image-type is "app" or "rms").
-
-Note that this option alone may not be able to identify all modules required by the application. In such cases, the option `--optimize-for` can be used along with `--optimize`.
-
-### --optimize-for
-This option allows you to supply required module names as a comma separated string.
+Channel related modules (ex: http, kafka, etc...) need to be supplied by the user explicitly, as current scripts will not retrieve them automatically. You can supply these additional modules as a comma separated string.
 
 Example usage:
 ```
@@ -40,8 +34,7 @@ Example usage:
 -i app \
 -s /home/user/tibco/installers \
 -a /home/user/tibco/be/6.2/examples/standard/FraudDetection \
---optimize \
---optimize-for="http,kafka" \
+--optimize "http,kafka" \
 -t fdapp:01
 ```
 
