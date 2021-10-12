@@ -17,6 +17,8 @@ Below table illustrates how various CDD/EAR configurations are associated with v
 | Metrics provider | liveview or influx |
 | Open Telemetry | opentelemetry |
 
+To know all supported modules, Try `./build_image.sh --help`
+
 Example usage:
 ```
 ./build_image.sh -i app \
@@ -37,5 +39,3 @@ Example usage:
 --optimize "http,kafka" \
 -t fdapp:01
 ```
-
-Try `./build_image.sh --help` and go to the section `--optimize-for` to see all supported modules.
