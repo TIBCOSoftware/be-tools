@@ -557,9 +557,11 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
         ) else (
             set "CDD_FILE_PATH=na"
         )
-
         for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
+        )
+        if "!INCLUDE_MODULES!" EQU "na" (
+            set "INCLUDE_MODULES="
         )
     ) else (
         echo WARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...
@@ -730,6 +732,13 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
 )
 
 if "!INCLUDE_MODULES!" NEQ "na" (
+    if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
+        if "!INCLUDE_MODULES!" EQU "" (
+            set "INCLUDE_MODULES=java"
+        ) else (
+            set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
+        )
+    )
     perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
 )
 
