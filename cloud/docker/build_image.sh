@@ -5,6 +5,41 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+isCLIKey()
+{
+    KEY_NAME=$1
+    KEY="false"
+
+    case "$KEY_NAME" in
+        -s|--source)
+            KEY="true"
+            ;;
+        -i|--image-type)
+            KEY="true"
+            ;;
+        -a|--app-location)
+            KEY="true"
+            ;;
+        -t|--tag)
+            KEY="true"
+            ;;
+        -d|--docker-file)
+            KEY="true"
+            ;;
+        --gv-provider)
+            KEY="true"
+            ;;
+        -b|--build-tool)
+            KEY="true"
+            ;;
+        --optimize)
+            KEY="true"
+            ;;
+    esac
+
+    echo $KEY
+}
+
 source ./scripts/utils.sh
 FILE_NAME=$(basename $0)
 
@@ -27,9 +62,7 @@ ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
-ARG_OPTIMIZE="false"
-ARG_OPTIMIZE_FOR="na"
-
+ARG_OPTIMIZE="na"
 
 # be related args
 BE_HOME="na"
@@ -102,8 +135,7 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
-USAGE+="\n\n [--optimize]         :    Enables container image optimization based on CDD configurations [optional]"
-USAGE+="\n\n [--optimize-for]     :    Module names for which container image has to be optimized. [optional]\n"
+USAGE+="\n\n [--optimize]         :    Module names for which container image has to be optimized. [optional]\n"
 USAGE+="                           To add more than one module use comma separated format ex: \"http,kafka\" \n"
 USAGE+="                           Supported moudules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
@@ -112,52 +144,74 @@ USAGE+="\n\n NOTE : supply long options with '=' \n"
 #Parse the arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
+    FLAG_CLIKEY="false"
     case "$key" in
         -s|--source)
             shift # past the key and to the value
-            ARG_SOURCE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_SOURCE="$1"
+            fi
             ;;
         -s=*|--source=*)
             ARG_SOURCE="${key#*=}"
             ;;
         -i|--image-type)
             shift # past the key and to the value
-            ARG_TYPE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_TYPE="$1"
+            fi
             ;;
         -i=*|--image-type=*)
             ARG_TYPE="${key#*=}"
 	        ;;
         -a|--app-location)
             shift # past the key and to the value
-            ARG_APP_LOCATION="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_APP_LOCATION="$1"
+            fi
             ;;
         -a=*|--app-location=*)
             ARG_APP_LOCATION="${key#*=}"
 	        ;;
         -t|--tag)
             shift # past the key and to the value
-            ARG_TAG="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_TAG="$1"
+            fi
             ;;
         -t=*|--tag=*)
             ARG_TAG="${key#*=}"
 	        ;;
         -d|--docker-file)
             shift # past the key and to the value
-            ARG_DOCKER_FILE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_DOCKER_FILE="$1"
+            fi
             ;;
         -d=*|--docker-file=*)
             ARG_DOCKER_FILE="${key#*=}"
             ;;
         --gv-provider)
             shift # past the key and to the value
-            ARG_GVPROVIDER="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_GVPROVIDER="$1"
+            fi
             ;;
         --gv-provider=*)
             ARG_GVPROVIDER="${key#*=}"
             ;;
         -b|--build-tool)
             shift # past the key and to the value
-            ARG_BUILD_TOOL="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_BUILD_TOOL="$1"
+            fi
             ;;
         -b=*|--build-tool=*)
             ARG_BUILD_TOOL="${key#*=}"
@@ -169,14 +223,16 @@ while [[ $# -gt 0 ]]; do
             ARG_USE_OPEN_JDK="true"
             ;;
         --optimize)
-            ARG_OPTIMIZE="true"
-            ;;
-        --optimize-for)
             shift # past the key and to the value
-            ARG_OPTIMIZE_FOR="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "true" ]; then
+                ARG_OPTIMIZE=""
+            else
+                ARG_OPTIMIZE="$1"
+            fi
             ;;
-        --optimize-for=*)
-            ARG_OPTIMIZE_FOR="${key#*=}"
+        --optimize=*)
+            ARG_OPTIMIZE="${key#*=}"
             ;;
         -h|--help)
             shift # past the key and to the value
@@ -187,7 +243,9 @@ while [[ $# -gt 0 ]]; do
             echo "Invalid Option: [$key]"
             ;;
     esac
-    shift
+    if [ "$FLAG_CLIKEY" = "false" ]; then
+        shift
+    fi
 done
 
 # missing arguments check
@@ -244,7 +302,7 @@ case "$ARG_TYPE" in
 esac
 
 # assign proper docker file to ARG_DOCKER_FILE variable
-if [ "$ARG_DOCKER_FILE" = "na" ]; then
+if [ "$ARG_DOCKER_FILE" = "na" -o -z "${ARG_DOCKER_FILE// }" ]; then
     if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         ARG_DOCKER_FILE="$DOCKER_FILE"_fromtar
     else
@@ -527,21 +585,16 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
-if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$ARG_OPTIMIZE_FOR" = "" -o "$ARG_OPTIMIZE_FOR" = "na" \) ]; then
+if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
         printf "\nWARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...\n\n"
-        ARG_OPTIMIZE="false"
-        ARG_OPTIMIZE_FOR=""
     else
-        if [ "$ARG_OPTIMIZE" = "true" -a ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
+        if [ ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
         else
             CDDFILE="na"
         fi
-        if [ "$ARG_OPTIMIZE_FOR" = "na"  ]; then
-            ARG_OPTIMIZE_FOR=""
-        fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE_FOR'","'$CDDFILE'")')
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'")')
     fi
 fi
 
@@ -627,16 +680,12 @@ else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 fi
 
-if [ "$ARG_OPTIMIZE" = "true" ]; then
-    echo "INFO: AUTO CONTAINER OPTIMIZATION  : [true]"
-fi
-
 if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
     echo "INFO: CONTAINER OPTIMIZING FOR     : [$INCLUDE_MODULES]"
 fi
 
 echo "------------------------------------------------------------------------------"
-
+exit 1
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
     if [ $(echo "${ARG_BE_VERSION//.}") -lt 611 ]; then
         printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
@@ -726,7 +775,7 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
-if [ "$ARG_OPTIMIZE" = "true" -o ! \( "$INCLUDE_MODULES" = "na" -o -z "${INCLUDE_MODULES// }" \) ]; then
+if ! [ "$INCLUDE_MODULES" = "na" ]; then
     DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
     perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
 fi

@@ -21,8 +21,7 @@ set "ARG_TAG=na"
 set "ARG_DOCKER_FILE=na"
 set "ARG_GVPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
-set "ARG_OPTIMIZE=false"
-set "ARG_OPTIMIZE_FOR=na"
+set "ARG_OPTIMIZE=na"
 
 REM openjdk related vars
 set "OPEN_JDK_VERSION=na"
@@ -148,17 +147,11 @@ for %%x in (%*) do (
     )
 
     if !currentArg! EQU --optimize (
-        set "ARG_OPTIMIZE=true"
-    )
-
-    if !currentArg! EQU --optimize-for (
         shift
-        call set "ARG_OPTIMIZE_FOR=%%!counter!"
-        if "!ARG_OPTIMIZE_FOR!" NEQ "" (
-            set "ARG_OPTIMIZE_FOR=!ARG_OPTIMIZE_FOR:"=!"
-            set "ARG_OPTIMIZE_FOR=!ARG_OPTIMIZE_FOR: =!"
-        ) else (
-            set "ARG_OPTIMIZE_FOR=na"
+        call set "ARG_OPTIMIZE=%%!counter!"
+        if "!ARG_OPTIMIZE!" NEQ "" (
+            set "ARG_OPTIMIZE=!ARG_OPTIMIZE:"=!"
+            set "ARG_OPTIMIZE=!ARG_OPTIMIZE: =!"
         )
     )
 
@@ -513,46 +506,31 @@ if !ARG_IMAGE_VERSION! EQU na (
 )
 
 REM check be6 or not
-set "BE620=false"
+set "BE620P=false"
 set /a BE6VAL=!ARG_BE_VERSION:.=!
 if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
-if !BE6VAL! GEQ 620 set "BE620=true"
+if !BE6VAL! GEQ 620 set "BE620P=true"
 
 REM checking optimize flag and its validation
-set "CHECK_OPTIMISE_DEPS=false"
-
-if "!ARG_OPTIMIZE!" EQU "true" (
-    set "CHECK_OPTIMISE_DEPS=true"
-)
-
-if "!ARG_OPTIMIZE_FOR!" NEQ "" if "!ARG_OPTIMIZE_FOR!" NEQ "na"  (
-    set "CHECK_OPTIMISE_DEPS=true"
-)
-
-if "!CHECK_OPTIMISE_DEPS!" EQU "true" (
+if "!ARG_OPTIMIZE!" NEQ "na" (
     perl -e1 2>NUL
     if "!errorlevel!" NEQ "0" (
         echo ERROR: Please install perl utility.
         GOTO END-withError
     )
-    if "!BE620!" EQU "true" (
-        if "!ARG_OPTIMIZE_FOR!" EQU "na" (
-            set "ARG_OPTIMIZE_FOR="
-        )                
-        if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" if "!ARG_OPTIMIZE!" EQU "true" (
+    if "!BE620P!" EQU "true" (
+        if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
             set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
         ) else (
             set "CDD_FILE_PATH=na"
         )
 
-        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE_FOR!" "!CDD_FILE_PATH!" ') do (
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
         )
     ) else (
         echo WARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...
-        set "ARG_OPTIMIZE=false"
-        set "ARG_OPTIMIZE_FOR="
     )
 )
 
@@ -640,10 +618,6 @@ if "!OPEN_JDK_VERSION!" NEQ "na" (
     echo INFO: JRE VERSION                  : [!ARG_JRE_VERSION!]
 )
 
-if "!ARG_OPTIMIZE!" EQU "true" (
-    echo INFO: AUTO CONTAINER OPTIMIZATION  : [true]
-)
-
 if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
     echo INFO: CONTAINER OPTIMIZING FOR     : [!INCLUDE_MODULES!]
 )
@@ -723,9 +697,9 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
-if "!INCLUDE_MODULES!" NEQ "" if "!INCLUDE_MODULES!" NEQ "na" (
+if "!INCLUDE_MODULES!" NEQ "na" (
     perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
-) else if "!ARG_OPTIMIZE!" EQU "true" perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+)
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
@@ -946,9 +920,7 @@ EXIT /B 0
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
-    echo  [--optimize]         :    Enables container image optimization based on CDD configurations [optional]
-    echo.
-    echo  [--optimize-for]     :    Module names for which container image has to be optimized. [optional]
+    echo  [--optimize]         :    Module names for which container image has to be optimized. [optional]
     echo                            To add more than one module use comma separated format ex: "http,kafka"
     echo                            Supported moudules: !OPTIMIZATION_SUPPORTED_MODULES!.
     echo  [-h/--help]          :    Print the usage of script [optional]

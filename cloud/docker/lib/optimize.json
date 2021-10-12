@@ -34,9 +34,6 @@
             "BE_HOME/lib/cep-ftl-cluster.jar",
             "BE_HOME/lib/cep-ftl.jar"
         ],
-        "hawk": [
-            "BE_HOME/lib/cep-hawk-channel.jar"
-        ],
         "http": [
             "BE_HOME/lib/ext/tpcl/apache/catalina-ha.jar",
             "BE_HOME/lib/ext/tpcl/apache/catalina-tribes.jar",
@@ -269,6 +266,10 @@
         "pattern": [
             "BE_HOME/lib/cep-pattern.jar",
             "BE_HOME/lib/ext/tpcl/apache/commons-jexl*.jar"
+        ],
+        "process": [
+            "BE_HOME/lib/ext/tpcl/tomsawyer/xml*.jar",
+            "BE_HOME/lib/eclipse/plugins/com.tibco.cep.bpmn.common_*.jar"
         ],
         "query": [
             "BE_HOME/lib/be-q.jar",
