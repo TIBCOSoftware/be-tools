@@ -685,7 +685,7 @@ if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
 fi
 
 echo "------------------------------------------------------------------------------"
-exit 1
+
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_AS_LEG_SHORT_VERSION" = "na" ]; then
     if [ $(echo "${ARG_BE_VERSION//.}") -lt 611 ]; then
         printf "\nERROR: TIBCO Activespaces(legacy) Required for RMS.\n\n"
