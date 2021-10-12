@@ -75,103 +75,135 @@ set "INCLUDE_MODULES=na"
 REM parsing arguments
 set /A counter=0
 for %%x in (%*) do (
+    set "FLAG_CLIKEY=false"
     set /A counter=!counter!+1
     call set currentArg=%%!counter!
 
     if !currentArg! EQU -i (
         shift
-        call set "ARG_TYPE=%%!counter!"
-        set "ARG_TYPE=!ARG_TYPE:"=!"
-    )
-    
-    if !currentArg! EQU --image-type (
-        shift
-        call set "ARG_TYPE=%%!counter!"
-        set "ARG_TYPE=!ARG_TYPE:"=!"
-    )
-
-    if !currentArg! EQU -s (
-        shift
-        call set "ARG_SOURCE=%%!counter!"
-        set "ARG_SOURCE=!ARG_SOURCE:"=!"
-    )
-
-    if !currentArg! EQU --source (
-        shift
-        call set "ARG_SOURCE=%%!counter!"
-        set "ARG_SOURCE=!ARG_SOURCE:"=!"
-    )
-
-    if !currentArg! EQU -a (
-        shift
-        call set "ARG_APP_LOCATION=%%!counter!"
-        set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
-    )
-
-    if !currentArg! EQU --app-location (
-        shift
-        call set "ARG_APP_LOCATION=%%!counter!"
-        set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
-    )
-
-    if !currentArg! EQU -t (
-        shift
-        call set "ARG_TAG=%%!counter!"
-        set "ARG_TAG=!ARG_TAG:"=!"
-    )
-
-    if !currentArg! EQU --tag (
-        shift
-        call set "ARG_TAG=%%!counter!"
-        set "ARG_TAG=!ARG_TAG:"=!"
-    )
-
-    if !currentArg! EQU -d (
-        shift
-        call set "ARG_DOCKER_FILE=%%!counter!"
-        set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
-    )
-
-    if !currentArg! EQU --docker-file (
-        shift
-        call set "ARG_DOCKER_FILE=%%!counter!"
-        set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
-    )
-
-    if !currentArg! EQU -o (
-        set "ARG_USE_OPEN_JDK=true"
-    )
-
-    if !currentArg! EQU --openjdk (
-        set "ARG_USE_OPEN_JDK=true"
-    )
-
-    if !currentArg! EQU --optimize (
-        shift
-        call set "ARG_OPTIMIZE=%%!counter!"
-        if "!ARG_OPTIMIZE!" NEQ "" (
-            set "ARG_OPTIMIZE=!ARG_OPTIMIZE:"=!"
-            set "ARG_OPTIMIZE=!ARG_OPTIMIZE: =!"
-        )
-    )
-
-    if !currentArg! EQU --gv-provider (
-        shift
-        call set "ARG_GVPROVIDER=%%!counter!"
-        if "!ARG_GVPROVIDER!" NEQ "" (
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TYPE=%%!counter!"
+            set "ARG_TYPE=!ARG_TYPE:"=!"
         ) else (
-            set "ARG_GVPROVIDER=na"
+            set /A counter=!counter!-1
         )
-    )
-
-    if !currentArg! EQU -h (
+    ) else if !currentArg! EQU --image-type (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TYPE=%%!counter!"
+            set "ARG_TYPE=!ARG_TYPE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -s (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_SOURCE=%%!counter!"
+            set "ARG_SOURCE=!ARG_SOURCE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --source (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_SOURCE=%%!counter!"
+            set "ARG_SOURCE=!ARG_SOURCE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -a (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_APP_LOCATION=%%!counter!"
+            set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --app-location (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_APP_LOCATION=%%!counter!"
+            set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -t (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TAG=%%!counter!"
+            set "ARG_TAG=!ARG_TAG:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --tag (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TAG=%%!counter!"
+            set "ARG_TAG=!ARG_TAG:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -d (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_DOCKER_FILE=%%!counter!"
+            set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --docker-file (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_DOCKER_FILE=%%!counter!"
+            set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -o (
+        set "ARG_USE_OPEN_JDK=true"
+    ) else if !currentArg! EQU --openjdk (
+        set "ARG_USE_OPEN_JDK=true"
+    ) else if !currentArg! EQU --optimize (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_OPTIMIZE=%%!counter!"
+            if "!ARG_OPTIMIZE!" NEQ "" (
+                set "ARG_OPTIMIZE=!ARG_OPTIMIZE:"=!"
+                set "ARG_OPTIMIZE=!ARG_OPTIMIZE: =!"
+            )
+        ) else (
+            set /A counter=!counter!-1
+            set "ARG_OPTIMIZE="
+        )
+    ) else if !currentArg! EQU --gv-provider (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_GVPROVIDER=%%!counter!"
+            if "!ARG_GVPROVIDER!" NEQ "" (
+                set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
+                set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+            ) else (
+                set "ARG_GVPROVIDER=na"
+            )
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -h (
         call :printUsage
         EXIT /B 1
-    )
-
-    if !currentArg! EQU --help (
+    ) else if !currentArg! EQU --help (
         call :printUsage
         EXIT /B 1
     )
@@ -933,3 +965,37 @@ EXIT /B 0
     ENDLOCAL
     echo.
     EXIT /B 1
+
+:isCLIKey
+    set "KEY_NAME=%~1"
+    set "FLAG_CLIKEY=%~2"
+
+    if "!KEY_NAME!" EQU "-i" (
+       set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--image-type" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-s" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--source" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-a" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--app-location" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-t" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--tag" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-d" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--docker-file" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--optimize" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--gv-provider" (
+        set "FLAG_CLIKEY=true"
+    ) else (
+        set "FLAG_CLIKEY=false"
+    )
+
+    EXIT /B 0
