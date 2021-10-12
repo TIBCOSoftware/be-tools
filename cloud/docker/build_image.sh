@@ -680,8 +680,11 @@ else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
 fi
 
-if ! [ "$INCLUDE_MODULES" = "" -o "$INCLUDE_MODULES" = "na" ]; then
-    echo "INFO: CONTAINER OPTIMIZING FOR     : [$INCLUDE_MODULES]"
+if [ "$INCLUDE_MODULES" != "na" ]; then
+    echo "INFO: CONTAINER OPTIMIZATION       : [Enabled]"
+    if [ "$INCLUDE_MODULES" != "" ]; then
+        echo "INFO: CONTAINER OPTIMIZING FOR     : [$INCLUDE_MODULES]"
+    fi
 fi
 
 echo "------------------------------------------------------------------------------"
