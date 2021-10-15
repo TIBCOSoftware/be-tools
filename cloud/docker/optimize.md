@@ -1,25 +1,15 @@
 # Optimize BE container image size
-BE application for which you want to build a container image, may not need all BE runtime capabilities. You can use the optimization option while building the image to include only required capabilities, so that the resulting image will be smaller in size.
+By default every BE application container image is built with full runtime capabilities irrespective of whether the application needs/uses it. You can use the optimization option while building the image to include only required capabilities, so that the resulting image will not only be customized to your specific needs but this process helps significantly reduce the image size as well.
 
 Various dependencies (jars, libs, etc...) pertaining to all optional BE runtime capabilities are classified and tagged under appropriate module names depending on the nature of the functionality they offer. For instance all AS2 dependencies are tagged with a module name "as2".
 
 You can enable optimization using the option `--optimize`
 
-When this option is used, scripts automatically parse the CDD/EAR to extract various configurations and identify modules required for the application. Once required modules are identified, build script excludes all other modules dependencies from the container image.
-
-Below table illustrates how various CDD/EAR configurations are associated with various modules.
-
-| CDD Configuration | Module Names |
-| ----------- | ----------- |
-| Cluster Provider | as2, ignite or ftl |
-| Cache provider | as2 or ignite |
-| Store provider | store, sqlserver, cassandra or as4 |
-| Metrics provider | liveview or influx |
-| Open Telemetry | opentelemetry |
+When this option is used, based on the CDD, modules required for the application are identified and all the other modules dependencies are excluded from the container image.
 
 To know all supported modules, Try `./build_image.sh --help`
 
-Example usage:
+Example usage: Below command will generate an image with optimization solely based on the configurations available in the cdd, with no additional modules.
 ```
 ./build_image.sh -i app \
 -s /home/user/tibco/installers \
@@ -28,9 +18,9 @@ Example usage:
 -t fdapp:01
 ```
 
-Channel related modules (ex: http, kafka, etc...) need to be supplied by the user explicitly, as current scripts will not retrieve them automatically. You can supply these additional modules as a comma separated string.
+Channel/function modules (ex: http, kafka, analytics, etc...) need to be provided by the user explicitly. You can supply these additional modules as a comma separated string.
 
-Example usage:
+Example usage: Below command will generate an image with optimization based on the configurations available in the cdd as well as include 'http' & 'kafka' modules.
 ```
 ./build_image.sh 
 -i app \
