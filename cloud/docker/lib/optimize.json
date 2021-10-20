@@ -303,11 +303,13 @@
         ],
         "BE_HOME/lib/ext/tpcl/apache/httpclient-*.jar": [
             "ftl",
-            "http"
+            "http",
+            "kinesis"
         ],
         "BE_HOME/lib/ext/tpcl/apache/httpcore-*.jar": [
             "ftl",
-            "http"
+            "http",
+            "kinesis"
         ]
     }
 }
