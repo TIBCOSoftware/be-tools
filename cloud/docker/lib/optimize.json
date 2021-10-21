@@ -207,8 +207,7 @@
             "BE_HOME/lib/ext/tpcl/amazon-kinesis-client-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/aws-java-sdk-bundle-*.jar",
             "BE_HOME/lib/ext/tpcl/aws/ion-java-*.jar",
-            "BE_HOME/lib/ext/tpcl/aws/joda-time-*.jar",
-            "BE_HOME/lib/ext/tpcl/aws/protobuf-java-*.jar"
+            "BE_HOME/lib/ext/tpcl/aws/joda-time-*.jar"
         ],
         "liveview": [
             "BE_HOME/lib/cep-liveview.jar",
@@ -247,8 +246,6 @@
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-extension-trace-propagators-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-proto-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/perfmark-api-*.jar",
-            "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/protobuf-java-*.jar",
-            "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/protobuf-java-util-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/proto-google-common-protos-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/zipkin-*.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/zipkin-reporter-*.jar",
@@ -310,6 +307,14 @@
             "ftl",
             "http",
             "kinesis"
+        ],
+        "BE_HOME/lib/ext/tpcl/protobuf-java-util-*.jar": [
+            "kinesis",
+            "opentelemetry"
+        ],
+        "BE_HOME/lib/ext/tpcl/protobuf-java-*.jar": [
+            "kinesis",
+            "opentelemetry"
         ]
     }
 }
