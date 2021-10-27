@@ -148,8 +148,8 @@ agents:
 ## Container runtime
 ##################################################
 
-# httpservice: Implicit HTTP service (Available from BE versions 6.2 & above)
-httpservice:
+# apispecservice: BE app's API spec service (Available from BE versions 6.2 & above)
+apispecservice:
   enabled: false      # Set to true - to enable implicit HTTP service which exposes 3 end-points (/ping, /openapi & /asyncapi)
   port:               # Define to override the default port (8180)
   type: ClusterIP     # service type. Supported values: NodePort, LoadBalancer or ClusterIP
@@ -158,11 +158,11 @@ httpservice:
 healthcheck:
   enabled: false            # Set to true - to enable healthcheck
   livenessProbe:
-    port: 5555              # If it is not defined, httpservice.port will be used.
+    port: 5555              # If it is not defined, apispecservice.port will be used.
     initialDelaySeconds: 5
     periodSeconds: 5
   readinessProbe:
-    port: 5555              # If it is not defined, httpservice.port will be used.
+    port: 5555              # If it is not defined, apispecservice.port will be used.
     initialDelaySeconds: 5 
     periodSeconds: 5 
 

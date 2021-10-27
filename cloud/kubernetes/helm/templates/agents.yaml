@@ -55,12 +55,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        {{- if $.Values.httpservice.enabled }}
-        - name: "tra.be.engine.http.implicithttpserver"
+        {{- if $.Values.apispecservice.enabled }}
+        - name: "tra.be.engine.api.spec.enable"
           value: "true"
-        {{- if $.Values.httpservice.port }}
+        {{- if $.Values.apispecservice.port }}
         - name: "tra.be.engine.http.ping.port"
-          value: "{{ $.Values.httpservice.port }}"
+          value: "{{ $.Values.apispecservice.port }}"
         {{- end }}
         {{- end }}
         {{- range $envKey, $envVal := $.Values.envVars }}
