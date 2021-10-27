@@ -154,7 +154,6 @@
             "JAVA_HOME/jmods/jdk.jartool.jmod",
             "JAVA_HOME/jmods/jdk.internal.jvmstat.jmod",
             "JAVA_HOME/lib/libjdwp.so",
-            "JAVA_HOME/lib/libsunec.so",
             "JAVA_HOME/lib/ct.sym",
             "JAVA_HOME/lib/liblcms.so",
             "JAVA_HOME/lib/classlist",
