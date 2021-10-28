@@ -8,7 +8,7 @@ spec:
     - port: {{ .Values.apispecservice.port | default "8180" }}
       protocol: TCP
   selector:
-    implicithttpserver: "yes"
+    apispecserver: "yes"
   type: {{ .Values.apispecservice.type }}
 ---
 {{- end }}

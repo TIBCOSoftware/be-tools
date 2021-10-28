@@ -18,8 +18,8 @@ spec:
         {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
-        {{- if $agent.implicitHTTPServer }}
-        implicithttpserver: "yes"
+        {{- if $agent.apiSpecServer }}
+        apispecserver: "yes"
         {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}

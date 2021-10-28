@@ -99,7 +99,7 @@ agents:
 - name: inferenceagent
   PU: default                             # processing unit
   cacheStorageEnabled: false              # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
-  implicitHTTPServer: true                # Set to true, if the agent's PU supports implicit HTTP server
+  apiSpecServer: true                     # Set to true, if the agent's PU serves API specification
   replicas: 1                             # desired number of agents
   discoverableReplicas: 0                 # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
   expose:
@@ -125,7 +125,7 @@ agents:
 - name: cacheagent
   PU: cache
   cacheStorageEnabled: true
-  implicitHTTPServer: false
+  apiSpecServer: false
   replicas: 0
   discoverableReplicas: 0
   expose:
@@ -149,8 +149,9 @@ agents:
 ##################################################
 
 # apispecservice: BE app's API spec service (Available from BE versions 6.2 & above)
+# Note: when this feature is enabled make sure at least one agent/PU serves API spec i.e "agents[].apiSpecServer = true"
 apispecservice:
-  enabled: false      # Set to true - to enable implicit HTTP service which exposes 3 end-points (/ping, /openapi & /asyncapi)
+  enabled: true       # Set to true - to enable API spec service which exposes 3 end-points (/ping, /openapi & /asyncapi)
   port:               # Define to override the default port (8180)
   type: ClusterIP     # service type. Supported values: NodePort, LoadBalancer or ClusterIP
 
