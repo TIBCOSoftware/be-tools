@@ -268,7 +268,6 @@
             "BE_HOME/lib/eclipse/plugins/com.tibco.cep.bpmn.common_*.jar"
         ],
         "query": [
-            "BE_HOME/lib/be-q.jar",
             "BE_HOME/lib/cep-query.jar"
         ],
         "soap": [
