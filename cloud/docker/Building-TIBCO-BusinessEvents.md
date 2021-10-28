@@ -18,7 +18,7 @@ TIBCO BusinessEvents provides the `build_image` script for building images of TI
 Usage: build_image.sh
 
  [-i/--image-type]    :    Type of the image to build ("app"|"rms"|"teagent"|"s2ibuilder") [required]
-                           Note: For s2ibuilder image usage refer to be-tools wiki.
+                           Note: For s2ibuilder image usage refer to be-tools wiki under containerize section.
 
  [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present
                            Note: Required if --image-type is "app"
@@ -59,6 +59,7 @@ Usage: build_image.sh
 * If you are building from a Windows machine behind a firewall, you may see error like - "Unable to connect to
 the remote server". In such case you need to configure your firewall to allow all traffic on the nat virtual adapter which is only used by containers.
 * `--optimize` flag requires perl dependency. Install perl from [here](https://strawberryperl.com/).
+* If you are running `build_image.bat` from powershell tool. You need to supply comma separated values inside `'` quotes . Example usage: `build_image.bat -i app -a C:\apps\tibcoprodcuts\app\be620\inmem -s C:\apps\tibcoprodcuts\inst\be620 --optimize '"http,test1"' --gv-provider '"http,consul"' -t apptest:v1`
 
 ### Important Information
 -   Docker version 18.09 introduces `BuildKit` for the improved docker build performance. By default `build_image` script uses `BuildKit` for the better build time. It can be disabled by using `export DOCKER_BUILDKIT=0`.

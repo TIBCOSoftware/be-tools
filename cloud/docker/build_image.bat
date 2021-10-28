@@ -943,7 +943,7 @@ EXIT /B 0
     echo Usage: build_image.bat
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
-    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki.
+    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki under containerize section.
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"

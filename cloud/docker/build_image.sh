@@ -118,7 +118,7 @@ INCLUDE_MODULES="na"
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
-USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki."
+USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki under containerize section."
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
