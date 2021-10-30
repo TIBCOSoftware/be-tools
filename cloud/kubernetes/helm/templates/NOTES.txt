@@ -11,21 +11,19 @@ This is a RMS deployment:  {{ if .Values.rmsDeployment }}yes{{ else }}no{{ end }
 
 Following services have been exposed for external access:
 {{- if .Values.apispecservice.enabled }}
-  Service name: {{ .Release.Name }}-http-service
-    {{ .Release.Name }}'s API specs can be accessed through this service at below end-points:
-      1. Open API spec at  - "/openapi"
-      2. Async API spec at - "/asyncapi"
+  Service name: {{ .Release.Name }}-apispec-service
+    {{ .Release.Name }}'s asyncapi specs can be accessed through this service at the end-point path: "/asyncapi"
     To connect to this service from outside the cluster, use below details:
       {{- if contains "NodePort" .Values.apispecservice.type }}
       echo NODE_IP: $(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
-      echo NODE_PORT: $(kubectl get -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-http-service)
+      echo NODE_PORT: $(kubectl get -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-apispec-service)
       {{- else if contains "LoadBalancer" .Values.apispecservice.type }}
       NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-            Watch the status with: 'kubectl get svc -w {{ .Release.Name }}-http-service'
-      echo SERVICE_IP: $(kubectl get svc {{ .Release.Name }}-http-service --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+            Watch the status with: 'kubectl get svc -w {{ .Release.Name }}-apispec-service'
+      echo SERVICE_IP: $(kubectl get svc {{ .Release.Name }}-apispec-service --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
       {{- else if contains "ClusterIP" .Values.apispecservice.type }}
       NOTE: This service type is ClusterIP. Execute the following command to forward local port to this service, so that you can access it on localhost:{{ .Values.apispecservice.port }}
-      kubectl port-forward svc/{{ .Release.Name }}-http-service {{ .Values.apispecservice.port | default 8180 }}
+      kubectl port-forward svc/{{ .Release.Name }}-apispec-service {{ .Values.apispecservice.port | default 8180 }}
       {{- end }}
 {{ end }}
 {{- range $i, $agent := .Values.agents }}
