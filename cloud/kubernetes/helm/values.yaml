@@ -151,7 +151,7 @@ agents:
 # apispecservice: BE app's API spec service (Available from BE versions 6.2 & above)
 # Note: when this feature is enabled make sure at least one agent/PU serves API spec i.e "agents[].apiSpecServer = true"
 apispecservice:
-  enabled: false      # Set to true - to enable API spec service which exposes 3 end-points (/ping & /asyncapi)
+  enabled: false      # Set to true - to enable API spec service which exposes 2 end-points "/ping" for health check & "/asyncapi" for asyncapi spec.
   port:               # Define to override the default port (8180)
   type: ClusterIP     # service type. Supported values: NodePort, LoadBalancer or ClusterIP
 
