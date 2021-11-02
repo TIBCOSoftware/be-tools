@@ -1,4 +1,4 @@
-You can Build TIBCO BusinessEvents using `docker` or `buildah` tool. `buildah` tool is supported only in linux variants. Complete information about `buildah` is available [here](https://buildah.io/). Complete information about `docker` is available [here](https://docs.docker.com/).
+You can build [OCI](https://opencontainers.org/) container images for TIBCO BusinessEvents application using your favourite tools [docker](https://docs.docker.com/) or [buildah](https://buildah.io/).
 
 ### Prerequisites
 1.  See [Preparing for TIBCO BusinessEvents Containerization](Before-You-Begin#preparing-for-tibco-businessevents-containerization)
