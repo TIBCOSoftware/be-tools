@@ -5,6 +5,41 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+isCLIKey()
+{
+    KEY_NAME=$1
+    KEY="false"
+
+    case "$KEY_NAME" in
+        -s|--source)
+            KEY="true"
+            ;;
+        -i|--image-type)
+            KEY="true"
+            ;;
+        -a|--app-location)
+            KEY="true"
+            ;;
+        -t|--tag)
+            KEY="true"
+            ;;
+        -d|--docker-file)
+            KEY="true"
+            ;;
+        --gv-provider)
+            KEY="true"
+            ;;
+        -b|--build-tool)
+            KEY="true"
+            ;;
+        --optimize)
+            KEY="true"
+            ;;
+    esac
+
+    echo $KEY
+}
+
 source ./scripts/utils.sh
 FILE_NAME=$(basename $0)
 
@@ -27,6 +62,7 @@ ARG_GVPROVIDER="na"
 ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
+ARG_OPTIMIZE="na"
 
 # be related args
 BE_HOME="na"
@@ -75,10 +111,14 @@ INSTALLATION_TYPE="fromlocal"
 OPEN_JDK_VERSION="na"
 OPEN_JDK_FILENAME="na"
 
+# container image size optimize related vars
+OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+INCLUDE_MODULES="na"
+
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
-USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki."
+USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki under containerize section."
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
@@ -95,58 +135,83 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
+USAGE+="\n\n [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]\n"
+USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"http,kafka\" \n"
+USAGE+="                           Supported modules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
 
 #Parse the arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
+    FLAG_CLIKEY="false"
     case "$key" in
         -s|--source)
             shift # past the key and to the value
-            ARG_SOURCE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_SOURCE="$1"
+            fi
             ;;
         -s=*|--source=*)
             ARG_SOURCE="${key#*=}"
             ;;
         -i|--image-type)
             shift # past the key and to the value
-            ARG_TYPE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_TYPE="$1"
+            fi
             ;;
         -i=*|--image-type=*)
             ARG_TYPE="${key#*=}"
 	        ;;
         -a|--app-location)
             shift # past the key and to the value
-            ARG_APP_LOCATION="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_APP_LOCATION="$1"
+            fi
             ;;
         -a=*|--app-location=*)
             ARG_APP_LOCATION="${key#*=}"
 	        ;;
         -t|--tag)
             shift # past the key and to the value
-            ARG_TAG="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_TAG="$1"
+            fi
             ;;
         -t=*|--tag=*)
             ARG_TAG="${key#*=}"
 	        ;;
         -d|--docker-file)
             shift # past the key and to the value
-            ARG_DOCKER_FILE="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_DOCKER_FILE="$1"
+            fi
             ;;
         -d=*|--docker-file=*)
             ARG_DOCKER_FILE="${key#*=}"
             ;;
         --gv-provider)
             shift # past the key and to the value
-            ARG_GVPROVIDER="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_GVPROVIDER="$1"
+            fi
             ;;
         --gv-provider=*)
             ARG_GVPROVIDER="${key#*=}"
             ;;
         -b|--build-tool)
             shift # past the key and to the value
-            ARG_BUILD_TOOL="$1"
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_BUILD_TOOL="$1"
+            fi
             ;;
         -b=*|--build-tool=*)
             ARG_BUILD_TOOL="${key#*=}"
@@ -157,6 +222,18 @@ while [[ $# -gt 0 ]]; do
         -o|--openjdk)
             ARG_USE_OPEN_JDK="true"
             ;;
+        --optimize)
+            shift # past the key and to the value
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "true" ]; then
+                ARG_OPTIMIZE=""
+            else
+                ARG_OPTIMIZE="$1"
+            fi
+            ;;
+        --optimize=*)
+            ARG_OPTIMIZE="${key#*=}"
+            ;;
         -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
@@ -166,7 +243,9 @@ while [[ $# -gt 0 ]]; do
             echo "Invalid Option: [$key]"
             ;;
     esac
-    shift
+    if [ "$FLAG_CLIKEY" = "false" ]; then
+        shift
+    fi
 done
 
 # missing arguments check
@@ -223,7 +302,7 @@ case "$ARG_TYPE" in
 esac
 
 # assign proper docker file to ARG_DOCKER_FILE variable
-if [ "$ARG_DOCKER_FILE" = "na" ]; then
+if [ "$ARG_DOCKER_FILE" = "na" -o -z "${ARG_DOCKER_FILE// }" ]; then
     if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         ARG_DOCKER_FILE="$DOCKER_FILE"_fromtar
     else
@@ -323,10 +402,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
 
         ## get as legacy details
-        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            AS_LEG_HOME=${AS_LEG_HOME%?}
-        fi
+        AS_LEG_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.AS_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         
         if [ "$AS_LEG_HOME" = "" ]; then
             AS_LEG_HOME="na"
@@ -350,10 +426,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     if [ "$VALIDATE_FTL_AS" = "true" ]; then
         # get ftl details
-        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            FTL_HOME=${FTL_HOME%?}
-        fi
+        FTL_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.FTL_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$FTL_HOME" = "" ]; then
             FTL_HOME="na"
         else
@@ -374,10 +447,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
 
         # get as details
-        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2)
-        if [ "$IMAGE_NAME" != "$RMS_IMAGE" ]; then
-            AS_HOME=${AS_HOME%?}
-        fi
+        AS_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.ACTIVESPACES_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$AS_HOME" = "" ]; then
             AS_HOME="na"
         else
@@ -399,10 +469,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     fi
 
     #get installed jre details
-    TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2)
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
-        TRA_JAVA_HOME=${TRA_JAVA_HOME%?}
-    fi
+    TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
 else
     #version regex for all products
     VERSION_REGEX=([0-9]\.[0-9]).[0-9]
@@ -518,6 +585,19 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
+if ! [ "$ARG_OPTIMIZE" = "na" ]; then
+    if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
+        printf "\nWARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...\n\n"
+    else
+        if [ ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
+            CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
+        else
+            CDDFILE="na"
+        fi
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'")')
+    fi
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
@@ -598,6 +678,13 @@ if [ "$OPEN_JDK_VERSION" != "na" ]; then
     fi
 else
     echo "INFO: JRE VERSION                  : [$ARG_JRE_VERSION]"
+fi
+
+if [ "$INCLUDE_MODULES" != "na" ]; then
+    echo "INFO: CONTAINER OPTIMIZATION       : [Enabled]"
+    if [ "$INCLUDE_MODULES" != "" ]; then
+        echo "INFO: CONTAINER OPTIMIZING FOR     : [$INCLUDE_MODULES]"
+    fi
 fi
 
 echo "------------------------------------------------------------------------------"
@@ -689,6 +776,17 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     FINAL_BUILDER_IMAGE_TAG=$ARG_IMAGE_VERSION
     ARG_IMAGE_VERSION=$(echo "$BE_TAG":"$ARG_BE_VERSION"-"$ARG_BE_VERSION")
     cp -a "./s2i" $TEMP_FOLDER/
+fi
+
+if ! [ "$INCLUDE_MODULES" = "na" ]; then
+    DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
+    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
+fi
+
+if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
+    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    rm $TEMP_FOLDER/lib/deletelist.txt.bak 2>/dev/null
 fi
 
 # create be tar/ copy installers to temp folder
@@ -841,6 +939,14 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$TRA_JAVA_HOME~/opt/tibco/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g"
 
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
+
+    
+    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+
+    for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
+        rm -rf $filename 2>/dev/null
+    done
     
     # removing all .bak files
     find $TEMP_FOLDER -type f -name "*.bak" -exec rm -f {} \;

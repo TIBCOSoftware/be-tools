@@ -54,7 +54,7 @@ ENV \
 
 RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
-COPY lib/be_docker_install.bat installers/* c:\\working/
+COPY lib/be_docker_install.bat installers/* lib/deletelist.txt c:\\working/
 COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
 COPY gvproviders "c:\_tibco\be\gvproviders"
 COPY app/* "c:\_tibco\be\ext/"
