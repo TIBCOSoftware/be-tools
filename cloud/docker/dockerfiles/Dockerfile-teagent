@@ -27,7 +27,7 @@ LABEL be-intermediate-image=true
 RUN apt-get update \
  && apt-get install -y unzip procps findutils hostname tar
 
-COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
+COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run lib/deletelist.txt  /home/tibco/be/
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \

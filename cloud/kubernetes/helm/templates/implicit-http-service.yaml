@@ -1,0 +1,14 @@
+{{- if .Values.apispecservice.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-apispec-service
+spec:
+  ports:
+    - port: {{ .Values.apispecservice.port | default "8180" }}
+      protocol: TCP
+  selector:
+    apispecserver: "yes"
+  type: {{ .Values.apispecservice.type }}
+---
+{{- end }}
