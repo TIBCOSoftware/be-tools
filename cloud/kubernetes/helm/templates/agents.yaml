@@ -18,7 +18,7 @@ spec:
         {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
-        {{- if $agent.apiSpecServer }}
+        {{- if and $.Values.apispecservice.enabled $agent.apiSpecServer }}
         apispecserver: "yes"
         {{- end }}
     spec:
