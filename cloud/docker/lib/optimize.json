@@ -10,8 +10,7 @@
             "BE_HOME/lib/ext/tpcl/pmml/pmml-schema-*.jar"
         ],
         "as2": [
-            "BE_HOME/lib/cep-as-channel.jar",
-            "BE_HOME/lib/cep-datagrid-tibco.jar"
+            "BE_HOME/lib/cep-as-channel.jar"
         ],
         "as4": [
             "BE_HOME/lib/cep-activespaces-channel.jar",
@@ -313,6 +312,10 @@
         "BE_HOME/lib/ext/tpcl/protobuf-java-*.jar": [
             "kinesis",
             "opentelemetry"
+        ],
+        "BE_HOME/lib/cep-datagrid-tibco.jar": [
+            "as2",
+            "ignite"
         ]
     }
 }
