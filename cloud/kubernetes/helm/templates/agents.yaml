@@ -18,6 +18,9 @@ spec:
         {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
+        {{- if and $.Values.apispecservice.enabled $agent.apiSpecServer }}
+        apispecserver: "yes"
+        {{- end }}
     spec:
 {{ include "pullsecrets" $ | trim | indent 6 }}
       {{- if eq $.Values.cmType "ignite"}}
@@ -52,9 +55,17 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        {{- if $.Values.apispecservice.enabled }}
+        - name: "tra.be.engine.api.spec.enable"
+          value: "true"
+        {{- if $.Values.apispecservice.port }}
+        - name: "tra.be.engine.http.ping.port"
+          value: "{{ $.Values.apispecservice.port }}"
+        {{- end }}
+        {{- end }}
         {{- range $envKey, $envVal := $.Values.envVars }}
-        - name: {{ $envKey }}
-          value: {{ $envVal }}
+        - name: "{{ $envKey }}"
+          value: "{{ $envVal }}"
         {{- end}}
 {{ include "bechart.discovery.env" $ | trim | indent 8 }}
         {{- if and (not (empty $.Values.mysql.backingstoreUrlGV)) $.Values.mysql.enabled }}

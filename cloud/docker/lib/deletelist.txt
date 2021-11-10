@@ -1,0 +1,9 @@
+JAVA_HOME/lib/src.zip
+BE_HOME/lib/cep-docker.jar
+BE_HOME/lib/ext/tpcl/apache/commons-compress-*.jar
+BE_HOME/lib/ext/tpcl/apache/poi-*.jar
+BE_HOME/lib/ext/tpcl/apache/poi-ooxml-*.jar
+BE_HOME/lib/ext/tpcl/apache/poi-ooxml-schemas-*.jar
+BE_HOME/lib/ext/tpcl/apache/poi-scratchpad-*.jar
+BE_HOME/lib/ext/tpcl/apache/SparseBitSet-*.jar
+BE_HOME/lib/ext/tpcl/apache/xmlbeans-*.jar
