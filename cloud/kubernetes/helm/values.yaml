@@ -71,6 +71,10 @@ envVars: {}
   # GVP_HTTP_HEADERS: "Content-Type:application/json"
   # # custom gv provider specific environment variables
   # # other environment variables
+  ## OpenTelemetry specific environment variables
+  # TELEMETRY_OTLP_ENDPOINT: http://opentelemetry-collector:4317
+  # TELEMETRY_JAEGER_ENDPOINT: http://simple-collector:14250
+  # TELEMETRY_ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans 
 
 ##################################################
 ## Certificates
@@ -95,6 +99,7 @@ agents:
 - name: inferenceagent
   PU: default                             # processing unit
   cacheStorageEnabled: false              # set to true, if the agent's PU cache storage is enabled. This allows applying required labels to agent instances so that they are visible to discovery or cache services.
+  apiSpecServer: true                     # Set to true, if the agent's PU serves API specification
   replicas: 1                             # desired number of agents
   discoverableReplicas: 0                 # Number of agents to participate in the discovery (applicable only for cmType = as2). It should be less than or equal to replicas.
   expose:
@@ -120,6 +125,7 @@ agents:
 - name: cacheagent
   PU: cache
   cacheStorageEnabled: true
+  apiSpecServer: false
   replicas: 0
   discoverableReplicas: 0
   expose:
@@ -142,14 +148,22 @@ agents:
 ## Container runtime
 ##################################################
 
+# apispecservice: BE app's API spec service (Available from BE versions 6.2 & above)
+# Note: when this feature is enabled make sure at least one agent/PU serves API spec i.e "agents[].apiSpecServer = true"
+apispecservice:
+  enabled: false      # Set to true - to enable API spec service which exposes 2 end-points "/ping" for health check & "/asyncapi" for asyncapi spec.
+  port:               # Define to override the default port (8180)
+  type: ClusterIP     # service type. Supported values: NodePort, LoadBalancer or ClusterIP
+
+
 healthcheck:
-  enabled: false            #Set to true - to enable healthcheck
+  enabled: false            # Set to true - to enable healthcheck
   livenessProbe:
-    port: 5555
+    port: 5555              # If it is not defined, apispecservice.port will be used.
     initialDelaySeconds: 5
     periodSeconds: 5
   readinessProbe:
-    port: 5555
+    port: 5555              # If it is not defined, apispecservice.port will be used.
     initialDelaySeconds: 5 
     periodSeconds: 5 
 

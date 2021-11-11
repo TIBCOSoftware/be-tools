@@ -5,7 +5,7 @@
 #
 # TIBCO BusinessEvents Dockerfile-teagent_fromtar
 #
-FROM docker.io/library/ubuntu:20.04
+FROM docker.io/library/ubuntu:20.10
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION
@@ -19,13 +19,7 @@ LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
 RUN apt-get update -y \
  && apt-get upgrade python3-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python3 python3-pip -y \
  && pip3 install jsonpickle requests awscli boto boto3 botocore \
- && curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  apt-key add - \
- && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" \
- && apt-get update -y  \ 
- && apt-get install --no-install-recommends docker-ce -y \
  && apt-get install --install-suggests jq -y \
- && curl -L git.io/weave -o /usr/local/bin/weave \
- && chmod a+x /usr/local/bin/weave \
  && rm -rf /var/lib/apt/lists/*
 
 ADD be.tar /opt/tibco

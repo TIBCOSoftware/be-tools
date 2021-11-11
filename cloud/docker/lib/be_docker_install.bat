@@ -117,6 +117,13 @@ set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aw
 echo Building annotation indexes..
 %JRE_HOME%/bin/java -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
 
+REM Removing files present in deletelist
+if exist "c:\working\deletelist.txt" (
+	for /f %%i in (c:\working\deletelist.txt) do (
+		if exist %%i del %%i  /F/S/Q > NUL
+    )
+)
+
 if "%COMPONENT%" EQU "rms" (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard\WebStudio
 	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm','%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"

@@ -129,6 +129,8 @@ resources:
 {{- end }}
 {{- end }}
 {{- else if eq .Values.cmType "ignite" }}
+- name: "tra.tibco.env.CUSTOM_EXT_APPEND_CP"
+  value: "/opt/tibco/be/latest/lib/ext/tpcl/apache/ignite/optional/ignite-kubernetes"
 - name: "tra.be.ignite.k8s.service.name"
   value: "{{ include "bechart.discoveryservice.name" $ }}"
 - name: "tra.be.ignite.discovery.type"
@@ -142,12 +144,12 @@ resources:
 {{- if eq .Values.healthcheck.enabled true }}
 livenessProbe:
   tcpSocket:
-    port: {{ .Values.healthcheck.livenessProbe.port }}
+    port: {{ .Values.healthcheck.livenessProbe.port | default (.Values.apispecservice.port | default 8180) }}
   initialDelaySeconds: {{ .Values.healthcheck.livenessProbe.initialDelaySeconds }}
   periodSeconds: {{ .Values.healthcheck.livenessProbe.periodSeconds }} 
 readinessProbe:
   tcpSocket:
-    port: {{ .Values.healthcheck.readinessProbe.port }}
+    port: {{ .Values.healthcheck.readinessProbe.port | default (.Values.apispecservice.port | default 8180) }}
   initialDelaySeconds: {{ .Values.healthcheck.readinessProbe.initialDelaySeconds }}
   periodSeconds: {{ .Values.healthcheck.readinessProbe.periodSeconds }} 
 {{- end }}

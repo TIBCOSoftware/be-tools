@@ -21,6 +21,7 @@ set "ARG_TAG=na"
 set "ARG_DOCKER_FILE=na"
 set "ARG_GVPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
+set "ARG_OPTIMIZE=na"
 
 REM openjdk related vars
 set "OPEN_JDK_VERSION=na"
@@ -65,97 +66,144 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
+REM container image size optimize related vars
+for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
+    set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+)
+set "INCLUDE_MODULES=na"
+
 REM parsing arguments
 set /A counter=0
 for %%x in (%*) do (
+    set "FLAG_CLIKEY=false"
     set /A counter=!counter!+1
     call set currentArg=%%!counter!
 
     if !currentArg! EQU -i (
         shift
-        call set "ARG_TYPE=%%!counter!"
-        set "ARG_TYPE=!ARG_TYPE:"=!"
-    )
-    
-    if !currentArg! EQU --image-type (
-        shift
-        call set "ARG_TYPE=%%!counter!"
-        set "ARG_TYPE=!ARG_TYPE:"=!"
-    )
-
-    if !currentArg! EQU -s (
-        shift
-        call set "ARG_SOURCE=%%!counter!"
-        set "ARG_SOURCE=!ARG_SOURCE:"=!"
-    )
-
-    if !currentArg! EQU --source (
-        shift
-        call set "ARG_SOURCE=%%!counter!"
-        set "ARG_SOURCE=!ARG_SOURCE:"=!"
-    )
-
-    if !currentArg! EQU -a (
-        shift
-        call set "ARG_APP_LOCATION=%%!counter!"
-        set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
-    )
-
-    if !currentArg! EQU --app-location (
-        shift
-        call set "ARG_APP_LOCATION=%%!counter!"
-        set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
-    )
-
-    if !currentArg! EQU -t (
-        shift
-        call set "ARG_TAG=%%!counter!"
-        set "ARG_TAG=!ARG_TAG:"=!"
-    )
-
-    if !currentArg! EQU --tag (
-        shift
-        call set "ARG_TAG=%%!counter!"
-        set "ARG_TAG=!ARG_TAG:"=!"
-    )
-
-    if !currentArg! EQU -d (
-        shift
-        call set "ARG_DOCKER_FILE=%%!counter!"
-        set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
-    )
-
-    if !currentArg! EQU --docker-file (
-        shift
-        call set "ARG_DOCKER_FILE=%%!counter!"
-        set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
-    )
-
-    if !currentArg! EQU -o (
-        set "ARG_USE_OPEN_JDK=true"
-    )
-
-    if !currentArg! EQU --openjdk (
-        set "ARG_USE_OPEN_JDK=true"
-    )
-
-    if !currentArg! EQU --gv-provider (
-        shift
-        call set "ARG_GVPROVIDER=%%!counter!"
-        if "!ARG_GVPROVIDER!" NEQ "" (
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TYPE=%%!counter!"
+            set "ARG_TYPE=!ARG_TYPE:"=!"
         ) else (
-            set "ARG_GVPROVIDER=na"
+            set /A counter=!counter!-1
         )
-    )
-
-    if !currentArg! EQU -h (
+    ) else if !currentArg! EQU --image-type (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TYPE=%%!counter!"
+            set "ARG_TYPE=!ARG_TYPE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -s (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_SOURCE=%%!counter!"
+            set "ARG_SOURCE=!ARG_SOURCE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --source (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_SOURCE=%%!counter!"
+            set "ARG_SOURCE=!ARG_SOURCE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -a (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_APP_LOCATION=%%!counter!"
+            set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --app-location (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_APP_LOCATION=%%!counter!"
+            set "ARG_APP_LOCATION=!ARG_APP_LOCATION:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -t (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TAG=%%!counter!"
+            set "ARG_TAG=!ARG_TAG:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --tag (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_TAG=%%!counter!"
+            set "ARG_TAG=!ARG_TAG:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -d (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_DOCKER_FILE=%%!counter!"
+            set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --docker-file (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_DOCKER_FILE=%%!counter!"
+            set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -o (
+        set "ARG_USE_OPEN_JDK=true"
+    ) else if !currentArg! EQU --openjdk (
+        set "ARG_USE_OPEN_JDK=true"
+    ) else if !currentArg! EQU --optimize (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_OPTIMIZE=%%!counter!"
+            if "!ARG_OPTIMIZE!" NEQ "" (
+                set "ARG_OPTIMIZE=!ARG_OPTIMIZE:"=!"
+                set "ARG_OPTIMIZE=!ARG_OPTIMIZE: =!"
+            )
+        ) else (
+            set /A counter=!counter!-1
+            set "ARG_OPTIMIZE="
+        )
+    ) else if !currentArg! EQU --gv-provider (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_GVPROVIDER=%%!counter!"
+            if "!ARG_GVPROVIDER!" NEQ "" (
+                set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
+                set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+            ) else (
+                set "ARG_GVPROVIDER=na"
+            )
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU -h (
         call :printUsage
         EXIT /B 1
-    )
-
-    if !currentArg! EQU --help (
+    ) else if !currentArg! EQU --help (
         call :printUsage
         EXIT /B 1
     )
@@ -489,6 +537,37 @@ if !ARG_IMAGE_VERSION! EQU na (
     set "ARG_IMAGE_VERSION=!IMAGE_NAME!:!ARG_BE_VERSION!"
 )
 
+REM check be6 or not
+set "BE620P=false"
+set /a BE6VAL=!ARG_BE_VERSION:.=!
+if !BE6VAL! GEQ 600 set "BE6=true"
+if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
+if !BE6VAL! GEQ 620 set "BE620P=true"
+
+REM checking optimize flag and its validation
+if "!ARG_OPTIMIZE!" NEQ "na" (
+    perl -e1 2>NUL
+    if "!errorlevel!" NEQ "0" (
+        echo ERROR: Please install perl utility.
+        GOTO END-withError
+    )
+    if "!BE620P!" EQU "true" (
+        if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
+            set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+        ) else (
+            set "CDD_FILE_PATH=na"
+        )
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
+            set "INCLUDE_MODULES=%%i"
+        )
+        if "!INCLUDE_MODULES!" EQU "na" (
+            set "INCLUDE_MODULES="
+        )
+    ) else (
+        echo WARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...
+    )
+)
+
 REM information display
 echo INFO: Supplied/Derived Data:
 echo ------------------------------------------------------------------------------
@@ -573,13 +652,15 @@ if "!OPEN_JDK_VERSION!" NEQ "na" (
     echo INFO: JRE VERSION                  : [!ARG_JRE_VERSION!]
 )
 
+if "!INCLUDE_MODULES!" NEQ "na" (
+    echo INFO: CONTAINER OPTIMIZATION       : [Enabled]
+    if "!INCLUDE_MODULES!" NEQ "" (
+        echo INFO: CONTAINER OPTIMIZING FOR     : [!INCLUDE_MODULES!]
+    )
+)
+
 echo ------------------------------------------------------------------------------
 echo.
-
-REM check be6 or not
-set /a BE6VAL=!ARG_BE_VERSION:.=!
-if !BE6VAL! GEQ 600 set "BE6=true"
-if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 
 if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_AS_LEG_SHORT_VERSION! EQU na (
     if "!LESSTHANBE611!" EQU "true" (
@@ -653,7 +734,26 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+if "!INCLUDE_MODULES!" NEQ "na" (
+    if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
+        if "!INCLUDE_MODULES!" EQU "" (
+            set "INCLUDE_MODULES=java"
+        ) else (
+            set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
+        )
+    )
+    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+)
+
 if !INSTALLATION_TYPE! EQU frominstallers (
+    if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    ) else (
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    )
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
         set FILE=%%f
@@ -769,6 +869,14 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+
+    for /f %%i in (!TEMP_FOLDER!\lib\deletelist.txt) do (
+        if exist %%i del %%i  /F/S/Q > NUL
+    )
+
     rd /S /Q !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app !TEMP_FOLDER!\installers 
 
     echo.
@@ -835,7 +943,7 @@ EXIT /B 0
     echo Usage: build_image.bat
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
-    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki.
+    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki under containerize section.
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
@@ -856,6 +964,10 @@ EXIT /B 0
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
+    echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
+    echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
+    echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
     echo  NOTE: Encapsulate all the arguments between double quotes.
@@ -866,3 +978,37 @@ EXIT /B 0
     ENDLOCAL
     echo.
     EXIT /B 1
+
+:isCLIKey
+    set "KEY_NAME=%~1"
+    set "FLAG_CLIKEY=%~2"
+
+    if "!KEY_NAME!" EQU "-i" (
+       set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--image-type" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-s" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--source" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-a" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--app-location" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-t" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--tag" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "-d" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--docker-file" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--optimize" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--gv-provider" (
+        set "FLAG_CLIKEY=true"
+    ) else (
+        set "FLAG_CLIKEY=false"
+    )
+
+    EXIT /B 0

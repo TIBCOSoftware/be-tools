@@ -46,7 +46,7 @@ LABEL be-intermediate-image=true
 RUN apt-get update \
  && apt-get install -y unzip procps findutils tar
 
-COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run /home/tibco/be/
+COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run lib/deletelist.txt /home/tibco/be/
 COPY gvproviders /home/tibco/be/gvproviders
 COPY app/* /opt/tibco/be/ext/
 
