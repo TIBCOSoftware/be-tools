@@ -128,16 +128,14 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
                 if(task['launchType']==launchType and  'RUNNING'==task['desiredStatus']):
                     containers=task['containers']
                     privateIp=containers[0]['networkInterfaces'][0]['privateIpv4Address']
-                    ipAddress=privateIp
-
-                    logger.info("ipAddress: ",ipAddress)
+                    logger.info("ipAddress: ",privateIp)
                     taskDefinitionArn=task['taskDefinitionArn']
                     if(isKeyExist(taskDefinitionArn,taskDefinitions)):
                         response=ecs_client.describe_task_definition(taskDefinition=taskDefinitionArn)
                         if(response):
                             taskDefinition=response['taskDefinition']
                             if(taskDefinition):
-                                process_taskDefinition(taskDefinition,ipAddress,appManagementFilePath)
+                                process_taskDefinition(taskDefinition,privateIp,appManagementFilePath)
 
         except Exception  as e:
             logger.error(str(e))
