@@ -124,7 +124,6 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
             taskDefinitions=getTaskDefinitions(clustername,launchType)
             tasks=get_tasks(clustername)
             for task in tasks:
-                ipAddress=""
                 if(task['launchType']==launchType and  'RUNNING'==task['desiredStatus']):
                     containers=task['containers']
                     privateIp=containers[0]['networkInterfaces'][0]['privateIpv4Address']
