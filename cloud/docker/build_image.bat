@@ -551,13 +551,21 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
         echo ERROR: Please install perl utility.
         GOTO END-withError
     )
+    if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
+        echo ERROR: Please install 7-Zip in path C:\\Program Files\\7-Zip\\7z.exe
+        GOTO END-withError
+    )
     if "!BE620P!" EQU "true" (
         if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
-            set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
-        ) else (
-            set "CDD_FILE_PATH=na"
+            if exist "!ARG_APP_LOCATION!\!EAR_FILE_NAME!" (
+                set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+                set "EAR_FILE_PATH=!ARG_APP_LOCATION!\!EAR_FILE_NAME!"
+            ) else (
+                set "CDD_FILE_PATH=na"
+                set "EAR_FILE_PATH=na"
+            )
         )
-        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
         )
         if "!INCLUDE_MODULES!" EQU "na" (
@@ -1012,3 +1020,4 @@ EXIT /B 0
     )
 
     EXIT /B 0
+    

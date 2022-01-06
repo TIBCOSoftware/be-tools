@@ -591,10 +591,12 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     else
         if [ ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
+            EARFILE="$ARG_APP_LOCATION/$EAR_FILE_NAME"
         else
             CDDFILE="na"
+            EARFILE="na"
         fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'")')
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
     fi
 fi
 

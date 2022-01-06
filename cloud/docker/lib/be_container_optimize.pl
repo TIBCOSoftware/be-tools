@@ -13,12 +13,14 @@ local $/ ;
 my $OPTIMIZE_DATA = "";
 my $SPACE_SEP_DATA = "";
 my $CDD_DATA = "";
+my $CHANNEL_DATA = "";
 
 # use this var for identifying os type
 my $INPUT_VAR1 = shift;
 my $INPUT_VAR2 = shift;
 my $INPUT_VAR3 = shift;
 my $INPUT_VAR4 = shift;
+my $INPUT_VAR5 = shift;
 
 if ("$INPUT_VAR1" eq "win"){
     $OPTIMIZE_DATA = `type .\\lib\\optimize.json`;
@@ -33,7 +35,7 @@ if ("$INPUT_VAR2" eq "createfile"){
     prepare_delete_list("$INPUT_VAR4",".\\$INPUT_VAR3\\lib\\deletelist.txt");
 }
 if ("$INPUT_VAR2" eq "readcdd"){
-    print parse_optimize_modules("$INPUT_VAR3","$INPUT_VAR4");
+    print parse_optimize_modules("$INPUT_VAR3","$INPUT_VAR4","$INPUT_VAR5");
 }
 
 sub prepare_delete_list{
@@ -137,6 +139,19 @@ sub get_modules_by_dep{
 sub parse_optimize_modules{
     my $arg_optimize_for = shift;
     my $arg_cdd_file = shift;
+    
+    my $arg_ear_file = shift;
+    if ($arg_ear_file ne "na") {
+        my $channellistresult =  get_modules_from_ear($arg_ear_file,$arg_cdd_file);
+        if ($channellistresult ne "") {
+            if ($arg_optimize_for ne "") {
+                $arg_optimize_for = join(",",$arg_optimize_for,$channellistresult)
+            } else {
+                $arg_optimize_for = $channellistresult
+            }
+        }
+    }
+
     my @modules = split(/,/, $arg_optimize_for);
 
     if ($arg_cdd_file ne "na") {
@@ -218,6 +233,98 @@ sub get_modules_from_cdd{
     }
 
     return @modules;
+}
+
+sub get_modules_from_ear{
+    my $arg_ear_file = shift;
+    my $arg_cdd_file = shift;
+    my @cnuris = ();
+    
+    if ("$INPUT_VAR1" eq "win"){
+        $CDD_DATA = `type $arg_cdd_file`;
+    } else {
+        $CDD_DATA = `cat $arg_cdd_file`;
+    }
+
+    my @agentClassesData = $CDD_DATA =~ /<agent-classes>[\s\S](.*?)[\s\S]<\/agent-classes>/s;
+    my @destinationtags = @agentClassesData[0] =~ /<destinations>(.*?)<\/destinations>/sg;
+
+    foreach my $dt (@destinationtags) {
+        my @refTags = $dt =~ /<ref>(.*?)<\/ref>/s;
+        if (@refTags[0] ne "") {
+            my @cnurimatches = $CDD_DATA =~ /<destination-groups>.*<destinations id="@refTags[0]">(.*?)<\/destinations>.*<\/destination-groups>/gs;
+            if (@cnurimatches[0] ne ""){
+                $dt = @cnurimatches[0];
+            }
+        }
+        my @cnuri = $dt =~ /<uri>(.*)<\/uri>/g;
+        foreach my $eachcnuri (@cnuri) {
+            push(@cnuris, (split '\/',$eachcnuri)[-1]);
+        }
+    }
+
+    my $randnum = int(rand(1000000)) ;
+    my @channels = ();
+    my @channelfiles = ();
+
+    if ("$INPUT_VAR1" eq "win"){
+        my $wincmd1=`mkdir C:\\tmp\\$randnum\\channelsdata && "C:\\Program Files\\7-Zip\\7z.exe"  e $arg_ear_file -oC:\\tmp\\$randnum &&  "C:\\Program Files\\7-Zip\\7z.exe"  e "C:\\tmp\\$randnum\\Shared Archive.sar" -oC:\\tmp\\$randnum\\channelsdata `;
+        @channelfiles=split "\n", `dir  C:\\tmp\\$randnum\\channelsdata\\*.channel /s /b /o`;
+    } else {
+        my $Command_1_extract=`mkdir -p /tmp/$randnum/channelsdata ; unzip -o $arg_ear_file -d /tmp/$randnum ; unzip -o "/tmp/$randnum/Shared Archive.sar" -d /tmp/$randnum/channelsdata `;
+        @channelfiles=`ls /tmp/$randnum/channelsdata/Channels/*.channel`;
+    }
+
+    foreach my $cf (@channelfiles) {
+        if ("$INPUT_VAR1" eq "win"){
+            $CHANNEL_DATA = `type $cf`;
+        } else {
+            $CHANNEL_DATA = `cat $cf`;
+        }
+        my @channelName = $CHANNEL_DATA =~ /driverTypeName="(.*?)"/;
+        if ((@channelName[0] ne "")) {
+            my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*description/g;
+            if ((@channelUriNames[0] ne "")) {
+                my $addtochannels = "false";
+                foreach my $cun (@channelUriNames) {
+                    if ($addtochannels eq "true"){
+                        last;
+                    }
+                    foreach my $cddCuri (@cnuris) {
+                        if ($cddCuri eq $cun ){
+                            $addtochannels = "true";
+                            my $cName = lc(@channelName[0]);
+                            if ($cName eq "activespaces"){
+                                $cName = "as4";
+                            } elsif ($cName eq "legacy activespaces") {
+                                $cName = "as2";
+                            } elsif ($cName eq "kafka streams") {
+                                $cName = "kafka";
+                            }
+                            push(@channels, $cName);
+                            last;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if ("$INPUT_VAR1" eq "win"){
+        my $Command_1_extract=`rmdir /s /q C:\\tmp\\$randnum`;
+    } else {
+        my $Command_1_extract=`rm -rf /tmp/$randnum`;
+    }
+
+    my $channelList = "" ;
+
+    if (@channels == 1){
+        $channelList = @channels[0] ;
+    } elsif (@channels > 1) {
+        $channelList = join(",",@channels) ;
+    }
+
+    return $channelList;
 }
 
 sub unique{
