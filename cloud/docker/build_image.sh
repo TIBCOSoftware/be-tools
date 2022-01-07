@@ -778,15 +778,19 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
+DEL_LIST_FILE_NAME="deletelist.txt"
+if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+    DEL_LIST_FILE_NAME="deletelistrms.txt"
+fi
+
 if ! [ "$INCLUDE_MODULES" = "na" ]; then
-    DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
-    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
+    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
 fi
 
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
-    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    rm $TEMP_FOLDER/lib/deletelist.txt.bak 2>/dev/null
+    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    rm $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME.bak 2>/dev/null
 fi
 
 # create be tar/ copy installers to temp folder
@@ -941,10 +945,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
     
-    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
+    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
 
-    for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
+    for filename in $(cat $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME ) ; do
         rm -rf $filename 2>/dev/null
     done
     

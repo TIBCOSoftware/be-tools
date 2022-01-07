@@ -118,8 +118,12 @@ echo Building annotation indexes..
 %JRE_HOME%/bin/java -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
 
 REM Removing files present in deletelist
-if exist "c:\working\deletelist.txt" (
-	for /f %%i in (c:\working\deletelist.txt) do (
+set DEL_LIST_FILE_NAME=deletelist.txt
+if "%COMPONENT%" EQU "rms" (
+	set DEL_LIST_FILE_NAME=deletelistrms.txt
+)
+if exist "c:\working\%DEL_LIST_FILE_NAME%" (
+	for /f %%i in (c:\working\%DEL_LIST_FILE_NAME%) do (
 		if exist %%i del %%i  /F/S/Q > NUL
     )
 )

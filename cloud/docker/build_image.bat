@@ -734,6 +734,11 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+set DEL_LIST_FILE_NAME=deletelist.txt
+if !IMAGE_NAME! EQU !RMS_IMAGE! (
+    set DEL_LIST_FILE_NAME=deletelistrms.txt
+)
+
 if "!INCLUDE_MODULES!" NEQ "na" (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
         if "!INCLUDE_MODULES!" EQU "" (
@@ -742,17 +747,17 @@ if "!INCLUDE_MODULES!" NEQ "na" (
             set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
         )
     )
-    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!\\lib\\!DEL_LIST_FILE_NAME!" "!INCLUDE_MODULES!"
 )
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     ) else (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     )
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
@@ -869,11 +874,11 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
 
-    for /f %%i in (!TEMP_FOLDER!\lib\deletelist.txt) do (
+    for /f %%i in (!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!) do (
         if exist %%i del %%i  /F/S/Q > NUL
     )
 
