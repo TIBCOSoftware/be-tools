@@ -585,6 +585,15 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
+if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http"
+    if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
+        ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
+    else
+        ARG_OPTIMIZE="$DEFAULT_RMS_MODULES"
+    fi    
+fi
+
 if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
         printf "\nWARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...\n\n"
