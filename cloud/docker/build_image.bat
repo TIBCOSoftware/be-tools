@@ -544,6 +544,19 @@ if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
+if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http"
+    if "!ARG_OPTIMIZE!" NEQ "na" (
+        if "!ARG_OPTIMIZE!" NEQ "" (
+            set "ARG_OPTIMIZE=!ARG_OPTIMIZE!,!DEFAULT_RMS_MODULES!"
+        ) else (
+            set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+        )
+    ) else (
+        set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+    ) 
+)
+
 REM checking optimize flag and its validation
 if "!ARG_OPTIMIZE!" NEQ "na" (
     perl -e1 2>NUL
