@@ -544,6 +544,19 @@ if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
+if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http"
+    if "!ARG_OPTIMIZE!" NEQ "na" (
+        if "!ARG_OPTIMIZE!" NEQ "" (
+            set "ARG_OPTIMIZE=!ARG_OPTIMIZE!,!DEFAULT_RMS_MODULES!"
+        ) else (
+            set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+        )
+    ) else (
+        set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+    ) 
+)
+
 REM checking optimize flag and its validation
 if "!ARG_OPTIMIZE!" NEQ "na" (
     perl -e1 2>NUL
@@ -742,6 +755,11 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+set DEL_LIST_FILE_NAME=deletelist.txt
+if !IMAGE_NAME! EQU !RMS_IMAGE! (
+    set DEL_LIST_FILE_NAME=deletelistrms.txt
+)
+
 if "!INCLUDE_MODULES!" NEQ "na" (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
         if "!INCLUDE_MODULES!" EQU "" (
@@ -750,17 +768,17 @@ if "!INCLUDE_MODULES!" NEQ "na" (
             set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
         )
     )
-    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!\\lib\\!DEL_LIST_FILE_NAME!" "!INCLUDE_MODULES!"
 )
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     ) else (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     )
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
@@ -790,7 +808,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
         powershell -Command "Copy-Item '!BE_HOME!\rms','!BE_HOME!\studio','!BE_HOME!\eclipse-platform','!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
-        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard\WebStudio' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard' -Recurse | out-null"
 
         if EXIST "!BE_HOME!\decisionmanager" (
             powershell -Command "Copy-Item '!BE_HOME!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
@@ -864,7 +882,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     echo INFO: Generating annotation indexes.
     cd !TEMP_FOLDER!
-    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
+    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\exporters\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\*;
     tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
     if EXIST tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
         powershell -Command "(Get-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx'"
@@ -877,11 +895,11 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
 
-    for /f %%i in (!TEMP_FOLDER!\lib\deletelist.txt) do (
+    for /f %%i in (!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!) do (
         if exist %%i del %%i  /F/S/Q > NUL
     )
 
