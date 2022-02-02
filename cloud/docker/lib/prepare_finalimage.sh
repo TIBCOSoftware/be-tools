@@ -7,20 +7,22 @@ if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
     find /opt/tibco -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~tibcojre64~openjdk~g"
 fi
 
-if [ -e "/home/tibco/be/deletelist.txt" ]; then
-    sed -i 's/\r$//' /home/tibco/be/deletelist.txt
-    for filename in $(cat "/home/tibco/be/deletelist.txt" ) ; do
-        rm -rf $filename 2>/dev/null
-    done
-fi
-
+DEL_LIST_FILENAME="/home/tibco/be/deletelist.txt"
 cd /opt/tibco/be/$BE_SHORT_VERSION/bin/
 if [ "$COMPONENT" = "rms" ]; then
+    DEL_LIST_FILENAME="/home/tibco/be/deletelistrms.txt"
     TRA_FILE="../rms/bin/be-rms.tra"
 elif [ "$COMPONENT" = "tea" ]; then
     TRA_FILE="../teagent/bin/be-teagent.tra"
 else
     TRA_FILE="be-engine.tra"
+fi
+
+if [ -e "$DEL_LIST_FILENAME" ]; then
+    sed -i 's/\r$//' $DEL_LIST_FILENAME
+    for filename in $(cat "$DEL_LIST_FILENAME" ) ; do
+        rm -rf $filename 2>/dev/null
+    done
 fi
 
 if [ "$COMPONENT" != "tea" ]; then

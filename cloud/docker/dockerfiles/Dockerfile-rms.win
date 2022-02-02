@@ -57,7 +57,7 @@ ENV \
 RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
 # Copy required files to _tibco folder which will be used in final image
-COPY lib/be_docker_install.bat installers/* lib/deletelist.txt c:\\working/
+COPY lib/be_docker_install.bat installers/* lib/deletelistrms.txt c:\\working/
 COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
 COPY gvproviders "c:\_tibco\be\gvproviders"
 COPY app/* "c:\_tibco\be\ext/"

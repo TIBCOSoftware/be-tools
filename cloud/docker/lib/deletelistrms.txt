@@ -1,0 +1,2 @@
+JAVA_HOME/lib/src.zip
+BE_HOME/lib/cep-docker.jar
