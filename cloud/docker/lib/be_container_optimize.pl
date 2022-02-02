@@ -32,7 +32,7 @@ if ("$INPUT_VAR2" eq "printfriendly"){
     print get_all_modules_print_friendly();
 }
 if ("$INPUT_VAR2" eq "createfile"){
-    prepare_delete_list("$INPUT_VAR4",".\\$INPUT_VAR3\\lib\\deletelist.txt");
+    prepare_delete_list("$INPUT_VAR4",".\\$INPUT_VAR3");
 }
 if ("$INPUT_VAR2" eq "readcdd"){
     print parse_optimize_modules("$INPUT_VAR3","$INPUT_VAR4","$INPUT_VAR5");
