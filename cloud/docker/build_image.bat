@@ -577,6 +577,9 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
                 set "CDD_FILE_PATH=na"
                 set "EAR_FILE_PATH=na"
             )
+        ) else (
+            set "CDD_FILE_PATH=na"
+            set "EAR_FILE_PATH=na"
         )
         for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
