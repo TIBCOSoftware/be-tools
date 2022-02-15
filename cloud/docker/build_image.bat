@@ -67,8 +67,13 @@ REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
 REM container image size optimize related vars
-for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
-    set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+perl -e1 2>NUL
+if "!errorlevel!" NEQ "0" (
+    set "OPTIMIZATION_SUPPORTED_MODULES=na"
+) else (
+    for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
+        set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+    )
 )
 set "INCLUDE_MODULES=na"
 
@@ -995,7 +1000,9 @@ EXIT /B 0
     echo.
     echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
     echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
-    echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    if "!OPTIMIZATION_SUPPORTED_MODULES!" NEQ "na" (
+        echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    )
     echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
