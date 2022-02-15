@@ -977,7 +977,6 @@ EXIT /B 0
     echo Usage: build_image.bat
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
-    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki under containerize section.
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
@@ -994,12 +993,13 @@ EXIT /B 0
     echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
-    echo  [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]
+    echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
-    echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
-    echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
+    echo  [--optimize]         :    Enables container image size optimization [optional]
+    echo                            When CDD/EAR available, most of the modules are identified automatically.
+    echo                            Additional module names can be passed as comma separated string. Ex: "process,query,pattern,analytics"
     if "!OPTIMIZATION_SUPPORTED_MODULES!" NEQ "na" (
         echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
     )
