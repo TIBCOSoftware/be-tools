@@ -67,8 +67,13 @@ REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
 REM container image size optimize related vars
-for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
-    set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+perl -e1 2>NUL
+if "!errorlevel!" NEQ "0" (
+    set "OPTIMIZATION_SUPPORTED_MODULES=na"
+) else (
+    for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
+        set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+    )
 )
 set "INCLUDE_MODULES=na"
 
@@ -564,13 +569,24 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
         echo ERROR: Please install perl utility.
         GOTO END-withError
     )
+    if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
+        echo ERROR: Please install 7-Zip in path C:\\Program Files\\7-Zip\\7z.exe
+        GOTO END-withError
+    )
     if "!BE620P!" EQU "true" (
         if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
-            set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+            if exist "!ARG_APP_LOCATION!\!EAR_FILE_NAME!" (
+                set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+                set "EAR_FILE_PATH=!ARG_APP_LOCATION!\!EAR_FILE_NAME!"
+            ) else (
+                set "CDD_FILE_PATH=na"
+                set "EAR_FILE_PATH=na"
+            )
         ) else (
             set "CDD_FILE_PATH=na"
+            set "EAR_FILE_PATH=na"
         )
-        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
         )
         if "!INCLUDE_MODULES!" EQU "na" (
@@ -961,7 +977,6 @@ EXIT /B 0
     echo Usage: build_image.bat
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
-    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki under containerize section.
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
@@ -978,13 +993,16 @@ EXIT /B 0
     echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
-    echo  [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]
+    echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
-    echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
-    echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
-    echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    echo  [--optimize]         :    Enables container image size optimization [optional]
+    echo                            When CDD/EAR available, most of the modules are identified automatically.
+    echo                            Additional module names can be passed as comma separated string. Ex: "process,query,pattern,analytics"
+    if "!OPTIMIZATION_SUPPORTED_MODULES!" NEQ "na" (
+        echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    )
     echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.

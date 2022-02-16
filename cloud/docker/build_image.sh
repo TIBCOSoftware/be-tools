@@ -117,8 +117,7 @@ INCLUDE_MODULES="na"
 
 USAGE="\nUsage: $FILE_NAME"
 
-USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
-USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki under containerize section."
+USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]"
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
@@ -132,11 +131,12 @@ USAGE+="                           Note: This flag is ignored if --image-type is
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
 USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
-USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
+USAGE+="\n\n [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
-USAGE+="\n\n [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]\n"
-USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"http,kafka\" \n"
+USAGE+="\n\n [--optimize]         :    Enables container image size optimization [optional]\n"
+USAGE+="                           When CDD/EAR available, most of the modules are identified automatically.\n"
+USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\" \n"
 USAGE+="                           Supported modules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
@@ -591,7 +591,7 @@ if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; t
         ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
     else
         ARG_OPTIMIZE="$DEFAULT_RMS_MODULES"
-    fi    
+    fi
 fi
 
 if ! [ "$ARG_OPTIMIZE" = "na" ]; then
@@ -600,10 +600,12 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     else
         if [ ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
+            EARFILE="$ARG_APP_LOCATION/$EAR_FILE_NAME"
         else
             CDDFILE="na"
+            EARFILE="na"
         fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'")')
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
     fi
 fi
 
@@ -956,7 +958,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     
     sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
     sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
-
+    
     for filename in $(cat $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME ) ; do
         rm -rf $filename 2>/dev/null
     done
