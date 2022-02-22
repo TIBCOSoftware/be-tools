@@ -52,15 +52,22 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
-RUN mkdir -p /mnt/tibco/be/logs \ 
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
-
-VOLUME /mnt/tibco/be/logs \
- /mnt/tibco/be/data-store
 
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
+
+RUN mkdir -p /mnt/tibco/be/logs \ 
+ && mkdir -p /mnt/tibco/be/data-store \
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest \
+ && chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+
+VOLUME /mnt/tibco/be/logs \
+ /mnt/tibco/be/data-store
 
 # These will always be the listen port for AS and AS Remote URL #5555 for JMX port
 EXPOSE 50000 50001 5555

@@ -89,7 +89,13 @@ ENV PU=default \
 
 RUN mkdir -p /mnt/tibco/be/logs \
  && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest \
+ && chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/ \

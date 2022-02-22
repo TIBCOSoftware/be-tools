@@ -43,9 +43,19 @@ ENV PU=default \
  EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms
 
+
+# Setup gv providers
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
+
 RUN mkdir -p /mnt/tibco/be/logs \ 
  && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+ && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest \
+ && chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
@@ -55,9 +65,6 @@ VOLUME /mnt/tibco/be/logs \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/config/notify \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/shared \
  /opt/tibco/be/${BE_SHORT_VERSION}/rms/locale
-
-# Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 # These will always be the listen port for AS and AS Remote URL #5555 for JMX port # 8090 5000 for RMS
 EXPOSE 50000 50001 5555 8090 5000
