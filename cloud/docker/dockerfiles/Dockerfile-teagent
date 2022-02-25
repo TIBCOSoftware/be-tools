@@ -36,7 +36,7 @@ ENV TIBCO_HOME=/opt/tibco \
  COMPONENT=tea
 
 WORKDIR /home/tibco/be
-RUN chmod +x *.sh *.pm
+RUN chmod +x *.sh *.pm run
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','na','$BE_PRODUCT_HOTFIX','na','na')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
