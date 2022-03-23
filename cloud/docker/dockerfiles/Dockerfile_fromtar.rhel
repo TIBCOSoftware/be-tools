@@ -7,7 +7,7 @@
 #
 ARG BASE_IMAGE=<RHEL_IMAGE>
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} as intermediate
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION
@@ -18,8 +18,7 @@ ARG EAR_FILE_NAME
 ARG JRE_VERSION
 ARG GVPROVIDER
 
-LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
-      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+LABEL be-intermediate-image=true
 
 ADD be.tar /opt/tibco
 COPY gvproviders /home/tibco/be/gvproviders
@@ -39,6 +38,39 @@ RUN echo \ >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
 
+RUN mkdir -p /mnt/tibco/be/logs \ 
+ && mkdir -p /mnt/tibco/be/data-store
+
+RUN chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+
+#Discard intermediate image and just copy the installation to a new image.
+FROM ${BASE_IMAGE}
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG AS_VERSION
+ARG AS_SHORT_VERSION
+ARG JRE_VERSION
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG GVPROVIDER
+
+COPY --from=intermediate /home/tibco /home/tibco
+
+COPY --from=intermediate /opt/tibco /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
+
 ENV PU=default \
  ENGINE_NAME=be-engine \
  LOG_LEVEL=na \
@@ -56,15 +88,7 @@ ENV PU=default \
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
-RUN mkdir -p /mnt/tibco/be/logs \ 
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest \
- && chgrp -R 0 /home/tibco/ \
- && chmod -R g=u /home/tibco/ \
- && chgrp -R 0 /opt/tibco/ \
- && chmod -R g=u /opt/tibco/ \
- && chgrp -R 0 /mnt/tibco/ \
- && chmod -R g=u /mnt/tibco/
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 VOLUME /mnt/tibco/be/logs \
  /mnt/tibco/be/data-store

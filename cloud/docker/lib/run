@@ -34,7 +34,7 @@ fi
 if [[ -f "$BE_HOME/bin/be-engine.tra.original" ]]; then
 	rm -f $BE_HOME/bin/be-engine.tra
 	cp $BE_HOME/bin/be-engine.tra.original $BE_HOME/bin/be-engine.tra
-else
+elif [[ -f "$BE_HOME/bin/be-engine.tra" ]]; then
 	cp $BE_HOME/bin/be-engine.tra $BE_HOME/bin/be-engine.tra.original
 fi
 

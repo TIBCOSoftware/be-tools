@@ -68,6 +68,14 @@ COPY app/* /opt/tibco/be/ext/
 
 RUN ./prepare_finalimage.sh
 
+RUN chgrp -R 0 /tibco_home && chmod -R g=u /tibco_home \
+    && chgrp -R 0 /home/tibco && chmod -R g=u /home/tibco
+
+RUN mkdir -p /mnt/tibco/be/logs \
+ && mkdir -p /mnt/tibco/be/data-store \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+
 #Discard intermediate image and just copy the installation to a new image.
 FROM docker.io/library/ubuntu:20.04
 
@@ -85,8 +93,11 @@ ARG GVPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
-COPY --from=intermediate /home/tibco/be /home/tibco/be
+COPY --from=intermediate /home/tibco /home/tibco
+
 COPY --from=intermediate /tibco_home /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -109,15 +120,7 @@ ENV PU=default \
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
-RUN mkdir -p /mnt/tibco/be/logs \
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest \
- && chgrp -R 0 /home/tibco/ \
- && chmod -R g=u /home/tibco/ \
- && chgrp -R 0 /opt/tibco/ \
- && chmod -R g=u /opt/tibco/ \
- && chgrp -R 0 /mnt/tibco/ \
- && chmod -R g=u /mnt/tibco/
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \

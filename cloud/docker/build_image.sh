@@ -1038,7 +1038,7 @@ if [ "$ARG_BUILD_TOOL" = "docker" ]; then
 
     export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
 
-    if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
+    if [ "$INTERMEDIATE_IMAGE" != "" ]; then
         echo "INFO: Deleting temporary intermediate image."
         docker rmi -f $INTERMEDIATE_IMAGE
     fi
