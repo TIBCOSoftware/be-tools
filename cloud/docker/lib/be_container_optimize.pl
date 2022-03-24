@@ -285,7 +285,7 @@ sub get_modules_from_ear{
         }
         my @channelName = $CHANNEL_DATA =~ /driverTypeName="(.*?)"/;
         if ((@channelName[0] ne "")) {
-            my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*description/g;
+            my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*\>/g;
             if ((@channelUriNames[0] ne "")) {
                 my $addtochannels = "false";
                 foreach my $cun (@channelUriNames) {
