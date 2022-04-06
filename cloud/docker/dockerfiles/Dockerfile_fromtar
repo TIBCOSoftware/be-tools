@@ -5,7 +5,7 @@
 #
 # TIBCO BusinessEvents Dockerfile_fromtar
 #
-FROM docker.io/library/ubuntu:20.04
+FROM docker.io/library/ubuntu:20.04 as intermediate
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION
@@ -16,8 +16,7 @@ ARG EAR_FILE_NAME
 ARG JRE_VERSION
 ARG GVPROVIDER
 
-LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
-      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+LABEL be-intermediate-image=true
 
 ADD be.tar /opt/tibco
 COPY gvproviders /home/tibco/be/gvproviders
@@ -35,6 +34,42 @@ RUN echo \ >> be-engine.tra \
  && echo "java.property.be.engine.cluster.as.remote.listen.url=%AS_REMOTE_LISTEN_URL%" >> be-engine.tra \
  && echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> be-engine.tra
 
+RUN mkdir -p /mnt/tibco/be/logs \ 
+ && mkdir -p /mnt/tibco/be/data-store
+
+RUN chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+
+#Discard intermediate image and just copy the installation to a new image.
+FROM docker.io/library/ubuntu:20.04
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG AS_VERSION
+ARG AS_SHORT_VERSION
+ARG JRE_VERSION
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
+ARG FTL_VERSION
+ARG FTL_SHORT_VERSION
+ARG ACTIVESPACES_VERSION
+ARG ACTIVESPACES_SHORT_VERSION
+ARG GVPROVIDER
+
+COPY --from=intermediate /home/tibco /home/tibco
+
+COPY --from=intermediate /opt/tibco /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
 ENV PU=default \
  ENGINE_NAME=be-engine \
  LOG_LEVEL=na \
@@ -48,15 +83,13 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
-RUN mkdir -p /mnt/tibco/be/logs \ 
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+# Setup gv providers
+RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
+
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 VOLUME /mnt/tibco/be/logs \
  /mnt/tibco/be/data-store
-
-# Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
 # These will always be the listen port for AS and AS Remote URL #5555 for JMX port
 EXPOSE 50000 50001 5555

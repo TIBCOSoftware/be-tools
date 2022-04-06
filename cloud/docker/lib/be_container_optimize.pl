@@ -250,16 +250,18 @@ sub get_modules_from_ear{
     my @destinationtags = @agentClassesData[0] =~ /<destinations>(.*?)<\/destinations>/sg;
 
     foreach my $dt (@destinationtags) {
-        my @refTags = $dt =~ /<ref>(.*?)<\/ref>/s;
-        if (@refTags[0] ne "") {
-            my @cnurimatches = $CDD_DATA =~ /<destination-groups>.*<destinations id="@refTags[0]">(.*?)<\/destinations>.*<\/destination-groups>/gs;
-            if (@cnurimatches[0] ne ""){
-                $dt = @cnurimatches[0];
+        my @refTags = $dt =~ /<ref>(.*?)<\/ref>/sg;
+        foreach my $rftag (@refTags) {
+            if ($rftag ne "") {
+                my @cnurimatches = $CDD_DATA =~ /<destination-groups>.*<destinations id="$rftag">(.*?)<\/destinations>.*<\/destination-groups>/gs;
+                if (@cnurimatches[0] ne ""){
+                    $dt = @cnurimatches[0];
+                }
             }
-        }
-        my @cnuri = $dt =~ /<uri>(.*)<\/uri>/g;
-        foreach my $eachcnuri (@cnuri) {
-            push(@cnuris, (split '\/',$eachcnuri)[-1]);
+            my @cnuri = $dt =~ /<uri>(.*)<\/uri>/g;
+            foreach my $eachcnuri (@cnuri) {
+                push(@cnuris, (split '\/',$eachcnuri)[-1]);
+            }
         }
     }
 
@@ -283,7 +285,7 @@ sub get_modules_from_ear{
         }
         my @channelName = $CHANNEL_DATA =~ /driverTypeName="(.*?)"/;
         if ((@channelName[0] ne "")) {
-            my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*description/g;
+            my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*\>/g;
             if ((@channelUriNames[0] ne "")) {
                 my $addtochannels = "false";
                 foreach my $cun (@channelUriNames) {

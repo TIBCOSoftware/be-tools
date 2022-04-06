@@ -34,7 +34,7 @@ fi
 if [[ -f "$BE_HOME/bin/be-engine.tra.original" ]]; then
 	rm -f $BE_HOME/bin/be-engine.tra
 	cp $BE_HOME/bin/be-engine.tra.original $BE_HOME/bin/be-engine.tra
-else
+elif [[ -f "$BE_HOME/bin/be-engine.tra" ]]; then
 	cp $BE_HOME/bin/be-engine.tra $BE_HOME/bin/be-engine.tra.original
 fi
 
@@ -46,7 +46,6 @@ export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
 if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
-  chmod +x /home/tibco/be/gvproviders/run.sh
   /home/tibco/be/gvproviders/run.sh
 fi
 

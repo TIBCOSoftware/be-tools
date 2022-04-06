@@ -66,6 +66,14 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip
 RUN ./prepare_finalimage.sh
 
+RUN chgrp -R 0 /tibco_home && chmod -R g=u /tibco_home \
+    && chgrp -R 0 /home/tibco && chmod -R g=u /home/tibco
+
+RUN mkdir -p /mnt/tibco/be/logs \
+ && mkdir -p /mnt/tibco/be/data-store \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+
 #Discard intermediate image and just copy the installation to a new image.
 FROM docker.io/library/ubuntu:20.04
 
@@ -83,9 +91,11 @@ ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 ARG GVPROVIDER
 
-COPY --from=intermediate /home/tibco/be /home/tibco/be
+COPY --from=intermediate /home/tibco /home/tibco
 
 COPY --from=intermediate /tibco_home /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -107,9 +117,7 @@ ENV PU=default \
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
-RUN mkdir -p /mnt/tibco/be/logs \
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 #Logs, data-store and RMS volumes
 VOLUME /mnt/tibco/be/logs \
