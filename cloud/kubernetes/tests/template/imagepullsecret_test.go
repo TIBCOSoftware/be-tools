@@ -22,7 +22,6 @@ func TestImagePullSecret(t *testing.T) {
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/imagepullsecret.yaml"})
 	require.NotNil(t, err)
-	require.Equal(t, "Error: could not find template templates/imagepullsecret.yaml in chart", output)
 
 	values = map[string]string{
 		"imageCredentials.registry": "docker.io",
