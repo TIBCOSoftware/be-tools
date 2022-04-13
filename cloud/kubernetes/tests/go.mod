@@ -6,4 +6,5 @@ require (
 	github.com/gruntwork-io/terratest v0.40.7
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.20.7
+	golang.org/x/text v0.3.7
 )
