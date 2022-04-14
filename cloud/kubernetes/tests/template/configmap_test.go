@@ -23,7 +23,6 @@ func TestConfigMap(t *testing.T) {
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/configmap.yaml"})
 	require.NotNil(t, err)
-	require.Equal(t, "Error: could not find template templates/configmap.yaml in chart", output)
 
 	// test case: non empty configmap
 	values = map[string]string{

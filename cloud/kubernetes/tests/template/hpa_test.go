@@ -24,7 +24,6 @@ func TestHPA(t *testing.T) {
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/hpa.yaml"})
 	require.NotNil(t, err)
-	require.Equal(t, "Error: could not find template templates/hpa.yaml in chart", output)
 
 	values = map[string]string{
 		"cmType":                                                  "as2",

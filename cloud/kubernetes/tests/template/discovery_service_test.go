@@ -23,7 +23,6 @@ func TestDiscoveryService(t *testing.T) {
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/discovery-service.yaml"})
 	require.NotNil(t, err)
-	require.Equal(t, "Error: could not find template templates/discovery-service.yaml in chart", output)
 
 	// case: cmType = as2
 	values = map[string]string{
