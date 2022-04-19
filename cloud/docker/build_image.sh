@@ -609,6 +609,11 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     fi
 fi
 
+if [ "$ARG_JRE_VERSION" = "na" ]; then
+    echo "ERROR: Unsupported be version($ARG_BE_VERSION)"
+    exit 1
+fi
+
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"

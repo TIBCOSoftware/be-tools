@@ -597,6 +597,11 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
     )
 )
 
+if "!ARG_JRE_VERSION!" EQU "na" (
+    echo ERROR: Unsupported be version(!ARG_BE_VERSION!)
+    GOTO END-withError
+)
+
 REM information display
 echo INFO: Supplied/Derived Data:
 echo ------------------------------------------------------------------------------
