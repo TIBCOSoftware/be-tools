@@ -597,6 +597,11 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
     )
 )
 
+if "!ARG_JRE_VERSION!" EQU "" (
+    echo ERROR: Unsupported be version[!ARG_BE_VERSION!]
+    GOTO END-withError
+)
+
 REM information display
 echo INFO: Supplied/Derived Data:
 echo ------------------------------------------------------------------------------
@@ -1010,7 +1015,7 @@ EXIT /B 0
     echo.
 
 :END-withError
-    if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
+    if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!" > NUL
     ENDLOCAL
     echo.
     EXIT /B 1
