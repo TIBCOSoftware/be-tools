@@ -34,7 +34,7 @@ fi
 if [[ -f "$TRA_FILE.original" ]]; then
 	rm -f $TRA_FILE
 	cp $TRA_FILE.original $TRA_FILE
-else
+elif [[ -f "$TRA_FILE" ]]; then
 	cp $TRA_FILE $TRA_FILE.original
 fi
 
@@ -46,7 +46,6 @@ export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
 if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
-  chmod +x /home/tibco/be/gvproviders/run.sh
   /home/tibco/be/gvproviders/run.sh
 fi
 
@@ -95,7 +94,7 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
 
   BE_INSTANCE_POLLAR_INTERVAL_PARSED="${BE_INSTANCE_POLLAR_INTERVAL%}"
   BE_INSTANCE_POLLAR_INTERVAL_PARSED="${BE_INSTANCE_POLLAR_INTERVAL_PARSED#\"}"
-  
+
   #If discovery is for aws
   if [[ "$AWS_EXECUTION_ENV" == "AWS_ECS_EC2" ]] || [[ "$AWS_EXECUTION_ENV" == "AWS_ECS_FARGATE" ]]; then #If discovery is for aws fargate
 	
@@ -113,7 +112,6 @@ if [ "$COMPONENT_PARSED" = "tea" ]; then
 	else
 	  AWS_OUTPUT_FORMAT_PARSED="json"
 	fi
-
 	if [ "$AWS_REGION" != "" ]; then
 	  AWS_REGION_PARSED="${AWS_REGION%}"
 	  AWS_REGION_PARSED="${AWS_REGION_PARSED#\"}"

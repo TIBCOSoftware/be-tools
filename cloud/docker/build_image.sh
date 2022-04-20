@@ -80,7 +80,7 @@ VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" )
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" )
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -117,8 +117,7 @@ INCLUDE_MODULES="na"
 
 USAGE="\nUsage: $FILE_NAME"
 
-USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]\n"
-USAGE+="                           Note: For $BUILDER_IMAGE image usage refer to be-tools wiki under containerize section."
+USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]"
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
@@ -132,11 +131,12 @@ USAGE+="                           Note: This flag is ignored if --image-type is
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
 USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
-USAGE+="\n\n [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]\n"
+USAGE+="\n\n [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
-USAGE+="\n\n [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]\n"
-USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"http,kafka\" \n"
+USAGE+="\n\n [--optimize]         :    Enables container image size optimization [optional]\n"
+USAGE+="                           When CDD/EAR available, most of the modules are identified automatically.\n"
+USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\" \n"
 USAGE+="                           Supported modules: $OPTIMIZATION_SUPPORTED_MODULES."
 USAGE+="\n\n [-h/--help]          :    Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n"
@@ -556,8 +556,6 @@ if [ "$ARG_BUILD_TOOL" == "docker" ]; then
             echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
             ARG_BUILD_TOOL="buildah"
         fi
-    else
-        echo "INFO: Building container image with the build tool[docker]."
     fi
 fi
 
@@ -570,8 +568,6 @@ if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
             echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
         fi
         exit 1
-    else
-        echo "INFO: Building container image with the build tool[buildah]."
     fi
 fi
 
@@ -585,22 +581,40 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
+if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http"
+    if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
+        ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
+    else
+        ARG_OPTIMIZE="$DEFAULT_RMS_MODULES"
+    fi
+fi
+
 if ! [ "$ARG_OPTIMIZE" = "na" ]; then
     if [ $(echo "${ARG_BE_VERSION//.}") -lt 620 ]; then
         printf "\nWARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...\n\n"
     else
         if [ ! \( -z "${EAR_FILE_NAME// }" -o -z "${CDD_FILE_NAME// }" \) ]; then
             CDDFILE="$ARG_APP_LOCATION/$CDD_FILE_NAME"
+            EARFILE="$ARG_APP_LOCATION/$EAR_FILE_NAME"
         else
             CDDFILE="na"
+            EARFILE="na"
         fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'")')
+        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
     fi
+fi
+
+if [ "$ARG_JRE_VERSION" = "na" ]; then
+    echo "ERROR: Unsupported be version[$ARG_BE_VERSION]"
+    exit 1
 fi
 
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
+
+echo "INFO: Building container image with the build tool[$ARG_BUILD_TOOL]."    
 
 if ! [ "$ARG_INSTALLER_LOCATION" = "na" ]; then
     echo "INFO: INSTALLER DIRECTORY          : [$ARG_INSTALLER_LOCATION]"
@@ -778,15 +792,19 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
+DEL_LIST_FILE_NAME="deletelist.txt"
+if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+    DEL_LIST_FILE_NAME="deletelistrms.txt"
+fi
+
 if ! [ "$INCLUDE_MODULES" = "na" ]; then
-    DELETE_LIST_FILE="$TEMP_FOLDER/lib/deletelist.txt"
-    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$DELETE_LIST_FILE'")'
+    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
 fi
 
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
-    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    rm $TEMP_FOLDER/lib/deletelist.txt.bak 2>/dev/null
+    sed -i'.bak' "s~BE_HOME~/opt/tibco/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    sed -i'.bak' "s~JAVA_HOME~/opt/tibco/tibcojre64/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    rm $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME.bak 2>/dev/null
 fi
 
 # create be tar/ copy installers to temp folder
@@ -941,10 +959,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$BE_HOME_BASE~$OPT_TIBCO~g"
 
     
-    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/deletelist.txt
-
-    for filename in $(cat $TEMP_FOLDER/lib/deletelist.txt ) ; do
+    sed -i  "s~BE_HOME~$TEMP_FOLDER/$RANDM_FOLDER/be/$ARG_BE_SHORT_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    sed -i  "s~JAVA_HOME~$TEMP_FOLDER/$RANDM_FOLDER/$JAVA_HOME_DIR_NAME/$ARG_JRE_VERSION~g" $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME
+    
+    for filename in $(cat $TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME ) ; do
         rm -rf $filename 2>/dev/null
     done
     
@@ -1023,7 +1041,7 @@ if [ "$ARG_BUILD_TOOL" = "docker" ]; then
 
     export INTERMEDIATE_IMAGE=$(docker images -q -f "label=be-intermediate-image=true")
 
-    if [ "$INSTALLATION_TYPE" != "fromlocal" -a "$INTERMEDIATE_IMAGE" != "" ]; then
+    if [ "$INTERMEDIATE_IMAGE" != "" ]; then
         echo "INFO: Deleting temporary intermediate image."
         docker rmi -f $INTERMEDIATE_IMAGE
     fi

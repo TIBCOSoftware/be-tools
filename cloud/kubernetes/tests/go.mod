@@ -3,7 +3,8 @@ module github.com/TIBCOSoftware/be-tools/cloud/kubernetes/tests
 go 1.14
 
 require (
-	github.com/gruntwork-io/terratest v0.25.1
-	github.com/stretchr/testify v1.4.0
-	k8s.io/api v0.17.0
+	github.com/gruntwork-io/terratest v0.40.7
+	github.com/stretchr/testify v1.7.0
+	k8s.io/api v0.20.7
+	golang.org/x/text v0.3.7
 )

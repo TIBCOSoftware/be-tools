@@ -23,7 +23,6 @@ func TestPVManifest(t *testing.T) {
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/pv-manifest.yaml"})
 	require.NotNil(t, err)
-	require.Equal(t, "Error: could not find template templates/pv-manifest.yaml in chart", output)
 
 	// TC: aws, sharedNothing, static PV provisioning
 	values = map[string]string{

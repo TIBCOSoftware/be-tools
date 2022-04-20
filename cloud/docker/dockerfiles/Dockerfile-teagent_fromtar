@@ -5,6 +5,35 @@
 #
 # TIBCO BusinessEvents Dockerfile-teagent_fromtar
 #
+FROM docker.io/library/ubuntu:20.04 as intermediate
+MAINTAINER Tibco Software Inc tsi@tibco.com
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG JRE_VERSION
+
+LABEL be-intermediate-image=true
+
+ADD be.tar /opt/tibco
+
+COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
+COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
+
+WORKDIR /home/tibco/be
+RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
+ && chmod +x run && chmod +x *.py
+
+RUN mkdir -p /mnt/tibco/be/logs \ 
+ && mkdir -p /mnt/tibco/be/data-store
+
+RUN chgrp -R 0 /home/tibco/ \
+ && chmod -R g=u /home/tibco/ \
+ && chgrp -R 0 /opt/tibco/ \
+ && chmod -R g=u /opt/tibco/ \
+ && chgrp -R 0 /mnt/tibco/ \
+ && chmod -R g=u /mnt/tibco/
+ 
 FROM docker.io/library/ubuntu:20.04
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
@@ -12,6 +41,12 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
+
+COPY --from=intermediate /home/tibco /home/tibco
+
+COPY --from=intermediate /opt/tibco /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
 
 LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
       "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
@@ -21,15 +56,6 @@ RUN apt-get update -y \
  && pip3 install jsonpickle requests awscli boto boto3 botocore \
  && apt-get install --install-suggests jq -y \
  && rm -rf /var/lib/apt/lists/*
-
-ADD be.tar /opt/tibco
-
-COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
-COPY lib/*.pm lib/*.py lib/*.sh /home/tibco/be/
-
-WORKDIR /home/tibco/be
-RUN sed "s/%%%BE_VERSION%%%/${BE_SHORT_VERSION}/" /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/run > ./run \
- && chmod +x run
 
 ENV PU=default \
  ENGINE_NAME=be-engine \
@@ -48,9 +74,7 @@ ENV PU=default \
  BE_INSTANCE_DISCOVERY_TYPE=k8s \
  BE_INSTANCE_POLLAR_INTERVAL=30 
 
-RUN mkdir -p /mnt/tibco/be/logs \
- && mkdir -p /mnt/tibco/be/data-store \
- && ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 
 #Logs
 VOLUME /mnt/tibco/be/ \
@@ -60,5 +84,5 @@ VOLUME /mnt/tibco/be/ \
 EXPOSE 5555
 
 WORKDIR /home/tibco/be
-RUN chmod +x *.py
+
 CMD ["./run"]

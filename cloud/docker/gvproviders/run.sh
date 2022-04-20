@@ -22,7 +22,6 @@ oIFS="$IFS"; IFS=','; declare -a GVs=($GVPROVIDER); IFS="$oIFS"; unset oIFS
 for GV in "${GVs[@]}"
 do
 
-  chmod +x ./gvproviders/${GV}/run.sh
   ./gvproviders/${GV}/run.sh
 
   BE_PROPS_FILE=/home/tibco/be/beprops_all.props

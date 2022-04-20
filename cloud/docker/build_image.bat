@@ -67,8 +67,13 @@ REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
 REM container image size optimize related vars
-for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
-    set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+perl -e1 2>NUL
+if "!errorlevel!" NEQ "0" (
+    set "OPTIMIZATION_SUPPORTED_MODULES=na"
+) else (
+    for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
+        set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+    )
 )
 set "INCLUDE_MODULES=na"
 
@@ -544,6 +549,19 @@ if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
+if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http"
+    if "!ARG_OPTIMIZE!" NEQ "na" (
+        if "!ARG_OPTIMIZE!" NEQ "" (
+            set "ARG_OPTIMIZE=!ARG_OPTIMIZE!,!DEFAULT_RMS_MODULES!"
+        ) else (
+            set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+        )
+    ) else (
+        set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
+    ) 
+)
+
 REM checking optimize flag and its validation
 if "!ARG_OPTIMIZE!" NEQ "na" (
     perl -e1 2>NUL
@@ -551,13 +569,24 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
         echo ERROR: Please install perl utility.
         GOTO END-withError
     )
+    if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
+        echo ERROR: Please install 7-Zip in path C:\\Program Files\\7-Zip\\7z.exe
+        GOTO END-withError
+    )
     if "!BE620P!" EQU "true" (
         if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
-            set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+            if exist "!ARG_APP_LOCATION!\!EAR_FILE_NAME!" (
+                set "CDD_FILE_PATH=!ARG_APP_LOCATION!\!CDD_FILE_NAME!"
+                set "EAR_FILE_PATH=!ARG_APP_LOCATION!\!EAR_FILE_NAME!"
+            ) else (
+                set "CDD_FILE_PATH=na"
+                set "EAR_FILE_PATH=na"
+            )
         ) else (
             set "CDD_FILE_PATH=na"
+            set "EAR_FILE_PATH=na"
         )
-        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" ') do (
+        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
             set "INCLUDE_MODULES=%%i"
         )
         if "!INCLUDE_MODULES!" EQU "na" (
@@ -566,6 +595,11 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
     ) else (
         echo WARN: Container optimization is supported only for BE versions 6.2.0 and above. Continuing build without optimization...
     )
+)
+
+if "!ARG_JRE_VERSION!" EQU "" (
+    echo ERROR: Unsupported be version[!ARG_BE_VERSION!]
+    GOTO END-withError
 )
 
 REM information display
@@ -734,6 +768,11 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+set DEL_LIST_FILE_NAME=deletelist.txt
+if !IMAGE_NAME! EQU !RMS_IMAGE! (
+    set DEL_LIST_FILE_NAME=deletelistrms.txt
+)
+
 if "!INCLUDE_MODULES!" NEQ "na" (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
         if "!INCLUDE_MODULES!" EQU "" (
@@ -742,17 +781,17 @@ if "!INCLUDE_MODULES!" NEQ "na" (
             set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
         )
     )
-    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!" "!INCLUDE_MODULES!"
+    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!\\lib\\!DEL_LIST_FILE_NAME!" "!INCLUDE_MODULES!"
 )
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     ) else (
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     )
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
@@ -782,7 +821,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
         powershell -Command "Copy-Item '!BE_HOME!\rms','!BE_HOME!\studio','!BE_HOME!\eclipse-platform','!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
-        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard\WebStudio' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard' -Recurse | out-null"
 
         if EXIST "!BE_HOME!\decisionmanager" (
             powershell -Command "Copy-Item '!BE_HOME!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
@@ -856,7 +895,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     echo INFO: Generating annotation indexes.
     cd !TEMP_FOLDER!
-    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;
+    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\exporters\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\*;
     tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
     if EXIST tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
         powershell -Command "(Get-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx'"
@@ -869,11 +908,11 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\deletelist.txt') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\deletelist.txt'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
 
-    for /f %%i in (!TEMP_FOLDER!\lib\deletelist.txt) do (
+    for /f %%i in (!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!) do (
         if exist %%i del %%i  /F/S/Q > NUL
     )
 
@@ -943,7 +982,6 @@ EXIT /B 0
     echo Usage: build_image.bat
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
-    echo                            Note: For "!BUILDER_IMAGE!" image usage refer to be-tools wiki under containerize section.
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
@@ -960,13 +998,16 @@ EXIT /B 0
     echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
-    echo  [-o/--openjdk]       :    Enable to use OpenJDK instead of tibcojre [optional]
+    echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
     echo.
-    echo  [--optimize]         :    Enables container image optimization. Automatically retrieves required modules from CDD/EAR, if available. [optional]
-    echo                            Additional module names can be passed as comma separated string. Ex: "http,kafka"
-    echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    echo  [--optimize]         :    Enables container image size optimization [optional]
+    echo                            When CDD/EAR available, most of the modules are identified automatically.
+    echo                            Additional module names can be passed as comma separated string. Ex: "process,query,pattern,analytics"
+    if "!OPTIMIZATION_SUPPORTED_MODULES!" NEQ "na" (
+        echo                            Supported modules: !OPTIMIZATION_SUPPORTED_MODULES!.
+    )
     echo.
     echo  [-h/--help]          :    Print the usage of script [optional]
     echo.
@@ -974,7 +1015,7 @@ EXIT /B 0
     echo.
 
 :END-withError
-    if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!"
+    if exist !TEMP_FOLDER! rmdir /S /Q "!TEMP_FOLDER!" > NUL
     ENDLOCAL
     echo.
     EXIT /B 1
@@ -1012,4 +1053,3 @@ EXIT /B 0
     )
 
     EXIT /B 0
-    
