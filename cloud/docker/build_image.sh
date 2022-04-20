@@ -556,8 +556,6 @@ if [ "$ARG_BUILD_TOOL" == "docker" ]; then
             echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
             ARG_BUILD_TOOL="buildah"
         fi
-    else
-        echo "INFO: Building container image with the build tool[docker]."
     fi
 fi
 
@@ -570,8 +568,6 @@ if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
             echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
         fi
         exit 1
-    else
-        echo "INFO: Building container image with the build tool[buildah]."
     fi
 fi
 
@@ -617,6 +613,8 @@ fi
 # information display
 echo "INFO: Supplied/Derived Data:"
 echo "------------------------------------------------------------------------------"
+
+echo "INFO: Building container image with the build tool[$ARG_BUILD_TOOL]."    
 
 if ! [ "$ARG_INSTALLER_LOCATION" = "na" ]; then
     echo "INFO: INSTALLER DIRECTORY          : [$ARG_INSTALLER_LOCATION]"
