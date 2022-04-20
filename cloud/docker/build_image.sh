@@ -606,7 +606,7 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
 fi
 
 if [ "$ARG_JRE_VERSION" = "na" ]; then
-    echo "ERROR: Unsupported be version($ARG_BE_VERSION)"
+    echo "ERROR: Unsupported be version[$ARG_BE_VERSION]"
     exit 1
 fi
 
