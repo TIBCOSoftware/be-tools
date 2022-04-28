@@ -119,6 +119,8 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
+RUN yum install -y perl
+
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
