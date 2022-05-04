@@ -119,6 +119,10 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
 
+RUN yum install -y perl hostname
+
+RUN if ! [[ -e /lib64/libnsl.so.1 ]]; then if ! [[ -e /lib64/libnsl.so.2 ]]; then dnf install  -y libnsl* ; fi ;  ln -s  /lib64/libnsl.so.2 /lib64/libnsl.so.1 ; fi ;
+
 # Setup gv providers
 RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
 
