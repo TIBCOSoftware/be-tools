@@ -65,6 +65,7 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=intermediate /home/tibco /home/tibco
 

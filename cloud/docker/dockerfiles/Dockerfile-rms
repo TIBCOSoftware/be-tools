@@ -92,6 +92,7 @@ ARG JRE_VERSION
 ARG GVPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
+ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=intermediate /home/tibco /home/tibco
 
