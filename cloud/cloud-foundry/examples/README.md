@@ -56,4 +56,4 @@ This page describes deployment steps for BE Application with multiple cache node
 
 ## Testing
 
-Test the deployed application using the steps mentioned [here](https://github.com/nareshkumarthota/rootrepo/wiki/Cloud-Foundry#testing).
+Test the deployed application using the steps mentioned [here](https://github.com/TIBCOSoftware/be-tools/wiki/Cloud-Foundry#testing).

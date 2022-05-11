@@ -20,12 +20,12 @@ spec:
       containers:
       - name: be-teagent-container
         #The BE teagent image repo name. Change this to your teagent image name.
-        image: "beteagent:latest"
+        image: "teagent:6.2.0"
         imagePullPolicy: IfNotPresent
         env:
         - name: TEA_SERVER_URL
           #Change this to your TEA Server service-name.
-          value: "http://tea-service:8777"
+          value: "http://beteaserver-service:8777"
         - name: TEA_SERVER_USERNAME
           #TEA server authentication. Change these if required.
           value: "admin"
@@ -34,6 +34,10 @@ spec:
         - name: BE_TEA_AGENT_URL
           #Internal service of BE TEA Agent to connect to TEA server
           value: "http://beteagent-service:9777"
+        - name: BE_TEA_AGENT_AUTO_REGISTER_ENABLE
+          value: "true"
+        - name: BE_INSTANCE_DISCOVERY_TYPE
+          value: "k8s"
         resources:
           requests:
             memory: 700Mi
