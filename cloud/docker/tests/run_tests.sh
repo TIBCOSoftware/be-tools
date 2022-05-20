@@ -13,13 +13,14 @@ ARG_EAR_FILE_NAME=na
 ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
+ARG_HAWK_SHORT_VERSION=na
 ARG_GV_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,consulgv.yaml,httpgv.yaml"
+FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,consulgv.yaml,httpgv.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -31,6 +32,7 @@ USAGE+="\n\n [ -b|--be-version]           : BE version in x.x format ex(6.1) [re
 USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2.4) [optional]"
 USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.5) [optional]"
 USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]"
+USAGE+="\n\n [-hk|--hawk-version]         : HAWK version in x.x format ex(6.2) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
@@ -84,6 +86,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -f=*|--ftl-version=*)
         ARG_FTL_SHORT_VERSION="${key#*=}"
+        ;;
+        -hk|--hawk-version)
+        shift # past the key and to the value
+        ARG_HAWK_SHORT_VERSION="$1"
+        ;;
+        -hk=*|--hawk-version=*)
+        ARG_HAWK_SHORT_VERSION="${key#*=}"
         ;;
         --image-type)
         shift # past the key and to the value
@@ -185,6 +194,13 @@ if [ $ARG_FTL_SHORT_VERSION != na ]; then
   echo "INFO: ftl version:         [${ARG_FTL_SHORT_VERSION}]"
   CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/ftl.yaml "
   SED_EXP+=" -e s/FTL_SHORT_VERSION/${ARG_FTL_SHORT_VERSION}/g "
+fi
+
+## hawk version validation
+if [ $ARG_HAWK_SHORT_VERSION != na ]; then
+  echo "INFO: hawk version:        [${ARG_HAWK_SHORT_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/hawk.yaml "
+  SED_EXP+=" -e s/HAWK_SHORT_VERSION/${ARG_HAWK_SHORT_VERSION}/g "
 fi
 
 ## GV provider validation

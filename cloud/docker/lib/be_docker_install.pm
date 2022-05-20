@@ -48,7 +48,8 @@ my %CONSTANTS_MAP = (
   'views'                 => 'businessevents-views',
   'hf'                    => 'businessevents-hf',
   'as-hf'                 => 'activespaces',
-  'as'                    => 'activespaces' 
+  'as'                    => 'activespaces',
+  'hawk'                  => 'hawk'
 );
 
 # OTHERS---------------------------------------------------------
@@ -197,6 +198,35 @@ sub install_be {
   print "\n\nINFO:Product Installation Complete\n\n";
   print "----------------------------------------------\n\n";
 
+}
+
+sub install_hawk {
+
+  my $arg_hawkVersion = shift;
+  my $arg_hawkHotfix = shift;
+
+  if($arg_hawkVersion == "na"){
+    return 1;
+  }
+
+  my $baseProdRegex="*hawk_".$arg_hawkVersion."_linux_x86_64.zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+  
+  my $baseHawkHfRegex="*hawk_$arg_hawkVersion*$arg_hawkHotfix*zip";
+  my (@baseHawkHf) = glob "$ROOT_FOLDER/$baseHawkHfRegex";
+
+  my $baseHawkHfPkgVal="na";
+  if(scalar @baseHawkHf == 1){
+    $baseHawkHfPkgVal=$baseHawkHf[0];
+  }
+
+  print "\nINFO:Installing Hawk $arg_hawkVersion...\n";
+  my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_hawkVersion,$baseProd[0],0,$baseHawkHfPkgVal,"hawk_installer","hawk",0,$arg_hawkHotfix);
+  if($beInstallResult == 0){
+    print "\nERROR : Error occurred while installing Hawk. Aborting\n";
+    exit 0;
+  }
+  print "\nINFO:Installing Hawk $arg_hawkVersion...DONE\n\n";
 }
 
 sub install_ftl {
