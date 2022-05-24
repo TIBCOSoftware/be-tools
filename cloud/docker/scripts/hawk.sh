@@ -3,10 +3,10 @@ HAWK_VERSION_MAP_MIN=( "6.2.1:6.2.1" "6.2.2:6.2.1" )
 HAWK_VERSION_MAP_MAX=( "6.2.1:7.1.0" "6.2.2:7.1.0" )
 
 # Validate and get TIBCO HAWK base and hf versions
-hawkPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_hawk_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
-hawkPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_hawk_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  |  wc -l)
-hawkHfPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_hawk_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  )
-hawkHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_hawk_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  |  wc -l)
+hawkPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_oihr_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
+hawkPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_oihr_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  |  wc -l)
+hawkHfPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_oihr_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  )
+hawkHfPckgsCnt=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_oihr_[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]_linux_x86_64.zip"  |  wc -l)
 
 if [ $hawkPckgsCnt -gt 0 ]; then
 	if [ $hawkPckgsCnt -gt 1 ]; then # If more than one base versions are present

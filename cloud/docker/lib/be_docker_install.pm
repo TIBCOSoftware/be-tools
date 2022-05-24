@@ -49,7 +49,7 @@ my %CONSTANTS_MAP = (
   'hf'                    => 'businessevents-hf',
   'as-hf'                 => 'activespaces',
   'as'                    => 'activespaces',
-  'hawk'                  => 'hawk'
+  'hawk'                  => 'oihr'
 );
 
 # OTHERS---------------------------------------------------------
@@ -209,10 +209,10 @@ sub install_hawk {
     return 1;
   }
 
-  my $baseProdRegex="*hawk_".$arg_hawkVersion."_linux_x86_64.zip";
+  my $baseProdRegex="*oihr_".$arg_hawkVersion."_linux_x86_64.zip";
   my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
   
-  my $baseHawkHfRegex="*hawk_$arg_hawkVersion*$arg_hawkHotfix*zip";
+  my $baseHawkHfRegex="*oihr_$arg_hawkVersion*$arg_hawkHotfix*zip";
   my (@baseHawkHf) = glob "$ROOT_FOLDER/$baseHawkHfRegex";
 
   my $baseHawkHfPkgVal="na";
