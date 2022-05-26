@@ -5,6 +5,7 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+from http.client import HTTPSConnection
 import json
 import sys
 import os
@@ -17,6 +18,9 @@ from requests.exceptions import ConnectionError
 import time
 import logging
 from subprocess import CalledProcessError
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
 #Check whether given key exists in array or not
 def isKeyExist(key,arr):
@@ -123,14 +127,14 @@ def registerTEAgent(serverURL,username,userPwd,teaagenturl):
 
 def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,teaagenturl,pythonpath,pollarinterval):
     logger.info("Python path:"+pythonpath)
-    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\""
+    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\" -ssl \""+ sslEnabled+"\" -sc \""+ serverCert+"\"" 
     applications=[]
     machines=[]
     instances=[]
 
     while True:
         try:
-            registerTEAgent(serverURL,userName,userPwd,teaagenturl)
+            #registerTEAgent(serverURL,userName,userPwd,teaagenturl)
             discoverInstanceDatails(appManagementFilePath)
         except Exception  as e:
             logger.error(str(e))
