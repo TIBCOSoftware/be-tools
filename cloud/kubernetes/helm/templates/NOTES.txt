@@ -8,6 +8,7 @@ Cluster provider:          {{ .Values.cmType }}
 API spec server:           {{ if .Values.apispecservice.enabled }}enabled{{ else }}not enabled{{ end }}
 Hot deployments:           {{ if .Values.enableRMS }}enabled{{ else }}not enabled{{ end }}
 This is a RMS deployment:  {{ if .Values.rmsDeployment }}yes{{ else }}no{{ end }}
+HAWK Micro Agent           {{ if .Values.oihr.enabled }}enabled{{ else }}not enabled{{ end }}
 
 Following services have been exposed for external access:
 {{- if .Values.apispecservice.enabled }}
