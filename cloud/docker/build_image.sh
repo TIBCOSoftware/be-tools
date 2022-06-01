@@ -474,7 +474,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+    if [ $(echo "${ARG_BE_VERSION//.}") -ge 622 -a  "$IMAGE_NAME" = "$APP_IMAGE" ]; then
         # get hawk details
         HAWK_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.HAWK_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$HAWK_HOME" = "" ]; then
@@ -537,7 +537,7 @@ else
     fi
     
     # check hawk installer
-    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+    if [ $(echo "${ARG_BE_VERSION//.}") -ge 622 -a  "$IMAGE_NAME" = "$APP_IMAGE" ]; then
         source ./scripts/hawk.sh
     fi
 fi
