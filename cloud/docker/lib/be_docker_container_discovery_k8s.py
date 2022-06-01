@@ -5,7 +5,6 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-from http.client import HTTPSConnection
 import json
 import sys
 import os
@@ -19,8 +18,6 @@ import time
 import logging
 from subprocess import CalledProcessError
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
 #Check whether given key exists in array or not
 def isKeyExist(key,arr):
