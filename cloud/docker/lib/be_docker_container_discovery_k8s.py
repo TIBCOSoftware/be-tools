@@ -18,6 +18,7 @@ import time
 import logging
 from subprocess import CalledProcessError
 
+
 #Check whether given key exists in array or not
 def isKeyExist(key,arr):
 	if key in arr:
@@ -123,14 +124,14 @@ def registerTEAgent(serverURL,username,userPwd,teaagenturl):
 
 def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,teaagenturl,pythonpath,pollarinterval):
     logger.info("Python path:"+pythonpath)
-    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\""
+    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\" -ssl \""+ sslEnabled+"\" -sc \""+ serverCert+"\" -cc \""+ clientCert+"\"" 
     applications=[]
     machines=[]
     instances=[]
 
     while True:
         try:
-            registerTEAgent(serverURL,userName,userPwd,teaagenturl)
+            #registerTEAgent(serverURL,userName,userPwd,teaagenturl)
             discoverInstanceDatails(appManagementFilePath)
         except Exception  as e:
             logger.error(str(e))

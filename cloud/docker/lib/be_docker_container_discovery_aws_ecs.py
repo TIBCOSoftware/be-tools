@@ -116,7 +116,7 @@ def isKeyExist(key,arr):
 Main method of the application
 '''
 def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,clustername,launchType,pythonpath,pollarinterval):
-    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\"";
+    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\" -ssl \""+ sslEnabled+"\" -sc \""+ serverCert+"\" -cc \""+ clientCert+"\"";
 
     while True:
 

@@ -38,6 +38,13 @@ spec:
           value: "true"
         - name: BE_INSTANCE_DISCOVERY_TYPE
           value: "k8s"
+          # For ssl setup TEA_SERVER_SSL_ENABLED set to true and update the server and client certificates path
+        # - name: TEA_SERVER_SSL_ENABLED
+        #   value: "true"
+        # - name: TEA_SERVER_SERVER_CERT
+        #   value: "/home/certs/httpserver.cert"
+        # - name: TEA_SERVER_CLIENT_CERT
+        #   value: /home/certs/httpclient.cert   
         resources:
           requests:
             memory: 700Mi
