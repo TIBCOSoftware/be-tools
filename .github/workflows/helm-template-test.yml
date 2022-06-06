@@ -22,8 +22,8 @@ jobs:
       run: |
           sudo apt-get update -y 
           sudo apt-get install wget tar
-          wget https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz
-          tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
+          wget https://get.helm.sh/helm-v3.2.1-linux-amd64.tar.gz
+          tar -zxvf helm-v3.2.1-linux-amd64.tar.gz
           sudo mv linux-amd64/helm /usr/local/bin/helm
         
     - name: Helm Template Test
