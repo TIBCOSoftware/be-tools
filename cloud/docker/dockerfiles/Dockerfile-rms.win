@@ -94,7 +94,8 @@ ENV \
     DOCKER_HOST=localhost \
     AS_DISCOVER_URL=self \
     AS_PROXY_NODE=false \
-    COMPONENT=rms
+    COMPONENT=rms \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
 COPY --from=intermediate c:\\_tibco c:\\tibco
 

@@ -121,7 +121,8 @@ ENV PU=default \
  JRE_VERSION=${JRE_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  CDD_FILE=/opt/tibco/be/application/${CDD_FILE_NAME} \
- EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME}
+ EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME} \
+ JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
 RUN yum install -y perl hostname
 
