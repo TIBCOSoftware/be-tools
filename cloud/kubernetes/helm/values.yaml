@@ -309,3 +309,11 @@ grafana:
     tag: 7.3.5
   service:
     type: NodePort          # Service type. Supported values: NodePort, LoadBalancer or ClusterIP
+
+##################################################
+## Operational Intelligence Hawk® RedTail related
+##################################################
+
+oihr:
+  enabled: false                                      # Set to true, to enable Hawk micro agent
+  hkAgentUrl: redtail-agent-0.redtail-agent:2571      # HAWK agent url

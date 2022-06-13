@@ -4,6 +4,7 @@
 
 if "%AS_VERSION%" EQU "" set AS_VERSION=na
 if "%FTL_VERSION%" EQU "" set FTL_VERSION=na
+if "%HAWK_VERSION%" EQU "" set HAWK_VERSION=na
 if "%ACTIVESPACES_VERSION%" EQU "" set ACTIVESPACES_VERSION=na
 
 if "%COMPONENT%" EQU "rms" (
@@ -73,6 +74,44 @@ if exist c:/working/installer/TIBCOUniversalInstaller.silent (
 	echo Installing BusinessEvents HF ...
 	TIBCOUniversalInstaller-x86-64.exe -silent
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
+)
+
+if "%HAWK_VERSION%" NEQ "na" (
+	cd /d c:/working
+	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
+
+	:: Extract and install hawk
+	echo Extracting Hawk %HAWK_VERSION%
+	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_oihr.*_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+	cd /d c:/working/installer
+	
+	echo Installing Hawk %HAWK_VERSION% ...
+	TIBCOUniversalInstaller-x86-64.exe -silent
+	:: Wait for installation to complete, check every 2sec.
+	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
+
+	:: Backup installer exe file, needed while installing HFs
+	powershell -Command "Copy-Item 'c:\working\installer\TIBCOUniversalInstaller-x86-64.exe' -Destination 'c:\working'"
+
+	:: Install Hawk HF
+	cd /d c:/working
+	powershell -Command "Get-ChildItem -Path 'c:\working\installer' -exclude TIBCOUniversalInstaller-x86-64.exe | Remove-Item -Recurse -force"
+	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_oihr.*[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+	if exist c:/working/installer/TIBCOUniversalInstaller-x86-64.exe (
+		echo Extracting Hawk HF
+		cd /d c:/working/installer
+		echo Installing Hawk HF ...
+		TIBCOUniversalInstaller-x86-64.exe -silent
+		powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
+	)
+
+	mkdir c:\_tibco\hawk\%HAWK_SHORT_VERSION%\lib c:\_tibco\hawk\%HAWK_SHORT_VERSION%\bin
+	powershell -Command "Copy-Item 'c:\tibco\hawk\%HAWK_SHORT_VERSION%\lib\*' -Destination 'c:\_tibco\hawk\%HAWK_SHORT_VERSION%\lib' -Recurse | out-null"
+	powershell -Command "Copy-Item 'c:\tibco\hawk\%HAWK_SHORT_VERSION%\bin\*.dll','c:\tibco\hawk\%HAWK_SHORT_VERSION%\bin\*.jar','c:\tibco\hawk\%HAWK_SHORT_VERSION%\bin\*.lib' -Destination 'c:\_tibco\hawk\%HAWK_SHORT_VERSION%\bin' -Recurse | out-null"
+
+	if exist %BE_HOME%/%TRA_FILE% (
+		powershell -Command "(Get-Content '%BE_HOME%/%TRA_FILE%') -replace 'tibco.env.HAWK_HOME=', 'tibco.env.HAWK_HOME=c:/tibco/hawk/%HAWK_SHORT_VERSION%' | Set-Content '%BE_HOME%/%TRA_FILE%'"
+	)
 )
 
 :: if FTL is available extract and install it.

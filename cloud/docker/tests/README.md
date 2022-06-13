@@ -24,6 +24,8 @@ Usage: run_tests.sh
 
  [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]
 
+ [-hk|--hawk-version]         : HAWK version in x.x format ex(6.2) [optional]
+
  [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]
 
  [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]
@@ -50,6 +52,7 @@ Various test cases are developed and organized in different yaml files. File nam
 * `be.yaml/be-rms.yaml/be-teagent.yaml` Contains BE artifacts related test cases
 * `as.yaml/aslegacy.yaml` Contains Active Spaces artifacts related test cases
 * `ftl.yaml` Contains FTL artifacts related test cases
+* `hawk.yaml` Contains HAWK artifacts related test cases
 * `consulgv.yaml` Contains `consul` gvprovider related test cases
 * `httpgv.yaml` Contains `http` gvprovider related test cases
 <br><br>

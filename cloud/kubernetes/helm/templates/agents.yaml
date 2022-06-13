@@ -76,6 +76,23 @@ spec:
         - name: {{ $.Values.influxdb.influxdbUrlGV }}
           value: "http://{{ $.Release.Name }}-influxdb:8086"
         {{- end }}
+        {{- if $.Values.oihr.enabled }}
+        - name: HawkEnabled
+          value: "true"
+        - name: tra.be.hawk.hma.transport
+          value: "tibtcp"
+        - name: HMA_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: tra.be.hawk.hma.tcp.self.url
+          value: $(HMA_POD_IP):2856
+        - name: tra.be.hawk.hma.tcp.agent.ami.url
+          value: "{{$.Values.oihr.hkAgentUrl}}"
+        {{- else }}
+        - name: HawkEnabled
+          value: "false"
+        {{- end }}
 {{ include "bechart.resourceLimits" $agent | trim | indent 8 }}
 {{ include "healthcheck" $ | trim | indent 8 }}
 {{ include "bechart.volumeMounts" $ | trim | indent 8 }}

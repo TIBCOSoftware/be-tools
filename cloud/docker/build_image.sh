@@ -100,6 +100,12 @@ ARG_AS_VERSION="na"
 ARG_AS_SHORT_VERSION="na"
 ARG_AS_HOTFIX="na"
 
+# hawk related args
+HAWK_HOME="na"
+ARG_HAWK_VERSION="na"
+ARG_HAWK_SHORT_VERSION="na"
+ARG_HAWK_HOTFIX="na"
+
 # s2i builder related args
 BE_TAG="com.tibco.be"
 S2I_DOCKER_FILE_APP="./dockerfiles/Dockerfile-s2i"
@@ -468,6 +474,29 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         fi
     fi
 
+    if [ $(echo "${ARG_BE_VERSION//.}") -ge 622 -a  "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        # get hawk details
+        HAWK_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.HAWK_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
+        if [ "$HAWK_HOME" = "" ]; then
+            HAWK_HOME="na"
+        else
+            # check directory exist
+            if ! [ -d "$HAWK_HOME" ]; then
+                printf "\nERROR: The directory: [$HAWK_HOME] not exist. Ignoring HAWK installation.\n"
+                HAWK_HOME="na"
+            else
+                HAWK_HOME_REGEX="(.*.)\/(hawk\/[0-9]\.[0-9])$"
+                if ! [[ $HAWK_HOME =~ $HAWK_HOME_REGEX ]]; then
+                    printf "\nERROR: Update proper HAWK home path: [$HAWK_HOME] in $TRA_FILE_NAME file (ex: <path-to>/hawk/<hawk-version>).\n"
+                    exit 1
+                fi
+                HAWK_HOME_BASE=${BASH_REMATCH[1]}
+                HAWK_DIR=${BASH_REMATCH[2]}
+                ARG_HAWK_SHORT_VERSION=$( echo ${HAWK_HOME}  | rev | cut -d'/' -f1 | rev )
+            fi
+        fi
+    fi
+
     #get installed jre details
     TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
 else
@@ -507,6 +536,10 @@ else
         source ./scripts/as.sh
     fi
     
+    # check hawk installer
+    if [ $(echo "${ARG_BE_VERSION//.}") -ge 622 -a  "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        source ./scripts/hawk.sh
+    fi
 fi
 
 #Find JRE Version for given BE Version
@@ -657,6 +690,17 @@ if ! [ "$ARG_FTL_VERSION" = "na" -o -z "${ARG_FTL_VERSION// }" ]; then
     echo "INFO: FTL VERSION                  : [$ARG_FTL_VERSION]"
     if ! [ "$ARG_FTL_HOTFIX" = "na" -o -z "${ARG_FTL_HOTFIX// }" ]; then
         echo "INFO: FTL HF                       : [$ARG_FTL_HOTFIX]"
+    fi
+fi
+
+if ! [ "$HAWK_HOME" = "na" -o -z "${HAWK_HOME// }" ]; then
+    echo "INFO: HAWK HOME                    : [$HAWK_HOME]"
+fi
+
+if ! [ "$ARG_HAWK_VERSION" = "na" -o -z "${ARG_HAWK_VERSION// }" ]; then
+    echo "INFO: HAWK VERSION                 : [$ARG_HAWK_VERSION]"
+    if ! [ "$ARG_HAWK_HOTFIX" = "na" -o -z "${ARG_HAWK_HOTFIX// }" ]; then
+        echo "INFO: HAWK HF                      : [$ARG_HAWK_HOTFIX]"
     fi
 fi
 
@@ -848,6 +892,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         tar -C $FTL_HOME_BASE -rf $TEMP_FOLDER/be.tar $FTL_DIR/lib #$FTL_DIR/bin
     fi
 
+    # check hawk if exist add it to be tar file
+    if [ "$HAWK_HOME" != "na" ]; then
+        echo "INFO: Adding [$HAWK_DIR] to tar file."
+        tar -C $HAWK_HOME_BASE -rf $TEMP_FOLDER/be.tar $HAWK_DIR/lib #$HAWK_DIR/bin
+    fi
+
     # create another temp folder and replace be_home to /opt/tibco
     RANDM_FOLDER="tmp$RANDOM"
     mkdir $TEMP_FOLDER/$RANDM_FOLDER
@@ -895,6 +945,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         AS_LEG_HOME_KEY="tibco.env.AS_HOME=.*"
         AS_LEG_HOME_VAL="tibco.env.AS_HOME=$OPT_TIBCO/$AS_LEG_DIR"
         find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$AS_LEG_HOME_KEY~$AS_LEG_HOME_VAL~g"
+    fi
+
+    if [ "$HAWK_HOME" != "na" ]; then
+        HAWK_HOME_KEY="tibco.env.HAWK_HOME=.*"
+        HAWK_HOME_VAL="tibco.env.HAWK_HOME=$OPT_TIBCO/$HAWK_DIR"
+        find $TEMP_FOLDER/$RANDM_FOLDER -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~$HAWK_HOME_KEY~$HAWK_HOME_VAL~g"
     fi
 
     #remove unecessary files from bin folder
@@ -980,6 +1036,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         TAR_CMD="$TAR_CMD as"
     fi
 
+    if [ "$HAWK_HOME" != "na" ]; then
+        TAR_CMD="$TAR_CMD hawk"
+    fi
+
     # execute tar cmnd
     $TAR_CMD
 
@@ -1011,7 +1071,7 @@ else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg HAWK_VERSION="$ARG_HAWK_VERSION" --build-arg HAWK_SHORT_VERSION="$ARG_HAWK_SHORT_VERSION" --build-arg HAWK_PRODUCT_HOTFIX="$ARG_HAWK_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi
 fi
 
@@ -1061,7 +1121,7 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
                 JAVA_HOME_DIR_NAME=tibcojre64
             fi
             cd ./tests
-            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
         fi
     fi
 fi

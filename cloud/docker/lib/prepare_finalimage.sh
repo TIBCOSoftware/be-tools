@@ -53,6 +53,12 @@ if [ "$ACTIVESPACES_SHORT_VERSION" != "" -a "$ACTIVESPACES_SHORT_VERSION" != "na
     sed -i "s@tibco.env.ACTIVESPACES_HOME=@tibco.env.ACTIVESPACES_HOME=/opt/tibco/as/$ACTIVESPACES_SHORT_VERSION@g" $TRA_FILE
 fi
 
+if [ "$HAWK_SHORT_VERSION" != "" -a "$HAWK_SHORT_VERSION" != "na" ]; then 
+    mkdir -p /tibco_home/hawk/${HAWK_SHORT_VERSION}
+    cp -r /opt/tibco/hawk/${HAWK_SHORT_VERSION}/lib /tibco_home/hawk/${HAWK_SHORT_VERSION}
+    sed -i "s@tibco.env.HAWK_HOME=@tibco.env.HAWK_HOME=/opt/tibco/hawk/$HAWK_SHORT_VERSION@g" $TRA_FILE
+fi
+
 if [ "$COMPONENT" != "rms" ]; then
     rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt
     find /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer -type f -not -name 'xml*' -delete 2>/dev/null

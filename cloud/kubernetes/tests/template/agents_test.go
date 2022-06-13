@@ -174,6 +174,7 @@ func TestAgentsNone(t *testing.T) {
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
 			"PU":                           "default",
+			"HawkEnabled":                  "false",
 			"JDBC_URL_VAL":                 "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE",
 			"INFLUX_DB_VAL":                "http://persistencenone-influxdb:8086",
 			"livenessPort":                 int32(5555),
@@ -195,6 +196,7 @@ func TestAgentsNone(t *testing.T) {
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
 			"PU":                           "cache",
+			"HawkEnabled":                  "false",
 			"JDBC_URL_VAL":                 "jdbc:mysql://persistencenone-mysql:3306/BE_DATABASE",
 			"INFLUX_DB_VAL":                "http://persistencenone-influxdb:8086",
 			"livenessPort":                 int32(5555),
@@ -227,6 +229,7 @@ func TestAgentsNone(t *testing.T) {
 		require.Equal(t, v1.PullIfNotPresent, agent.Spec.Template.Spec.Containers[0].ImagePullPolicy)
 		require.Equal(t, expectedagentName["configmap"], agent.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name)
 		require.Equal(t, expectedagentName["PU"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "PU").Value)
+		require.Equal(t, expectedagentName["HawkEnabled"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "HawkEnabled").Value)
 		require.Equal(t, expectedagentName["JDBC_URL_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "BACKINGSTORE_JDBC_URL").Value)
 		require.Equal(t, expectedagentName["INFLUX_DB_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "INFLUXDB_URL").Value)
 		require.Equal(t, expectedagentName["livenessPort"], agent.Spec.Template.Spec.Containers[0].LivenessProbe.TCPSocket.Port.IntVal)
@@ -302,6 +305,8 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"configs.AS4_REALM":                                       "https://ftlserver:8585",
 		"envVarsFromConfigMaps[0]":                                "myconfigmap",
 		"envVarsFromSecrets[0]":                                   "mysecret",
+		// hawk
+		"oihr.enabled": "true",
 	}
 
 	options := &helm.Options{
@@ -324,38 +329,44 @@ func TestAgentsSharedNothing(t *testing.T) {
 
 	expectedagentsMap := map[string]map[string]interface{}{
 		"sharednothing-inferenceagent": {
-			"release":             "sharednothing-inferenceagent",
-			"replicas":            int32(1),
-			"serviceName":         "sharednothing-discovery-service",
-			"containerName":       "inferenceagent-container",
-			"image":               "befdapp:01",
-			"pullsecret":          "besecret",
-			"configmap":           "sharednothing-configmap",
-			"configmapName":       "myconfigmap",
-			"secretName":          "mysecret",
-			"PU":                  "default",
-			"FTL_URL_VAL":         "http://ftlserver:8585",
-			"logMountPath":        "/mnt/tibco/be/logs",
-			"dataStoreMountPath":  "/mnt/tibco/be/data-store",
-			"logsVolumeName":      "sharednothing-logs",
-			"datastoreVolumeName": "sharednothing-data-store",
+			"release":                           "sharednothing-inferenceagent",
+			"replicas":                          int32(1),
+			"serviceName":                       "sharednothing-discovery-service",
+			"containerName":                     "inferenceagent-container",
+			"image":                             "befdapp:01",
+			"pullsecret":                        "besecret",
+			"configmap":                         "sharednothing-configmap",
+			"configmapName":                     "myconfigmap",
+			"secretName":                        "mysecret",
+			"PU":                                "default",
+			"HawkEnabled":                       "true",
+			"tra.be.hawk.hma.transport":         "tibtcp",
+			"tra.be.hawk.hma.tcp.agent.ami.url": "redtail-agent-0.redtail-agent:2571",
+			"FTL_URL_VAL":                       "http://ftlserver:8585",
+			"logMountPath":                      "/mnt/tibco/be/logs",
+			"dataStoreMountPath":                "/mnt/tibco/be/data-store",
+			"logsVolumeName":                    "sharednothing-logs",
+			"datastoreVolumeName":               "sharednothing-data-store",
 		},
 		"sharednothing-cacheagent": {
-			"release":             "sharednothing-cacheagent",
-			"replicas":            int32(1),
-			"serviceName":         "sharednothing-discovery-service",
-			"containerName":       "cacheagent-container",
-			"image":               "befdapp:01",
-			"pullsecret":          "besecret",
-			"configmap":           "sharednothing-configmap",
-			"configmapName":       "myconfigmap",
-			"secretName":          "mysecret",
-			"PU":                  "cache",
-			"FTL_URL_VAL":         "http://ftlserver:8585",
-			"logMountPath":        "/mnt/tibco/be/logs",
-			"dataStoreMountPath":  "/mnt/tibco/be/data-store",
-			"logsVolumeName":      "sharednothing-logs",
-			"datastoreVolumeName": "sharednothing-data-store",
+			"release":                           "sharednothing-cacheagent",
+			"replicas":                          int32(1),
+			"serviceName":                       "sharednothing-discovery-service",
+			"containerName":                     "cacheagent-container",
+			"image":                             "befdapp:01",
+			"pullsecret":                        "besecret",
+			"configmap":                         "sharednothing-configmap",
+			"configmapName":                     "myconfigmap",
+			"secretName":                        "mysecret",
+			"PU":                                "cache",
+			"HawkEnabled":                       "true",
+			"tra.be.hawk.hma.transport":         "tibtcp",
+			"tra.be.hawk.hma.tcp.agent.ami.url": "redtail-agent-0.redtail-agent:2571",
+			"FTL_URL_VAL":                       "http://ftlserver:8585",
+			"logMountPath":                      "/mnt/tibco/be/logs",
+			"dataStoreMountPath":                "/mnt/tibco/be/data-store",
+			"logsVolumeName":                    "sharednothing-logs",
+			"datastoreVolumeName":               "sharednothing-data-store",
 		},
 	}
 	require.Equal(t, 2, len(agents))
@@ -379,6 +390,9 @@ func TestAgentsSharedNothing(t *testing.T) {
 		require.Equal(t, expectedagentName["configmapName"], agent.Spec.Template.Spec.Containers[0].EnvFrom[1].ConfigMapRef.Name)
 		require.Equal(t, expectedagentName["secretName"], agent.Spec.Template.Spec.Containers[0].EnvFrom[2].SecretRef.Name)
 		require.Equal(t, expectedagentName["PU"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "PU").Value)
+		require.Equal(t, expectedagentName["HawkEnabled"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "HawkEnabled").Value)
+		require.Equal(t, expectedagentName["tra.be.hawk.hma.transport"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "tra.be.hawk.hma.transport").Value)
+		require.Equal(t, expectedagentName["tra.be.hawk.hma.tcp.agent.ami.url"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "tra.be.hawk.hma.tcp.agent.ami.url").Value)
 		require.Equal(t, expectedagentName["FTL_URL_VAL"], findEnv(agent.Spec.Template.Spec.Containers[0].Env, "FTL_REALM_SERVER").Value)
 		require.Equal(t, expectedagentName["logMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
 		require.Equal(t, expectedagentName["dataStoreMountPath"], valueFromVolumeMount(agent.Spec.Template.Spec.Containers[0].VolumeMounts, "data-store"))

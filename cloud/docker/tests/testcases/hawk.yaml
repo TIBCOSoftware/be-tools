@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'HAWK Lib Path'
+    path: '/opt/tibco/hawk/HAWK_SHORT_VERSION/lib/'
+    shouldExist: true
+fileContentTests:
+  - name: 'BE TRA Updated with HAWK home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    expectedContents: ['HAWK_HOME=/opt/tibco/hawk/HAWK_SHORT_VERSION']
