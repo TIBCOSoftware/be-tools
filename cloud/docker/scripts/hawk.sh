@@ -1,5 +1,5 @@
 #supported HAWK versions for be version
-HAWK_VERSION_MAP_MIN=( "6.2.2:6.2.1" )
+HAWK_VERSION_MAP_MIN=( "6.2.2:7.1.0" )
 HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" )
 
 # Validate and get TIBCO HAWK base and hf versions
