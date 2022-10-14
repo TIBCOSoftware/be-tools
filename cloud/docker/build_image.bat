@@ -857,6 +857,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     
     mkdir !TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!
     powershell -Command "Copy-Item '!TRA_JAVA_HOME!' -Destination '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!' -Recurse | out-null"
+    powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
     if exist "!BE_HOME!\bin\cassandrakeywordmap.xml" powershell -Command "Copy-Item '!BE_HOME!\bin\cassandrakeywordmap.xml' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin' -Recurse | out-null"
 
@@ -959,8 +960,6 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "Copy-Item '.\lib\runbe.bat','.\lib\vcredist_install.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
 
     powershell -Command "Copy-Item '!TEMP_FOLDER!\gvproviders' -Destination '!TEMP_FOLDER!\tibcoHome\be' -Recurse | out-null"
-
-    powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
