@@ -62,6 +62,8 @@ envVars: {}
   # # env flag to specify which CDD file to use.
   # # In case RMS container, It contains 3 different CDD files with RMS.cdd as default. You can use this flag to run BE app with diffent CDD.
   # CDD_FILE: "<CDD file path>"
+  # # Pass trustore folder path using special GV BE_GLOBAL_TRUSTED_CA_STORE 
+  # BE_GLOBAL_TRUSTED_CA_STORE: file:///opt/tibco/be/certstore
   # # Consul GV provider specific environment variables
   # CONSUL_SERVER_URL: http://192.168.0.1:8500
   # BE_APP_NAME: fd
