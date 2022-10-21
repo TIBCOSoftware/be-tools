@@ -778,6 +778,9 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
             ) else if "!GV!" EQU "consul" (
                 mkdir !TEMP_FOLDER!\gvproviders\!GV!
                 xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+            ) else if "!GV!" EQU "cyberark-conjur" (
+                mkdir !TEMP_FOLDER!\gvproviders\!GV!
+                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
             ) else (
                 if EXIST ".\gvproviders\!GV!" (
                     if NOT EXIST ".\gvproviders\!GV!\setup!SCRIPT_EXTN!" (

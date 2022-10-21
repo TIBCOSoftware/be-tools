@@ -796,7 +796,7 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         
         for GV in "${GVs[@]}"
         do
-            if [ "$GV" = "http" -o "$GV" = "consul" ]; then
+            if [ "$GV" = "http" -o "$GV" = "consul" -o "$GV" = "cyberark-conjur" ]; then
                 mkdir -p $TEMP_FOLDER/gvproviders/$GV
                 cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
             else
