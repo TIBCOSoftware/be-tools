@@ -26,7 +26,7 @@ Sample:
 ./build_image.sh \
 -i app \
 -s /home/user/tibco/installers \
---gv-provider "custom/cyberark-conjur" \
+--gv-provider "cyberark" \
 -t fdconjur:latest
 ```
 
