@@ -17,8 +17,8 @@ if [ -z "$CONJUR_ACCOUNT" ]; then
   exit 0
 fi
 
-if [ -z "$CONJUR_USERNAME" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_USERNAME is empty OR not supplied."
+if [ -z "$CONJUR_LOGIN" ]; then
+  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_LOGIN is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi
@@ -36,7 +36,7 @@ JSON_FILE=/home/tibco/be/gvproviders/output.json
 conjur init -a $CONJUR_ACCOUNT -u $CONJUR_SERVER_URL -c /opt/tibco/be/ext/*
 
 #Authenticate to conjur
-conjur login -i $CONJUR_USERNAME -p $CONJUR_APIKEY
+conjur login -i $CONJUR_LOGIN -p $CONJUR_APIKEY
 
 #Fetch variable list
 variablelist=$(conjur list --kind variable)
