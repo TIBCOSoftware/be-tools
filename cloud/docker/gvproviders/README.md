@@ -16,7 +16,7 @@ Note: You may use [Quickstart](https://www.conjur.org/get-started/quick-start/os
 Refer Unit 1-For setting up conjur server, Unit 2-Change the policies according to your variables and Unit 3-Load the variables mentioned in the policies. Use the `my_app_data` file generated for CONJUR_LOGIN and CONJUR_APIKEY.
 
 ### Build
-To select this provider type, pass `conjur` to --gv-provider flag while building the BE application image.
+To select this provider type, pass `cyberark` to --gv-provider flag while building the BE application image.
 Sample:
 ```sh
 ./build_image.sh \
