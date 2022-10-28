@@ -19,8 +19,8 @@ if [ -z "$CONJUR_ACCOUNT" ]; then
   exit 0
 fi
 
-if [ -z "$CONJUR_LOGIN" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_LOGIN is empty OR not supplied."
+if [ -z "$CONJUR_LOGINNAME" ]; then
+  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_LOGINNAME is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi
@@ -34,48 +34,35 @@ fi
 touch /home/tibco/be/gvproviders/output.json
 JSON_FILE=/home/tibco/be/gvproviders/output.json
 
-echo "{" >> $JSON_FILE
-
 if [ $CONJUR_SECURE ]
 then
     #Initialize the conjur cli
     conjur init -a $CONJUR_ACCOUNT -u $CONJUR_SERVER_URL -c /opt/tibco/be/ext/*
-    
     #Authenticate to conjur
-    conjur login -i $CONJUR_LOGIN -p $CONJUR_APIKEY
+    conjur login -i $CONJUR_LOGINNAME -p $CONJUR_APIKEY
     
     #Fetch variable list
     variablelist=$(conjur list --kind variable)
-    
-    for variable in $(echo $variablelist | sed 's/[][]//g')
-    do
-        variable="${variable//\"}"         ##Remove "" myConjurAccount:variable:BotApp/secretVar,
-        variable="${variable//,}"          ##Remove ,  myConjurAccount:variable:BotApp/IGNITE/DISCOVERY_URL
-        variable=${variable##*:}           ##Get variable  BotApp/IGNITE/DISCOVERY_URL
-        value=$(conjur variable get -i $variable)
-        echo -e "  \"${variable#*/}\": \"$value\"," >> $JSON_FILE  #IGNITE/DISCOVERY_URL
-    done
+    command="conjur variable get -i "
 else
     #Initialize the conjur cli
     conjur --insecure init -a $CONJUR_ACCOUNT -u $CONJUR_SERVER_URL
-    
     #Authenticate to conjur
-    conjur --insecure login -i $CONJUR_LOGIN -p $CONJUR_APIKEY
+    conjur --insecure login -i $CONJUR_LOGINNAME -p $CONJUR_APIKEY
     
     #Fetch variable list
     variablelist=$(conjur --insecure list --kind variable)
-    
-    for variable in $(echo $variablelist | sed 's/[][]//g')
-    do
-        variable="${variable//\"}"         ##Remove "" myConjurAccount:variable:BotApp/secretVar,
-        variable="${variable//,}"          ##Remove ,  myConjurAccount:variable:BotApp/IGNITE/DISCOVERY_URL
-        variable=${variable##*:}           ##Get variable  BotApp/IGNITE/DISCOVERY_URL
-        value=$(conjur --insecure variable get -i $variable)
-        echo -e "  \"${variable#*/}\": \"$value\"," >> $JSON_FILE  #IGNITE/DISCOVERY_URL
-    done
+    command="conjur --insecure variable get -i "    
 fi
 
-conjur logout
+for variable in $(echo $variablelist | sed 's/[][]//g')
+do
+  variable="${variable//\"}"         ##Remove "" myConjurAccount:variable:BotApp/secretVar,
+  variable="${variable//,}"          ##Remove ,  myConjurAccount:variable:BotApp/IGNITE/DISCOVERY_URL
+  variable=${variable##*:}           ##Get variable  BotApp/IGNITE/DISCOVERY_URL
+  command+="$variable ";
+done
 
-sed -i '$ s/.$//' $JSON_FILE
-echo "}" >> $JSON_FILE
+$command > $JSON_FILE
+
+conjur logout
