@@ -11,9 +11,11 @@ TIBCO BusinessEvents® documentation is available at [Using GV Configuration Fra
 
 *  You need Conjur server with all policies and variables loaded.Get the conjur details, such as server url,account name, your login from conjur admin.
 *  (Optional) For using conjur cli in secured mode, ensure that you have access to the CA certificate.
+*  Use complete conjur variable names in Tibco Business Events.
+   For example: If your variables in conjur is of the format "myConjurAccount:variable:backend/ci/users-app/db-username" use "backend/ci/users-app/db-username" in your Tibco Business Events application.
 
 Note: You may use [Quickstart](https://www.conjur.org/get-started/quick-start/oss-environment/) for basic setup of conjur server and client using docker images in local. 
-Refer Unit 1-For setting up conjur server, Unit 2-Change the policies according to your variables and Unit 3-Load the variables mentioned in the policies. Use the `my_app_data` file generated for CONJUR_LOGIN and CONJUR_APIKEY.
+Refer Unit 1-For setting up conjur server, Unit 2-Change the policies according to your variables and Unit 3-Load the variables mentioned in the policies. Use the `my_app_data` file generated for CONJUR_LOGINNAME and CONJUR_APIKEY.
 
 ### Build
 To select this provider type, pass `cyberark` to --gv-provider flag while building the BE application image.
@@ -22,6 +24,7 @@ Sample:
 ./build_image.sh \
 -i app \
 -s /home/user/tibco/installers \
+-a /home/user/tibco/app \
 --gv-provider "cyberark" \
 -t fdconjur:latest
 ```
@@ -30,7 +33,7 @@ Sample:
 Following environment variables are applicable for this GV provider type:
 * CONJUR_SERVER_URL - Conjur Server URL
 * CONJUR_ACCOUNT - Account created in conjur
-* CONJUR_LOGIN - User or host name
+* CONJUR_LOGINNAME - User or host name
 * CONJUR_APIKEY - Api key
 * CONJUR_SECURE - Set value to `true` to run conjur cli in secure mode.Also copy the CA certificate in the same folder as application EAR and CDD files.
 
