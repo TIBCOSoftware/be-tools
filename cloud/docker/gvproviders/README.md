@@ -7,15 +7,19 @@ TIBCO BusinessEvents® documentation is available at [Using GV Configuration Fra
 
 ## Cyberark Conjur GV Provider
 
+## Prerequisites
+
+*  The Conjur server that is to be used as key-value store for the application global variables must already be setup. For instructions on local installation and setup, see the Conjur [Quickstart](https://www.conjur.org/get-started/quick-start/oss-environment/).In the change the varibles and policies accordingly. Use the `my_app_data` file generated for CONJUR_LOGINNAME and CONJUR_APIKEY.
+*  (Optional) For initializing Conjur client in secure mode, ensure that you have access to the CA certificate.
+
 ## Procedure
 
-*  You need Conjur server with all policies and variables loaded.Get the conjur details, such as server url,account name, your login from conjur admin.
-*  (Optional) For using conjur cli in secured mode, ensure that you have access to the CA certificate.
-*  Use complete conjur variable names in Tibco Business Events.
-   For example: If your variables in conjur is of the format "myConjurAccount:variable:backend/ci/users-app/db-username" use "backend/ci/users-app/db-username" in your Tibco Business Events application.
+*  Get the conjur details, such as server url,account name, your login and certificates from conjur admin.
+*  Use complete conjur variable names in Tibco Business Events. 
+If your variables in conjur is of the format `<Conjur-account>:variable:<GV-Key>` 
+   use only `<GV-Key>` in Application.
 
-Note: You may use [Quickstart](https://www.conjur.org/get-started/quick-start/oss-environment/) for basic setup of conjur server and client using docker images in local. 
-Refer Unit 1-For setting up conjur server, Unit 2-Change the policies according to your variables and Unit 3-Load the variables mentioned in the policies. Use the `my_app_data` file generated for CONJUR_LOGINNAME and CONJUR_APIKEY.
+   For example: If a conjur variable is "myConjurAccount:variable:backend/ci/users-app/db-username" use "backend/ci/users-app/db-username" in your Tibco Business Events application.
 
 ### Build
 To select this provider type, pass `cyberark` to --gv-provider flag while building the BE application image.
@@ -40,21 +44,10 @@ Following environment variables are applicable for this GV provider type:
 Sample run:
 ```sh
 docker run \
--e "CONJUR_SERVER_URL=https://conjur:8500" \
+-e "CONJUR_SERVER_URL=<Conjur server url>" \
 -e "CONJUR_ACCOUNT=<Conjur account>" \
--e "CONJUR_LOGIN=<Conjur user or host>" \
+-e "CONJUR_LOGINNAME=<Conjur user or host>" \
 -e "CONJUR_APIKEY=<api_key>" \
 -p 8108:8108 --name=fdconjur fdconjur:latest
 ```
-Sample run(Secured Conjur Server):
-
-```sh
-docker run \
--e CONJUR_ACCOUNT=myConjurAccount \
--e CONJUR_SERVER_URL=https://proxy \
--e CONJUR_LOGIN=admin \
--e CONJUR_APIKEY=2jtsx0c358kcyw15a0rm112d4b1e5yfsm11eeah7q6n0dx61t8cr57 \
--e CONJUR_SECURE=true
---network conjur-quickstart_default
--p 8108:8108 --name=bot_app fdconsul:latest
-```
+Note: For initializing the Conjur client in secure mode add `CONJUR_SECURE=true` environment variable to the above command.

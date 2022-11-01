@@ -55,11 +55,9 @@ else
     command="conjur --insecure variable get -i "    
 fi
 
-for variable in $(echo $variablelist | sed 's/[][]//g')
+for variable in $(echo $variablelist | sed 's/[][]//g' | sed 's/,//g')
 do
-  variable="${variable//\"}"         ##Remove "" myConjurAccount:variable:BotApp/secretVar,
-  variable="${variable//,}"          ##Remove ,  myConjurAccount:variable:BotApp/IGNITE/DISCOVERY_URL
-  variable=${variable##*:}           ##Get variable  BotApp/IGNITE/DISCOVERY_URL
+  variable=$(echo $variable | sed -r 's/.*variable:(.*)\"/\1/g' );
   command+="$variable ";
 done
 
