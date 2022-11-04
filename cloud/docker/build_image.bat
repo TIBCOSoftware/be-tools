@@ -778,6 +778,9 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
             ) else if "!GV!" EQU "consul" (
                 mkdir !TEMP_FOLDER!\gvproviders\!GV!
                 xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+            ) else if "!GV!" EQU "cyberark" (
+                mkdir !TEMP_FOLDER!\gvproviders\!GV!
+                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
             ) else (
                 if EXIST ".\gvproviders\!GV!" (
                     if NOT EXIST ".\gvproviders\!GV!\setup!SCRIPT_EXTN!" (
@@ -1047,7 +1050,7 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
-    echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"custom") [optional]
+    echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"cyberark"^|"custom") [optional]
     echo                            To add more than one GV use comma separated format ex: "consul,http"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.

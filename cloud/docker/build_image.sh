@@ -131,7 +131,7 @@ USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAG
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
-USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"custom\") [optional]\n"
+USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"cyberark\"|\"custom\") [optional]\n"
 USAGE+="                           To add more than one GV use comma separated format ex: \"consul,http\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
@@ -796,7 +796,7 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         
         for GV in "${GVs[@]}"
         do
-            if [ "$GV" = "http" -o "$GV" = "consul" ]; then
+            if [ "$GV" = "http" -o "$GV" = "consul" -o "$GV" = "cyberark" ]; then
                 mkdir -p $TEMP_FOLDER/gvproviders/$GV
                 cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
             else

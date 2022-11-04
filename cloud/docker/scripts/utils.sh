@@ -19,7 +19,7 @@ removeDuplicatesAndFormatGVs()
 
     for key in "${values[@]}"; do
 
-        if ! [ "$key" = "http" -o "$key" = "consul" ]; then
+        if ! [ "$key" = "http" -o "$key" = "consul" -o "$key" = "cyberark" ]; then
             key=${key/custom\//}
             key=${key/custom\\/}
             key="custom/$key"
