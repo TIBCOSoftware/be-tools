@@ -49,7 +49,7 @@ func TestAgents(t *testing.T) {
 	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Name)
 	require.Equal(t, int32(1), *actualAgents[0].Spec.Replicas)
 	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, "TestAgents-discovery-service", actualAgents[0].Spec.ServiceName)
+	require.Equal(t, "TestAgents-inferenceagent-headless", actualAgents[0].Spec.ServiceName)
 	require.Equal(t, 1, len(actualAgents[0].Spec.Template.Labels))
 	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Spec.Template.Labels["name"])
 	require.Equal(t, "", actualAgents[0].Spec.Template.Labels["cacheagent"])
@@ -169,7 +169,7 @@ func TestAgentsNone(t *testing.T) {
 		"persistencenone-inferenceagent": {
 			"release":                      "persistencenone-inferenceagent",
 			"replicas":                     int32(1),
-			"serviceName":                  "persistencenone-discovery-service",
+			"serviceName":                  "persistencenone-inferenceagent-headless",
 			"containerName":                "inferenceagent-container",
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
@@ -191,7 +191,7 @@ func TestAgentsNone(t *testing.T) {
 		"persistencenone-cacheagent": {
 			"release":                      "persistencenone-cacheagent",
 			"replicas":                     int32(1),
-			"serviceName":                  "persistencenone-discovery-service",
+			"serviceName":                  "persistencenone-cacheagent-headless",
 			"containerName":                "cacheagent-container",
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
@@ -331,7 +331,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"sharednothing-inferenceagent": {
 			"release":                           "sharednothing-inferenceagent",
 			"replicas":                          int32(1),
-			"serviceName":                       "sharednothing-discovery-service",
+			"serviceName":                       "sharednothing-inferenceagent-headless",
 			"containerName":                     "inferenceagent-container",
 			"image":                             "befdapp:01",
 			"pullsecret":                        "besecret",
@@ -351,7 +351,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"sharednothing-cacheagent": {
 			"release":                           "sharednothing-cacheagent",
 			"replicas":                          int32(1),
-			"serviceName":                       "sharednothing-discovery-service",
+			"serviceName":                       "sharednothing-cacheagent-headless",
 			"containerName":                     "cacheagent-container",
 			"image":                             "befdapp:01",
 			"pullsecret":                        "besecret",
@@ -403,7 +403,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 }
 
 //  Template test for rms deployment with ignite cassandra
-func TestAgentsRNSIgniteCassandra(t *testing.T) {
+func TestAgentsRMSIgniteCassandra(t *testing.T) {
 	helmFilePath, err := filepath.Abs("../../helm")
 	releaseName := "persistencenone"
 
@@ -442,7 +442,7 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 
 	// agent 0
 	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
-	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
+	expectedSVCName := fmt.Sprintf("%s-inferenceagent-headless", releaseName)
 	expectedServiceAccName := fmt.Sprintf("%s-ignite", releaseName)
 	require.Equal(t, "StatefulSet", agents[0].Kind)
 	require.Equal(t, "apps/v1", agents[0].APIVersion)
@@ -461,7 +461,7 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	require.Equal(t, "metadata.name", actualEnvEngineName.ValueFrom.FieldRef.FieldPath)
 	require.Equal(t, "testdb", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_KEYSPACE_NAME").Value)
 	require.Equal(t, "localhost:9042", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_SERVER").Value)
-	require.Equal(t, "persistencenone-discovery-service", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
+	// require.Equal(t, "persistencenone-inferenceagent-headless", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
 	require.Equal(t, "k8s", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.discovery.type").Value)
 	require.Equal(t, "betools", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
