@@ -172,7 +172,7 @@ podAntiAffinity: false
 ## Config Map
 ##################################################
 
-# configs Specify Specify environment variables (yaml key value format), So that
+# configs Specify environment variables (yaml key value format), So that
 # configmap gets generated and injected in to the BE agents (pods)
 #
 configs: {}
@@ -234,7 +234,7 @@ persistence:
   # If defined,             defined storage class would be used for PV/PVC provisioning
   # If set to "-",          disables dynamic PV/PVC provisioning
   # If empty(i.e ""),       [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
-  # Note: RMS deployments need a storagecalss which supports the access mode ReadWriteMany (Ex: azurefile  )
+  # Note: RMS deployments need a storageclass which supports the access mode ReadWriteMany (Ex: azurefile  )
   storageClass: "standard"
   scSupportsReadWriteMany: true   # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
   size: 0.5Gi                     # desired storage size

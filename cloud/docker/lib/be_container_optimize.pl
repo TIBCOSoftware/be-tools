@@ -250,6 +250,11 @@ sub get_modules_from_ear{
     my @destinationtags = @agentClassesData[0] =~ /<destinations>(.*?)<\/destinations>/sg;
 
     foreach my $dt (@destinationtags) {
+        # added below for direct destination group in agent class section under cdd
+        my @cnuridirectdest = $dt =~ /<uri>(.*)<\/uri>/g;
+        foreach my $dt1 (@cnuridirectdest) {
+            push(@cnuris, (split '\/',$dt1)[-1]);
+        }
         my @refTags = $dt =~ /<ref>(.*?)<\/ref>/sg;
         foreach my $rftag (@refTags) {
             if ($rftag ne "") {
@@ -271,10 +276,16 @@ sub get_modules_from_ear{
 
     if ("$INPUT_VAR1" eq "win"){
         my $wincmd1=`mkdir C:\\tmp\\$randnum\\channelsdata && "C:\\Program Files\\7-Zip\\7z.exe"  e $arg_ear_file -oC:\\tmp\\$randnum &&  "C:\\Program Files\\7-Zip\\7z.exe"  e "C:\\tmp\\$randnum\\Shared Archive.sar" -oC:\\tmp\\$randnum\\channelsdata `;
-        @channelfiles=split "\n", `dir  C:\\tmp\\$randnum\\channelsdata\\*.channel /s /b /o`;
+        my @checkFile =split "\n", `if exist  C:\\tmp\\$randnum\\channelsdata\\*.channel  echo exists`;
+        if (@checkFile[0] eq "exists"){
+            @channelfiles=split "\n", `dir  C:\\tmp\\$randnum\\channelsdata\\*.channel /s /b /o`;
+        }
     } else {
         my $Command_1_extract=`mkdir -p /tmp/$randnum/channelsdata ; unzip -o $arg_ear_file -d /tmp/$randnum ; unzip -o "/tmp/$randnum/Shared Archive.sar" -d /tmp/$randnum/channelsdata `;
-        @channelfiles=`ls /tmp/$randnum/channelsdata/Channels/*.channel`;
+        if (-e "/tmp/$randnum/channelsdata/Channels")
+        {
+            @channelfiles=`ls /tmp/$randnum/channelsdata/Channels/*.channel`;
+        }
     }
 
     foreach my $cf (@channelfiles) {
