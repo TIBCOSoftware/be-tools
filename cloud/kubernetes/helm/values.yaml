@@ -210,6 +210,11 @@ configs: {}
   # LDM_URL: lv://localhost:10080
   # # metrics -  custom (ex:elastic, prometheus etc..)
   # URL: http://localhost:1234
+  # CONJUR_SERVER_URL: https://conjur-oss.conjur.svc.cluster.local
+  # CONJUR_ACCOUNT: "default"
+  # CONJUR_LOGINNAME: "host/conjur/authn-k8s/demo/apps/test/deployment/busybox1"
+  # CONJUR_APIKEY: "3k46pf1zv2et21xz12zm3nkxp2sjqb55y280zs0k2zt7enk1nrhje4a"
+  # CONJUR_SECURE: true
 
 
 ##################################################
@@ -314,3 +319,4 @@ grafana:
 oihr:
   enabled: false                                      # Set to true, to enable Hawk micro agent
   hkAgentUrl: redtail-agent-0.redtail-agent:2571      # HAWK agent url
+  
