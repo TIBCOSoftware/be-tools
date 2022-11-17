@@ -29,9 +29,9 @@ if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
   exit 1
 fi
 
-if [[ -z "$AWS_DEFAULT_REGION" ]]; then
+if [[ -z "$AWS_SESSION_TOKEN" ]]; then
   echo "ERROR: Cannot read GVs from AWS certificate Manager.."
-  echo "ERROR: Specify env variable AWS_DEFAULT_REGION"
+  echo "ERROR: Specify env variable AWS_SESSION_TOKEN"
   exit 1
 fi
 
@@ -66,15 +66,19 @@ if [[ -z "$AWS_ACM_SERVER_PASSPHRASE" ]]; then
 fi
 
 # configure aws cli
-PROFILE_NAME="beuser"
-printf "%s\n%s\n%s\njson" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" | aws configure --profile $PROFILE_NAME
-if [ ! -z "$AWS_ROLE_ARN" ]; then
-  aws configure set role_arn $AWS_ROLE_ARN --profile $PROFILE_NAME
-  aws configure set source_profile $PROFILE_NAME --profile $PROFILE_NAME
-fi
+# PROFILE_NAME="beuser"
+# printf "%s\n%s\n%s\njson" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" | aws configure 
+# if [ ! -z "$AWS_ROLE_ARN" ]; then
+#   aws configure set role_arn $AWS_ROLE_ARN 
+#   aws configure set source_profile $PROFILE_NAME 
+# fi
+
+export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+export AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN"
 
 if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
-    aws configure set aws_session_token $AWS_SESSION_TOKEN --profile $PROFILE_NAME
+    aws configure set aws_session_token $AWS_SESSION_TOKEN 
 fi
 
 
@@ -99,16 +103,16 @@ printf "$AWS_ACM_CLIENT_PASSPHRASE" > $passphraseFile
 printf "$AWS_ACM_SERVER_PASSPHRASE" > $serverpassphraseFile
 
 # Download aws private ceritificate authority CA certificate
-aws acm-pca get-certificate-authority-certificate --certificate-authority-arn $AWS_ACM_CERT_AUTHORITY_ARN --profile $PROFILE_NAME --output text > $CACERTIFICATE
+aws acm-pca get-certificate-authority-certificate --certificate-authority-arn $AWS_ACM_CERT_AUTHORITY_ARN  --output text > $CACERTIFICATE
 
 #Download aws acm client certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile --profile $PROFILE_NAME | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $CLIENT_PUBLIC_CERT
+aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $CLIENT_PUBLIC_CERT
 
 #Download aws acm client private cert, certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile --profile $PROFILE_NAME | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)\(.PrivateKey)"' > $CLIENT_FULL_CERT
+aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)\(.PrivateKey)"' > $CLIENT_FULL_CERT
 
 #Download aws acm server certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_SERVER_CERT_ARN --passphrase fileb://$serverpassphraseFile --profile $PROFILE_NAME | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $SERVER_PUBLIC_CERT
+aws acm export-certificate --certificate-arn $AWS_ACM_SERVER_CERT_ARN --passphrase fileb://$serverpassphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $SERVER_PUBLIC_CERT
 
 #set JAVA bin path for keytool utility
 TRA_FILE="bin/be-engine.tra"
