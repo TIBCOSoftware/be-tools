@@ -177,7 +177,7 @@ podAntiAffinity: false
 ## Config Map
 ##################################################
 
-# configs Specify Specify environment variables (yaml key value format), So that
+# configs Specify environment variables (yaml key value format), So that
 # configmap gets generated and injected in to the BE agents (pods)
 #
 configs: {}
@@ -215,6 +215,11 @@ configs: {}
   # LDM_URL: lv://localhost:10080
   # # metrics -  custom (ex:elastic, prometheus etc..)
   # URL: http://localhost:1234
+  # CONJUR_SERVER_URL: https://conjur-oss.conjur.svc.cluster.local
+  # CONJUR_ACCOUNT: "default"
+  # CONJUR_LOGINNAME: "host/conjur/authn-k8s/demo/apps/test/deployment/busybox1"
+  # CONJUR_APIKEY: "3k46pf1zv2et21xz12zm3nkxp2sjqb55y280zs0k2zt7enk1nrhje4a"
+  # CONJUR_SECURE: true
 
 
 ##################################################
@@ -239,7 +244,7 @@ persistence:
   # If defined,             defined storage class would be used for PV/PVC provisioning
   # If set to "-",          disables dynamic PV/PVC provisioning
   # If empty(i.e ""),       [NOT RECOMENDED] cluster's default storage class would be used for PV/PVC provisioning. Please note that if you use this option helm upgrade will fail.
-  # Note: RMS deployments need a storagecalss which supports the access mode ReadWriteMany (Ex: azurefile  )
+  # Note: RMS deployments need a storageclass which supports the access mode ReadWriteMany (Ex: azurefile  )
   storageClass: "standard"
   scSupportsReadWriteMany: true   # Set to true, if the defined persistence.storageClass supports access mode ReadWriteMany otherwise set to false.
   size: 0.5Gi                     # desired storage size
