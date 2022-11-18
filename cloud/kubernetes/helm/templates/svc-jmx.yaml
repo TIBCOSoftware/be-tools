@@ -1,0 +1,18 @@
+{{- range $i, $agent := .Values.agents }}
+{{- range $j, $e := until (int $agent.replicas) }}
+{{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $ssName }}-{{ $j }}-jmx
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ $ssName }}-{{ $j }}
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 5555
+      protocol: TCP
+---
+{{- end }}
+{{- end }}

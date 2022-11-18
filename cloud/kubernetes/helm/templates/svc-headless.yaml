@@ -1,7 +1,6 @@
 {{- range $i, $agent := .Values.agents }}
 {{- if gt (int $agent.replicas) 0 }}
 {{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
-
 apiVersion: v1
 kind: Service
 metadata:
