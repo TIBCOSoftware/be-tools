@@ -18,119 +18,131 @@ if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
 fi
 
 if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
-  echo "ERROR: Cannot read GVs from AWS certificate Manager.."
-  echo "ERROR: Specify env variable AWS_ACCESS_KEY_ID"
+  echo "ERROR: Cannot read GVs from AWS certificate Manager.. Specify env variable AWS_ACCESS_KEY_ID"
   exit 1
 fi
 
 if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
-  echo "ERROR: Cannot read GVs from AWS certificate Manager.."
-  echo "ERROR: Specify env variable AWS_SECRET_ACCESS_KEY"
+  echo "ERROR: Cannot read GVs from AWS certificate Manager..Specify env variable AWS_SECRET_ACCESS_KEY"
   exit 1
 fi
 
 if [[ -z "$AWS_SESSION_TOKEN" ]]; then
-  echo "ERROR: Cannot read GVs from AWS certificate Manager.."
-  echo "ERROR: Specify env variable AWS_SESSION_TOKEN"
+  echo "ERROR: Cannot read GVs from AWS certificate Manager..Specify env variable AWS_SESSION_TOKEN"
   exit 1
 fi
 
-if [[ -z "$AWS_ACM_CLIENT_CERT_ARN" ]]; then
-  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_ACM_CLIENT_CERT_ARN is empty OR not supplied."
-  echo "WARN: Skip fetching GV values from AWS certificate Manager."
-  exit 0
-fi
-
-if [[ -z "$AWS_ACM_SERVER_CERT_ARN" ]]; then
-  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_ACM_CLIENT_CERT_ARN is empty OR not supplied."
-  echo "WARN: Skip fetching GV values from AWS certificate Manager."
-  exit 0
+if [[ -z "$AWS_DEFAULT_REGION" ]]; then
+  echo "ERROR: Cannot read GVs from AWS Secrets Manager..Specify env variable AWS_DEFAULT_REGION"
+  exit 1
 fi
 
 if [[ -z "$AWS_ACM_CERT_AUTHORITY_ARN" ]]; then
-  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_ACM_CERT_AUTHORITY_ARN is empty OR not supplied."
-  echo "WARN: Skip fetching GV values from AWS certificate Manager."
+  echo "Env variable AWS_ACM_CERT_AUTHORITY_ARN is empty OR not supplied.. Skip fetching GV values from AWS certificate Manager."
   exit 0
 fi
 
-if [[ -z "$AWS_ACM_CLIENT_PASSPHRASE" ]]; then
-  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_ACM_CLIENT_PASSPHRASE is empty OR not supplied."
-  echo "WARN: Skip fetching GV values from AWS certificate Manager."
-  exit 0
-fi
-
-if [[ -z "$AWS_ACM_SERVER_PASSPHRASE" ]]; then
-  echo "WARN: GV provider[custom/aws] is configured but env variable AWS_ACM_SERVER_PASSPHRASE is empty OR not supplied."
-  echo "WARN: Skip fetching GV values from AWS certificate Manager."
-  exit 0
-fi
-
-# configure aws cli
-# PROFILE_NAME="beuser"
-# printf "%s\n%s\n%s\njson" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" | aws configure 
-# if [ ! -z "$AWS_ROLE_ARN" ]; then
-#   aws configure set role_arn $AWS_ROLE_ARN 
-#   aws configure set source_profile $PROFILE_NAME 
-# fi
-
+# Set AWS Credentials using export 
 export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
 export AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN"
+export AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION"
 
 if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
     aws configure set aws_session_token $AWS_SESSION_TOKEN 
 fi
 
-
-passphraseFile=password.txt
-serverpassphraseFile=serverpassword.txt
+# Variables and set JAVA bin path for keytool utility
+KEYSTORE_PHRASEFILE=password.txt
+TRUSTSTORE_PHRASEFILE=password2.txt
 CERTS_PATH=/opt/tibco/be/certstore
-mkdir -p $CERTS_PATH
-cd $CERTS_PATH
-
-# Set cert file names
-SERVER_PUBLIC_CERT=serverpub.pem
-CLIENT_PUBLIC_CERT=certificate.pem
-CLIENT_FULL_CERT=fullcertificate.pem
+CERT_KEYSTORE=keystore.jks
+CERT_TRUSTSTORE=truststore.jks
 CACERTIFICATE=CACertificate.pem
-CLIENTP12=client.p12
-CLIENT_KEYSTORE=client.keystore.jks
-CLIENT_TRUSTSTORE=client.truststore.jks
-SERVER_TRUSTSTORE=server.truststore.jks
-
-# write passphrase to a file
-printf "$AWS_ACM_CLIENT_PASSPHRASE" > $passphraseFile
-printf "$AWS_ACM_SERVER_PASSPHRASE" > $serverpassphraseFile
+TRA_FILE="bin/be-engine.tra"
+TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
+KEYTOOL_LOCATION=$TIB_JAVA_HOME/bin/keytool
+mkdir -p $CERTS_PATH && cd $CERTS_PATH
 
 # Download aws private ceritificate authority CA certificate
 aws acm-pca get-certificate-authority-certificate --certificate-authority-arn $AWS_ACM_CERT_AUTHORITY_ARN  --output text > $CACERTIFICATE
 
-#Download aws acm client certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $CLIENT_PUBLIC_CERT
+key_store_certs_generation()
+{
+  if [[ -z "$AWS_ACM_KEYSTORE_PASSPHRASE" ]]; then
+    echo "WARN: Env variable AWS_ACM_KEYSTORE_PASSPHRASE is empty OR not supplied.. Setting the passphrase 'password123' as default."
+    AWS_ACM_KEYSTORE_PASSPHRASE=password123
+  fi
+  printf "$AWS_ACM_KEYSTORE_PASSPHRASE" > $KEYSTORE_PHRASEFILE
+  oIFS="$IFS"; IFS=','; declare -a AWS_ACM_KEYSTORE_ARNs=($AWS_ACM_KEYSTORE_ARN); IFS="$oIFS"; unset oIFS
 
-#Download aws acm client private cert, certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_CLIENT_CERT_ARN --passphrase fileb://$passphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)\(.PrivateKey)"' > $CLIENT_FULL_CERT
+  #Remove duplicate ARN's
+  KEYSTORE_ARN=( `for i in ${AWS_ACM_KEYSTORE_ARNs[@]}; do echo $i; done | sort -u` )
+  
+  for (( i=0; i < "${#KEYSTORE_ARN[@]}"; i++ ));
+  do
+    FULL_CERT=fullcertificate-$i.pem
+    P12CERT=client-$i.p12
 
-#Download aws acm server certificate body and ceritifate chain
-aws acm export-certificate --certificate-arn $AWS_ACM_SERVER_CERT_ARN --passphrase fileb://$serverpassphraseFile  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $SERVER_PUBLIC_CERT
+    #Download aws acm client private cert, certificate body and ceritifate chain
+    echo "Downloading certs for arn : ${KEYSTORE_ARN[$i]}"
+    aws acm export-certificate --certificate-arn ${KEYSTORE_ARN[$i]} --passphrase fileb://$KEYSTORE_PHRASEFILE  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)\(.PrivateKey)"' > $FULL_CERT
 
-#set JAVA bin path for keytool utility
-TRA_FILE="bin/be-engine.tra"
-TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
-KEYTOOL_LOCATION=$TIB_JAVA_HOME/bin/keytool
+    # Convert downloaded acm certs to p12 and jks, generate client jks keystore using CAcert and acm certs
+    openssl pkcs12 -in $FULL_CERT -export -out $P12CERT -name localhost-$i -passin pass:$AWS_ACM_KEYSTORE_PASSPHRASE -passout pass:$AWS_ACM_KEYSTORE_PASSPHRASE -password  pass:$AWS_ACM_KEYSTORE_PASSPHRASE
+    $KEYTOOL_LOCATION -importkeystore -srckeystore $P12CERT -srcstoretype PKCS12 -destkeystore $CERT_KEYSTORE -deststoretype PKCS12 -srcstorepass $AWS_ACM_KEYSTORE_PASSPHRASE -deststorepass $AWS_ACM_KEYSTORE_PASSPHRASE -srcalias localhost-$i -destalias localhost-$i -srckeypass $AWS_ACM_KEYSTORE_PASSPHRASE -destkeypass $AWS_ACM_KEYSTORE_PASSPHRASE -noprompt
+    # # Delete download private and public certs except CAroot cert
+    rm -rf $P12CERT $FULL_CERT
+  done
 
-# Convert downloaded acm certs to p12 and jks, generate client jks keystore using CAcert and acm certs
-openssl pkcs12 -in $CLIENT_FULL_CERT -export -out $CLIENTP12 -name localhost -passin pass:$AWS_ACM_CLIENT_PASSPHRASE -passout pass:$AWS_ACM_CLIENT_PASSPHRASE -password  pass:$AWS_ACM_CLIENT_PASSPHRASE
-$KEYTOOL_LOCATION -importkeystore -srckeystore $CLIENTP12 -srcstoretype PKCS12 -destkeystore $CLIENT_KEYSTORE -deststoretype PKCS12 -srcstorepass $AWS_ACM_CLIENT_PASSPHRASE -deststorepass $AWS_ACM_CLIENT_PASSPHRASE -srcalias localhost -destalias localhost -srckeypass $AWS_ACM_CLIENT_PASSPHRASE -destkeypass $AWS_ACM_CLIENT_PASSPHRASE -noprompt
-$KEYTOOL_LOCATION -keystore $CLIENT_KEYSTORE -alias CARoot -import -file $CACERTIFICATE -storepass $AWS_ACM_CLIENT_PASSPHRASE -keypass $AWS_ACM_CLIENT_PASSPHRASE -noprompt
+  # Add CAroot cert to keystore jks
+  $KEYTOOL_LOCATION -keystore $CERT_KEYSTORE -alias CARoot -import -file $CACERTIFICATE -storepass $AWS_ACM_KEYSTORE_PASSPHRASE -keypass $AWS_ACM_KEYSTORE_PASSPHRASE -noprompt  
+}
 
-#  generate client jks truststore using CAcert and acm certs
-$KEYTOOL_LOCATION -keystore $CLIENT_TRUSTSTORE -alias CARoot -import -file $CACERTIFICATE -storepass $AWS_ACM_CLIENT_PASSPHRASE -keypass $AWS_ACM_CLIENT_PASSPHRASE -noprompt
-$KEYTOOL_LOCATION -keystore $CLIENT_TRUSTSTORE -alias localhost -import -file $CLIENT_PUBLIC_CERT -storepass $AWS_ACM_CLIENT_PASSPHRASE -keypass $AWS_ACM_CLIENT_PASSPHRASE -noprompt
+trust_store_certs_generation()
+{
+  if [[ -z "$AWS_ACM_TRUSTSTORE_PASSPHRASE" ]]; then
+    echo "WARN: Env variable AWS_ACM_TRUSTSTORE_PASSPHRASE is empty OR not supplied.. Setting the passphrase 'password12' as default."
+    AWS_ACM_TRUSTSTORE_PASSPHRASE=password12
+  fi  
+  printf "$AWS_ACM_TRUSTSTORE_PASSPHRASE" > $TRUSTSTORE_PHRASEFILE
+  oIFS="$IFS"; IFS=','; declare -a AWS_ACM_TRUSTSTORE_ARNs=($AWS_ACM_TRUSTSTORE_ARN); IFS="$oIFS"; unset oIFS
 
-##  generate server jks truststore using CAcert and acm certs
-$KEYTOOL_LOCATION -keystore $SERVER_TRUSTSTORE -alias CARoot -import -file $CACERTIFICATE -storepass $AWS_ACM_CLIENT_PASSPHRASE -keypass $AWS_ACM_CLIENT_PASSPHRASE -noprompt
-$KEYTOOL_LOCATION -keystore $SERVER_TRUSTSTORE -alias localhost -import -file $SERVER_PUBLIC_CERT -storepass $AWS_ACM_SERVER_PASSPHRASE -keypass $AWS_ACM_SERVER_PASSPHRASE -noprompt
+  #Remove duplicate ARN's
+  TRUSTSTORE_ARN=( `for i in ${AWS_ACM_TRUSTSTORE_ARNs[@]}; do echo $i; done | sort -u` )
+  
+  for (( i=0; i < "${#TRUSTSTORE_ARN[@]}"; i++ ));
+  do
+    PUBLIC_CERT=certificate-$i.pem
+    
+    #Download aws acm client private cert, certificate body and ceritifate chain
+    echo "Downloading certs for arn : ${TRUSTSTORE_ARN[$i]}"
+    aws acm export-certificate --certificate-arn ${TRUSTSTORE_ARN[$i]} --passphrase fileb://$TRUSTSTORE_PHRASEFILE  | /home/tibco/be/gvproviders/jq -r '"\(.Certificate)\(.CertificateChain)"' > $PUBLIC_CERT
 
-# Delete download private and public certs except CAroot cert
-rm -rf $CLIENT_PUBLIC_CERT $SERVER_PUBLIC_CERT $CLIENT_FULL_CERT $passphraseFile $serverpassphraseFile $CLIENTP12
+    # Convert downloaded acm certs to p12 and jks, generate client jks keystore using CAcert and acm certs
+    $KEYTOOL_LOCATION -keystore $CERT_TRUSTSTORE -alias localhost-$i -import -file $PUBLIC_CERT -storepass $AWS_ACM_TRUSTSTORE_PASSPHRASE -keypass $AWS_ACM_TRUSTSTORE_PASSPHRASE -noprompt
+    
+    # # Delete download private and public certs except CAroot cert
+    rm -rf $PUBLIC_CERT
+  done
+
+  # Add CAroot cert to truststore jks
+  $KEYTOOL_LOCATION -keystore $CERT_TRUSTSTORE -alias CARoot -import -file $CACERTIFICATE -storepass $AWS_ACM_TRUSTSTORE_PASSPHRASE -keypass $AWS_ACM_TRUSTSTORE_PASSPHRASE -noprompt
+}
+
+if [[ -z "$AWS_ACM_KEYSTORE_ARN" ]]; then
+  echo "WARN: Skip Downloading AWS_ACM_KEYSTORE_ARN server certificates from AWS certificate Manager."
+else
+  echo "Generate keystore certificates"
+  key_store_certs_generation
+fi
+
+if [[ -z "$AWS_ACM_TRUSTSTORE_ARN" ]]; then
+  echo "WARN: Skip Downloading AWS_ACM_TRUSTSTORE_ARN client certificates from AWS certificate Manager."
+else
+  echo "Generate truststore certificates"
+  trust_store_certs_generation
+fi
+
+# remove unsed files
+rm -rf $KEYSTORE_PHRASEFILE $TRUSTSTORE_PHRASEFILE
