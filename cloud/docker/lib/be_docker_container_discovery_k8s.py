@@ -59,9 +59,6 @@ def discoverInstanceDatails(appManagementFilePath):
                         appname=item["spec"]["containers"][0]["image"]
                     
                     if(puname and int(jmxport)>0):
-                        dockerHostEnv=getEnvironmentVariable(environment,'DOCKER_HOST')
-                        if (dockerHostEnv != ""):
-                            podname=dockerHostEnv
                         parts=appname.split('/')
                         appname=parts[len(parts)-1]
                         appname=appname.replace('.','_').replace(':','_')
