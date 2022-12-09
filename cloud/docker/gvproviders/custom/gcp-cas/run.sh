@@ -25,15 +25,12 @@ if [[ -z "$GCP_LOCATION" ]]; then
   exit 1
 fi
 
-
-# GCLOUD_CLI_PATH=gcloud
 GCLOUD_CLI_PATH=/home/tibco/be/gvproviders/custom/gcp-cas/google-cloud-sdk/bin/gcloud
 
 # Authenticate gcloud account and configure project
 $GCLOUD_CLI_PATH auth activate-service-account $GCP_SERVICEACCOUNT_ID --key-file=$GCP_SERVICEACCOUNT_KEYFILE_PATH
 $GCLOUD_CLI_PATH config set project $GCP_PROJECT_ID
 
-# CERTS_PATH=certs
 CERTS_PATH=/opt/tibco/be/certstore
 TRA_FILE="bin/be-engine.tra"
 TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//')
@@ -91,11 +88,11 @@ trust_store_certs_generation() {
   fi
 }
 
-if [[ -z "$GCP_CAS_CERTIFICATES" ]] & [[ -z "$GCP_CAS_CERTIFICATE_POOL" ]]; then
-  echo "WARN: env variable any of GCP_CAS_CERTIFICATES or GCP_CAS_CERTIFICATE_POOL not specified for gv-provider:gcp-cas... Specify both env variables GCP_CAS_CERTIFICATES and GCP_CAS_CERTIFICATE_POOL"
+if [ "$GCP_CAS_CERTIFICATES" != "" -a "$GCP_CAS_CERTIFICATE_POOL" != "" ]; then
+    echo "-----download pem certs and converting to truststore jks certificcates-----"
+    trust_store_certs_generation
 else
-  echo "-----download pem certs and converting to truststore jks certificcates-----"
-  trust_store_certs_generation
+    echo "WARN: env variable any of GCP_CAS_CERTIFICATES or GCP_CAS_CERTIFICATE_POOL not specified for gv-provider:gcp-cas... Specify both env variables GCP_CAS_CERTIFICATES and GCP_CAS_CERTIFICATE_POOL"
 fi
 
 rm -rf *-pub.pem *.p12

@@ -71,7 +71,7 @@ key_store_certs_generation()
 {
   if [[ -z "$AWS_ACM_KEYSTORE_PASSPHRASE" ]]; then
     echo "WARN: Env variable AWS_ACM_KEYSTORE_PASSPHRASE is empty OR not supplied.. Setting the passphrase 'password123' as default."
-    AWS_ACM_KEYSTORE_PASSPHRASE=password123
+    AWS_ACM_KEYSTORE_PASSPHRASE=password
   fi
   printf "$AWS_ACM_KEYSTORE_PASSPHRASE" > $KEYSTORE_PHRASEFILE
   oIFS="$IFS"; IFS=','; declare -a AWS_ACM_KEYSTORE_ARNs=($AWS_ACM_KEYSTORE_ARN); IFS="$oIFS"; unset oIFS
@@ -103,7 +103,7 @@ trust_store_certs_generation()
 {
   if [[ -z "$AWS_ACM_TRUSTSTORE_PASSPHRASE" ]]; then
     echo "WARN: Env variable AWS_ACM_TRUSTSTORE_PASSPHRASE is empty OR not supplied.. Setting the passphrase 'password12' as default."
-    AWS_ACM_TRUSTSTORE_PASSPHRASE=password12
+    AWS_ACM_TRUSTSTORE_PASSPHRASE=password
   fi  
   printf "$AWS_ACM_TRUSTSTORE_PASSPHRASE" > $TRUSTSTORE_PHRASEFILE
   oIFS="$IFS"; IFS=','; declare -a AWS_ACM_TRUSTSTORE_ARNs=($AWS_ACM_TRUSTSTORE_ARN); IFS="$oIFS"; unset oIFS
