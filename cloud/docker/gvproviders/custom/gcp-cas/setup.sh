@@ -23,7 +23,7 @@ if [ "$INSTALL_PKGS_LIST" != "" ]; then
     package-manager install -y $INSTALL_PKGS_LIST
 fi      
 
-# install aws cli
+# install gcloud cli
 cd /home/tibco/be/gvproviders/custom/gcp-cas
 curl "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-linux-x86_64.tar.gz" -o "google-cloud-cli.tar.gz"
 tar -xf google-cloud-cli.tar.gz
@@ -32,7 +32,7 @@ tar -xf google-cloud-cli.tar.gz
 
 # clean up
 rm -f google-cloud-cli.tar.gz
-# rm -rf aws
+
 
 if [ "$CLEANUP_PKGS_LIST" != "" ]; then
     package-manager remove -y $CLEANUP_PKGS_LIST
