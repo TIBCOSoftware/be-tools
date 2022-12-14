@@ -9,10 +9,10 @@ source /home/tibco/be/gvproviders/gvutils.sh
 
 
 
-# fill this variable with required packages to be installed. Multiple packages can be represented in a space separated format ex: "curl unzip".
+# fill this variable with required packages to be installed. Multiple packages can be represented in a space separated format ex: "curl tar".
 REQUIRED_PKGS="curl tar less groff"
 
-# fill this variable with packages used only during build time. Multiple packages can be represented in a space separated format ex: "curl unzip".
+# fill this variable with packages used only during build time. Multiple packages can be represented in a space separated format ex: "curl tar".
 BUILD_PKGS="tar"
 
 INSTALL_PKGS_LIST=$( getInstallPkgs "$REQUIRED_PKGS" )
