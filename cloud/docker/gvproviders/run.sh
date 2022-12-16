@@ -59,7 +59,7 @@ TRUSTSTORE_PASSPHRASE=password
 CAROOT=prod-root.pem
 SECRETS_PATH=/opt/tibco/certs
 mkdir -p $CERTS_PATH
-echo "123"
+
 if [ -d $SECRETS_PATH ]; then
 
   cd $SECRETS_PATH
