@@ -6,8 +6,6 @@
 #
 
 
-
-
 if [[ -z "$AZ_CLIENT_ID" ]]; then
   echo "ERROR: Cannot read GVs from Azure key vault.. Specify env variable AZ_CLIENT_ID"
   exit 1

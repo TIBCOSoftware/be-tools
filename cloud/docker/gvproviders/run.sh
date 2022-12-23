@@ -82,7 +82,7 @@ if [ -d $SECRETS_PATH ]; then
       $KEYTOOL_LOCATION -keystore $CERT_TRUSTSTORE -alias ${SECRET_LIST} -import -file $CA_AND_PUB_CERT -storepass $TRUSTSTORE_PASSPHRASE -keypass $TRUSTSTORE_PASSPHRASE -noprompt
       $KEYTOOL_LOCATION -keystore $CERT_TRUSTSTORE -alias CA-${SECRET_LIST} -import -file ${SECRET_LIST}/ca.crt -storepass $TRUSTSTORE_PASSPHRASE -keypass $TRUSTSTORE_PASSPHRASE -noprompt
     fi
-      # rm -rf $CA_AND_PUB_CERT  
+      rm -rf $CA_AND_PUB_CERT  
   done
-  # rm -rf *.p12
+  rm -rf *.p12
 fi
