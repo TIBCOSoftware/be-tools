@@ -166,17 +166,41 @@ imagePullSecrets:
 {{- end}}  
 {{- end -}}
 
-{{- define "bechart.affinity" }}
-affinity:
-  podAntiAffinity:
+{{- define "becharts.antiaffinity" }}
+{{- if eq .podAntiAffinity.enabled true }}
+  podAntiAffinity:    
     preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 100
         podAffinityTerm:
           labelSelector:
             matchExpressions:
-            - key: name
+            - key: {{ .podAntiAffinity.labelKey }}
               operator: In
               values:
-              - "{{ . }}"
-          topologyKey: "kubernetes.io/hostname"
+              - {{ .podAntiAffinity.labelvalue | quote}}
+          topologyKey: {{ .podAntiAffinity.topologyKey | quote}}    
+{{- end }}
+{{- end }}
+
+{{- define "becharts.affinity" }}
+{{- if eq .podAffinity.enabled true }}
+podAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+  - labelSelector:
+      matchExpressions:
+      - key: {{ .podAffinity.labelKey }}
+        operator: In
+        values:
+        - {{ .podAffinity.labelvalue | quote}}
+    topologyKey: {{ .podAffinity.topologyKey | quote}}
+{{- end }}
+{{- end }}
+
+{{- define "becharts.labels" }}
+{{- if eq .podAntiAffinity.enabled true }}
+{{ .podAntiAffinity.labelKey}}: {{ .podAntiAffinity.labelvalue }}
+{{- end }}
+{{- if and (eq .podAffinity.enabled true) (eq .podAffinity.removelabel false) }}
+{{ .podAffinity.labelKey}}: {{ .podAffinity.labelvalue }}
+{{- end }}
 {{- end }}

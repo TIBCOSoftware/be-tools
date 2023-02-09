@@ -122,6 +122,17 @@ agents:
     memoryMetric:
       enable: false                       # Set to true, to enable memory metric based HPA
       averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if memory utilization % reaches above(or below) averageUtilizationPercentage
+  podAntiAffinity: 
+    enabled: false
+    labelKey: antiaffinity
+    labelvalue: inferenceagent
+    topologyKey: kubernetes.io/hostname
+  podAffinity: 
+    enabled: false
+    labelKey: antiaffinity
+    labelvalue: cacheagent  # cacheagent
+    topologyKey: kubernetes.io/hostname
+    removelabel: true
 - name: cacheagent
   PU: cache
   cacheStorageEnabled: true
@@ -142,6 +153,19 @@ agents:
     memoryMetric:
       enable: false
       averageUtilizationPercentage: 90
+  podAntiAffinity: 
+    enabled: false
+    labelKey: antiaffinity
+    labelvalue: cacheagent
+    topologyKey: kubernetes.io/hostname
+  podAffinity: 
+    enabled: false
+    labelKey: antiaffinity
+    labelvalue: inferenceagent #cacheagent #inferenceagent
+    topologyKey: kubernetes.io/hostname
+    removelabel: true    
+
+    
 
 
 ##################################################

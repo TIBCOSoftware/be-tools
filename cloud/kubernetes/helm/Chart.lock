@@ -1,12 +1,12 @@
 dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 9.1.2
+  version: 9.4.8
 - name: influxdb
   repository: https://helm.influxdata.com/
   version: 4.8.4
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 6.1.14
-digest: sha256:f152e51dc798b35585a82b39fb5b6a9358d81357d3c5155c2d6493ed62121d8a
-generated: "2022-06-03T12:55:45.584749693+05:30"
+digest: sha256:ed0c587d6d654251742ec1568be864f926d819fcd7ac7c4fd49f5a3b673da9ae
+generated: "2023-02-09T07:41:37.74970632+05:30"
