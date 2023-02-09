@@ -122,12 +122,12 @@ agents:
     memoryMetric:
       enable: false                       # Set to true, to enable memory metric based HPA
       averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if memory utilization % reaches above(or below) averageUtilizationPercentage
-  podAntiAffinity: 
+  podAntiAffinity:                        # podAntiAffinity: Set to true to allow evenly distribution of pods across available nodes
     enabled: false
     labelKey: antiaffinity
     labelvalue: inferenceagent
     topologyKey: kubernetes.io/hostname
-  podAffinity: 
+  podAffinity:                            # podAffinity: Set to true to allow schedule pods together
     enabled: false
     labelKey: antiaffinity
     labelvalue: cacheagent  # cacheagent
@@ -153,7 +153,7 @@ agents:
     memoryMetric:
       enable: false
       averageUtilizationPercentage: 90
-  podAntiAffinity: 
+  podAntiAffinity:                    
     enabled: false
     labelKey: antiaffinity
     labelvalue: cacheagent
@@ -191,8 +191,7 @@ healthcheck:
     initialDelaySeconds: 5 
     periodSeconds: 5 
 
-# podAntiAffinity: Set to true to allow evenly distribution of pods across available nodes
-podAntiAffinity: false
+
 
 
 ##################################################
