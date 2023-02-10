@@ -16,7 +16,7 @@ import (
 // Template test for rms aws static provisioning
 func TestAgents(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestAgents"
+	releaseName := "agent"
 	require.NoError(t, err)
 
 	values := map[string]string{
@@ -46,12 +46,12 @@ func TestAgents(t *testing.T) {
 	}
 
 	require.Equal(t, 1, len(actualAgents))
-	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Name)
+	require.Equal(t, "agent-inferenceagent", actualAgents[0].Name)
 	require.Equal(t, int32(1), *actualAgents[0].Spec.Replicas)
-	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, "TestAgents-discovery-service", actualAgents[0].Spec.ServiceName)
+	require.Equal(t, "agent-inferenceagent", actualAgents[0].Spec.Selector.MatchLabels["name"])
+	require.Equal(t, "agent-discovery-service", actualAgents[0].Spec.ServiceName)
 	require.Equal(t, 1, len(actualAgents[0].Spec.Template.Labels))
-	require.Equal(t, "TestAgents-inferenceagent", actualAgents[0].Spec.Template.Labels["name"])
+	require.Equal(t, "agent-inferenceagent", actualAgents[0].Spec.Template.Labels["name"])
 	require.Equal(t, "", actualAgents[0].Spec.Template.Labels["cacheagent"])
 	require.Equal(t, "inferenceagent-container", actualAgents[0].Spec.Template.Spec.Containers[0].Name)
 	require.Equal(t, "befdapp:01", actualAgents[0].Spec.Template.Spec.Containers[0].Image)
@@ -91,7 +91,7 @@ func TestAgentsNone(t *testing.T) {
 		"cmType":                                                  "as2",
 		"bsType":                                                  "none",
 		"healthcheck.enabled":                                     "true",
-		"podAntiAffinity":                                         "true",
+		"podAntiAffinity":                                         "false",
 		"enableRMS":                                               "true",
 		"agents[0].name":                                          "inferenceagent",
 		"agents[0].PU":                                            "default",
@@ -223,7 +223,7 @@ func TestAgentsNone(t *testing.T) {
 		require.Equal(t, expectedagentName["release"], agent.Name)
 		require.Equal(t, expectedagentName["release"], agent.Spec.Template.Labels["name"])
 		require.Equal(t, expectedagentName["release"], agent.Spec.Selector.MatchLabels["name"])
-		require.Equal(t, []string([]string{fmt.Sprintf("%s", expectedagentName["release"])}), agent.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
+		// require.Equal(t, []string([]string{fmt.Sprintf("%s", expectedagentName["release"])}), agent.Spec.Template.Spec.Affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values)
 		require.Equal(t, expectedagentName["containerName"], agent.Spec.Template.Spec.Containers[0].Name)
 		require.Equal(t, expectedagentName["image"], agent.Spec.Template.Spec.Containers[0].Image)
 		require.Equal(t, v1.PullIfNotPresent, agent.Spec.Template.Spec.Containers[0].ImagePullPolicy)

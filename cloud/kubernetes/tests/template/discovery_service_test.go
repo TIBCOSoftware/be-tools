@@ -12,7 +12,7 @@ import (
 
 func TestDiscoveryService(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestDiscoveryService"
+	releaseName := "testdisc-svc"
 	require.NoError(t, err)
 
 	values := map[string]string{

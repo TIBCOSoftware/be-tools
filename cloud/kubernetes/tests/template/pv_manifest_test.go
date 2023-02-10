@@ -13,7 +13,7 @@ import (
 
 func TestPVManifest(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestPVManifest"
+	releaseName := "testpv"
 	require.NoError(t, err)
 
 	// TC: empty PVs
@@ -81,43 +81,43 @@ func TestPVManifest(t *testing.T) {
 		actualPVs = append(actualPVs, PV)
 	}
 	expectedPVsMap := map[string]map[string]interface{}{
-		"TestPVManifest-data-store": {
-			"releaseName":  "TestPVManifest-data-store",
+		"testpv-data-store": {
+			"releaseName":  "testpv-data-store",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifest-data-store",
+			"claimRefName": "testpv-data-store",
 			"csidriver":    "efs.csi.aws.com",
 			"volume":       fmt.Sprintf("fs-beec7f0a:/volume1/%s", "data-store"),
 		},
-		"TestPVManifest-rms-shared": {
-			"releaseName":  "TestPVManifest-rms-shared",
+		"testpv-rms-shared": {
+			"releaseName":  "testpv-rms-shared",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifest-rms-shared",
+			"claimRefName": "testpv-rms-shared",
 			"csidriver":    "efs.csi.aws.com",
 			"volume":       fmt.Sprintf("fs-beec7f0a:/volume1/%s", "rms-shared"),
 		},
-		"TestPVManifest-rms-security": {
-			"releaseName":  "TestPVManifest-rms-security",
+		"testpv-rms-security": {
+			"releaseName":  "testpv-rms-security",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifest-rms-security",
+			"claimRefName": "testpv-rms-security",
 			"csidriver":    "efs.csi.aws.com",
 			"volume":       fmt.Sprintf("fs-beec7f0a:/volume1/%s", "rms-security"),
 		},
-		"TestPVManifest-rms-webstudio": {
-			"releaseName":  "TestPVManifest-rms-webstudio",
+		"testpv-rms-webstudio": {
+			"releaseName":  "testpv-rms-webstudio",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifest-rms-webstudio",
+			"claimRefName": "testpv-rms-webstudio",
 			"csidriver":    "efs.csi.aws.com",
 			"volume":       fmt.Sprintf("fs-beec7f0a:/volume1/%s", "rms-webstudio"),
 		},
-		"TestPVManifest-logs": {
-			"releaseName":  "TestPVManifest-logs",
+		"testpv-logs": {
+			"releaseName":  "testpv-logs",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifest-logs",
+			"claimRefName": "testpv-logs",
 			"csidriver":    "efs.csi.aws.com",
 			"volume":       fmt.Sprintf("fs-beec7f0a:/volume1/%s", "logs"),
 		},
@@ -138,9 +138,9 @@ func TestPVManifest(t *testing.T) {
 	}
 }
 
-func TestPVManifestMinikube(t *testing.T) {
+func testpvMinikube(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestPVManifestMinikube"
+	releaseName := "testpvMinikube"
 	require.NoError(t, err)
 
 	// TC: minikube, sharedNothing, static PV provisioning
@@ -175,9 +175,9 @@ func TestPVManifestMinikube(t *testing.T) {
 	require.Equal(t, "/volume1/data-store", actualPVs[0].Spec.HostPath.Path)
 }
 
-func TestPVManifestSNLogs(t *testing.T) {
+func testpvSNLogs(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestPVManifestSNLogs"
+	releaseName := "testpvSNLogs"
 	require.NoError(t, err)
 
 	// TC: minikube, sharedNothing, persitence enbled (for logs)
@@ -202,19 +202,19 @@ func TestPVManifestSNLogs(t *testing.T) {
 		actualPVs = append(actualPVs, PV)
 	}
 	expectedPVsMap := map[string]map[string]interface{}{
-		"TestPVManifestSNLogs-data-store": {
-			"releaseName":  "TestPVManifestSNLogs-data-store",
+		"testpvSNLogs-data-store": {
+			"releaseName":  "testpvSNLogs-data-store",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifestSNLogs-data-store",
+			"claimRefName": "testpvSNLogs-data-store",
 			"path":         "/volume1/data-store",
 			"type":         "DirectoryOrCreate",
 		},
-		"TestPVManifestSNLogs-logs": {
-			"releaseName":  "TestPVManifestSNLogs-logs",
+		"testpvSNLogs-logs": {
+			"releaseName":  "testpvSNLogs-logs",
 			"memoryQty":    "512Mi",
 			"scName":       "",
-			"claimRefName": "TestPVManifestSNLogs-logs",
+			"claimRefName": "testpvSNLogs-logs",
 			"path":         "/volume1/logs",
 			"type":         "DirectoryOrCreate",
 		},

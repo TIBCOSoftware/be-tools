@@ -197,10 +197,10 @@ podAffinity:
 {{- end }}
 
 {{- define "becharts.labels" }}
-{{- if eq .podAntiAffinity.enabled true }}
+{{- if eq (.podAntiAffinity).enabled true }}
 {{ .podAntiAffinity.labelKey}}: {{ .podAntiAffinity.labelvalue }}
 {{- end }}
-{{- if and (eq .podAffinity.enabled true) (eq .podAffinity.removelabel true) }}
+{{- if and (eq (.podAffinity).enabled true) (eq .podAffinity.removelabel true) }}
 {{ .podAffinity.labelKey}}: {{ .podAffinity.labelvalue }}
 {{- end }}
 {{- end }}

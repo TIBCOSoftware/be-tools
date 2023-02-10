@@ -13,7 +13,7 @@ import (
 
 func TestExternalServices(t *testing.T) {
 	helmChartPath, err := filepath.Abs(common.HelmChartPath)
-	releaseName := "TestExternalServices"
+	releaseName := "testext-svc"
 	require.NoError(t, err)
 
 	values := map[string]string{
@@ -109,44 +109,44 @@ func TestExternalServices(t *testing.T) {
 		ServiceType  v1.ServiceType
 	}
 	var expectedServicesMap = map[string]ExpectedService{
-		"TestExternalServices-inferenceagent-jmx": ExpectedService{
+		"testext-svc-inferenceagent-jmx": ExpectedService{
 			Port:         5555,
-			SelectorName: "TestExternalServices-inferenceagent",
+			SelectorName: "testext-svc-inferenceagent",
 			ServiceType:  v1.ServiceType("ClusterIP"),
 		},
-		"TestExternalServices-inferenceagent-httpchannel": ExpectedService{
+		"testext-svc-inferenceagent-httpchannel": ExpectedService{
 			Port:         8090,
-			SelectorName: "TestExternalServices-inferenceagent",
+			SelectorName: "testext-svc-inferenceagent",
 			ServiceType:  v1.ServiceType("NodePort"),
 		},
-		"TestExternalServices-cacheagent-jmx": ExpectedService{
+		"testext-svc-cacheagent-jmx": ExpectedService{
 			Port:         5555,
-			SelectorName: "TestExternalServices-cacheagent",
+			SelectorName: "testext-svc-cacheagent",
 			ServiceType:  v1.ServiceType("ClusterIP"),
 		},
-		"TestExternalServices-cacheagent-one": ExpectedService{
+		"testext-svc-cacheagent-one": ExpectedService{
 			Port:         1111,
-			SelectorName: "TestExternalServices-cacheagent",
+			SelectorName: "testext-svc-cacheagent",
 			ServiceType:  v1.ServiceType("NodePort"),
 		},
-		"TestExternalServices-cacheagent-two": ExpectedService{
+		"testext-svc-cacheagent-two": ExpectedService{
 			Port:         2222,
-			SelectorName: "TestExternalServices-cacheagent",
+			SelectorName: "testext-svc-cacheagent",
 			ServiceType:  v1.ServiceType("LoadBalancer"),
 		},
-		"TestExternalServices-extracacheagent-jmx": ExpectedService{
+		"testext-svc-extracacheagent-jmx": ExpectedService{
 			Port:         5555,
-			SelectorName: "TestExternalServices-extracacheagent",
+			SelectorName: "testext-svc-extracacheagent",
 			ServiceType:  v1.ServiceType("ClusterIP"),
 		},
-		"TestExternalServices-extracacheagent-one": ExpectedService{
+		"testext-svc-extracacheagent-one": ExpectedService{
 			Port:         1111,
-			SelectorName: "TestExternalServices-extracacheagent",
+			SelectorName: "testext-svc-extracacheagent",
 			ServiceType:  v1.ServiceType("NodePort"),
 		},
-		"TestExternalServices-extracacheagent-two": ExpectedService{
+		"testext-svc-extracacheagent-two": ExpectedService{
 			Port:         2222,
-			SelectorName: "TestExternalServices-extracacheagent",
+			SelectorName: "testext-svc-extracacheagent",
 			ServiceType:  v1.ServiceType("LoadBalancer"),
 		},
 	}
