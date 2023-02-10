@@ -200,7 +200,7 @@ podAffinity:
 {{- if eq .podAntiAffinity.enabled true }}
 {{ .podAntiAffinity.labelKey}}: {{ .podAntiAffinity.labelvalue }}
 {{- end }}
-{{- if and (eq .podAffinity.enabled true) (eq .podAffinity.removelabel false) }}
+{{- if and (eq .podAffinity.enabled true) (eq .podAffinity.removelabel true) }}
 {{ .podAffinity.labelKey}}: {{ .podAffinity.labelvalue }}
 {{- end }}
 {{- end }}
