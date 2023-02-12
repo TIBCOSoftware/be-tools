@@ -12,7 +12,7 @@ import (
 
 func TestConfigMap(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestConfigMap"
+	releaseName := "tstconfmap"
 
 	require.NoError(t, err)
 

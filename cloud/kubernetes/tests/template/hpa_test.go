@@ -14,7 +14,7 @@ import (
 //  Template test for HPA
 func TestHPA(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestHPA"
+	releaseName := "testhpa"
 
 	require.NoError(t, err)
 
@@ -92,15 +92,15 @@ func TestHPA(t *testing.T) {
 	}
 
 	expectedHPAMap := map[string]map[string]interface{}{
-		"TestHPA-cacheagent": {
-			"releaseName":                      "TestHPA-cacheagent",
+		"testhpa-cacheagent": {
+			"releaseName":                      "testhpa-cacheagent",
 			"minreplicas":                      int32(1),
 			"maxreplicas":                      int32(5),
 			"resourceCPUAverageUtilization":    int32(90),
 			"resourceMemoryAverageUtilization": int32(90),
 		},
-		"TestHPA-inferenceagent": {
-			"releaseName":                      "TestHPA-inferenceagent",
+		"testhpa-inferenceagent": {
+			"releaseName":                      "testhpa-inferenceagent",
 			"minreplicas":                      int32(1),
 			"maxreplicas":                      int32(5),
 			"resourceCPUAverageUtilization":    int32(90),

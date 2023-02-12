@@ -10,11 +10,13 @@ spec:
   selector:
     matchLabels:
       name: {{ $ssName }}
+{{ include "becharts.labels" $agent | trim | indent 6 }}
   serviceName: {{ include "bechart.discoveryservice.name" $ }}
   template:
     metadata:
       labels:
         name: {{ $ssName }}
+{{ include "becharts.labels" $agent | trim | indent 8 }}
         {{- if $agent.cacheStorageEnabled }}
         cacheagent: "yes"
         {{- end }}
@@ -26,8 +28,10 @@ spec:
       {{- if eq $.Values.cmType "ignite"}}
       serviceAccount: {{ $.Release.Name }}-ignite
       {{- end }}
-{{- if $.Values.podAntiAffinity }}
-{{ include "bechart.affinity" $ssName | trim | indent 6 }}
+{{- if or (eq ($agent.podAntiAffinity).enabled true ) (eq ($agent.podAffinity).enabled true ) }}
+      affinity:
+{{ include "becharts.antiaffinity" $agent | trim | indent 8 }}
+{{ include "becharts.affinity" $agent | trim | indent 8 }}
 {{- end }}
       containers:
       - name: {{ $agent.name }}-container

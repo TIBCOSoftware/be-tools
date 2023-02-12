@@ -13,7 +13,7 @@ import (
 
 func TestPVC(t *testing.T) {
 	helmChartPath, err := filepath.Abs("../../helm")
-	releaseName := "TestPVC"
+	releaseName := "testpvc"
 
 	require.NoError(t, err)
 
@@ -31,7 +31,7 @@ func TestPVC(t *testing.T) {
 	require.NoError(t, err)
 	var PVC v1.PersistentVolumeClaim
 	helm.UnmarshalK8SYaml(t, output, &PVC)
-	require.Equal(t, "TestPVC-logs", PVC.ObjectMeta.Name)
+	require.Equal(t, "testpvc-logs", PVC.ObjectMeta.Name)
 	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{"ReadWriteMany"}), PVC.Spec.AccessModes)
 	require.Equal(t, "standard", *PVC.Spec.StorageClassName)
 	actualMemQty := PVC.Spec.Resources.Requests["storage"]
@@ -50,7 +50,7 @@ func TestPVC(t *testing.T) {
 	require.NoError(t, err)
 	var PVCSN v1.PersistentVolumeClaim
 	helm.UnmarshalK8SYaml(t, output, &PVCSN)
-	require.Equal(t, "TestPVC-data-store", PVCSN.ObjectMeta.Name)
+	require.Equal(t, "testpvc-data-store", PVCSN.ObjectMeta.Name)
 	require.Equal(t, []v1.PersistentVolumeAccessMode([]v1.PersistentVolumeAccessMode{"ReadWriteMany"}), PVCSN.Spec.AccessModes)
 	require.Equal(t, "standard", *PVCSN.Spec.StorageClassName)
 	actualMemQty = PVC.Spec.Resources.Requests["storage"]
@@ -83,32 +83,32 @@ func TestPVC(t *testing.T) {
 	}
 
 	expectedPVCsMap := map[string]map[string]interface{}{
-		"TestPVC-data-store": {
-			"releaseName":      "TestPVC-data-store",
+		"testpvc-data-store": {
+			"releaseName":      "testpvc-data-store",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-logs": {
-			"releaseName":      "TestPVC-logs",
+		"testpvc-logs": {
+			"releaseName":      "testpvc-logs",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-rms-shared": {
-			"releaseName":      "TestPVC-rms-shared",
+		"testpvc-rms-shared": {
+			"releaseName":      "testpvc-rms-shared",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-rms-security": {
-			"releaseName":      "TestPVC-rms-security",
+		"testpvc-rms-security": {
+			"releaseName":      "testpvc-rms-security",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-rms-webstudio": {
-			"releaseName":      "TestPVC-rms-webstudio",
+		"testpvc-rms-webstudio": {
+			"releaseName":      "testpvc-rms-webstudio",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
@@ -153,20 +153,20 @@ func TestPVC(t *testing.T) {
 	}
 
 	expectedRMSPVCsMap := map[string]map[string]interface{}{
-		"TestPVC-rms-shared": {
-			"releaseName":      "TestPVC-rms-shared",
+		"testpvc-rms-shared": {
+			"releaseName":      "testpvc-rms-shared",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-rms-security": {
-			"releaseName":      "TestPVC-rms-security",
+		"testpvc-rms-security": {
+			"releaseName":      "testpvc-rms-security",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
 		},
-		"TestPVC-rms-webstudio": {
-			"releaseName":      "TestPVC-rms-webstudio",
+		"testpvc-rms-webstudio": {
+			"releaseName":      "testpvc-rms-webstudio",
 			"accessModes":      "ReadWriteMany",
 			"storageClassName": "standard",
 			"memory":           "512Mi",
