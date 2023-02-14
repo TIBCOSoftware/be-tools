@@ -5,6 +5,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: 30 5 * * 1        #This cron is scheduled to run once in a week on Every Monday 11AM IST
 
 jobs:
 
