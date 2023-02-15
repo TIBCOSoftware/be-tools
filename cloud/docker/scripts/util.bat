@@ -51,7 +51,7 @@ GOTO :EOF
         set "GV=!GV:custom\=!"
         set "GV=!GV:custom/=!"
 
-        if "!GV!" NEQ "http" if "!GV!" NEQ "consul" if "!GV!" NEQ "cyberark" set "GV=custom\!GV!"
+        if "!GV!" NEQ "gvhttp" if "!GV!" NEQ "gvconsul" if "!GV!" NEQ "gvcyberark" set "GV=custom\!GV!"
 
         SET DUPLICATE_FOUND=false
         if "!ARG_GV_RESULT!" EQU "" (

@@ -20,8 +20,8 @@ fileExistenceTests:
     path: '/usr/bin/curl'
     shouldExist: true
   - name: 'http run.sh'
-    path: '/home/tibco/be/gvproviders/http/run.sh'
+    path: '/home/tibco/be/gvproviders/gvhttp/run.sh'
     shouldExist: true
   - name: 'http setup.sh'
-    path: '/home/tibco/be/gvproviders/http/setup.sh'
+    path: '/home/tibco/be/gvproviders/gvhttp/setup.sh'
     shouldExist: true

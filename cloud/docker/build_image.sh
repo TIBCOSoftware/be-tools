@@ -26,7 +26,7 @@ isCLIKey()
         -d|--docker-file)
             KEY="true"
             ;;
-        --gv-provider)
+        --config-provider)
             KEY="true"
             ;;
         -b|--build-tool)
@@ -131,8 +131,8 @@ USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAG
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
-USAGE+="\n\n [--gv-provider]      :    Name of GV provider to be included in the image (\"consul\"|\"http\"|\"cyberark\"|\"custom\") [optional]\n"
-USAGE+="                           To add more than one GV use comma separated format ex: \"consul,http\" \n"
+USAGE+="\n\n [--config-provider]  :    Name of GV provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"custom\") [optional]\n"
+USAGE+="                           To add more than one GV use comma separated format ex: \"gvconsul,gvhttp\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
@@ -202,14 +202,14 @@ while [[ $# -gt 0 ]]; do
         -d=*|--docker-file=*)
             ARG_DOCKER_FILE="${key#*=}"
             ;;
-        --gv-provider)
+        --config-provider)
             shift # past the key and to the value
             FLAG_CLIKEY=$(isCLIKey $1 )
             if [ "$FLAG_CLIKEY" = "false" ]; then
                 ARG_GVPROVIDER="$1"
             fi
             ;;
-        --gv-provider=*)
+        --config-provider=*)
             ARG_GVPROVIDER="${key#*=}"
             ;;
         -b|--build-tool)
@@ -796,7 +796,7 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         
         for GV in "${GVs[@]}"
         do
-            if [ "$GV" = "http" -o "$GV" = "consul" -o "$GV" = "cyberark" ]; then
+            if [ "$GV" = "gvhttp" -o "$GV" = "gvconsul" -o "$GV" = "gvcyberark" ]; then
                 mkdir -p $TEMP_FOLDER/gvproviders/$GV
                 cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
             else

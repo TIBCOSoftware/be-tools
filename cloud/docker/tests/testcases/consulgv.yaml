@@ -17,11 +17,11 @@ fileExistenceTests:
     path: '/home/tibco/be/gvproviders/JQLICENSE'
     shouldExist: true
   - name: 'CONSUL BINARY PATH'
-    path: '/home/tibco/be/gvproviders/consul/consul'
+    path: '/home/tibco/be/gvproviders/gvconsul/consul'
     shouldExist: true
   - name: 'CONSUL run.sh'
-    path: '/home/tibco/be/gvproviders/consul/run.sh'
+    path: '/home/tibco/be/gvproviders/gvconsul/run.sh'
     shouldExist: true
   - name: 'CONSUL setup.sh'
-    path: '/home/tibco/be/gvproviders/consul/setup.sh'
+    path: '/home/tibco/be/gvproviders/gvconsul/setup.sh'
     shouldExist: true

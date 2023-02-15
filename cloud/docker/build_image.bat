@@ -197,7 +197,7 @@ for %%x in (%*) do (
             set /A counter=!counter!-1
             set "ARG_OPTIMIZE="
         )
-    ) else if !currentArg! EQU --gv-provider (
+    ) else if !currentArg! EQU --config-provider (
         shift
         call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
         if !FLAG_CLIKEY! EQU false (
@@ -772,13 +772,13 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
         set GVS=!ARG_GVPROVIDER:,= !
         for %%v in (!GVS!) do (
             SET GV=%%v
-            if "!GV!" EQU "http" (
+            if "!GV!" EQU "gvhttp" (
                 mkdir !TEMP_FOLDER!\gvproviders\!GV!
                 xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
-            ) else if "!GV!" EQU "consul" (
+            ) else if "!GV!" EQU "gvconsul" (
                 mkdir !TEMP_FOLDER!\gvproviders\!GV!
                 xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
-            ) else if "!GV!" EQU "cyberark" (
+            ) else if "!GV!" EQU "gvcyberark" (
                 mkdir !TEMP_FOLDER!\gvproviders\!GV!
                 xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
             ) else (
@@ -1050,8 +1050,8 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
-    echo  [--gv-provider]      :    Name of GV provider to be included in the image ("consul"^|"http"^|"cyberark"^|"custom") [optional]
-    echo                            To add more than one GV use comma separated format ex: "consul,http"
+    echo  [--config-provider]  :    Name of GV provider to be included in the image ("gvconsul"^|"gvhttp"^|"gvcyberark"^|"custom") [optional]
+    echo                            To add more than one GV use comma separated format ex: "gvconsul,gvhttp"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
     echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
@@ -1102,7 +1102,7 @@ EXIT /B 0
         set "FLAG_CLIKEY=true"
     ) else if "!KEY_NAME!" EQU "--optimize" (
         set "FLAG_CLIKEY=true"
-    ) else if "!KEY_NAME!" EQU "--gv-provider" (
+    ) else if "!KEY_NAME!" EQU "--config-provider" (
         set "FLAG_CLIKEY=true"
     ) else (
         set "FLAG_CLIKEY=false"
