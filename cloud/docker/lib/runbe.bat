@@ -60,9 +60,9 @@ if NOT EXIST "c:\tibco\be\application" (
 )
 type NUL>%BE_PROPS_FILE%
 
-if EXIST .\gvproviders\run.bat (
+if EXIST .\configproviders\run.bat (
 	REM update gvprovider gvs in props file
-	call .\gvproviders\run.bat
+	call .\configproviders\run.bat
 )
 
 echo #BE props file>>%BE_PROPS_FILE%

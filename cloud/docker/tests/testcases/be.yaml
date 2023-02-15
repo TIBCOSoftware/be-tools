@@ -42,10 +42,10 @@ fileExistenceTests:
     path: '/opt/tibco/be/BE_SHORT_VERSION/lib/be-functions.jar'
     shouldExist: true
   - name: 'Gvproviders Path'
-    path: '/home/tibco/be/gvproviders/'
+    path: '/home/tibco/be/configproviders/'
     shouldExist: true
   - name: 'Gvproviders File'
-    path: '/home/tibco/be/gvproviders/setup.sh'
+    path: '/home/tibco/be/configproviders/setup.sh'
     shouldExist: true
   - name: 'Docker Run File'
     path: '/home/tibco/be/run'

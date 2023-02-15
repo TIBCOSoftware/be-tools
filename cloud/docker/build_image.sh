@@ -787,8 +787,8 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
 fi
 
 if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
-    mkdir -p $TEMP_FOLDER/gvproviders
-    cp ./gvproviders/*.sh $TEMP_FOLDER/gvproviders
+    mkdir -p $TEMP_FOLDER/configproviders
+    cp ./configproviders/*.sh $TEMP_FOLDER/configproviders
     if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
         ARG_GVPROVIDER="na"
     else
@@ -797,20 +797,20 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         for GV in "${GVs[@]}"
         do
             if [ "$GV" = "gvhttp" -o "$GV" = "gvconsul" -o "$GV" = "gvcyberark" ]; then
-                mkdir -p $TEMP_FOLDER/gvproviders/$GV
-                cp -a ./gvproviders/$GV/*.sh $TEMP_FOLDER/gvproviders/$GV
+                mkdir -p $TEMP_FOLDER/configproviders/$GV
+                cp -a ./configproviders/$GV/*.sh $TEMP_FOLDER/configproviders/$GV
             else
-                if [ -d "./gvproviders/$GV" ]; then
+                if [ -d "./configproviders/$GV" ]; then
                     # check for setup.sh & run.sh
-                    if ! [ -f "./gvproviders/$GV/setup.sh" ]; then
-                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                    if ! [ -f "./configproviders/$GV/setup.sh" ]; then
+                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./configproviders/$GV/]"
                         rm -rf $TEMP_FOLDER; exit 1;
-                    elif ! [ -f "./gvproviders/$GV/run.sh" ]; then
-                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./gvproviders/$GV/]"
+                    elif ! [ -f "./configproviders/$GV/run.sh" ]; then
+                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./configproviders/$GV/]"
                         rm -rf $TEMP_FOLDER; exit 1;
                     fi
-                    mkdir -p $TEMP_FOLDER/gvproviders/$GV
-                    cp -a ./gvproviders/$GV/* $TEMP_FOLDER/gvproviders/$GV
+                    mkdir -p $TEMP_FOLDER/configproviders/$GV
+                    cp -a ./configproviders/$GV/* $TEMP_FOLDER/configproviders/$GV
                 else
                     echo "ERROR: GV provider[$GV] is not supported."
                     rm -rf $TEMP_FOLDER; exit 1;

@@ -764,8 +764,8 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
     ) else (
         set "SCRIPT_EXTN=.sh"
     )
-    mkdir !TEMP_FOLDER!\gvproviders
-    xcopy /Q /C /Y .\gvproviders\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders > NUL
+    mkdir !TEMP_FOLDER!\configproviders
+    xcopy /Q /C /Y .\configproviders\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders > NUL
     if "!ARG_GVPROVIDER!" EQU "na" (
         set "ARG_GVPROVIDER=na"
     ) else (
@@ -773,25 +773,25 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
         for %%v in (!GVS!) do (
             SET GV=%%v
             if "!GV!" EQU "gvhttp" (
-                mkdir !TEMP_FOLDER!\gvproviders\!GV!
-                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+                mkdir !TEMP_FOLDER!\configproviders\!GV!
+                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
             ) else if "!GV!" EQU "gvconsul" (
-                mkdir !TEMP_FOLDER!\gvproviders\!GV!
-                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+                mkdir !TEMP_FOLDER!\configproviders\!GV!
+                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
             ) else if "!GV!" EQU "gvcyberark" (
-                mkdir !TEMP_FOLDER!\gvproviders\!GV!
-                xcopy /Q /C /Y .\gvproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\gvproviders\!GV! > NUL
+                mkdir !TEMP_FOLDER!\configproviders\!GV!
+                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
             ) else (
-                if EXIST ".\gvproviders\!GV!" (
-                    if NOT EXIST ".\gvproviders\!GV!\setup!SCRIPT_EXTN!" (
-                        echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\gvproviders\!GV!\]
+                if EXIST ".\configproviders\!GV!" (
+                    if NOT EXIST ".\configproviders\!GV!\setup!SCRIPT_EXTN!" (
+                        echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\configproviders\!GV!\]
                         GOTO END-withError
-                    ) else if NOT EXIST ".\gvproviders\!GV!\run!SCRIPT_EXTN!" (
-                        echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\gvproviders\!GV!\]
+                    ) else if NOT EXIST ".\configproviders\!GV!\run!SCRIPT_EXTN!" (
+                        echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\configproviders\!GV!\]
                         GOTO END-withError
                     ) else (
-                        mkdir !TEMP_FOLDER!\gvproviders\!GV!
-                        xcopy /Q /C /R /Y /E .\gvproviders\!GV!\* !TEMP_FOLDER!\gvproviders\!GV! > NUL
+                        mkdir !TEMP_FOLDER!\configproviders\!GV!
+                        xcopy /Q /C /R /Y /E .\configproviders\!GV!\* !TEMP_FOLDER!\configproviders\!GV! > NUL
                     )
                 ) else (
                     echo ERROR: GV provider[!GV!] is not supported.
@@ -962,7 +962,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
 
     powershell -Command "Copy-Item '.\lib\runbe.bat','.\lib\vcredist_install.bat' -Destination '!TEMP_FOLDER!\tibcoHome\be' | out-null"
 
-    powershell -Command "Copy-Item '!TEMP_FOLDER!\gvproviders' -Destination '!TEMP_FOLDER!\tibcoHome\be' -Recurse | out-null"
+    powershell -Command "Copy-Item '!TEMP_FOLDER!\configproviders' -Destination '!TEMP_FOLDER!\tibcoHome\be' -Recurse | out-null"
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
@@ -972,7 +972,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         if exist %%i del %%i  /F/S/Q > NUL
     )
 
-    rd /S /Q !TEMP_FOLDER!\gvproviders !TEMP_FOLDER!\app !TEMP_FOLDER!\installers 
+    rd /S /Q !TEMP_FOLDER!\configproviders !TEMP_FOLDER!\app !TEMP_FOLDER!\installers 
 
     echo.
 )

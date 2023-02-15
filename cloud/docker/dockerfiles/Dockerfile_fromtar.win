@@ -43,7 +43,7 @@ COPY tibcoHome "c:\tibco"
 RUN c:\tibco\be\vcredist_install.bat
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
+RUN c:\tibco\be\configproviders\setup.bat %GVPROVIDER%
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \

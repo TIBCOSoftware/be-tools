@@ -19,7 +19,7 @@ ARG GVPROVIDER
 LABEL be-intermediate-image=true
 
 ADD be.tar /opt/tibco
-COPY gvproviders /home/tibco/be/gvproviders
+COPY configproviders /home/tibco/be/configproviders
 COPY lib/run /opt/tibco/be/${BE_SHORT_VERSION}/cloud/docker/lib/
 COPY lib/*.pm lib/*.sh /home/tibco/be/
 
@@ -80,7 +80,7 @@ ENV PU=default \
  JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
 # Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
+RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${GVPROVIDER}
 
 RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 

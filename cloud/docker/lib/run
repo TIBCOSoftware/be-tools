@@ -45,8 +45,8 @@ APP_HOME=/opt/tibco/be/application
 export PERL5LIB="/home/tibco/be"
 MAKE_BE_PROPS_RESULT=$(perl -Mbe_docker_run -e "be_docker_run::makeBeProps('$BE_PROPS_FILE','$APP_HOME','$BE_HOME/')")
 
-if [[ -f "/home/tibco/be/gvproviders/run.sh" ]]; then
-  /home/tibco/be/gvproviders/run.sh
+if [[ -f "/home/tibco/be/configproviders/run.sh" ]]; then
+  /home/tibco/be/configproviders/run.sh
 fi
 
 /bin/cat $BE_PROPS_FILE

@@ -61,7 +61,7 @@ RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
 COPY lib/be_docker_install.bat installers/* lib/deletelist.txt c:\\working/
 COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
-COPY gvproviders "c:\_tibco\be\gvproviders"
+COPY configproviders "c:\_tibco\be\configproviders"
 COPY app/* "c:\_tibco\be\ext/"
 COPY app/${CDD_FILE_NAME} "c:\_tibco\be\application/"
 COPY app/${EAR_FILE_NAME} "c:\_tibco\be\application\ear/"
@@ -103,7 +103,7 @@ COPY --from=intermediate c:\\_tibco c:\\tibco
 RUN c:\tibco\be\vcredist_install.bat
 
 # Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat "%GVPROVIDER%"
+RUN c:\tibco\be\configproviders\setup.bat "%GVPROVIDER%"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
