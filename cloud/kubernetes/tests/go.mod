@@ -10,5 +10,4 @@ require (
 	golang.org/x/crypto v0.6.0 //indirect
 	k8s.io/api v0.27.0-alpha.2
 	k8s.io/client-go v0.27.0-alpha.2 // indirect
-
 )
