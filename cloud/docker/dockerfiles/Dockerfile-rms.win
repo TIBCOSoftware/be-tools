@@ -26,7 +26,7 @@ ARG ACTIVESPACES_SHORT_VERSION
 ARG ACTIVESPACES_PRODUCT_HOTFIX
 ARG JRE_VERSION
 ARG OPEN_JDK_FILENAME
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
@@ -72,7 +72,7 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
@@ -101,8 +101,8 @@ COPY --from=intermediate c:\\_tibco c:\\tibco
 
 RUN c:\tibco\be\vcredist_install.bat
 
-# Setup gv providers
-RUN c:\tibco\be\configproviders\setup.bat %GVPROVIDER%
+# Setup Config Providers
+RUN c:\tibco\be\configproviders\setup.bat %CONFIGPROVIDER%
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \

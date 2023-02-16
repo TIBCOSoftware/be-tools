@@ -58,7 +58,7 @@ ARG_TYPE="na"
 ARG_APP_LOCATION="na"
 ARG_TAG="na"
 ARG_DOCKER_FILE="na"
-ARG_GVPROVIDER="na"
+ARG_CONFIGPROVIDER="na"
 ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
@@ -131,8 +131,8 @@ USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAG
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
-USAGE+="\n\n [--config-provider]  :    Name of GV provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"custom\") [optional]\n"
-USAGE+="                           To add more than one GV use comma separated format ex: \"gvconsul,gvhttp\" \n"
+USAGE+="\n\n [--config-provider]  :    Name of Config Provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"custom\") [optional]\n"
+USAGE+="                           To add more than one Config Provider use comma separated format ex: \"gvconsul,gvhttp\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
@@ -206,11 +206,11 @@ while [[ $# -gt 0 ]]; do
             shift # past the key and to the value
             FLAG_CLIKEY=$(isCLIKey $1 )
             if [ "$FLAG_CLIKEY" = "false" ]; then
-                ARG_GVPROVIDER="$1"
+                ARG_CONFIGPROVIDER="$1"
             fi
             ;;
         --config-provider=*)
-            ARG_GVPROVIDER="${key#*=}"
+            ARG_CONFIGPROVIDER="${key#*=}"
             ;;
         -b|--build-tool)
             shift # past the key and to the value
@@ -724,9 +724,9 @@ echo "INFO: DOCKERFILE                   : [$ARG_DOCKER_FILE]"
 echo "INFO: IMAGE TAG                    : [$ARG_IMAGE_VERSION]"
 echo "INFO: BUILD TOOL                   : [$ARG_BUILD_TOOL]"
 
-if ! [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
-    ARG_GVPROVIDER=$(removeDuplicatesAndFormatGVs $ARG_GVPROVIDER)
-    echo "INFO: GV PROVIDER                  : [$ARG_GVPROVIDER]"
+if ! [ "$ARG_CONFIGPROVIDER" = "na" -o -z "${ARG_CONFIGPROVIDER// }" ]; then
+    ARG_CONFIGPROVIDER=$(RemoveDuplicatesAndFormatCPs $ARG_CONFIGPROVIDER)
+    echo "INFO: CONFIG PROVIDER              : [$ARG_CONFIGPROVIDER]"
 fi
 
 if [ "$OPEN_JDK_VERSION" != "na" ]; then
@@ -789,30 +789,30 @@ fi
 if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     mkdir -p $TEMP_FOLDER/configproviders
     cp ./configproviders/*.sh $TEMP_FOLDER/configproviders
-    if [ "$ARG_GVPROVIDER" = "na" -o -z "${ARG_GVPROVIDER// }" ]; then
-        ARG_GVPROVIDER="na"
+    if [ "$ARG_CONFIGPROVIDER" = "na" -o -z "${ARG_CONFIGPROVIDER// }" ]; then
+        ARG_CONFIGPROVIDER="na"
     else
-        oIFS="$IFS"; IFS=','; declare -a GVs=($ARG_GVPROVIDER); IFS="$oIFS"; unset oIFS
+        oIFS="$IFS"; IFS=','; declare -a CPs=($ARG_CONFIGPROVIDER); IFS="$oIFS"; unset oIFS
         
-        for GV in "${GVs[@]}"
+        for CP in "${CPs[@]}"
         do
-            if [ "$GV" = "gvhttp" -o "$GV" = "gvconsul" -o "$GV" = "gvcyberark" ]; then
-                mkdir -p $TEMP_FOLDER/configproviders/$GV
-                cp -a ./configproviders/$GV/*.sh $TEMP_FOLDER/configproviders/$GV
+            if [ "$CP" = "gvhttp" -o "$CP" = "gvconsul" -o "$CP" = "gvcyberark" ]; then
+                mkdir -p $TEMP_FOLDER/configproviders/$CP
+                cp -a ./configproviders/$CP/*.sh $TEMP_FOLDER/configproviders/$CP
             else
-                if [ -d "./configproviders/$GV" ]; then
+                if [ -d "./configproviders/$CP" ]; then
                     # check for setup.sh & run.sh
-                    if ! [ -f "./configproviders/$GV/setup.sh" ]; then
-                        echo "ERROR: setup.sh is required for the GV provider[$GV] under the directory - [./configproviders/$GV/]"
+                    if ! [ -f "./configproviders/$CP/setup.sh" ]; then
+                        echo "ERROR: setup.sh is required for the Config Provider[$CP] under the directory - [./configproviders/$CP/]"
                         rm -rf $TEMP_FOLDER; exit 1;
-                    elif ! [ -f "./configproviders/$GV/run.sh" ]; then
-                        echo "ERROR: run.sh is required for the GV provider[$GV] under the directory - [./configproviders/$GV/]"
+                    elif ! [ -f "./configproviders/$CP/run.sh" ]; then
+                        echo "ERROR: run.sh is required for the Config Provider[$CP] under the directory - [./configproviders/$CP/]"
                         rm -rf $TEMP_FOLDER; exit 1;
                     fi
-                    mkdir -p $TEMP_FOLDER/configproviders/$GV
-                    cp -a ./configproviders/$GV/* $TEMP_FOLDER/configproviders/$GV
+                    mkdir -p $TEMP_FOLDER/configproviders/$CP
+                    cp -a ./configproviders/$CP/* $TEMP_FOLDER/configproviders/$CP
                 else
-                    echo "ERROR: GV provider[$GV] is not supported."
+                    echo "ERROR: Config Provider[$CP] is not supported."
                     rm -rf $TEMP_FOLDER; exit 1;
                 fi
             fi
@@ -1065,13 +1065,13 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg GVPROVIDER=$ARG_GVPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg HAWK_VERSION="$ARG_HAWK_VERSION" --build-arg HAWK_SHORT_VERSION="$ARG_HAWK_SHORT_VERSION" --build-arg HAWK_PRODUCT_HOTFIX="$ARG_HAWK_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg GVPROVIDER=$ARG_GVPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg HAWK_VERSION="$ARG_HAWK_VERSION" --build-arg HAWK_SHORT_VERSION="$ARG_HAWK_SHORT_VERSION" --build-arg HAWK_PRODUCT_HOTFIX="$ARG_HAWK_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
     fi
 fi
 

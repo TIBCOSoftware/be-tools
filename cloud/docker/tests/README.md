@@ -28,7 +28,7 @@ Usage: run_tests.sh
 
  [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]
 
- [-gv|--config-provider]      : GV Provider value ex(gvconsul) [optional]
+ [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]
 
  [--image-type]               : BE Image type use ("app"|"s2ibuilder"|"rms"|"teagent") (default is "app") [optional]
 

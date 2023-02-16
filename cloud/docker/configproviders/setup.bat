@@ -4,13 +4,13 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-set GVPROVIDER=%1
+set CONFIGPROVIDER=%1
 
 REM removing double quotes(")
-set GVPROVIDER=!GVPROVIDER:"=!
+set CONFIGPROVIDER=!CONFIGPROVIDER:"=!
 
-if "!GVPROVIDER!" EQU "na" (
-    echo INFO: Skipping gv provider setup
+if "!CONFIGPROVIDER!" EQU "na" (
+    echo INFO: Skipping Config Provider setup
     exit 0
 )
 
@@ -31,14 +31,14 @@ if NOT EXIST "c:\ProgramData\chocolatey\bin\choco.exe" (
 REM Installing jq
 powershell -Command "c:\ProgramData\chocolatey\bin\choco install jq --force -version 1.5 -y"
 
-REM update gvprovider name in run.bat file	
-powershell -Command "(Get-Content 'c:\tibco\be\configproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\configproviders\run.bat' -Pattern '^set GVPROVIDER=na').Line.Substring(4), 'GVPROVIDER=!GVPROVIDER!' | Set-Content 'c:\tibco\be\configproviders\run.bat'"
+REM update Config Provider name in run.bat file	
+powershell -Command "(Get-Content 'c:\tibco\be\configproviders\run.bat') -replace @(Select-String -Path 'c:\tibco\be\configproviders\run.bat' -Pattern '^set CONFIGPROVIDER=na').Line.Substring(4), 'CONFIGPROVIDER=!CONFIGPROVIDER!' | Set-Content 'c:\tibco\be\configproviders\run.bat'"
 
-set GVS=!GVPROVIDER:,= !
-for %%v in (!GVS!) do (
-    SET GV=%%v
-    echo INFO: Setting up '!GV!' gv provider...
+set CPS=!CONFIGPROVIDER:,= !
+for %%v in (!CPS!) do (
+    SET CP=%%v
+    echo INFO: Setting up '!CP!' Config Provider...
 
-    REM calling gv provider setup.bat file
-    call c:\tibco\be\configproviders\!GV!\setup.bat
+    REM calling Config Provider setup.bat file
+    call c:\tibco\be\configproviders\!CP!\setup.bat
 )

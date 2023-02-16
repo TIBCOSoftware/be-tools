@@ -16,7 +16,7 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG JRE_VERSION
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 
 LABEL be-intermediate-image=true
 
@@ -57,7 +57,7 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=intermediate /home/tibco /home/tibco
@@ -84,8 +84,8 @@ RUN yum install -y perl hostname
 
 RUN if ! [[ -e /lib64/libnsl.so.1 ]]; then if ! [[ -e /lib64/libnsl.so.2 ]]; then dnf install  -y libnsl* ; fi ;  ln -s  /lib64/libnsl.so.2 /lib64/libnsl.so.1 ; fi ;
 
-# Setup gv providers
-RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${GVPROVIDER}
+# Setup Config Providers
+RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${CONFIGPROVIDER}
 
 RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 

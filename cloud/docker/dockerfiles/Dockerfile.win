@@ -31,7 +31,7 @@ ARG JRE_VERSION
 ARG OPEN_JDK_FILENAME
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 
 LABEL be-intermediate-image=true
 
@@ -77,7 +77,7 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -102,8 +102,8 @@ COPY --from=intermediate c:\\_tibco c:\\tibco
 
 RUN c:\tibco\be\vcredist_install.bat
 
-# Setup gv providers
-RUN c:\tibco\be\configproviders\setup.bat "%GVPROVIDER%"
+# Setup Config Providers
+RUN c:\tibco\be\configproviders\setup.bat "%CONFIGPROVIDER%"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \

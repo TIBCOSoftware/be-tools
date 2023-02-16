@@ -61,7 +61,7 @@ if NOT EXIST "c:\tibco\be\application" (
 type NUL>%BE_PROPS_FILE%
 
 if EXIST .\configproviders\run.bat (
-	REM update gvprovider gvs in props file
+	REM Run config providers run file to pull gvs/certs
 	call .\configproviders\run.bat
 )
 

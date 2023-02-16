@@ -5,14 +5,14 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
-GVPROVIDER=$1
+CONFIGPROVIDER=$1
 
-if [ "$GVPROVIDER" = "na" -o -z "${GVPROVIDER// }" ]; then
-	echo "INFO: Skipping gv providers setup"
+if [ "$CONFIGPROVIDER" = "na" -o -z "${CONFIGPROVIDER// }" ]; then
+	echo "INFO: Skipping Config Providers setup"
   exit 0
 fi
 
-echo "INFO: Setting up gv providers[${GVPROVIDER}]..."
+echo "INFO: Setting up Config Providers[${CONFIGPROVIDER}]..."
 
 if [ -f /usr/bin/apt-get ]; then
   ln -s /usr/bin/apt-get /usr/bin/package-manager
@@ -20,7 +20,7 @@ elif [ -f /usr/bin/yum ]; then
   ln -s /usr/bin/yum /usr/bin/package-manager
 fi
 
-# install tools common for all gv providers
+# install tools common for all Config Providers
 cd /home/tibco/be/configproviders
 package-manager update -y && package-manager install -y wget
 
@@ -31,26 +31,26 @@ mv jq-linux64 jq
 mv COPYING JQLICENSE
 chmod +x jq
 
-oIFS="$IFS"; IFS=','; declare -a GVs=($GVPROVIDER); IFS="$oIFS"; unset oIFS
+oIFS="$IFS"; IFS=','; declare -a CPs=($CONFIGPROVIDER); IFS="$oIFS"; unset oIFS
 
 # invoke provider specific setups
-for GV in "${GVs[@]}"
+for CP in "${CPs[@]}"
 do
-  echo "INFO: setting up the gvprovider[${GV}]..."
-  chmod +x /home/tibco/be/configproviders/${GV}/*.sh
-  if [ -f /home/tibco/be/configproviders/${GV}/setup.sh ]; then /home/tibco/be/configproviders/${GV}/setup.sh; fi
+  echo "INFO: setting up the Config Provider[${CP}]..."
+  chmod +x /home/tibco/be/configproviders/${CP}/*.sh
+  if [ -f /home/tibco/be/configproviders/${CP}/setup.sh ]; then /home/tibco/be/configproviders/${CP}/setup.sh; fi
 
   if [ "$?" != 0 ]; then
-    echo "ERROR: gvprovider[${GV}] setup failed."
+    echo "ERROR: Config Provider[${CP}] setup failed."
     exit 1
   fi
-  echo "INFO: gvprovider[${GV}] setup done."
+  echo "INFO: Config Provider[${CP}] setup done."
 done
 
-# update run.sh with selected gvprovider
+# update run.sh with selected Config Provider
 cd /home/tibco/be/configproviders
-ESCAPED_GVPROVIDER=$(printf '%s\n' "$GVPROVIDER" | sed -e 's/[\/]/\\&/g')
-sed -i "s/GVPROVIDER=na/GVPROVIDER=$ESCAPED_GVPROVIDER/g" run.sh
+ESCAPED_CONFIGPROVIDER=$(printf '%s\n' "$CONFIGPROVIDER" | sed -e 's/[\/]/\\&/g')
+sed -i "s/CONFIGPROVIDER=na/CONFIGPROVIDER=$ESCAPED_CONFIGPROVIDER/g" run.sh
 
 # clean up
 package-manager remove -y wget

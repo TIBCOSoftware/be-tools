@@ -12,7 +12,7 @@ getFromArray()
     echo $result
 }
 
-removeDuplicatesAndFormatGVs()
+RemoveDuplicatesAndFormatCPs()
 {
     result=""
     oIFS="$IFS"; IFS=','; declare -a values=($1);

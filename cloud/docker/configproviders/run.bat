@@ -4,14 +4,14 @@
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-set GVPROVIDER=na
+set CONFIGPROVIDER=na
 
-if !GVPROVIDER! EQU na (
+if !CONFIGPROVIDER! EQU na (
   exit /b 0
 )
 
-set GVS=!GVPROVIDER:,= !
-for %%v in (!GVS!) do (
+set CPS=!CONFIGPROVIDER:,= !
+for %%v in (!CPS!) do (
     SET GV=%%v
     echo INFO: Reading GV values from [!GV!]
 

@@ -12,7 +12,7 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
@@ -45,7 +45,7 @@ ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
 ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 ARG DEBIAN_FRONTEND=noninteractive
@@ -75,8 +75,8 @@ ENV PU=default \
  JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
 
-# Setup gv providers
-RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${GVPROVIDER}
+# Setup Config Providers
+RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${CONFIGPROVIDER}
 
 RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 

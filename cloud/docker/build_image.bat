@@ -19,7 +19,7 @@ set "ARG_TYPE=na"
 set "ARG_APP_LOCATION=na"
 set "ARG_TAG=na"
 set "ARG_DOCKER_FILE=na"
-set "ARG_GVPROVIDER=na"
+set "ARG_CONFIGPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
 set "ARG_OPTIMIZE=na"
 
@@ -201,12 +201,12 @@ for %%x in (%*) do (
         shift
         call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
         if !FLAG_CLIKEY! EQU false (
-            call set "ARG_GVPROVIDER=%%!counter!"
-            if "!ARG_GVPROVIDER!" NEQ "" (
-                set "ARG_GVPROVIDER=!ARG_GVPROVIDER:"=!"
-                set "ARG_GVPROVIDER=!ARG_GVPROVIDER: =!"
+            call set "ARG_CONFIGPROVIDER=%%!counter!"
+            if "!ARG_CONFIGPROVIDER!" NEQ "" (
+                set "ARG_CONFIGPROVIDER=!ARG_CONFIGPROVIDER:"=!"
+                set "ARG_CONFIGPROVIDER=!ARG_CONFIGPROVIDER: =!"
             ) else (
-                set "ARG_GVPROVIDER=na"
+                set "ARG_CONFIGPROVIDER=na"
             )
         ) else (
             set /A counter=!counter!-1
@@ -716,9 +716,9 @@ if "!EAR_FILE_NAME!" NEQ "" (
 echo INFO: DOCKERFILE                   : [!ARG_DOCKER_FILE!]
 echo INFO: IMAGE TAG                    : [!ARG_IMAGE_VERSION!]
 
-if !ARG_GVPROVIDER! NEQ na (
-    call .\scripts\util.bat :RemoveDuplicatesAndFormatGVs "!ARG_GVPROVIDER!"
-    echo INFO: GV PROVIDER                  : [!ARG_GVPROVIDER!]
+if !ARG_CONFIGPROVIDER! NEQ na (
+    call .\scripts\util.bat :RemoveDuplicatesAndFormatCPs "!ARG_CONFIGPROVIDER!"
+    echo INFO: CONFIG PROVIDER              : [!ARG_CONFIGPROVIDER!]
 )
 
 if "!OPEN_JDK_VERSION!" NEQ "na" (
@@ -766,41 +766,41 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
     )
     mkdir !TEMP_FOLDER!\configproviders
     xcopy /Q /C /Y .\configproviders\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders > NUL
-    if "!ARG_GVPROVIDER!" EQU "na" (
-        set "ARG_GVPROVIDER=na"
+    if "!ARG_CONFIGPROVIDER!" EQU "na" (
+        set "ARG_CONFIGPROVIDER=na"
     ) else (
-        set GVS=!ARG_GVPROVIDER:,= !
-        for %%v in (!GVS!) do (
-            SET GV=%%v
-            if "!GV!" EQU "gvhttp" (
-                mkdir !TEMP_FOLDER!\configproviders\!GV!
-                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
-            ) else if "!GV!" EQU "gvconsul" (
-                mkdir !TEMP_FOLDER!\configproviders\!GV!
-                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
-            ) else if "!GV!" EQU "gvcyberark" (
-                mkdir !TEMP_FOLDER!\configproviders\!GV!
-                xcopy /Q /C /Y .\configproviders\!GV!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!GV! > NUL
+        set CPS=!ARG_CONFIGPROVIDER:,= !
+        for %%v in (!CPS!) do (
+            SET CP=%%v
+            if "!CP!" EQU "gvhttp" (
+                mkdir !TEMP_FOLDER!\configproviders\!CP!
+                xcopy /Q /C /Y .\configproviders\!CP!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!CP! > NUL
+            ) else if "!CP!" EQU "gvconsul" (
+                mkdir !TEMP_FOLDER!\configproviders\!CP!
+                xcopy /Q /C /Y .\configproviders\!CP!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!CP! > NUL
+            ) else if "!CP!" EQU "gvcyberark" (
+                mkdir !TEMP_FOLDER!\configproviders\!CP!
+                xcopy /Q /C /Y .\configproviders\!CP!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!CP! > NUL
             ) else (
-                if EXIST ".\configproviders\!GV!" (
-                    if NOT EXIST ".\configproviders\!GV!\setup!SCRIPT_EXTN!" (
-                        echo ERROR: setup!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\configproviders\!GV!\]
+                if EXIST ".\configproviders\!CP!" (
+                    if NOT EXIST ".\configproviders\!CP!\setup!SCRIPT_EXTN!" (
+                        echo ERROR: setup!SCRIPT_EXTN! is required for custom Config Provider[!CP!] under the directory - [.\configproviders\!CP!\]
                         GOTO END-withError
-                    ) else if NOT EXIST ".\configproviders\!GV!\run!SCRIPT_EXTN!" (
-                        echo ERROR: run!SCRIPT_EXTN! is required for custom GV provider[!GV!] under the directory - [.\configproviders\!GV!\]
+                    ) else if NOT EXIST ".\configproviders\!CP!\run!SCRIPT_EXTN!" (
+                        echo ERROR: run!SCRIPT_EXTN! is required for custom Config Provider[!CP!] under the directory - [.\configproviders\!CP!\]
                         GOTO END-withError
                     ) else (
-                        mkdir !TEMP_FOLDER!\configproviders\!GV!
-                        xcopy /Q /C /R /Y /E .\configproviders\!GV!\* !TEMP_FOLDER!\configproviders\!GV! > NUL
+                        mkdir !TEMP_FOLDER!\configproviders\!CP!
+                        xcopy /Q /C /R /Y /E .\configproviders\!CP!\* !TEMP_FOLDER!\configproviders\!CP! > NUL
                     )
                 ) else (
-                    echo ERROR: GV provider[!GV!] is not supported.
+                    echo ERROR: Config Provider[!CP!] is not supported.
                     GOTO END-withError
                 )
             )
         )
         if "!SCRIPT_EXTN!" EQU ".sh" (
-            set "ARG_GVPROVIDER=!ARG_GVPROVIDER:custom\=custom/!"
+            set "ARG_CONFIGPROVIDER=!ARG_CONFIGPROVIDER:custom\=custom/!"
         )
     )
 )
@@ -999,10 +999,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
-    docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg GVPROVIDER="!ARG_GVPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+    docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
 )
 
 if %ERRORLEVEL% NEQ 0 (
@@ -1050,8 +1050,8 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
-    echo  [--config-provider]  :    Name of GV provider to be included in the image ("gvconsul"^|"gvhttp"^|"gvcyberark"^|"custom") [optional]
-    echo                            To add more than one GV use comma separated format ex: "gvconsul,gvhttp"
+    echo  [--config-provider]  :    Name of Config Provider to be included in the image ("gvconsul"^|"gvhttp"^|"gvcyberark"^|"custom") [optional]
+    echo                            To add more than one Config Provider use comma separated format ex: "gvconsul,gvhttp"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
     echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
