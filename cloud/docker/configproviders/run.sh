@@ -17,13 +17,13 @@ fi
 oIFS="$IFS"; IFS=','; declare -a CPs=($CONFIGPROVIDER); IFS="$oIFS"; unset oIFS
 
 # invoke provider specific runs
-for GV in "${CPs[@]}"
+for CP in "${CPs[@]}"
 do
-  if [[ $GV = gv* ]] || [[ $GV = custom/gv* ]] ; then
+  if [[ $CP = gv* ]] || [[ $CP = custom/gv* ]] ; then
 
-    echo "INFO: Reading GV values from [${GV}]"
+    echo "INFO: Reading GV values from [${CP}]"
 
-    ./configproviders/${GV}/run.sh
+    ./configproviders/${CP}/run.sh
 
     BE_PROPS_FILE=/home/tibco/be/beprops_all.props
     JSON_FILE=/home/tibco/be/configproviders/output.json
@@ -31,9 +31,9 @@ do
     if [ -f $JSON_FILE ]; then
       prop_keys="$(/home/tibco/be/configproviders/jq -r keys[] $JSON_FILE)"
       if [ -z "$prop_keys" ]; then
-        echo "WARN: 0[zero] GV values fetched from the GV provider[$GV]"
+        echo "WARN: 0[zero] GV values fetched from the GV provider[$CP]"
       else
-        echo "# GV values from $GV">>$BE_PROPS_FILE
+        echo "# GV values from $CP">>$BE_PROPS_FILE
         for prop in $prop_keys
         do
           echo "Prop: $prop"
@@ -41,14 +41,14 @@ do
         done
       fi
     else
-      echo "WARN: 0[zero] GV values fetched from the GV provider[$GV]"
+      echo "WARN: 0[zero] GV values fetched from the GV provider[$CP]"
     fi
 
     # cleanup
     rm -f "${JSON_FILE}"
   else
-    echo "INFO: Running Config Provider [${GV}]"
-    ./configproviders/${GV}/run.sh
+    echo "INFO: Running Config Provider [${CP}]"
+    ./configproviders/${CP}/run.sh
   fi
 
 done
