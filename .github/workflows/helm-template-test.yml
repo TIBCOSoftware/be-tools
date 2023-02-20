@@ -27,7 +27,13 @@ jobs:
           wget https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
           tar -zxvf helm-v3.10.2-linux-amd64.tar.gz
           sudo mv linux-amd64/helm /usr/local/bin/helm
-        
+    
+    - name: Add Helm Charts
+      run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influx  https://helm.influxdata.com/ 
+          helm repo add grafana https://grafana.github.io/helm-charts
+          
     - name: Helm Template Test
       run: |
             pwd
