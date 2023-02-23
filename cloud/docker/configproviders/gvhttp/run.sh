@@ -6,7 +6,7 @@
 #
 
 if [[ -z "$GVP_HTTP_SERVER_URL" ]]; then
-  echo "WARN: GV provider[gvhttp] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied."
+  echo "WARN: Config Provider[gvhttp] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied."
   echo "WARN: Skip fetching GV values from http end-store."
   exit 0
 fi
@@ -19,7 +19,7 @@ echo "INFO: GVP_HTTP_SERVER_URL = $GVP_HTTP_SERVER_URL"
 declare -a HEADER_VALUE
 
 if [[ -z "$GVP_HTTP_HEADERS" ]]; then
-  echo "ERROR: GVP_HTTP_HEADERS not specified."
+  echo "WARN: GVP_HTTP_HEADERS not specified."
 else
   echo "INFO: GVP_HTTP_HEADERS = $GVP_HTTP_HEADERS"
 

@@ -5,7 +5,7 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 if not defined GVP_HTTP_SERVER_URL (
-  echo WARN: GV provider[gvhttp] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied.
+  echo WARN: Config Provider[gvhttp] is configured but env variable GVP_HTTP_SERVER_URL is empty OR not supplied.
   echo WARN: Skip fetching GV values from http end-store.
   EXIT /B 1
 )

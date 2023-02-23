@@ -6,7 +6,7 @@
 #
 
 if [ -z "$CONSUL_SERVER_URL" ]; then
-  echo "WARN: GV provider[gvconsul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied."
+  echo "WARN: Config Provider[gvconsul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Consul."
   exit 0
 fi

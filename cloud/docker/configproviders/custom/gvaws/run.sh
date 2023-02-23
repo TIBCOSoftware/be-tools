@@ -18,7 +18,7 @@ if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
 fi
 
 if [[ -z "$AWS_SM_SECRET_ID" ]]; then
-  echo "WARN: GV provider[custom/gvaws] is configured but env variable AWS_SM_SECRET_ID is empty OR not supplied."
+  echo "WARN: Config Provider[custom/gvaws] is configured but env variable AWS_SM_SECRET_ID is empty OR not supplied."
   echo "WARN: Skip fetching GV values from AWS Secrets Manager."
   exit 0
 fi

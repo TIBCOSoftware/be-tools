@@ -47,7 +47,7 @@ for %%v in (!CPS!) do (
         echo # GV values from !CP!>>!BE_PROPS_FILE!
         
         if "!keys!" EQU "" (
-          echo WARN: 0[zero] GV values fetched from the GV provider[!CP!]
+          echo WARN: 0[zero] GV values fetched from the Config Provider[!CP!]
           echo.
           exit /b 0
         )
@@ -61,13 +61,13 @@ for %%v in (!CPS!) do (
 
         del jsonkeys values
       ) else (
-        echo WARN: 0[zero] GV values fetched from the GV provider[!CP!]
+        echo WARN: 0[zero] GV values fetched from the Config Provider[!CP!]
         echo.
       )
     )
 
     if !GVFLAG! EQU false (
-      echo INFO: Runnin Config Provider [!CP!]
+      echo INFO: Running Config Provider [!CP!]
       call .\configproviders\!CP!\run.bat
     )
 )

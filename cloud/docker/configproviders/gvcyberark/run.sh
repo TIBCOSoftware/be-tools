@@ -8,25 +8,25 @@
 echo "Configuring Conjur"
 
 if [ -z "$CONJUR_SERVER_URL" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_SERVER_URL is empty OR not supplied."
+  echo "WARN: Config Provider[conjur] is configured but env variable CONJUR_SERVER_URL is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi
 
 if [ -z "$CONJUR_ACCOUNT" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_ACCOUNT is empty OR not supplied."
+  echo "WARN: Config Provider[conjur] is configured but env variable CONJUR_ACCOUNT is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi
 
 if [ -z "$CONJUR_LOGINNAME" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_LOGINNAME is empty OR not supplied."
+  echo "WARN: Config Provider[conjur] is configured but env variable CONJUR_LOGINNAME is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi
 
 if [ -z "$CONJUR_APIKEY" ]; then
-  echo "WARN: GV provider[conjur] is configured but env variable CONJUR_APIKEY is empty OR not supplied."
+  echo "WARN: Config Provider[conjur] is configured but env variable CONJUR_APIKEY is empty OR not supplied."
   echo "WARN: Skip fetching GV values from Conjur."
   exit 0
 fi

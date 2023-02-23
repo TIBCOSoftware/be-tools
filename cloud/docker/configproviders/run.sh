@@ -31,7 +31,7 @@ do
     if [ -f $JSON_FILE ]; then
       prop_keys="$(/home/tibco/be/configproviders/jq -r keys[] $JSON_FILE)"
       if [ -z "$prop_keys" ]; then
-        echo "WARN: 0[zero] GV values fetched from the GV provider[$CP]"
+        echo "WARN: 0[zero] GV values fetched from the Config Provider[$CP]"
       else
         echo "# GV values from $CP">>$BE_PROPS_FILE
         for prop in $prop_keys
@@ -41,7 +41,7 @@ do
         done
       fi
     else
-      echo "WARN: 0[zero] GV values fetched from the GV provider[$CP]"
+      echo "WARN: 0[zero] GV values fetched from the Config Provider[$CP]"
     fi
 
     # cleanup

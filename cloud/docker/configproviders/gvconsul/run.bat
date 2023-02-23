@@ -3,7 +3,7 @@
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
 if not defined CONSUL_SERVER_URL (
-  echo WARN: GV provider[gvconsul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied.
+  echo WARN: Config Provider[gvconsul] is configured but env variable CONSUL_SERVER_URL is empty OR not supplied.
   echo WARN: Skip fetching GV values from Consul.
   EXIT /B 1
 )
