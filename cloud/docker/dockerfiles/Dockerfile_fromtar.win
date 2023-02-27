@@ -43,7 +43,7 @@ COPY tibcoHome "c:\tibco"
 RUN c:\tibco\be\vcredist_install.bat
 
 # Setup Config Providers
-RUN c:\tibco\be\configproviders\setup.bat %CONFIGPROVIDER%
+RUN c:\tibco\be\configproviders\setup.bat "%CONFIGPROVIDER%"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \
