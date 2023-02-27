@@ -15,11 +15,11 @@ for %%v in (!CPS!) do (
     SET CP=%%v
 
     SET GVFLAG=false
-
-    if /i "%CP:~0,2%"=="gv" (
+    
+    if /i "!CP:~0,2!"=="gv" (
       SET GVFLAG=true
     )
-    if /i "%CP:~0,8%"=="custom/gv" (
+    if /i "!CP:~0,8!"=="custom/gv" (
       SET GVFLAG=true
     )
 
@@ -38,7 +38,7 @@ for %%v in (!CPS!) do (
       )
 
       if EXIST !JSON_FILE! (
-        (jq -r "keys | @csv" !JSON_FILE!) > jsonkeys
+       type !JSON_FILE! | jq -r "keys | @csv"  > jsonkeys
 
         set /p tempkeys=<jsonkeys
         set keys=!tempkeys:"=!
@@ -54,7 +54,7 @@ for %%v in (!CPS!) do (
 
         for %%a in (!keys!) do (
           set key=%%~a
-          (jq -r .\"%%~a\" !JSON_FILE!) > values
+          type !JSON_FILE! | jq -r .\"%%~a\" > values
           set /p value=<values
           echo tibco.clientVar.!key!=!value! >> !BE_PROPS_FILE!
         )
