@@ -38,8 +38,12 @@ for %%v in (!CPS!) do (
       )
 
       if EXIST !JSON_FILE! (
-       type !JSON_FILE! | jq -r "keys | @csv"  > jsonkeys
-
+        type !JSON_FILE! | jq -r "keys | @csv"  > jsonkeys
+        if "!jsonkeys!" EQU "" (
+          echo WARN: 0[zero] GV values fetched from the Config Provider[!CP!]
+          echo.
+          exit /b 0
+        )
         set /p tempkeys=<jsonkeys
         set keys=!tempkeys:"=!
         

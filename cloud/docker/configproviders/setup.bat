@@ -17,8 +17,8 @@ if "!CONFIGPROVIDER!" EQU "na" (
 if NOT EXIST "c:\ProgramData\chocolatey\bin\choco.exe" (
     ping chocolatey.org -n 1 -w 20000
     if errorlevel 1 (
-        echo WARN: Cannot connect to https://chocolatey.org, check your internet/firewall settings.
-        EXIT 0
+        echo ERROR: Cannot connect to https://chocolatey.org, check your internet/firewall settings.
+        EXIT 1
     )
 
     echo INFO: Installing Chocolatey Package Manager for Windows
