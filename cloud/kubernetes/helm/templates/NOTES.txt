@@ -45,3 +45,36 @@ Following services have been exposed for external access:
     {{- end }}
 {{ end }}
 {{- end }}
+Following services have been exposed for JMX based management and monitoring of respective pods:
+  {{- $clWidth := 30 }}
+  {{- $cl0StringLen := len "Service name" }}
+  {{- $cl0spaces := sub $clWidth $cl0StringLen }}
+  {{- $cl1StringLen := len "POD name" }}
+  {{- $cl1spaces := sub $clWidth $cl1StringLen }}
+  Service name {{- " " | repeat (int $cl0spaces) -}} POD name {{- " " | repeat (int $cl1spaces) -}} POD's FQDN
+{{- range $i, $agent := .Values.agents }}
+{{- range $j, $e := until (int $agent.replicas) }}
+{{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
+{{- $podName := printf "%s-%d" $ssName $j }}
+{{- $serviceName := printf "%s-%d-jmx" $ssName $j }}
+{{- $fqdn := printf "%s-%d.%s-headless.%s.svc.cluster.local" $ssName $j $ssName $.Release.Namespace }}
+  {{- $cl0StringLen = len $serviceName }}
+  {{- $cl0spaces = sub $clWidth $cl0StringLen }}
+  {{- $cl1StringLen := len $podName }}
+  {{- $cl1spaces := sub $clWidth $cl1StringLen }}
+  {{ $serviceName }} {{- " " | repeat (int $cl0spaces) -}} {{ $podName }} {{- " " | repeat (int $cl1spaces) -}} {{ $fqdn }}
+{{- end }}
+{{- end }}
+
+  NOTE: These services are of type ClusterIP and JMX process running inside each pod binds to its FQDN (Fully Qualified Domain Name).
+  To connect to any JMX process from your local machine using tools like "jconsole", update your "/etc/hosts" file
+  with respective pod's FQDN, forward traffic from local machine to pod using kubectl port-forward & and use FQDN in the jconsole.
+  {{- $firstAgent := $.Values.agents | first }}
+  {{- $ssName := (printf "%s-%s" $.Release.Name $firstAgent.name) }}
+  {{- $podName := printf "%s-%d" $ssName 0 }}
+  {{- $serviceName := printf "%s-%d-jmx" $ssName 0 }}
+  {{- $fqdn := printf "%s-%d.%s-headless.%s.svc.cluster.local" $ssName 0 $ssName $.Release.Namespace }}
+  Example: To connect to the JMX process running inside the pod [{{ $podName }}], use below details.
+  1. Add "127.0.0.1 {{$fqdn}}" to your local "/etc/hosts" file.
+  2. kubectl port-forward svc/{{$serviceName}} 5555
+  3. Use URL "{{$fqdn}}:5555" to connect using "jconsole"
