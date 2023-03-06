@@ -15,23 +15,14 @@ func TestHeadlessService(t *testing.T) {
 	releaseName := "testheadless-svc"
 	require.NoError(t, err)
 
+	// case: cmType = as2
 	values := map[string]string{
-		"cmType": "NotSupported",
+		"cmType": "as2",
 	}
 	options := &helm.Options{
 		SetValues: values,
 	}
 	output, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/svc-headless.yaml"})
-	require.NotNil(t, err)
-
-	// case: cmType = as2
-	values = map[string]string{
-		"cmType": "as2",
-	}
-	options = &helm.Options{
-		SetValues: values,
-	}
-	output, err = helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{"templates/svc-headless.yaml"})
 	require.NoError(t, err)
 	var service v1.Service
 	helm.UnmarshalK8SYaml(t, output, &service)

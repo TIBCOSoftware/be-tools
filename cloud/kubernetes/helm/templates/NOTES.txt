@@ -60,8 +60,10 @@ Following services have been exposed for JMX based management and monitoring of 
 {{- $fqdn := printf "%s-%d.%s-headless.%s.svc.cluster.local" $ssName $j $ssName $.Release.Namespace }}
   {{- $cl0StringLen = len $serviceName }}
   {{- $cl0spaces = sub $clWidth $cl0StringLen }}
+  {{- if lt $cl0spaces 0 }} {{ $cl0spaces = 0}} {{ end }}
   {{- $cl1StringLen := len $podName }}
   {{- $cl1spaces := sub $clWidth $cl1StringLen }}
+  {{- if lt $cl1spaces 0 }} {{ $cl1spaces = 0}} {{ end }}
   {{ $serviceName }} {{- " " | repeat (int $cl0spaces) -}} {{ $podName }} {{- " " | repeat (int $cl1spaces) -}} {{ $fqdn }}
 {{- end }}
 {{- end }}
