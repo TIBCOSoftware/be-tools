@@ -4,24 +4,24 @@
 #
 schemaVersion: '2.0.0'
 fileExistenceTests:
-  - name: 'gvproviders run.sh'
-    path: '/home/tibco/be/gvproviders/run.sh'
+  - name: 'configproviders run.sh'
+    path: '/home/tibco/be/configproviders/run.sh'
     shouldExist: true
-  - name: 'gvproviders setup.sh'
-    path: '/home/tibco/be/gvproviders/setup.sh'
+  - name: 'configproviders setup.sh'
+    path: '/home/tibco/be/configproviders/setup.sh'
     shouldExist: true
   - name: 'JQ BINARY PATH'
-    path: '/home/tibco/be/gvproviders/jq'
+    path: '/home/tibco/be/configproviders/jq'
     shouldExist: true
   - name: 'JQ LICENSE PATH'
-    path: '/home/tibco/be/gvproviders/JQLICENSE'
+    path: '/home/tibco/be/configproviders/JQLICENSE'
     shouldExist: true
   - name: 'CONSUL BINARY PATH'
-    path: '/home/tibco/be/gvproviders/consul/consul'
+    path: '/home/tibco/be/configproviders/gvconsul/consul'
     shouldExist: true
   - name: 'CONSUL run.sh'
-    path: '/home/tibco/be/gvproviders/consul/run.sh'
+    path: '/home/tibco/be/configproviders/gvconsul/run.sh'
     shouldExist: true
   - name: 'CONSUL setup.sh'
-    path: '/home/tibco/be/gvproviders/consul/setup.sh'
+    path: '/home/tibco/be/configproviders/gvconsul/setup.sh'
     shouldExist: true

@@ -40,35 +40,35 @@ GOTO :EOF
     SET "%~5=!INSTLR_VERSION!" & SET "%~6=!FILENAME!" & SET "%~7=false"
     EXIT /B 0
 
-:RemoveDuplicatesAndFormatGVs
-    set ARG_GVPROVIDER=%~1
-    set ARG_GV_RESULT=
+:RemoveDuplicatesAndFormatCPs
+    set ARG_CONFIGPROVIDER=%~1
+    set ARG_CP_RESULT=
 
-    set GVS=!ARG_GVPROVIDER:,= !
-    for %%j in (!GVS!) do (
+    set CPS=!ARG_CONFIGPROVIDER:,= !
+    for %%j in (!CPS!) do (
 
-        SET GV=%%j
-        set "GV=!GV:custom\=!"
-        set "GV=!GV:custom/=!"
+        SET CP=%%j
+        set "CP=!CP:custom\=!"
+        set "CP=!CP:custom/=!"
 
-        if "!GV!" NEQ "http" if "!GV!" NEQ "consul" if "!GV!" NEQ "cyberark" set "GV=custom\!GV!"
+        if "!CP!" NEQ "gvhttp" if "!CP!" NEQ "gvconsul" if "!CP!" NEQ "gvcyberark" set "CP=custom\!CP!"
 
         SET DUPLICATE_FOUND=false
-        if "!ARG_GV_RESULT!" EQU "" (
-            set ARG_GV_RESULT=!GV!
+        if "!ARG_CP_RESULT!" EQU "" (
+            set ARG_CP_RESULT=!CP!
         ) else (
-            set GVS2=!ARG_GV_RESULT:,= !
-            for %%k in (!GVS2!) do (
-                if "!GV!" EQU "%%k" (
+            set CPS2=!ARG_CP_RESULT:,= !
+            for %%k in (!CPS2!) do (
+                if "!CP!" EQU "%%k" (
                     SET DUPLICATE_FOUND=true
                 )
             )
             if "!DUPLICATE_FOUND!" EQU "false" (
-                SET "ARG_GV_RESULT=!ARG_GV_RESULT!,!GV!"
+                SET "ARG_CP_RESULT=!ARG_CP_RESULT!,!CP!"
             )
         )
     )
-    set ARG_GVPROVIDER=!ARG_GV_RESULT!
+    set ARG_CONFIGPROVIDER=!ARG_CP_RESULT!
     EXIT /B 0
 
 :ValidateFTLAndAS

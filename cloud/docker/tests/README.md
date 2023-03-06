@@ -28,7 +28,7 @@ Usage: run_tests.sh
 
  [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]
 
- [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]
+ [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]
 
  [--image-type]               : BE Image type use ("app"|"s2ibuilder"|"rms"|"teagent") (default is "app") [optional]
 
@@ -44,7 +44,7 @@ Sample run command:
 --be-version 6.1 \
 --as-version 4.5 \
 --ftl-version 6.5 \
---gv-provider consul
+--config-provider gvconsul
 ```
 
 ## Test Cases
@@ -53,8 +53,8 @@ Various test cases are developed and organized in different yaml files. File nam
 * `as.yaml/aslegacy.yaml` Contains Active Spaces artifacts related test cases
 * `ftl.yaml` Contains FTL artifacts related test cases
 * `hawk.yaml` Contains HAWK artifacts related test cases
-* `consulgv.yaml` Contains `consul` gvprovider related test cases
-* `httpgv.yaml` Contains `http` gvprovider related test cases
+* `consulgv.yaml` Contains `gvconsul` gvprovider related test cases
+* `httpgv.yaml` Contains `gvhttp` gvprovider related test cases
 <br><br>
 
 ## Notes to add Additional Test Cases

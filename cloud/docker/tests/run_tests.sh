@@ -14,7 +14,7 @@ ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
 ARG_HAWK_SHORT_VERSION=na
-ARG_GV_PROVIDER=na
+ARG_CP_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
 
@@ -34,7 +34,7 @@ USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format e
 USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]"
 USAGE+="\n\n [-hk|--hawk-version]         : HAWK version in x.x format ex(6.2) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
-USAGE+="\n\n [-gv|--gv-provider]          : GV Provider value ex(consul) [optional]"
+USAGE+="\n\n [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
 USAGE+="\n\n [--java-dir-name]            : Java home directory name (default is \"tibcojre64\") [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
@@ -73,12 +73,12 @@ while [[ $# -gt 0 ]]; do
         -as=*|--as-version=*)
         ARG_AS_SHORT_VERSION="${key#*=}"
         ;;
-        -gv|--gv-provider)
+        -cp|--config-provider)
         shift # past the key and to the value
-        ARG_GV_PROVIDER="$1"
+        ARG_CP_PROVIDER="$1"
         ;;
-        -gv=*|--gv-provider=*)
-        ARG_GV_PROVIDER="${key#*=}"
+        -cp=*|--config-provider=*)
+        ARG_CP_PROVIDER="${key#*=}"
         ;;
         -f|--ftl-version)
         shift # past the key and to the value
@@ -203,12 +203,12 @@ if [ $ARG_HAWK_SHORT_VERSION != na ]; then
   SED_EXP+=" -e s/HAWK_SHORT_VERSION/${ARG_HAWK_SHORT_VERSION}/g "
 fi
 
-## GV provider validation
-if [ $ARG_GV_PROVIDER != na ]; then
-  echo "INFO: gv provider:         [${ARG_GV_PROVIDER}]"
-  if [ "$ARG_GV_PROVIDER" = "consul" ]; then
+## Config Provider validation
+if [ $ARG_CP_PROVIDER != na ]; then
+  echo "INFO: Config Provider:     [${ARG_CP_PROVIDER}]"
+  if [ "$ARG_CP_PROVIDER" = "gvconsul" ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/consulgv.yaml "
-  elif [ "$ARG_GV_PROVIDER" = "http" ]; then
+  elif [ "$ARG_CP_PROVIDER" = "gvhttp" ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/httpgv.yaml "
   fi
 fi

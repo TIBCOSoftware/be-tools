@@ -50,7 +50,7 @@ RUN apt-get update \
  && apt-get install -y unzip procps findutils tar
 
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run lib/deletelist.txt /home/tibco/be/
-COPY gvproviders /home/tibco/be/gvproviders
+COPY configproviders /home/tibco/be/configproviders
 COPY app/* /opt/tibco/be/ext/
 
 ENV TIBCO_HOME=/opt/tibco \
@@ -93,7 +93,7 @@ ARG FTL_VERSION
 ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=intermediate /home/tibco /home/tibco
@@ -120,8 +120,8 @@ ENV PU=default \
  EAR_FILE=/opt/tibco/be/application/ear/${EAR_FILE_NAME} \
  JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
-# Setup gv providers
-RUN chmod +x /home/tibco/be/gvproviders/*.sh && /home/tibco/be/gvproviders/setup.sh ${GVPROVIDER}
+# Setup Config Providers
+RUN chmod +x /home/tibco/be/configproviders/*.sh && /home/tibco/be/configproviders/setup.sh ${CONFIGPROVIDER}
 
 RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
 

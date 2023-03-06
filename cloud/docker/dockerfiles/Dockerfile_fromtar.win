@@ -16,7 +16,7 @@ ARG BE_PRODUCT_IMAGE_VERSION
 ARG JRE_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
-ARG GVPROVIDER
+ARG CONFIGPROVIDER
 
 LABEL \
     TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
@@ -42,8 +42,8 @@ COPY tibcoHome "c:\tibco"
 
 RUN c:\tibco\be\vcredist_install.bat
 
-# Setup gv providers
-RUN c:\tibco\be\gvproviders\setup.bat %GVPROVIDER%
+# Setup Config Providers
+RUN c:\tibco\be\configproviders\setup.bat "%CONFIGPROVIDER%"
 
 # The following is the list of data, log and RMS Volumes
 VOLUME \

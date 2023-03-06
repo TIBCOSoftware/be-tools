@@ -12,14 +12,14 @@ getFromArray()
     echo $result
 }
 
-removeDuplicatesAndFormatGVs()
+RemoveDuplicatesAndFormatCPs()
 {
     result=""
     oIFS="$IFS"; IFS=','; declare -a values=($1);
 
     for key in "${values[@]}"; do
 
-        if ! [ "$key" = "http" -o "$key" = "consul" -o "$key" = "cyberark" ]; then
+        if ! [ "$key" = "gvhttp" -o "$key" = "gvconsul" -o "$key" = "gvcyberark" ]; then
             key=${key/custom\//}
             key=${key/custom\\/}
             key="custom/$key"

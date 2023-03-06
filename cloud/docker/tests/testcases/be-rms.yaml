@@ -37,11 +37,11 @@ fileExistenceTests:
   - name: 'BE rms TRA File'
     path: '/opt/tibco/be/BE_SHORT_VERSION/rms/bin/be-rms.tra'
     shouldExist: true
-  - name: 'Gvproviders Path'
-    path: '/home/tibco/be/gvproviders/'
+  - name: 'Config Providers Path'
+    path: '/home/tibco/be/configproviders/'
     shouldExist: true
-  - name: 'Gvproviders File'
-    path: '/home/tibco/be/gvproviders/setup.sh'
+  - name: 'Config Providers File'
+    path: '/home/tibco/be/configproviders/setup.sh'
     shouldExist: true
   - name: 'Docker Run File'
     path: '/home/tibco/be/run'
