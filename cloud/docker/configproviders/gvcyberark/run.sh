@@ -50,14 +50,24 @@ $cnjrcmd login -i $CONJUR_LOGINNAME -p $CONJUR_APIKEY
 
 #Fetch variable list
 variablelist=$($cnjrcmd list --kind variable)
+variables=$(echo $variablelist | sed 's/[][]//g' | sed 's/,//g')
+
 command="$cnjrcmd variable get -i " 
 
-for variable in $(echo $variablelist | sed 's/[][]//g' | sed 's/,//g')
+for variable in $variables
 do
   variable=$(echo $variable | sed -r 's/.*variable:(.*)\"/\1/g' );
   command+="$variable ";
 done
 
-$command > $JSON_FILE
+if [ $(echo $variables | wc -w) == 1 ];
+then
+     echo "{" >> $JSON_FILE
+     value=$($command)
+     echo -e \"${variable#*/}\": \"$value\" >> $JSON_FILE
+     echo "}" >> $JSON_FILE
+else
+    $command > $JSON_FILE
+fi
 
 conjur logout
