@@ -343,4 +343,4 @@ grafana:
 oihr:
   enabled: false                                      # Set to true, to enable Hawk micro agent
   hkAgentUrl: redtail-agent-0.redtail-agent:2571      # HAWK agent url
-  
+
