@@ -52,7 +52,7 @@ if [ ! -z "$AWS_ROLE_ARN" ]; then
   aws configure set source_profile $PROFILE_NAME --profile $PROFILE_NAME
 fi
 
-if [[ ! -z "$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" ]]; then
+if [[ ! -z "$AWS_SESSION_TOKEN" ]]; then
     aws configure set aws_session_token $AWS_SESSION_TOKEN --profile $PROFILE_NAME
 fi
 
