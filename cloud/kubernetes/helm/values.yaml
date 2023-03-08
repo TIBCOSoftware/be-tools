@@ -59,6 +59,8 @@ envVarsFromSecrets: []
 
 # envVars Specify environment variables (yaml key value format) you want to pass on to BE agents (pods)
 envVars: {}
+  # # BE_GLOBAL_TRUSTED_CA_STORE is special gv for passing certificates outside project folder
+  # BE_GLOBAL_TRUSTED_CA_STORE: file:///opt/tibco/be/certstore
   # # env flag to specify which CDD file to use.
   # # In case RMS container, It contains 3 different CDD files with RMS.cdd as default. You can use this flag to run BE app with diffent CDD.
   # CDD_FILE: "<CDD file path>"

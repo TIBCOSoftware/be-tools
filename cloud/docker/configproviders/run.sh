@@ -46,6 +46,17 @@ do
 
     # cleanup
     rm -f "${JSON_FILE}"
+  elif [[ $CP = cm* ]] || [[ $CP = custom/cm* ]] ; then
+    echo "INFO: Running Config Provider [${CP}]"
+    TRA_FILE="bin/be-engine.tra"
+    TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//')
+    export PATH=$PATH:$TIB_JAVA_HOME/bin
+    export CERTS_PATH=/opt/tibco/be/certstore
+    export CERT_TRUSTSTORE=$CERTS_PATH/truststore.jks
+    export CERT_KEYSTORE=$CERTS_PATH/keystore.jks
+    export KEYSTORE_PASSPHRASE=password
+    export TRUSTSTORE_PASSPHRASE=password
+    ./configproviders/${CP}/run.sh
   else
     echo "INFO: Running Config Provider [${CP}]"
     ./configproviders/${CP}/run.sh

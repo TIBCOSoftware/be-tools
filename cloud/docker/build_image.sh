@@ -796,7 +796,7 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         
         for CP in "${CPs[@]}"
         do
-            if [ "$CP" = "gvhttp" -o "$CP" = "gvconsul" -o "$CP" = "gvcyberark" ]; then
+            if [ "$CP" = "gvhttp" -o "$CP" = "gvconsul" -o "$CP" = "gvcyberark" -o "$CP" = "cmcncf" ]; then
                 mkdir -p $TEMP_FOLDER/configproviders/$CP
                 cp -a ./configproviders/$CP/*.sh $TEMP_FOLDER/configproviders/$CP
             else
