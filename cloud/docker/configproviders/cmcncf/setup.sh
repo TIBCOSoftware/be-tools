@@ -7,16 +7,16 @@
 
 source /home/tibco/be/configproviders/cputils.sh
 
-echo "Check for openssl and keytool utilites"
+echo "INFO: Check for openssl and keytool utilites"
 
 if [ -x $(command -v openssl) ] ; then
-    echo "openssl exists"
+    echo "INFO: openssl utility exists"
 else
     REQUIRED_PKGS="openssl"    
 fi
 
 if ! [ -x $(command -v keytool) ] ; then
-    echo "keytool doesnot exists"
+    echo "INFO: keytool utility is required and it doesnot exists, exiting the build"
     exit 1;
 fi
 
@@ -28,3 +28,4 @@ CLEANUP_PKGS_LIST=$( getCleanupPkgs "$BUILD_PKGS" "$INSTALL_PKGS_LIST" )
 if [ "$INSTALL_PKGS_LIST" != "" ]; then
     package-manager install -y $INSTALL_PKGS_LIST
 fi  
+

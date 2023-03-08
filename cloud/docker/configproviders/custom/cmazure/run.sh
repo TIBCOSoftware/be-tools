@@ -6,16 +6,19 @@
 #
 
 if [[ -z "$AZ_CLIENT_ID" ]]; then
+  echo "ERROR: Cannot read certificates from Azure Key Vault."
   echo "ERROR: Specify env variable AZ_CLIENT_ID"
   exit 1
 fi
 
 if [[ -z "$AZ_CLIENT_PASSWORD" ]]; then
+  echo "ERROR: Cannot read certificates from Azure Key Vault."
   echo "ERROR: Specify env variable AZ_CLIENT_PASSWORD"
   exit 1
 fi
 
 if [[ -z "$AZ_TENANT_ID" ]]; then
+  echo "ERROR: Cannot read certificates from Azure Key Vault."
   echo "ERROR: Specify env variable AZ_TENANT_ID"
   exit 1
 fi
@@ -24,7 +27,7 @@ fi
 az login --service-principal -u $AZ_CLIENT_ID -p $AZ_CLIENT_PASSWORD --tenant $AZ_TENANT_ID
 
 if ! [ -d $CERTS_PATH ]; then
-  echo "Creating $CERTS_PATH directory"
+  echo "INFO: Creating $CERTS_PATH directory"
   mkdir -p $CERTS_PATH 
 fi
 
@@ -41,7 +44,7 @@ key_store_certs_generation(){
     P12CERT=$SECRETS_PATH/client-$i.p12
 
     #Download azure client private cert, certificate body and ceritifate chain
-    echo "Downloading certs : ${KEYSTORE_CERT[$i]}"
+    echo "INFO: Downloading certs : ${KEYSTORE_CERT[$i]}"
     az keyvault secret download --file $FULL_CERT --name ${KEYSTORE_CERT[$i]} --vault-name $AZ_KV_NAME
 
     # Convert downloaded azure certs to p12 and jks, generate client jks keystore using CAcert and azure certs
@@ -66,7 +69,7 @@ trust_store_certs_generation(){
     PUBLIC_CERT=$SECRETS_PATH/certificate-$i.pem
     
     #Download  azure client private cert, certificate body and ceritifate chain
-    echo "Downloading certs for cert names : ${TRUSTSTORE_CERT[$i]}"
+    echo "INFO: Downloading certs : ${TRUSTSTORE_CERT[$i]}"
     az keyvault certificate download --file $PUBLIC_CERT --name ${TRUSTSTORE_CERT[$i]} --vault-name $AZ_KV_NAME
 
     # Convert downloaded azure certs to p12 and jks, generate client jks keystore using CAcert and azure certs
@@ -80,18 +83,19 @@ trust_store_certs_generation(){
 }
 
 if [[ -z "$AZ_KV_SERVER_CERT" ]]; then
-  echo "WARN: Skip Downloading AZ_KV_SERVER_CERT server certificates from Azure key vault."
+  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_SERVER_CERT is empty OR not supplied."
+  echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
-  echo "keystore certificates"
   key_store_certs_generation
 fi
 
 if [[ -z "$AZ_KV_CLIENT_CERT" ]]; then
-  echo "WARN: Skip Downloading AZ_KV_CLIENT_CERT client certificates from Azure key vault."
+  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_CLIENT_CERT is empty OR not supplied."
+  echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
-  echo "truststore certificates"
   trust_store_certs_generation
 fi
 
 # Safe to logout
 az logout
+

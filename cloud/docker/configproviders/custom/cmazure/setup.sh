@@ -14,16 +14,16 @@ REQUIRED_PKGS="curl"
 # fill this variable with packages used only during build time. Multiple packages can be represented in a space separated format ex: "curl unzip".
 # BUILD_PKGS="unzip"
 
-echo "Check for openssl and keytool utilites"
+echo "INFO: Check for openssl and keytool utilites"
 
 if  [ -x $(command -v openssl) ] ; then
-    echo "openssl exists"
+    echo "INFO: openssl utility exists"
 else
     REQUIRED_PKGS="$REQUIRED_PKGS openssl"    
 fi
 
 if ! [ -x $(command -v keytool) ] ; then
-    echo "keytool doesnot exists"
+    echo "INFO: keytool utility is required and it doesnot exists, exiting the build"
     exit 1;
 fi
 
@@ -44,4 +44,4 @@ az version
 if [ "$CLEANUP_PKGS_LIST" != "" ]; then
     package-manager remove -y $CLEANUP_PKGS_LIST
 fi
-``
+

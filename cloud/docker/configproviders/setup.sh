@@ -42,7 +42,7 @@ do
   if [[ $CP = cm* ]] || [[ $CP = custom/cm* ]] ; then
     TRA_FILE="bin/be-engine.tra"
     TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//')
-    echo "Setting java bin path"
+    echo "INFO: Setting java bin path"
     export PATH=$PATH:$TIB_JAVA_HOME/bin
   fi
   if [ -f /home/tibco/be/configproviders/${CP}/setup.sh ]; then /home/tibco/be/configproviders/${CP}/setup.sh; fi
