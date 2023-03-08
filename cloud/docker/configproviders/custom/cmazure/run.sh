@@ -23,6 +23,12 @@ if [[ -z "$AZ_TENANT_ID" ]]; then
   exit 1
 fi
 
+if [[ -z "$AZ_KV_NAME" ]]; then
+  echo "ERROR: Cannot read certificates from Azure Key Vault."
+  echo "ERROR: Specify env variable AZ_KV_NAME"
+  exit 1
+fi
+
 #Login to Azure using service principal
 az login --service-principal -u $AZ_CLIENT_ID -p $AZ_CLIENT_PASSWORD --tenant $AZ_TENANT_ID
 
