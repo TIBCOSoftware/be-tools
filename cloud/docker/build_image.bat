@@ -781,6 +781,9 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
             ) else if "!CP!" EQU "gvcyberark" (
                 mkdir !TEMP_FOLDER!\configproviders\!CP!
                 xcopy /Q /C /Y .\configproviders\!CP!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!CP! > NUL
+            ) else if "!CP!" EQU "cmcncf" (
+                mkdir !TEMP_FOLDER!\configproviders\!CP!
+                xcopy /Q /C /Y .\configproviders\!CP!\*!SCRIPT_EXTN! !TEMP_FOLDER!\configproviders\!CP! > NUL    
             ) else (
                 if EXIST ".\configproviders\!CP!" (
                     if NOT EXIST ".\configproviders\!CP!\setup!SCRIPT_EXTN!" (
@@ -1050,7 +1053,7 @@ EXIT /B 0
     echo.
     echo  [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]
     echo.
-    echo  [--config-provider]  :    Name of Config Provider to be included in the image ("gvconsul"^|"gvhttp"^|"gvcyberark"^|"custom") [optional]
+    echo  [--config-provider]  :    Name of Config Provider to be included in the image ("gvconsul"^|"gvhttp"^|"gvcyberark"^|"cmcncf"^|"custom") [optional]
     echo                            To add more than one Config Provider use comma separated format ex: "gvconsul,gvhttp"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
