@@ -9,14 +9,12 @@ source /home/tibco/be/configproviders/cputils.sh
 
 echo "INFO: Check for openssl and keytool utilites"
 
-if [ -x $(command -v openssl) ] ; then
-    echo "INFO: openssl utility exists"
-else
+if ! [ -x $(command -v openssl) ] ; then
     REQUIRED_PKGS="openssl"    
 fi
 
 if ! [ -x $(command -v keytool) ] ; then
-    echo "INFO: keytool utility is required and it doesnot exists, exiting the build"
+    echo "ERROR: keytool utility is required and it doesnot exists, exiting the build"
     exit 1;
 fi
 
