@@ -11,7 +11,7 @@ spec:
     matchLabels:
       name: {{ $ssName }}
 {{ include "becharts.labels" $agent | trim | indent 6 }}
-  serviceName: {{ include "bechart.discoveryservice.name" $ }}
+  serviceName: {{ $ssName }}-headless
   template:
     metadata:
       labels:
@@ -59,6 +59,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: DOCKER_HOST
+          value: "$(ENGINE_NAME).{{ $ssName }}-headless.{{ $.Release.Namespace }}.svc.cluster.local"
         {{- if $.Values.apispecservice.enabled }}
         - name: "tra.be.engine.api.spec.enable"
           value: "true"

@@ -8,11 +8,6 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "bechart.discoveryservice.name" -}}
-{{ .Release.Name }}-discovery-service
-{{- end -}}
-
-
 {{- define "bechart.volumeMounts" }}
 {{- if or (eq $.Values.bsType "sharednothing") $.Values.persistence.logs $.Values.enableRMS $.Values.rmsDeployment $.Values.certificatesFromSecrets }}
 volumeMounts:
@@ -125,14 +120,21 @@ resources:
   value: tcp://
 {{- range $i, $agent := $.Values.agents -}}
 {{- range $j, $e := until (int $agent.discoverableReplicas) -}}
-{{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ include "bechart.discoveryservice.name" $ }}:50000;
+{{ $.Release.Name }}-{{ $agent.name }}-{{ $j }}.{{ $.Release.Name }}-{{ $agent.name }}-headless:50000;
 {{- end }}
 {{- end }}
 {{- else if eq .Values.cmType "ignite" }}
 - name: "tra.tibco.env.CUSTOM_EXT_APPEND_CP"
   value: "/opt/tibco/be/latest/lib/ext/tpcl/apache/ignite/optional/ignite-kubernetes"
 - name: "tra.be.ignite.k8s.service.name"
-  value: "{{ include "bechart.discoveryservice.name" $ }}"
+  value: {{ range $i, $agent := .Values.agents }}
+{{- if gt (int $agent.replicas) 0 }}
+  {{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
+  {{- if $agent.cacheStorageEnabled }}
+    {{- $ssName }}-headless
+  {{- end }}
+{{- end }}
+{{- end }}
 - name: "tra.be.ignite.discovery.type"
   value: "k8s"
 - name: "tra.be.ignite.k8s.namespace"

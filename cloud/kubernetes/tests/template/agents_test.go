@@ -49,7 +49,7 @@ func TestAgents(t *testing.T) {
 	require.Equal(t, "agent-inferenceagent", actualAgents[0].Name)
 	require.Equal(t, int32(1), *actualAgents[0].Spec.Replicas)
 	require.Equal(t, "agent-inferenceagent", actualAgents[0].Spec.Selector.MatchLabels["name"])
-	require.Equal(t, "agent-discovery-service", actualAgents[0].Spec.ServiceName)
+	require.Equal(t, "agent-inferenceagent-headless", actualAgents[0].Spec.ServiceName)
 	require.Equal(t, 1, len(actualAgents[0].Spec.Template.Labels))
 	require.Equal(t, "agent-inferenceagent", actualAgents[0].Spec.Template.Labels["name"])
 	require.Equal(t, "", actualAgents[0].Spec.Template.Labels["cacheagent"])
@@ -80,7 +80,7 @@ func TestAgents(t *testing.T) {
 
 }
 
-// Template Test for cmType=as2, with persistence type none, helathcheck=true, enable logs, enableRMS true, podAntiAffinity true, mysql and influx enabled
+// Template Test for cmType=as2, with persistence type none, helathcheck=true, enable logs, enableRMS true, mysql and influx enabled
 func TestAgentsNone(t *testing.T) {
 	helmFilePath, err := filepath.Abs("../../helm")
 	releaseName := "persistencenone"
@@ -91,19 +91,15 @@ func TestAgentsNone(t *testing.T) {
 		"cmType":                                                  "as2",
 		"bsType":                                                  "none",
 		"healthcheck.enabled":                                     "true",
-		"podAntiAffinity":                                         "false",
 		"enableRMS":                                               "true",
 		"agents[0].name":                                          "inferenceagent",
 		"agents[0].PU":                                            "default",
 		"agents[0].cacheStorageEnabled":                           "false",
 		"agents[0].replicas":                                      "1",
 		"agents[0].discoverableReplicas":                          "1",
-		"agents[0].expose[0].name":                                "jmx",
-		"agents[0].expose[0].port":                                "5555",
-		"agents[0].expose[0].type":                                "ClusterIP",
-		"agents[0].expose[1].name":                                "httpchannel",
-		"agents[0].expose[1].port":                                "8090",
-		"agents[0].expose[1].type":                                "NodePort",
+		"agents[0].expose[0].name":                                "httpchannel",
+		"agents[0].expose[0].port":                                "8090",
+		"agents[0].expose[0].type":                                "NodePort",
 		"agents[0].resources.memoryRequest":                       "1.2Gi",
 		"agents[0].resources.memoryLimit":                         "1.5Gi",
 		"agents[0].resources.cpuRequest":                          "1",
@@ -119,15 +115,12 @@ func TestAgentsNone(t *testing.T) {
 		"agents[1].cacheStorageEnabled":                           "true",
 		"agents[1].replicas":                                      "1",
 		"agents[1].discoverableReplicas":                          "1",
-		"agents[1].expose[0].name":                                "jmx",
-		"agents[1].expose[0].port":                                "5555",
-		"agents[1].expose[0].type":                                "ClusterIP",
-		"agents[1].expose[1].name":                                "one",
-		"agents[1].expose[1].port":                                "1111",
-		"agents[1].expose[1].type":                                "NodePort",
-		"agents[1].expose[2].name":                                "two",
-		"agents[1].expose[2].port":                                "2222",
-		"agents[1].expose[2].type":                                "LoadBalancer",
+		"agents[1].expose[0].name":                                "one",
+		"agents[1].expose[0].port":                                "1111",
+		"agents[1].expose[0].type":                                "NodePort",
+		"agents[1].expose[1].name":                                "two",
+		"agents[1].expose[1].port":                                "2222",
+		"agents[1].expose[1].type":                                "LoadBalancer",
 		"agents[1].resources.memoryRequest":                       "1.2Gi",
 		"agents[1].resources.memoryLimit":                         "1.5Gi",
 		"agents[1].resources.cpuRequest":                          "1",
@@ -169,7 +162,7 @@ func TestAgentsNone(t *testing.T) {
 		"persistencenone-inferenceagent": {
 			"release":                      "persistencenone-inferenceagent",
 			"replicas":                     int32(1),
-			"serviceName":                  "persistencenone-discovery-service",
+			"serviceName":                  "persistencenone-inferenceagent-headless",
 			"containerName":                "inferenceagent-container",
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
@@ -191,7 +184,7 @@ func TestAgentsNone(t *testing.T) {
 		"persistencenone-cacheagent": {
 			"release":                      "persistencenone-cacheagent",
 			"replicas":                     int32(1),
-			"serviceName":                  "persistencenone-discovery-service",
+			"serviceName":                  "persistencenone-cacheagent-headless",
 			"containerName":                "cacheagent-container",
 			"image":                        "befdapp:01",
 			"configmap":                    "persistencenone-configmap",
@@ -262,12 +255,9 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"agents[0].cacheStorageEnabled":                           "false",
 		"agents[0].replicas":                                      "1",
 		"agents[0].discoverableReplicas":                          "1",
-		"agents[0].expose[0].name":                                "jmx",
-		"agents[0].expose[0].port":                                "5555",
-		"agents[0].expose[0].type":                                "ClusterIP",
-		"agents[0].expose[1].name":                                "httpchannel",
-		"agents[0].expose[1].port":                                "8090",
-		"agents[0].expose[1].type":                                "NodePort",
+		"agents[0].expose[0].name":                                "httpchannel",
+		"agents[0].expose[0].port":                                "8090",
+		"agents[0].expose[0].type":                                "NodePort",
 		"agents[0].resources.memoryRequest":                       "1.2Gi",
 		"agents[0].resources.memoryLimit":                         "1.5Gi",
 		"agents[0].resources.cpuRequest":                          "1",
@@ -283,15 +273,12 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"agents[1].cacheStorageEnabled":                           "true",
 		"agents[1].replicas":                                      "1",
 		"agents[1].discoverableReplicas":                          "1",
-		"agents[1].expose[0].name":                                "jmx",
-		"agents[1].expose[0].port":                                "5555",
-		"agents[1].expose[0].type":                                "ClusterIP",
-		"agents[1].expose[1].name":                                "one",
-		"agents[1].expose[1].port":                                "1111",
-		"agents[1].expose[1].type":                                "NodePort",
-		"agents[1].expose[2].name":                                "two",
-		"agents[1].expose[2].port":                                "2222",
-		"agents[1].expose[2].type":                                "LoadBalancer",
+		"agents[1].expose[0].name":                                "one",
+		"agents[1].expose[0].port":                                "1111",
+		"agents[1].expose[0].type":                                "NodePort",
+		"agents[1].expose[1].name":                                "two",
+		"agents[1].expose[1].port":                                "2222",
+		"agents[1].expose[1].type":                                "LoadBalancer",
 		"agents[1].resources.memoryRequest":                       "1.2Gi",
 		"agents[1].resources.memoryLimit":                         "1.5Gi",
 		"agents[1].resources.cpuRequest":                          "1",
@@ -331,7 +318,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"sharednothing-inferenceagent": {
 			"release":                           "sharednothing-inferenceagent",
 			"replicas":                          int32(1),
-			"serviceName":                       "sharednothing-discovery-service",
+			"serviceName":                       "sharednothing-inferenceagent-headless",
 			"containerName":                     "inferenceagent-container",
 			"image":                             "befdapp:01",
 			"pullsecret":                        "besecret",
@@ -351,7 +338,7 @@ func TestAgentsSharedNothing(t *testing.T) {
 		"sharednothing-cacheagent": {
 			"release":                           "sharednothing-cacheagent",
 			"replicas":                          int32(1),
-			"serviceName":                       "sharednothing-discovery-service",
+			"serviceName":                       "sharednothing-cacheagent-headless",
 			"containerName":                     "cacheagent-container",
 			"image":                             "befdapp:01",
 			"pullsecret":                        "besecret",
@@ -410,15 +397,32 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	require.NoError(t, err)
 
 	values := map[string]string{
-		"cmType":                     "ignite",
-		"bsType":                     "none",
-		"imagepullsecret":            "besecret",
-		"rmsDeployment":              "true",
-		"envVars.CASS_SERVER":        "localhost:9042",
-		"envVars.CASS_KEYSPACE_NAME": "testdb",
-		"persistence.logs":           "true",
-		"persistence.rmsWebstudio":   "true",
-		"persistence.rmsSharedPVC":   "persistencenone-rms-shared",
+		"cmType":                                                  "ignite",
+		"bsType":                                                  "none",
+		"imagepullsecret":                                         "besecret",
+		"rmsDeployment":                                           "true",
+		"envVars.CASS_SERVER":                                     "localhost:9042",
+		"agents[0].name":                                          "inferenceagent",
+		"agents[0].PU":                                            "default",
+		"agents[0].cacheStorageEnabled":                           "true",
+		"agents[0].replicas":                                      "1",
+		"agents[0].discoverableReplicas":                          "1",
+		"agents[0].expose[0].name":                                "httpchannel",
+		"agents[0].expose[0].port":                                "8090",
+		"agents[0].expose[0].type":                                "NodePort",
+		"agents[0].resources.memoryRequest":                       "1.2Gi",
+		"agents[0].resources.memoryLimit":                         "1.5Gi",
+		"agents[0].resources.cpuRequest":                          "1",
+		"agents[0].resources.cpuLimit":                            "2",
+		"agents[0].hpa.maxReplicas":                               "5",
+		"agents[0].hpa.cpuMetric.enable":                          "false",
+		"agents[0].hpa.cpuMetric.averageUtilizationPercentage":    "90",
+		"agents[0].hpa.memoryMetric.enable":                       "false",
+		"agents[0].hpa.memoryMetric.averageUtilizationPercentage": "90",
+		"envVars.CASS_KEYSPACE_NAME":                              "testdb",
+		"persistence.logs":                                        "true",
+		"persistence.rmsWebstudio":                                "true",
+		"persistence.rmsSharedPVC":                                "persistencenone-rms-shared",
 	}
 
 	options := &helm.Options{
@@ -442,7 +446,7 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 
 	// agent 0
 	expectedReleaseName := fmt.Sprintf("%s-inferenceagent", releaseName)
-	expectedSVCName := fmt.Sprintf("%s-discovery-service", releaseName)
+	expectedSVCName := fmt.Sprintf("%s-inferenceagent-headless", releaseName)
 	expectedServiceAccName := fmt.Sprintf("%s-ignite", releaseName)
 	require.Equal(t, "StatefulSet", agents[0].Kind)
 	require.Equal(t, "apps/v1", agents[0].APIVersion)
@@ -461,7 +465,7 @@ func TestAgentsRNSIgniteCassandra(t *testing.T) {
 	require.Equal(t, "metadata.name", actualEnvEngineName.ValueFrom.FieldRef.FieldPath)
 	require.Equal(t, "testdb", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_KEYSPACE_NAME").Value)
 	require.Equal(t, "localhost:9042", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "CASS_SERVER").Value)
-	require.Equal(t, "persistencenone-discovery-service", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
+	require.Equal(t, "persistencenone-inferenceagent-headless", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.service.name").Value)
 	require.Equal(t, "k8s", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.discovery.type").Value)
 	require.Equal(t, "betools", findEnv(agents[0].Spec.Template.Spec.Containers[0].Env, "tra.be.ignite.k8s.namespace").Value)
 	require.Equal(t, "/mnt/tibco/be/logs", valueFromVolumeMount(agents[0].Spec.Template.Spec.Containers[0].VolumeMounts, "logs"))
