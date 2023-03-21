@@ -57,7 +57,7 @@ trust_store_certs_generation()
     # Add ca.crt to truststore jks
     keytool -keystore $CERT_TRUSTSTORE -alias CARoot-$i -import -file $SECRETS_PATH/${CNCF_CLNT_CERT[$i]}/ca.crt -storepass $TRUSTSTORE_PASSPHRASE -keypass $TRUSTSTORE_PASSPHRASE -noprompt
     # Copy ca.crt file to certs_path
-    cp $SECRETS_PATH/${CNCF_SRVR_CERT[$i]}/ca.crt $CERTS_PATH/ca-cncf-client-$i.crt
+    cp $SECRETS_PATH/${CNCF_CLIENT_CERT[$i]}/ca.crt $CERTS_PATH/ca-cncf-client-$i.crt
   done  
 }
 
