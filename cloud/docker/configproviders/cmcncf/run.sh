@@ -62,14 +62,14 @@ trust_store_certs_generation()
 }
 
 if [[ -z "$CNCF_SERVER_CERT" ]]; then
-  echo "WARN: Config Provider[custom/cmcnf] is configured but env variable CNCF_SERVER_CERT is empty OR not supplied."
+  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_SERVER_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
   key_store_certs_generation
 fi
 
 if [[ -z "$CNCF_CLIENT_CERT" ]]; then
-  echo "WARN: Config Provider[custom/cmcnf] is configured but env variable CNCF_CLIENT_CERT is empty OR not supplied."
+  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_CLIENT_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
   trust_store_certs_generation
