@@ -39,10 +39,10 @@ fi
 
 key_store_certs_generation(){
 
-  oIFS="$IFS"; IFS=','; declare -a AZ_KV_SERVER_CERTs=($AZ_KV_SERVER_CERT); IFS="$oIFS"; unset oIFS
+  oIFS="$IFS"; IFS=','; declare -a AZ_KV_KEYSTORE_CERTs=($AZ_KV_KEYSTORE_CERT); IFS="$oIFS"; unset oIFS
 
   #Remove duplicate cert names's
-  KEYSTORE_CERT=( `for i in ${AZ_KV_SERVER_CERTs[@]}; do echo $i; done | sort -u` )
+  KEYSTORE_CERT=( `for i in ${AZ_KV_KEYSTORE_CERTs[@]}; do echo $i; done | sort -u` )
   
   for (( i=0; i < "${#KEYSTORE_CERT[@]}"; i++ ));
   do
@@ -65,10 +65,10 @@ key_store_certs_generation(){
 
 trust_store_certs_generation(){
 
-  oIFS="$IFS"; IFS=','; declare -a AZ_KV_CLIENT_CERTs=($AZ_KV_CLIENT_CERT); IFS="$oIFS"; unset oIFS
+  oIFS="$IFS"; IFS=','; declare -a AZ_KV_TRUSTSTORE_CERTs=($AZ_KV_TRUSTSTORE_CERT); IFS="$oIFS"; unset oIFS
 
   #Remove duplicate cert names's
-  TRUSTSTORE_CERT=( `for i in ${AZ_KV_CLIENT_CERTs[@]}; do echo $i; done | sort -u` )
+  TRUSTSTORE_CERT=( `for i in ${AZ_KV_TRUSTSTORE_CERTs[@]}; do echo $i; done | sort -u` )
   
   for (( i=0; i < "${#TRUSTSTORE_CERT[@]}"; i++ ));
   do
@@ -88,15 +88,15 @@ trust_store_certs_generation(){
 
 }
 
-if [[ -z "$AZ_KV_SERVER_CERT" ]]; then
-  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_SERVER_CERT is empty OR not supplied."
+if [[ -z "$AZ_KV_KEYSTORE_CERT" ]]; then
+  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_KEYSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
   key_store_certs_generation
 fi
 
-if [[ -z "$AZ_KV_CLIENT_CERT" ]]; then
-  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_CLIENT_CERT is empty OR not supplied."
+if [[ -z "$AZ_KV_TRUSTSTORE_CERT" ]]; then
+  echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_TRUSTSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
   trust_store_certs_generation

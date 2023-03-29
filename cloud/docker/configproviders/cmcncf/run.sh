@@ -15,10 +15,10 @@ fi
 key_store_certs_generation()
 {
 
-  oIFS="$IFS"; IFS=','; declare -a CNCF_SERVER_CERTs=($CNCF_SERVER_CERT); IFS="$oIFS"; unset oIFS
+  oIFS="$IFS"; IFS=','; declare -a CNCF_KEYSTORE_CERTs=($CNCF_KEYSTORE_CERT); IFS="$oIFS"; unset oIFS
 
   #Remove duplicate k8s secret names list
-  CNCF_SRVR_CERT=( `for i in ${CNCF_SERVER_CERTs[@]}; do echo $i; done | sort -u` )
+  CNCF_SRVR_CERT=( `for i in ${CNCF_KEYSTORE_CERTs[@]}; do echo $i; done | sort -u` )
   
   for (( i=0; i < "${#CNCF_SRVR_CERT[@]}"; i++ ));
   do    
@@ -43,10 +43,10 @@ key_store_certs_generation()
 trust_store_certs_generation()
 {
 
-  oIFS="$IFS"; IFS=','; declare -a CNCF_CLIENT_CERTs=($CNCF_CLIENT_CERT); IFS="$oIFS"; unset oIFS
+  oIFS="$IFS"; IFS=','; declare -a CNCF_TRUSTSTORE_CERTs=($CNCF_TRUSTSTORE_CERT); IFS="$oIFS"; unset oIFS
 
   #Remove duplicate k8s secret names list
-  CNCF_CLNT_CERT=( `for i in ${CNCF_CLIENT_CERTs[@]}; do echo $i; done | sort -u` )
+  CNCF_CLNT_CERT=( `for i in ${CNCF_TRUSTSTORE_CERTs[@]}; do echo $i; done | sort -u` )
 
   for (( i=0; i < "${#CNCF_CLNT_CERT[@]}"; i++ ));
   do    
@@ -57,19 +57,19 @@ trust_store_certs_generation()
     # Add ca.crt to truststore jks
     keytool -keystore $CERT_TRUSTSTORE -alias CARoot-$i -import -file $SECRETS_PATH/${CNCF_CLNT_CERT[$i]}/ca.crt -storepass $TRUSTSTORE_PASSPHRASE -keypass $TRUSTSTORE_PASSPHRASE -noprompt
     # Copy ca.crt file to certs_path
-    cp $SECRETS_PATH/${CNCF_CLIENT_CERT[$i]}/ca.crt $CERTS_PATH/ca-cncf-client-$i.crt
+    cp $SECRETS_PATH/${CNCF_CLNT_CERT[$i]}/ca.crt $CERTS_PATH/ca-cncf-client-$i.crt
   done  
 }
 
-if [[ -z "$CNCF_SERVER_CERT" ]]; then
-  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_SERVER_CERT is empty OR not supplied."
+if [[ -z "$CNCF_KEYSTORE_CERT" ]]; then
+  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_KEYSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
   key_store_certs_generation
 fi
 
-if [[ -z "$CNCF_CLIENT_CERT" ]]; then
-  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_CLIENT_CERT is empty OR not supplied."
+if [[ -z "$CNCF_TRUSTSTORE_CERT" ]]; then
+  echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_TRUSTSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
   trust_store_certs_generation
