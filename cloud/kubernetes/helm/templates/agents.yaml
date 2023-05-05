@@ -28,8 +28,9 @@ spec:
       {{- if eq $.Values.cmType "ignite"}}
       serviceAccount: {{ $.Release.Name }}-ignite
       {{- end }}
-{{- if or (eq ($agent.podAntiAffinity).enabled true ) (eq ($agent.podAffinity).enabled true ) }}
+{{- if or (eq ($agent.podAntiAffinity).enabled true ) (eq ($agent.podAffinity).enabled true ) (eq ($agent.nodeAffinity).enabled true ) }}
       affinity:
+{{ include "becharts.nodeaffinity" $agent | trim | indent 8 }}
 {{ include "becharts.antiaffinity" $agent | trim | indent 8 }}
 {{ include "becharts.affinity" $agent | trim | indent 8 }}
 {{- end }}
