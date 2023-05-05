@@ -179,7 +179,7 @@ agents:
       labelvalue: cacheagent  
   # While deploying cache and inference agents at any given point either inference or cache can have both affinity and antiaffinity. while the other will just have only antiaffinity.
   podAntiAffinity:                    
-    enabled: true
+    enabled: false
     labelKey: appName
     labelvalue: cacheagent
     topologyKey: kubernetes.io/hostname
