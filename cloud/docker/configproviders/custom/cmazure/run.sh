@@ -37,7 +37,7 @@ if ! [ -d $CERTS_PATH ]; then
   mkdir -p $CERTS_PATH 
 fi
 
-key_store_certs_generation(){
+generate_key_store_certs(){
 
   oIFS="$IFS"; IFS=','; declare -a AZ_KV_KEYSTORE_CERTs=($AZ_KV_KEYSTORE_CERT); IFS="$oIFS"; unset oIFS
 
@@ -63,7 +63,7 @@ key_store_certs_generation(){
 
 }
 
-trust_store_certs_generation(){
+generate_trust_store_certs(){
 
   oIFS="$IFS"; IFS=','; declare -a AZ_KV_TRUSTSTORE_CERTs=($AZ_KV_TRUSTSTORE_CERT); IFS="$oIFS"; unset oIFS
 
@@ -92,14 +92,14 @@ if [[ -z "$AZ_KV_KEYSTORE_CERT" ]]; then
   echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_KEYSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
-  key_store_certs_generation
+  generate_key_store_certs
 fi
 
 if [[ -z "$AZ_KV_TRUSTSTORE_CERT" ]]; then
   echo "WARN: Config Provider[custom/cmazure] is configured but env variable AZ_KV_TRUSTSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip fetching certificates from Azure Key Vault."
 else
-  trust_store_certs_generation
+  generate_trust_store_certs
 fi
 
 # Safe to logout

@@ -12,7 +12,7 @@ if ! [ -d $CERTS_PATH ]; then
   mkdir -p $CERTS_PATH 
 fi
 
-key_store_certs_generation()
+generate_key_store_certs()
 {
 
   oIFS="$IFS"; IFS=','; declare -a CNCF_KEYSTORE_CERTs=($CNCF_KEYSTORE_CERT); IFS="$oIFS"; unset oIFS
@@ -40,7 +40,7 @@ key_store_certs_generation()
   done
 }
 
-trust_store_certs_generation()
+generate_trust_store_certs()
 {
 
   oIFS="$IFS"; IFS=','; declare -a CNCF_TRUSTSTORE_CERTs=($CNCF_TRUSTSTORE_CERT); IFS="$oIFS"; unset oIFS
@@ -65,13 +65,13 @@ if [[ -z "$CNCF_KEYSTORE_CERT" ]]; then
   echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_KEYSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
-  key_store_certs_generation
+  generate_key_store_certs
 fi
 
 if [[ -z "$CNCF_TRUSTSTORE_CERT" ]]; then
   echo "WARN: Config Provider[cmcnf] is configured but env variable CNCF_TRUSTSTORE_CERT is empty OR not supplied."
   echo "WARN: Skip converting certificates to JKS"
 else
-  trust_store_certs_generation
+  generate_trust_store_certs
 fi
 
