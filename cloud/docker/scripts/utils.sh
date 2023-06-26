@@ -19,7 +19,7 @@ RemoveDuplicatesAndFormatCPs()
 
     for key in "${values[@]}"; do
 
-        if ! [ "$key" = "gvhttp" -o "$key" = "gvconsul" -o "$key" = "gvcyberark" ]; then
+        if ! [ "$key" = "gvhttp" -o "$key" = "gvconsul" -o "$key" = "gvcyberark" -o "$key" = "cmcncf" ]; then
             key=${key/custom\//}
             key=${key/custom\\/}
             key="custom/$key"

@@ -38,6 +38,13 @@ for CP in "${CPs[@]}"
 do
   echo "INFO: setting up the Config Provider[${CP}]..."
   chmod +x /home/tibco/be/configproviders/${CP}/*.sh
+  # set javabin path in path variables to check existance of keytool utility
+  if [[ $CP = cm* ]] || [[ $CP = custom/cm* ]] ; then
+    TRA_FILE="bin/be-engine.tra"
+    TIB_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//')
+    echo "INFO: Setting java bin path"
+    export PATH=$PATH:$TIB_JAVA_HOME/bin
+  fi
   if [ -f /home/tibco/be/configproviders/${CP}/setup.sh ]; then /home/tibco/be/configproviders/${CP}/setup.sh; fi
 
   if [ "$?" != 0 ]; then

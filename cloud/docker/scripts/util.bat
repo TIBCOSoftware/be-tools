@@ -51,7 +51,7 @@ GOTO :EOF
         set "CP=!CP:custom\=!"
         set "CP=!CP:custom/=!"
 
-        if "!CP!" NEQ "gvhttp" if "!CP!" NEQ "gvconsul" if "!CP!" NEQ "gvcyberark" set "CP=custom\!CP!"
+        if "!CP!" NEQ "gvhttp" if "!CP!" NEQ "gvconsul" if "!CP!" NEQ "gvcyberark" if "!CP!" NEQ "cmcncf" set "CP=custom\!CP!"
 
         SET DUPLICATE_FOUND=false
         if "!ARG_CP_RESULT!" EQU "" (

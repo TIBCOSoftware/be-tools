@@ -186,9 +186,7 @@
             "JAVA_HOME/lib/server/libjsig.so",
             "JAVA_HOME/lib/server/Xusage.txt",
             "JAVA_HOME/lib/libattach.so",
-            "JAVA_HOME/lib/libjsound.so",
-            "JAVA_HOME/lib/jvm.cfg",
-            "JAVA_HOME/bin"
+            "JAVA_HOME/lib/libjsound.so"
         ],
         "kafka": [
             "BE_HOME/lib/cep-kafka.jar",

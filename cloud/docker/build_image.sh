@@ -131,7 +131,7 @@ USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAG
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
-USAGE+="\n\n [--config-provider]  :    Name of Config Provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"custom\") [optional]\n"
+USAGE+="\n\n [--config-provider]  :    Name of Config Provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"cmcncf\"|\"custom\") [optional]\n"
 USAGE+="                           To add more than one Config Provider use comma separated format ex: \"gvconsul,gvhttp\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
 USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
@@ -796,7 +796,7 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         
         for CP in "${CPs[@]}"
         do
-            if [ "$CP" = "gvhttp" -o "$CP" = "gvconsul" -o "$CP" = "gvcyberark" ]; then
+            if [ "$CP" = "gvhttp" -o "$CP" = "gvconsul" -o "$CP" = "gvcyberark" -o "$CP" = "cmcncf" ]; then
                 mkdir -p $TEMP_FOLDER/configproviders/$CP
                 cp -a ./configproviders/$CP/*.sh $TEMP_FOLDER/configproviders/$CP
             else
