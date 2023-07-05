@@ -154,7 +154,7 @@ for /F "tokens=2,2 delims==" %%i in ('findstr /i "tibco.env.TIB_JAVA_HOME" be-en
 )
 set CLASSPATH=%BE_HOME%/lib/*;%BE_HOME%/lib/ext/tpcl/*;%BE_HOME%/lib/ext/tpcl/aws/*;%BE_HOME%/lib/ext/tpcl/gwt/*;%BE_HOME%/lib/ext/tpcl/apache/*;%BE_HOME%/lib/ext/tpcl/emf/*;%BE_HOME%/lib/ext/tpcl/tomsawyer/*;%BE_HOME%/lib/ext/tibco/*;%BE_HOME%/lib/eclipse/plugins/*;%BE_HOME%/rms/lib/*;%BE_HOME%/mm/lib/*;%JRE_HOME%/lib/*;%JRE_HOME%/lib/ext/*;
 echo Building annotation indexes..
-%JRE_HOME%/bin/java -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
+%JRE_HOME%/bin/java -Dtibco.env.BE_HOME=%BE_HOME%  -Xms2048m -Xmx2048m -cp %CLASSPATH% com.tibco.be.model.functions.impl.JavaAnnotationLookup
 
 REM Removing files present in deletelist
 set DEL_LIST_FILE_NAME=deletelist.txt
