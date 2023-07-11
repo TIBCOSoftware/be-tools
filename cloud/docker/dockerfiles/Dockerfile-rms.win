@@ -95,7 +95,8 @@ ENV \
     AS_DISCOVER_URL=self \
     AS_PROXY_NODE=false \
     COMPONENT=rms \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8" \
+    chocolateyVersion=1.4.0
 
 COPY --from=intermediate c:\\_tibco c:\\tibco
 

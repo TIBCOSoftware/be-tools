@@ -96,7 +96,8 @@ ENV \
     AS_PROXY_NODE=false \
     CDD_FILE=c:/tibco/be/application/${CDD_FILE_NAME} \
     EAR_FILE=c:/tibco/be/application/ear/${EAR_FILE_NAME} \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8" \
+    chocolateyVersion=1.4.0
 
 COPY --from=intermediate c:\\_tibco c:\\tibco
 
