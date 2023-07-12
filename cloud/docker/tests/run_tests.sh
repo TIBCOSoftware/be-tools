@@ -14,13 +14,14 @@ ARG_AS_LEG_SHORT_VERSION=na
 ARG_AS_SHORT_VERSION=na
 ARG_FTL_SHORT_VERSION=na
 ARG_HAWK_SHORT_VERSION=na
+ARG_TEA_VERSION=na
 ARG_CP_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,consulgv.yaml,httpgv.yaml"
+FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,tea.yaml,consulgv.yaml,httpgv.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -33,6 +34,7 @@ USAGE+="\n\n [-al|--as-legacy-version]    : AS legacy version in x.x format ex(2
 USAGE+="\n\n [-as|--as-version]           : ACTIVESPACES version in x.x format ex(4.5) [optional]"
 USAGE+="\n\n [ -f|--ftl-version]          : FTL version in x.x format ex(6.5) [optional]"
 USAGE+="\n\n [-hk|--hawk-version]         : HAWK version in x.x format ex(6.2) [optional]"
+USAGE+="\n\n [-ts|--tea-version]          : TEA version in x.x.x format ex(2.4.1) [optional]"
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
@@ -93,6 +95,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         -hk=*|--hawk-version=*)
         ARG_HAWK_SHORT_VERSION="${key#*=}"
+        ;;
+        -ts|--tea-version)
+        shift # past the key and to the value
+        ARG_TEA_VERSION="$1"
+        ;;
+        -ts=*|--tea-version=*)
+        ARG_TEA_VERSION="${key#*=}"
         ;;
         --image-type)
         shift # past the key and to the value
@@ -201,6 +210,13 @@ if [ $ARG_HAWK_SHORT_VERSION != na ]; then
   echo "INFO: hawk version:        [${ARG_HAWK_SHORT_VERSION}]"
   CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/hawk.yaml "
   SED_EXP+=" -e s/HAWK_SHORT_VERSION/${ARG_HAWK_SHORT_VERSION}/g "
+fi
+
+## tea version validation
+if [ $ARG_TEA_VERSION != na ]; then
+  echo "INFO: tea version:         [${ARG_TEA_VERSION}]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/tea.yaml "
+  SED_EXP+=" -e s/TEA_VERSION/${ARG_TEA_VERSION}/g "
 fi
 
 ## Config Provider validation

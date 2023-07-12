@@ -26,6 +26,8 @@ Usage: run_tests.sh
 
  [-hk|--hawk-version]         : HAWK version in x.x format ex(6.2) [optional]
 
+ [-ts|--tea-version]          : TEA version in x.x.x format ex(2.4.1) [optional]
+
  [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]
 
  [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]
@@ -53,6 +55,7 @@ Various test cases are developed and organized in different yaml files. File nam
 * `as.yaml/aslegacy.yaml` Contains Active Spaces artifacts related test cases
 * `ftl.yaml` Contains FTL artifacts related test cases
 * `hawk.yaml` Contains HAWK artifacts related test cases
+* `tea.yaml` Contains TEA artifacts related test cases
 * `consulgv.yaml` Contains `gvconsul` gvprovider related test cases
 * `httpgv.yaml` Contains `gvhttp` gvprovider related test cases
 <br><br>
