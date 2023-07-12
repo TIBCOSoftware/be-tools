@@ -20,6 +20,8 @@ ARG BE_PRODUCT_ADDONS
 ARG BE_PRODUCT_HOTFIX
 ARG JRE_VERSION
 ARG OPEN_JDK_FILENAME
+ARG TEA_VERSION
+ARG TEA_PRODUCT_HOTFIX
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL be-intermediate-image=true
@@ -38,9 +40,10 @@ ENV TIBCO_HOME=/opt/tibco \
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm && chmod +x *.py run
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','na','$BE_PRODUCT_HOTFIX','na','na')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_tea('$TEA_VERSION','$TEA_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf as_installers be_installers *.zip
+ && rm -rf tea_installer  tea_installer-hf as_installers be_installers *.zip
 
 RUN ./prepare_finalimage.sh
 

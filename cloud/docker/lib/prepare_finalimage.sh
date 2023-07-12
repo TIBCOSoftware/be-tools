@@ -59,6 +59,12 @@ if [ "$HAWK_SHORT_VERSION" != "" -a "$HAWK_SHORT_VERSION" != "na" ]; then
     sed -i "s@tibco.env.HAWK_HOME=@tibco.env.HAWK_HOME=/opt/tibco/hawk/$HAWK_SHORT_VERSION@g" $TRA_FILE
 fi
 
+if [ "$TEA_VERSION" != "" -a "$TEA_VERSION" != "na" ]; then 
+    mkdir -p /tibco_home/tea/${TEA_VERSION}
+    cp -r /opt/tibco/tea/${TEA_VERSION}/agentlib /tibco_home/tea/${TEA_VERSION}
+    sed -i "s@tibco.env.TEA_HOME=@tibco.env.TEA_HOME=/opt/tibco/tea/$TEA_VERSION@g" $TRA_FILE
+fi
+
 if [ "$COMPONENT" != "rms" ]; then
     rm -rf /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/gwt
     find /opt/tibco/be/${BE_SHORT_VERSION}/lib/ext/tpcl/tomsawyer -type f -not -name 'xml*' -delete 2>/dev/null

@@ -26,6 +26,7 @@ my $RMS_TRA_LOC       = $TIBCO_HOME_LOC."/be/##be_version##/rms/bin/be-rms.tra";
 my $TIBCO_HOME_DESC   = "BE Docker Home";
 my $CUSTOM_CP         = "/opt/tibco/be/ext";
 my $JMX_PORT          = "5555";
+my $JRE_HOME_PATH     = "/opt/tibco/tibcojre64/$ENV{'JRE_VERSION'}";
 
 # REGEXES--------------------------------------------------------
 my $REGEX_CUSTOM_CP   = "tibco\.env\.CUSTOM_EXT_PREPEND_CP=.*";
@@ -35,7 +36,8 @@ my $REGEX_LD_LIB_PATH = "tibco.env.LD_LIBRARY_PATH(.*)[\s]*";
 my %REGEX_SLNT_FILE_TOKENS = (
   '(<entry key="installationRoot">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_LOC,
   '(<entry key="environmentName">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME,
-  '(<entry key="environmentDesc">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_DESC
+  '(<entry key="environmentDesc">)([\s\S]*?)(<\/entry>)' => $TIBCO_HOME_DESC,
+  '(<entry key="java\.home\.directory">)([\s\S]*?)(<\/entry>)' => $JRE_HOME_PATH
 );
 
 # INSTALLATION---------------------------------------------------
@@ -49,7 +51,8 @@ my %CONSTANTS_MAP = (
   'hf'                    => 'businessevents-hf',
   'as-hf'                 => 'activespaces',
   'as'                    => 'activespaces',
-  'hawk'                  => 'oihr'
+  'hawk'                  => 'oihr',
+  'tea'                  => 'tea'
 );
 
 # OTHERS---------------------------------------------------------
@@ -182,7 +185,7 @@ sub install_be {
   
   print "\nINFO:Performing cleanup...\n";
   my $beShortVersion = getShortVersion($arg_beVersion);
-  `rm -rf as_installers be_installers *.zip`;
+  # `rm -rf as_installers be_installers *.zip`;
   `rm -rf /opt/tibco/tools`;
   #`ls -d /opt/tibco/be/$beShortVersion/examples/* | grep -v standard | xargs rm -rf`;
   #`ls -d /opt/tibco/be/$beShortVersion/examples/standard/* | grep -v WebStudio | xargs rm -rf`;
@@ -227,6 +230,35 @@ sub install_hawk {
     exit 0;
   }
   print "\nINFO:Installing Hawk $arg_hawkVersion...DONE\n\n";
+}
+
+sub install_tea {
+
+  my $arg_teaVersion = shift;
+  my $arg_teaHotfix = shift;
+
+  if($arg_teaVersion == "na"){
+    return 1;
+  }
+
+  my $baseProdRegex="*tea_".$arg_teaVersion."_linux26gl23_x86_64.zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+  
+  my $baseTeaHfRegex="*tea_$arg_teaVersion*$arg_teaHotfix*zip";
+  my (@baseTeaHf) = glob "$ROOT_FOLDER/$baseTeaHfRegex";
+
+  my $baseTeaHfPkgVal="na";
+  if(scalar @baseTeaHf == 1){
+    $baseTeaHfPkgVal=$baseTeaHf[0];
+  }
+
+  print "\nINFO:Installing Tea $arg_teaVersion...\n";
+  my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_teaVersion,$baseProd[0],0,$baseTeaHfPkgVal,"tea_installer","tea",0,$arg_teaHotfix);
+  if($beInstallResult == 0){
+    print "\nERROR : Error occurred while installing Tea. Aborting\n";
+    exit 0;
+  }
+  print "\nINFO:Installing Tea $arg_teaVersion...DONE\n\n";
 }
 
 sub install_ftl {
