@@ -864,6 +864,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         set FILE=%%f
         SET FILE_PATH=!FILE:*#=!
         xcopy /Q /C /R /Y !ARG_INSTALLER_LOCATION!\!FILE_PATH! !TEMP_FOLDER!\installers > NUL
+        if !ErrorLevel! NEQ 0 (
+            echo ERROR: There might be issue with installer file names, Unable to copy installers, Please check the installers location.
+            GOTO END-withError
+        )
         echo INFO: Copying package: [!FILE_PATH!]
     )
     echo.
