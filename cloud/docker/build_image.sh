@@ -506,7 +506,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         # get tea details
         TEA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TEA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$TEA_HOME" = "" ]; then
-            TEA_HOME="na"
+            echo "ERROR: TEA_HOME is not set in tea tra file. Please check"
+            exit 1
         else
             # check directory exist
             if ! [ -d "$TEA_HOME" ]; then
