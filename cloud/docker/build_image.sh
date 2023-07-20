@@ -510,8 +510,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         else
             # check directory exist
             if ! [ -d "$TEA_HOME" ]; then
-                printf "\nERROR: The directory: [$TEA_HOME] not exist. Ignoring TEA installation.\n"
-                TEA_HOME="na"
+                printf "\nERROR: The directory: [$TEA_HOME] not exist. Please check TEA_HOME is set properly in tea tra file.\n"
+                exit 1
             else
                 TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]\.[0-9]\.[0-9])$"
                 if ! [[ $TEA_HOME =~ $TEA_HOME_REGEX ]]; then
@@ -522,6 +522,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 TEA_DIR=${BASH_REMATCH[2]}
                 ARG_TEA_VERSION=$( echo ${TEA_HOME}  | rev | cut -d'/' -f1 | rev )
             fi
+        fi
+        if [ "$ARG_TEA_VERSION" = "na" ]; then
+            echo "ERROR: Unable to capture tea server version from TEA_HOME[$TEA_HOME]. Please check TEA_HOME is set properly in tea tra file"
+            exit 1
         fi
     fi
 
@@ -572,6 +576,10 @@ else
     # check tea installer
     if [ $(echo "${ARG_BE_VERSION//.}") -ge 630 -a  "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         source ./scripts/tea.sh
+        if [ "$ARG_TEA_VERSION" = "na" ]; then
+            echo "ERROR: Tea server installer not found in installer location[$ARG_INSTALLER_LOCATION]"
+            exit 1
+        fi
     fi
 fi
 
