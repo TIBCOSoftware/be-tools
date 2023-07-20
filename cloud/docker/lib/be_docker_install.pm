@@ -252,13 +252,13 @@ sub install_tea {
     $baseTeaHfPkgVal=$baseTeaHf[0];
   }
 
-  print "\nINFO:Installing Tea $arg_teaVersion...\n";
+  print "\nINFO:Installing TEA $arg_teaVersion...\n";
   my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_teaVersion,$baseProd[0],0,$baseTeaHfPkgVal,"tea_installer","tea",0,$arg_teaHotfix);
   if($beInstallResult == 0){
-    print "\nERROR : Error occurred while installing Tea. Aborting\n";
+    print "\nERROR : Error occurred while installing TEA. Aborting\n";
     exit 0;
   }
-  print "\nINFO:Installing Tea $arg_teaVersion...DONE\n\n";
+  print "\nINFO:Installing TEA $arg_teaVersion...DONE\n\n";
 }
 
 sub install_ftl {

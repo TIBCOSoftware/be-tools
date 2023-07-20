@@ -563,7 +563,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         call .\scripts\tea.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_TEA_VERSION ARG_TEA_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
         if "!ARG_TEA_VERSION!" EQU "na" (
-            echo ERROR: Tea server installer not found in installer location[!ARG_INSTALLER_LOCATION!]
+            echo ERROR: TEA server installer not found in installer location[!ARG_INSTALLER_LOCATION!]
             GOTO END-withError
         )
     )

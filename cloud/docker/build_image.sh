@@ -578,7 +578,7 @@ else
     if [ $(echo "${ARG_BE_VERSION//.}") -ge 630 -a  "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         source ./scripts/tea.sh
         if [ "$ARG_TEA_VERSION" = "na" ]; then
-            echo "ERROR: Tea server installer not found in installer location[$ARG_INSTALLER_LOCATION]"
+            echo "ERROR: TEA server installer not found in installer location[$ARG_INSTALLER_LOCATION]"
             exit 1
         fi
     fi
