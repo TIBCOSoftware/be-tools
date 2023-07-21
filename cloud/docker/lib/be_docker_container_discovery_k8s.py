@@ -124,7 +124,7 @@ def registerTEAgent(serverURL,username,userPwd,teaagenturl):
 
 def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,teaagenturl,pythonpath,pollarinterval):
     logger.info("Python path:"+pythonpath)
-    appManagementFilePath="python3 "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\" -ssl \""+ sslEnabled+"\" -sc \""+ serverCert+"\" -cc \""+ clientCert+"\"" 
+    appManagementFilePath="python "+ pythonpath+"/applicationsMgmt.py -t \""+ serverURL +"\" -u \""+ userName +"\" -p \""+ userPwd+"\" -ssl \""+ sslEnabled+"\" -sc \""+ serverCert+"\" -cc \""+ clientCert+"\"" 
     applications=[]
     machines=[]
     instances=[]
