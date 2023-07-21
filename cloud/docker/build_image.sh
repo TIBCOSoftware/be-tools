@@ -506,12 +506,12 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         # get tea details
         TEA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TEA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
         if [ "$TEA_HOME" = "" ]; then
-            echo "ERROR: TEA_HOME is not set in tea tra file. Please check"
+            echo "ERROR: TEA_HOME is not set in TEA tra file"
             exit 1
         else
             # check directory exist
             if ! [ -d "$TEA_HOME" ]; then
-                printf "\nERROR: The directory: [$TEA_HOME] not exist. Please check TEA_HOME is set properly in tea tra file.\n"
+                printf "\nERROR: TEA HOME directory: [$TEA_HOME] not exist.\n"
                 exit 1
             else
                 TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]\.[0-9]\.[0-9])$"
@@ -525,7 +525,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
             fi
         fi
         if [ "$ARG_TEA_VERSION" = "na" ]; then
-            echo "ERROR: Unable to capture tea server version from TEA_HOME[$TEA_HOME]. Please check TEA_HOME is set properly in tea tra file"
+            echo "ERROR: Unable to capture TEA server version from TEA_HOME[$TEA_HOME]. Please check TEA_HOME is set properly in TEA tra file"
             exit 1
         fi
     fi
