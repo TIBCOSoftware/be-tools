@@ -139,7 +139,7 @@ agents:
     labelvalue: inferenceagent
     topologyKey: kubernetes.io/hostname
   podAffinity:                            # podAffinity: Set to true to allow schedule pods together
-    enabled: true
+    enabled: false
     labelKey: appName
     labelvalue: cacheagent  # cacheagent
     topologyKey: kubernetes.io/hostname
