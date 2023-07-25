@@ -876,7 +876,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\be-engine.tra'"
 
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
-        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard' -Recurse | out-null"
+        powershell -Command "Copy-Item '!BE_HOME!\examples\standard\WebStudio' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\examples\standard\WebStudio' -Recurse | out-null"
 
         if EXIST "!BE_HOME!\decisionmanager" (
             powershell -Command "Copy-Item '!BE_HOME!\decisionmanager' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null"
