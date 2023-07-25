@@ -198,6 +198,31 @@ podAffinity:
 {{- end }}
 {{- end }}
 
+{{- define "becharts.nodeaffinity" }}
+{{- if eq .nodeAffinity.enabled true }}
+nodeAffinity:
+{{- if eq .nodeAffinity.hard.enabled true }}
+  requiredDuringSchedulingIgnoredDuringExecution:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: {{ .nodeAffinity.hard.labelKey }}
+        operator: {{ .nodeAffinity.hard.operator }}
+        values:
+        - {{ .nodeAffinity.hard.labelvalue | quote}}
+{{- end }}
+{{- if eq .nodeAffinity.soft.enabled true }}
+  preferredDuringSchedulingIgnoredDuringExecution:
+  - weight: {{ .nodeAffinity.soft.weight }}
+    preference:
+      matchExpressions:
+      - key: {{ .nodeAffinity.soft.labelKey }}
+        operator: {{ .nodeAffinity.soft.operator }}
+        values:
+        - {{ .nodeAffinity.soft.labelvalue | quote}}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "becharts.labels" }}
 {{- if eq (.podAntiAffinity).enabled true }}
 {{ .podAntiAffinity.labelKey}}: {{ .podAntiAffinity.labelvalue }}

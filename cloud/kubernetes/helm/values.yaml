@@ -121,6 +121,19 @@ agents:
     memoryMetric:
       enable: false                       # Set to true, to enable memory metric based HPA
       averageUtilizationPercentage: 90    # HPA scales up(or down) pods count till maxReplicas, if memory utilization % reaches above(or below) averageUtilizationPercentage
+  nodeAffinity:                        # nodeAffinity: When set to true : allowing you to constrain which nodes your Pod can be scheduled on based on node labels. 
+    enabled: false
+    hard:                           #requiredDuringSchedulingIgnoredDuringExecution: When set to true - The scheduler can't schedule the Pod unless the rule is met
+      enabled: false
+      operator: In                        # In, NotIn, Exists, DoesNotExist, Gt and Lt
+      labelKey: appName
+      labelvalue: inferenceagent
+    soft:                          #preferredDuringSchedulingIgnoredDuringExecution: When set to true: The scheduler tries to find a node that meets the rule. If a matching node is not available, the scheduler still schedules the Pod
+      enabled: false
+      weight: 1
+      operator: In                        
+      labelKey: appName1
+      labelvalue: inferenceagent  
   # While deploying cache and inference agents at any given point either inference or cache can have both affinity and antiaffinity. while the other will just have only antiaffinity.
   podAntiAffinity:                        # podAntiAffinity: Set to true to allow evenly distribution of pods across available nodes
     enabled: false
@@ -153,6 +166,19 @@ agents:
     memoryMetric:
       enable: false
       averageUtilizationPercentage: 90
+  nodeAffinity: 
+    enabled: false
+    hard:
+      enabled: false
+      operator: In                        
+      labelKey: appName
+      labelvalue: cacheagent
+    soft:
+      enabled: false
+      weight: 1
+      operator: In                        
+      labelKey: appName1
+      labelvalue: cacheagent  
   # While deploying cache and inference agents at any given point either inference or cache can have both affinity and antiaffinity. while the other will just have only antiaffinity.
   podAntiAffinity:                    
     enabled: false
