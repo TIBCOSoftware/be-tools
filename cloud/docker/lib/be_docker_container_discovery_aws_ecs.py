@@ -144,11 +144,11 @@ def main(serverURL, userName, userPwd, sslEnabled, serverCert, clientCert,cluste
 def createCommandParser():
     #create the top-level parser
     commandParser = argparse.ArgumentParser(add_help = False, description = 'Applications Management Operations CLI.')
-    commandParser.add_argument('-ssl', required = False, default = False, dest = 'sslEnabled', help = 'SSL Enabled')
+    commandParser.add_argument('-ssl', required = False, default = 'False', dest = 'sslEnabled', help = 'SSL Enabled')
     commandParser.add_argument('-t', required = True, dest = 'serverURL', help = 'TEA Server URL')
     commandParser.add_argument('-u', required = True, dest = 'userName', help = 'TEA User Name')
     commandParser.add_argument('-p', required = True, dest = 'userPwd', help = 'TEA User Password')
-    commandParser.add_argument('-sc', required = False, default = '', dest = 'serverCert', help = 'Server certificate Path')
+    commandParser.add_argument('-sc', required = False, default = 'False', dest = 'serverCert', help = 'Server certificate Path')
     commandParser.add_argument('-cc', required = False, default = '', dest = 'clientCert', help = 'Client certificate Path')
     commandParser.add_argument('-c', required = True, default = 'ALL', dest = 'clustername', help = 'AWS Fargate Cluster Name')
     commandParser.add_argument('-lt', required = True, default = 'FARGATE', dest = 'launchType', help = 'AWS ECS Cluster Launch Type')

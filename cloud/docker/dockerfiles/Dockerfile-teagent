@@ -59,21 +59,28 @@ RUN mkdir -p /mnt/tibco/be/logs \
 #Discard intermediate image and just copy the installation to a new image.
 FROM ubuntu:20.04 AS image_with_python3
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update -y \
  && apt-get upgrade python3-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python3 python3-pip -y \
- && pip3 install jsonpickle requests awscli boto boto3 botocore \
+ && pip3 install jsonpickle requests awscli boto boto3 bototcore \
  && apt-get install --install-suggests jq -y \
  && update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
  && rm -rf /var/lib/apt/lists/* 
 
 FROM ubuntu:20.04 AS image_with_python2
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update -y \
  && apt install curl python2-minimal -y \
+ && apt-get upgrade python3-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python3 python3-pip -y \
+ && pip3 install jsonpickle requests awscli boto boto3 botocore \
+ && apt-get install --install-suggests jq -y \
  && update-alternatives --install /usr/bin/python python /usr/bin/python2 1 \
  && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
  && python2 get-pip.py \
- && pip install requests jsonpickle boto3
+ && pip install requests jsonpickle
 
 FROM image_with_${PYTHON_VERSION} AS final
 
