@@ -110,9 +110,7 @@ VOLUME \
     "c:\mnt\tibco\be\logs" \
     "c:\mnt\tibco\be\data-store" \
     "${BE_HOME}\rms\config\notify" \
-    "${BE_HOME}\rms\config\security" \
-    "${BE_HOME}\rms\shared" \
-    "${BE_HOME}\examples\standard\WebStudio"
+    "${BE_HOME}\rms\shared"
 
 # The following is the list of communication ports that need to be open-n-available
 # Port 50000 is AS Listener Port, 50001 is AS Remote Listener Port, 5555 is JMX Port, RMS PORTs 8090 5000
