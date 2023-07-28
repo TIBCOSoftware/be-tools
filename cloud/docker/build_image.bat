@@ -59,6 +59,11 @@ set "ARG_HAWK_VERSION=na"
 set "ARG_HAWK_SHORT_VERSION=na"
 set "ARG_HAWK_HOTFIX=na"
 
+REM tea related args
+set "ARG_TEA_VERSION=na"
+set "ARG_TEA_HOTFIX=na"
+set "ARG_PYTHON_VERSION=python3"
+
 REM as related args
 set "AS_HOME=na"
 set "ARG_AS_VERSION=na"
@@ -489,7 +494,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
 
     set /a BE6VAL=!ARG_BE_VERSION:.=!
     if !BE6VAL! GEQ 622 if "!IMAGE_NAME!" EQU "!APP_IMAGE!"   (
-        REM Check HAWK_HOME from tra file it is ftl home
+        REM Check HAWK_HOME from tra file it is hawk home
         for /F "tokens=2,2 delims==" %%i in ('findstr /B "tibco.env.HAWK_HOME=" !BE_HOME!\!TRA_FILE!') do (
             for %%f in (%%i) do (
                 set HAWK_HOME=%%~f
@@ -500,7 +505,7 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         REM Check HAWK_HOME exist or not if it present
         if !HAWK_HOME! NEQ na (
             if NOT EXIST !HAWK_HOME! (
-                echo ERROR: The directory: [!HAWK_HOME!] is not a valid directory. Skipping ftl installation.
+                echo ERROR: The directory: [!HAWK_HOME!] is not a valid directory. Skipping hawk installation.
                 set "HAWK_HOME=na"
             )
         )
@@ -553,6 +558,16 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         if !ERROR_VAL! EQU true GOTO END-withError
 
         if !ARG_HAWK_VERSION! NEQ na set ARG_HAWK_SHORT_VERSION=!ARG_HAWK_VERSION:~0,3!
+    )
+
+    if !BE6VAL! GEQ 630 if "!IMAGE_NAME!" EQU "!TEA_IMAGE!" (
+        call .\scripts\tea.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_TEA_VERSION ARG_TEA_HOTFIX ERROR_VAL
+        if !ERROR_VAL! EQU true GOTO END-withError
+        if "!ARG_TEA_VERSION!" EQU "na" (
+            echo ERROR: TEA server installer not found in installer location[!ARG_INSTALLER_LOCATION!]
+            GOTO END-withError
+        )
+        set "ARG_PYTHON_VERSION=python2"
     )
 
     REM check openjdk details
@@ -691,6 +706,13 @@ if !ARG_HAWK_VERSION! NEQ na (
     echo INFO: HAWK VERSION                 : [!ARG_HAWK_VERSION!]
     if !ARG_HAWK_HOTFIX! NEQ na (
         echo INFO: HAWK HF                      : [!ARG_HAWK_HOTFIX!]
+    )
+)
+
+if !ARG_TEA_VERSION! NEQ na (
+    echo INFO: TEA VERSION                  : [!ARG_TEA_VERSION!]
+    if !ARG_TEA_HOTFIX! NEQ na (
+        echo INFO: TEA HF                       : [!ARG_TEA_HOTFIX!]
     )
 )
 
@@ -848,6 +870,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         set FILE=%%f
         SET FILE_PATH=!FILE:*#=!
         xcopy /Q /C /R /Y !ARG_INSTALLER_LOCATION!\!FILE_PATH! !TEMP_FOLDER!\installers > NUL
+        if !ErrorLevel! NEQ 0 (
+            echo ERROR: There might be issue with installer file names, Unable to copy installers, Please check the installers location.
+            GOTO END-withError
+        )
         echo INFO: Copying package: [!FILE_PATH!]
     )
     echo.
@@ -1004,7 +1030,7 @@ for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )

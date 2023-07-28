@@ -32,6 +32,7 @@ GOTO :EOF
             if !INSTLR_HF! EQU true (
                 if !indx! EQU 4 (
                     set INSTLR_VERSION=%%j
+                    set INSTLR_VERSION=!INSTLR_VERSION:.zip=!
                     set INSTLR_VERSION=!INSTLR_VERSION:HF-=!
                 )
             )

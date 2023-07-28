@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'TEA Lib Path'
+    path: '/opt/tibco/tea/TEA_VERSION/agentlib/'
+    shouldExist: true
+fileContentTests:
+  - name: 'BE TEA TRA Updated with TEA home'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/teagent/bin/be-teagent.tra'
+    expectedContents: ['TEA_HOME=/opt/tibco/tea/TEA_VERSION']
