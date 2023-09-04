@@ -5,6 +5,7 @@ if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
     mv /opt/tibco/jd*/* /opt/tibco/openjdk/$JRE_VERSION/
 
     find /opt/tibco -name '*.tra' -print0 | xargs -0 sed -i.bak  "s~tibcojre64~openjdk~g"
+    find /home/tibco/be -name '*.txt' -print0 | xargs -0 sed -i.bak  "s~tibcojre64~openjdk~g"
 fi
 
 DEL_LIST_FILENAME="/home/tibco/be/deletelist.txt"
