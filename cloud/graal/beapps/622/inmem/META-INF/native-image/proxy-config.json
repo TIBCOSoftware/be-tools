@@ -1,0 +1,20 @@
+[
+  {
+    "interfaces":["com.tibco.be.model.functions.BEDeprecated"]
+  },
+  {
+    "interfaces":["com.tibco.be.model.functions.BEFunction"]
+  },
+  {
+    "interfaces":["com.tibco.be.model.functions.BEMapper"]
+  },
+  {
+    "interfaces":["com.tibco.be.model.functions.BEPackage"]
+  },
+  {
+    "interfaces":["com.tibco.be.model.functions.Enabled"]
+  },
+  {
+    "interfaces":["com.tibco.be.model.functions.FunctionParamDescriptor"]
+  }
+]

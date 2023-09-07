@@ -2,3 +2,8 @@
 cloud/docker/tmp_*
 cloud/kubernetes/helm/charts/*
 *.log
+cloud/graal/bin
+cloud/graal/logs
+cloud/graal/beapps/*/*/cddear
+cloud/graal/beapps/*/*/jar
+cloud/graal/extjars
