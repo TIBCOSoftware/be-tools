@@ -18,10 +18,7 @@ allJarsInPath(){
     for eachFile in $allFiles
     do
         if [[ "$eachFile" == *".jar" ]]; then
-            if [  $eachFile != $BE_HOME/lib/ext/tpcl/opentelemetry/exporters/grpc-netty-shaded.jar -a $eachFile != $BE_HOME/lib/ext/tpcl/netty-all.jar  -a $eachFile != $BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-2.13.3.jar -a $eachFile != $BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor.jar -a $eachFile != $BE_HOME/lib/ext/tpcl/jackson-databind.jar ];
-            then
-                CPPATH=$CPPATH$eachFile$PSP
-            fi
+            CPPATH=$CPPATH$eachFile$PSP
         fi
     done
     echo $CPPATH
@@ -37,7 +34,18 @@ fi
 # add be.jsr o classpath
 CP_PATH=$CP_PATH$BE_APP_HOME/jar/be.jar
 
-# echo CP_PATH $CP_PATH
+#copy excludejars.txt to bin and update excludejars.txt with BE_HOME value
+cp excludejars.txt bin/ 
+sed -i'.bak' "s~BE_HOME~$BE_HOME~g" bin/excludejars.txt
+#remove from CP_PATH
+sed -i 's/\r$//' bin/excludejars.txt
+for eachJar in $(cat "bin/excludejars.txt" ) ; do
+    CP_PATH=${CP_PATH/$eachJar$PSP/}
+done
+#remove copied file
+rm bin/excludejars.txt*
+
+echo CP_PATH $CP_PATH
 
 if [[ "$BUILD_OPTION" == "" || "$BUILD_OPTION" == "1" ]]; then
     echo building native image $BE_APP_NAME$BE_APP_VER

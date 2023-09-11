@@ -1,0 +1,5 @@
+BE_HOME/lib/ext/tpcl/opentelemetry/exporters/grpc-netty-shaded.jar
+BE_HOME/lib/ext/tpcl/netty-all.jar
+BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor-2.13.3.jar
+BE_HOME/lib/ext/tpcl/jackson-dataformat-cbor.jar
+BE_HOME/lib/ext/tpcl/jackson-databind.jar
