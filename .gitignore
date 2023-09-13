@@ -7,3 +7,4 @@ cloud/graal/logs
 cloud/graal/beapps/*/*/cddear
 cloud/graal/beapps/*/*/jar
 cloud/graal/extjars
+cloud/graal/examples
