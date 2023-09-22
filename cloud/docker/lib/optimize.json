@@ -16,12 +16,6 @@
             "BE_HOME/lib/cep-activespaces-channel.jar",
             "BE_HOME/lib/cep-store-as.jar"
         ],
-        "avro": [
-            "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar",
-            "BE_HOME/lib/ext/tpcl/avro.jar",
-            "BE_HOME/lib/ext/tpcl/kafka-avro-serializer.jar",
-            "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar"
-        ],
         "cassandra": [
             "BE_HOME/lib/cep-store-cassandra.jar",
             "BE_HOME/lib/ext/tpcl/cassandra-driver-core-*.jar",
@@ -242,7 +236,11 @@
             "BE_HOME/lib/ext/tpcl/lz4-java*.jar",
             "BE_HOME/lib/ext/tpcl/rocksdbjni*.jar",
             "BE_HOME/lib/ext/tpcl/snappy-java*.jar",
-            "BE_HOME/lib/ext/tpcl/zstd-jni*.jar"
+            "BE_HOME/lib/ext/tpcl/zstd-jni*.jar",
+            "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar",
+            "BE_HOME/lib/ext/tpcl/avro.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-avro-serializer.jar",
+            "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar"
         ],
         "kinesis": [
             "BE_HOME/lib/cep-kinesis-channel.jar",
@@ -378,17 +376,11 @@
         ],
         "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar": [
             "ftl",
-            "kafka",
-            "avro"
+            "kafka"
         ],
         "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar": [
             "ftl",
-            "kafka",
-            "avro"
-        ],
-        "BE_HOME/lib/ext/tpcl/kafka-avro-serializer.jar": [
-            "kafka",
-            "avro"
+            "kafka"
         ]
     }
 }
