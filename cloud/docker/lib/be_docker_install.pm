@@ -232,11 +232,11 @@ sub install_package_withtar {
     return 1;
   }
 
-  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $baseProd[0] ...\n";
-  
   my $baseProdRegex='*'.$arg_pkgName.'_'.$arg_pkgVersion.'*zip';
   my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
 
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $baseProd[0] ...\n";
+  
   my $result=extractPackage($arg_pkgName,$ROOT_FOLDER,$baseProd[0],$arg_pkgName.'_installers');
   if($result == 0){
     print "\nERROR : Error occurred while extracting $arg_pkgName installer package - $baseProd[0]. Aborting\n";
