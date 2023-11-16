@@ -69,6 +69,7 @@ GOTO :EOF
     set FILENAME=na
     set ERROR_VAL=false
     set MULTIPLE_INSTLRS=false
+    SET BASE_VALIDATION=false
 
     for /f %%i in ('dir /b !INSTLR_LOCATION_NEW! ^| findstr /I /r "!INSTLR_REG_NEW!"') do (
         if !MULTIPLE_INSTLRS! EQU true (
