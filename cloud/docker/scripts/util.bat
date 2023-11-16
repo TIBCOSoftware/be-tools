@@ -101,7 +101,7 @@ GOTO :EOF
         if !BASE_MIN_VALUE! NEQ na if !BASE_MAX_VALUE! NEQ na (
             if !baseval! GEQ !BASE_MIN_VALUE! if !baseval! LEQ !BASE_MAX_VALUE! SET BASE_VALIDATION=true
             if "!BASE_VALIDATION!" NEQ "true" (
-                echo ERROR: BE version: [!ARG_BE_VERSION!] not compatible with !DISPLAY_NAME! version: [!ARG_AS_VERSION!].
+                echo ERROR: BE version: [!ARG_BE_VERSION!] not compatible with !DISPLAY_NAME! version: [!BASE_INST_VERSION!].
                 GOTO END-withError
             )
         )
