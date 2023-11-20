@@ -549,7 +549,10 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         call .\scripts\ftl.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_FTL_VERSION ARG_FTL_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
 
-        if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+        if !ARG_FTL_VERSION! NEQ na (
+            echo !ARG_FTL_VERSION! | findstr /I /r "^[1-9]\.[0-9]\." > NUL && set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+            echo !ARG_FTL_VERSION! | findstr /I /r "^[1-9]\.[0-9][0-9]\." > NUL && set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,4!
+        )
     )
 
     set /a BE6VAL=!ARG_BE_VERSION:.=!
