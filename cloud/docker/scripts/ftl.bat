@@ -31,7 +31,7 @@ SET ARG_FTL_HOTFIX=na
 SET FILE_NAME=na
 SET ERROR_VAL=false
 SET FTL_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*ftl.*[0-9]\.[0-9][0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
-if "!ARG_INSTALLERS_PLATFORM!" EQU "win" SET FTL_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.exe$"
+if "!ARG_INSTALLERS_PLATFORM!" EQU "win" SET FTL_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.exe$ ^.*ftl.*[0-9]\.[0-9][0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.exe$"
 SET FTL_HF_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*ftl.*[0-9]\.[0-9][0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO FTL"
 SET /a ftlminval=!VALID_FTL_MAP_MIN[%ARG_BE_VERSION%]:.=!
