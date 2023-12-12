@@ -1,6 +1,6 @@
 #supported TEA versions for be version
-TEA_VERSION_MAP_MIN=( "6.3.0:2.4.1" )
-TEA_VERSION_MAP_MAX=( "6.3.0:2.4.1" )
+TEA_VERSION_MAP_MIN=( "6.3.0:2.4.1" "6.3.1:2.4.1" )
+TEA_VERSION_MAP_MAX=( "6.3.0:2.4.1" "6.3.1:2.4.1" )
 
 teaMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${TEA_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 teaMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${TEA_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
