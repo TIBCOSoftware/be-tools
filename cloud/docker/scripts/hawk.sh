@@ -1,6 +1,6 @@
 #supported HAWK versions for be version
-HAWK_VERSION_MAP_MIN=( "6.2.2:7.1.0" "6.3.0:7.1.0" )
-HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" "6.3.0:7.2.1" )
+HAWK_VERSION_MAP_MIN=( "6.2.2:7.1.0" "6.3.0:7.1.0" "6.3.1:7.1.0" )
+HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" "6.3.0:7.2.1" "6.3.1:7.2.1" )
 
 # Validate and get TIBCO HAWK base and hf versions
 hawkPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_oihr_[0-9]\.[0-9]\.[0-9]_linux_x86_64.zip"  )
