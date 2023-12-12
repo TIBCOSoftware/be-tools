@@ -1,6 +1,6 @@
 #supported TEA versions for be version
-TEA_VERSION_MAP_MIN=( "6.3.0:2.4.1" )
-TEA_VERSION_MAP_MAX=( "6.3.0:2.4.1" )
+TEA_VERSION_MAP_MIN=( "6.3.0:2.4.1" "6.3.1:2.4.1" )
+TEA_VERSION_MAP_MAX=( "6.3.0:2.4.1" "6.3.1:2.4.1" )
 
 # Validate and get TIBCO TEA base and hf versions
 teaPckgs=$(find $ARG_INSTALLER_LOCATION -maxdepth 1 -name "TIB_tea_[0-9]\.[0-9]\.[0-9]_linux26gl23_x86_64.zip"  )
