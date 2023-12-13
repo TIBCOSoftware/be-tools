@@ -75,7 +75,7 @@ ARG_JRE_VERSION="na"
 
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
-BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_PLATFORM}"
+BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}${INSTALLER_PLATFORM}"
 VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
@@ -282,7 +282,7 @@ if [ "$MISSING_ARGS" != "" ]; then
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l)
+    bePckgsCnt=$(find $ARG_SOURCE -maxdepth 1 | grep -E "${BE_BASE_PKG_REGEX}" 2>/dev/null | wc -l)
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -339,7 +339,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         BE_HOME=$( readlink -e ../.. )
     fi
 
-    BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
+    BE_HOME_REGEX="(.*.)\/(be\/[0-9]{1,}\.[0-9]{1,})$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
         printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location.\n"
         exit 1
@@ -390,7 +390,7 @@ ARG_IMAGE_VERSION="$ARG_TAG"
 
 # get product details for both fromlocal and frominstallers
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-    VERSION_REGEX=([0-9]\.[0-9]).*
+    VERSION_REGEX=([0-9]{1,}\.[0-9]{1,}).*
 
     ARG_BE_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
     ARG_BE_VERSION=$(echo $ARG_BE_VERSION | sed -e 's/\r//g')
@@ -426,7 +426,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$AS_LEG_HOME] not exist. Ignoring Activespaces(legacy) installation.\n"
                 AS_LEG_HOME="na"
             else
-                AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
@@ -449,7 +449,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$FTL_HOME] not exist. Ignoring FTL installation.\n"
                 FTL_HOME="na"
             else
-                FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
+                FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in $TRA_FILE_NAME file (ex: <path-to>/ftl/<ftl-version>).\n"
                     exit 1
@@ -470,7 +470,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$AS_HOME] not exist. Ignoring Activespaces installation.\n"
                 AS_HOME="na"
             else
-                AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                AS_HOME_REGEX="(.*.)\/(as\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
@@ -493,7 +493,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$HAWK_HOME] not exist. Ignoring HAWK installation.\n"
                 HAWK_HOME="na"
             else
-                HAWK_HOME_REGEX="(.*.)\/(hawk\/[0-9]\.[0-9])$"
+                HAWK_HOME_REGEX="(.*.)\/(hawk\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $HAWK_HOME =~ $HAWK_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper HAWK home path: [$HAWK_HOME] in $TRA_FILE_NAME file (ex: <path-to>/hawk/<hawk-version>).\n"
                     exit 1
@@ -517,7 +517,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: TEA HOME directory: [$TEA_HOME] not exist.\n"
                 exit 1
             else
-                TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]\.[0-9]\.[0-9])$"
+                TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $TEA_HOME =~ $TEA_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper TEA home path: [$TEA_HOME] in $TRA_FILE_NAME file (ex: <path-to>/tea/<tea-version>).\n"
                     exit 1
@@ -538,7 +538,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
 else
     #version regex for all products
-    VERSION_REGEX=([0-9]\.[0-9]).[0-9]
+    VERSION_REGEX=([0-9]{1,}\.[0-9]{1,}).[0-9]{1,}
     HF_VERSION_REGEX=([0-9]\{3\})
 
     # file list array to hold all installers
