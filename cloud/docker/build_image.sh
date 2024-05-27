@@ -80,7 +80,7 @@ VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "17")
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -916,7 +916,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
     BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar $BE_DIR/lib $BE_DIR/bin "
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
+        BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
+        [ -d "$BE_DIR/eclipse-platform" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/eclipse-platform "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi
@@ -1154,6 +1155,7 @@ if [ "$ARG_BUILD_TOOL" = "buildah" ]; then
     buildah bud -f $TEMP_FOLDER/$ARG_DOCKER_FILE $BUILD_ARGS
 else
     docker build --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
+    # docker build --progress=plain --no-cache --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
 fi
 
 if [ "$?" != 0 ]; then
