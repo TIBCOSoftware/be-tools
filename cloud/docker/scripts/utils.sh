@@ -132,9 +132,11 @@ validateInstallers()
                         printf "ERROR: Improper $pkgName HF version: [$BASE_HF_PACKAGE]. It should be in (xxx) format Ex: (002).\n"
                         exit 1
                     fi
-                    #add $pkgName hf package to file list and increment index
-                    FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BASE_HF_PACKAGE"
-                    FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
+                    if [ "$pkgName" != "JRESPLMNT" ] ; then
+                        #add $pkgName hf package to file list and increment index
+                        FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$BASE_HF_PACKAGE"
+                        FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`
+                    fi
                 else
                     printf "\nERROR: TIBCO $pkgName version: [$baseHfBaseVersion] in HF installer and TIBCO $pkgName Base version: [$ARG_BASE_VERSION] is not matching.\n"
                     exit 1;

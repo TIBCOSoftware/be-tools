@@ -13,7 +13,7 @@ local $/ ;
 ##PROPERTIES-----------------------------------------------------------------------------------------------------------
 
 # SCRIPT CONSTANTS-----------------------------------------------
-my $DEBUG_ENABLE      = 0; #Set it to 1 to enable debug logs
+my $DEBUG_ENABLE      = 1; #Set it to 1 to enable debug logs
 
 # CONSTANTS----------------------------------------------------------
 my $ROOT_FOLDER       = ".";
@@ -183,7 +183,6 @@ sub install_be {
   
   print "\nINFO:Performing cleanup...\n";
   my $beShortVersion = getShortVersion($arg_beVersion);
-  `rm -rf /opt/tibco/tools`;
   `rm -rf /opt/tibco/be/$beShortVersion/admin-plugins`;
   `rm -rf /opt/tibco/be/$beShortVersion/api`;
   `rm -rf /opt/tibco/be/$beShortVersion/uninstaller_scripts`;
@@ -220,6 +219,50 @@ sub install_package_with_silentfile {
     print "\nERROR : Error occurred while installing $arg_pkgName. Aborting\n";
     exit 0;
   }
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion...DONE\n\n";
+}
+
+sub install_package_with_universal_installer {
+  my $arg_pkgName           = shift;
+  my $arg_installerKeyWord  = shift;
+  my $arg_pkgVersion       = shift;
+  my $arg_pkgHotfix        = shift;
+
+  if($arg_pkgVersion == "na"){
+    return 1;
+  }
+
+  my $basePkgHfRegex='*'.$arg_installerKeyWord.'_'.$arg_pkgVersion.'*'.$arg_pkgHotfix.'*zip';
+  my (@basePkgHf) = glob "$ROOT_FOLDER/$basePkgHfRegex";
+
+  my $basePkgHfPkgVal="na";
+  if(scalar @basePkgHf == 1){
+    $basePkgHfPkgVal=$basePkgHf[0];
+  }
+
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $basePkgHf[0] ...\n";
+
+  my $copyToDir=$arg_pkgName.'_installers';
+  
+  my $result=extractPackage($arg_pkgName,$ROOT_FOLDER,$basePkgHf[0],$copyToDir);
+  if($result == 0){
+    print "\nERROR : Error occurred while extracting $arg_pkgName installer package - $basePkgHf[0]. Aborting\n";
+    return 0;
+  }
+
+  # COPY Universal installer to extracted location
+  print "\nINFO:Copy Universal Installer to $copyToDir ...\n";
+  my $copyInstallerToHf=`cp /opt/tibco/tools/universal_installer/TIBCOUniversalInstaller-lnx-x86-64.bin $copyToDir`;
+  print "\nINFO:Copy Universal Installer to $copyInstallerToHf ... END\n";
+  print "$copyToDir exists!\n" if -e "$copyToDir/TIBCOUniversalInstaller-lnx-x86-64.bin" ;
+
+  $result=installHotfix('','','',$copyToDir);
+  if($result == 0)
+  {
+    print "\nERROR : Error occurred while installing $arg_pkgName installer package - $basePkgHf[0]. Aborting\n";
+    return 0;
+  }
+
   print "\nINFO:Installing $arg_pkgName $arg_pkgVersion...DONE\n\n";
 }
 
