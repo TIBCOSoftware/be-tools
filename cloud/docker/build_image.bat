@@ -77,6 +77,11 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
+REM JRE SUPPLEMENT  related args
+set "ARG_JRESPLMNT_VERSION=na"
+set "ARG_JRESPLMNT_SHORT_VERSION=na"
+set "ARG_JRESPLMNT_HOTFIX=na"
+
 REM container image size optimize related vars
 perl -e1 2>NUL
 if "!errorlevel!" NEQ "0" (
