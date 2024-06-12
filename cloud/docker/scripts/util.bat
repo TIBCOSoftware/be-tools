@@ -98,6 +98,16 @@ GOTO :EOF
         
         SET /a baseval=!BASE_INST_VERSION:.=!
 
+        if "!BASE_MIN_VALUE!" EQU "" (
+                echo ERROR: BE version: [!ARG_BE_VERSION!] not compatible with !DISPLAY_NAME! version: [!BASE_INST_VERSION!].
+                GOTO END-withError
+            )
+        
+        if "!BASE_MAX_VALUE!" EQU "" (
+                echo ERROR: BE version: [!ARG_BE_VERSION!] not compatible with !DISPLAY_NAME! version: [!BASE_INST_VERSION!].
+                GOTO END-withError
+            )
+
         if !BASE_MIN_VALUE! NEQ na if !BASE_MAX_VALUE! NEQ na (
             if !baseval! GEQ !BASE_MIN_VALUE! if !baseval! LEQ !BASE_MAX_VALUE! SET BASE_VALIDATION=true
             if "!BASE_VALIDATION!" NEQ "true" (
@@ -157,7 +167,9 @@ GOTO :EOF
                         echo ERROR: !DISPLAY_NAME_NEW! version: [!INSTLR_HF_VERSION!] It should be in [xxx] format Ex: [001].
                         GOTO END-withError
                     )
-                    echo !DISPLAY_NAME_NEW!#!FILENAME! >> !ARG_TEMP_FOLDER!/package_files.txt
+                    if "!DISPLAY_NAME!" NEQ "TIBCO JRESPLMNT" (
+                        echo !DISPLAY_NAME_NEW!#!FILENAME! >> !ARG_TEMP_FOLDER!/package_files.txt
+                    )
                 )
             ) else (
                 echo ERROR: !DISPLAY_NAME! version: [!HF_INSTLR_VERSION!] in HF installer and !DISPLAY_NAME_NEW! Base version: [!BASE_INST_VERSION!] is not matching.

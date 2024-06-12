@@ -1,6 +1,6 @@
 #supported JRE Suppliment versions for be version
-JRESPLMNT_VERSION_MAP_MIN=( "6.2.1:1.0.0" "6.3.0:1.0.0" )
-JRESPLMNT_VERSION_MAP_MAX=( "6.2.1:2.0.0" "6.3.0:2.0.0" )
+JRESPLMNT_VERSION_MAP_MIN=( "6.2.1:1.0.0" )
+JRESPLMNT_VERSION_MAP_MAX=( "6.2.1:2.0.0" )
 
 jresplmntMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${JRESPLMNT_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 jresplmntMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${JRESPLMNT_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )

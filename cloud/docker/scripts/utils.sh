@@ -108,7 +108,12 @@ validateInstallers()
                 exit 1
             fi
 
-            if [ "$baseMinVersion" != "" ]; then
+            if [ "$baseMinVersion" = "" -o "$baseMaxVersion" = "" ]; then
+                printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with $pkgName version: [$ARG_BASE_VERSION].\n";
+                exit 1
+            fi
+
+            if [ "$baseMinVersion" != "na" -a "$baseMaxVersion" != "na" ]; then
                 # validate $pkgName version with be base version
                 baseVersion=$(echo "${ARG_BASE_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
                 
