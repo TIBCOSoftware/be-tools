@@ -18,6 +18,7 @@ ARG_TEA_VERSION=na
 ARG_CP_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
+ARG_TRA_FILENAME=bin\\/be-engine.tra
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
@@ -171,13 +172,16 @@ if [ $ARG_BE_SHORT_VERSION != na ]; then
   echo "INFO: be version:          [${ARG_BE_SHORT_VERSION}]"
   if [ $ARG_IMAGE_TYPE = rms ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-rms.yaml "
+    ARG_TRA_FILENAME=rms\\/bin\\/be-rms.tra
   elif [ $ARG_IMAGE_TYPE = teagent ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-teagent.yaml "
+    ARG_TRA_FILENAME=teagent\\/bin\\/be-teagent.tra
   else
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be.yaml "
   fi
   SED_EXP+=" -e s/BE_SHORT_VERSION/${ARG_BE_SHORT_VERSION}/g "
   SED_EXP+=" -e s/JAVA_HOME_DIR_NAME/$ARG_JAVA_HOME_DIR_NAME/g "
+  SED_EXP+=" -e s/TRA_FILENAME/${ARG_TRA_FILENAME}/g "
 else
   echo "ERROR: Be version is mandatory "
   printf " ${USAGE} "

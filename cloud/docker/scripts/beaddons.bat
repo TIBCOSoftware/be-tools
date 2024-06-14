@@ -14,27 +14,23 @@ SET ARG_ADDONS=na
 SET FILE_NAME=na
 SET ERROR_VAL=false
 SET BE_ADDON_PROCESS_REG="^TIB_businessevents-process_!ARG_BE_VERSION!_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
+SET DISPLAY_NAME="TIBCO Businessevents process addon"
 
-call .\scripts\util.bat :IdentifyInstaller !ARG_INSTALLER_LOCATION! !BE_ADDON_PROCESS_REG! "TIBCO Businessevents process addon" false ARG_ADDON FILE_NAME ERROR_VAL
-if !ERROR_VAL! EQU true GOTO END-withError
-
+call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !BE_ADDON_PROCESS_REG! na !DISPLAY_NAME! na na !ARG_TEMP_FOLDER! ARG_ADDON ERROR_VAL
 if "!ARG_ADDON!" NEQ "na" (
     SET ARG_ADDONS=process
-    echo BEADDONPROCESSPKG#!FILE_NAME! >> !ARG_TEMP_FOLDER!/package_files.txt
 )
 
 SET BE_ADDON_VIEWS_REG="^TIB_businessevents-views_!ARG_BE_VERSION!_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
+SET DISPLAY_NAME="TIBCO Businessevents views addon"
 
-call .\scripts\util.bat :IdentifyInstaller !ARG_INSTALLER_LOCATION! !BE_ADDON_VIEWS_REG! "TIBCO Businessevents views addon" false ARG_ADDON FILE_NAME ERROR_VAL
-if !ERROR_VAL! EQU true GOTO END-withError
-
+call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !BE_ADDON_VIEWS_REG! na !DISPLAY_NAME! na na !ARG_TEMP_FOLDER! ARG_ADDON ERROR_VAL
 if "!ARG_ADDON!" NEQ "na" (
     if "!ARG_ADDONS!" NEQ "na" (
         SET ARG_ADDONS=process,views
     ) else (
         SET ARG_ADDONS=views
     )
-    echo BEADDONVIEWSPKG#!FILE_NAME! >> !ARG_TEMP_FOLDER!/package_files.txt
 )
 
 SET "%5=!ARG_ADDONS!" & SET "%6=!ERROR_VAL!"

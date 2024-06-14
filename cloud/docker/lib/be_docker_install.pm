@@ -13,9 +13,7 @@ local $/ ;
 ##PROPERTIES-----------------------------------------------------------------------------------------------------------
 
 # SCRIPT CONSTANTS-----------------------------------------------
-my $DEBUG_ENABLE      = 0; #Set it to 1 to enable debug logs
-my $PACKAGE_PLATFORM  = "linux";
-
+my $DEBUG_ENABLE      = 1; #Set it to 1 to enable debug logs
 
 # CONSTANTS----------------------------------------------------------
 my $ROOT_FOLDER       = ".";
@@ -185,17 +183,8 @@ sub install_be {
   
   print "\nINFO:Performing cleanup...\n";
   my $beShortVersion = getShortVersion($arg_beVersion);
-  # `rm -rf as_installers be_installers *.zip`;
-  `rm -rf /opt/tibco/tools`;
-  #`ls -d /opt/tibco/be/$beShortVersion/examples/* | grep -v standard | xargs rm -rf`;
-  #`ls -d /opt/tibco/be/$beShortVersion/examples/standard/* | grep -v WebStudio | xargs rm -rf`;
   `rm -rf /opt/tibco/be/$beShortVersion/admin-plugins`;
   `rm -rf /opt/tibco/be/$beShortVersion/api`;
-  #`rm -rf /opt/tibco/be/$beShortVersion/cloud`;
-  #`rm -rf /opt/tibco/be/$beShortVersion/decisionmanager`;
-  #`rm -rf /opt/tibco/be/$beShortVersion/docker`;
-  #`rm -rf /opt/tibco/be/$beShortVersion/maven`;
-  #`rm -rf /opt/tibco/be/$beShortVersion/mm`;
   `rm -rf /opt/tibco/be/$beShortVersion/uninstaller_scripts`;
   
   print "\n\nINFO:Product Installation Complete\n\n";
@@ -203,159 +192,129 @@ sub install_be {
 
 }
 
-sub install_hawk {
+sub install_package_with_silentfile {
+  my $arg_pkgName           = shift;
+  my $arg_installerKeyWord  = shift;
+  my $arg_pkgVersion       = shift;
+  my $arg_pkgHotfix        = shift;
 
-  my $arg_hawkVersion = shift;
-  my $arg_hawkHotfix = shift;
-
-  if($arg_hawkVersion == "na"){
+  if($arg_pkgVersion == "na"){
     return 1;
   }
 
-  my $baseProdRegex="*oihr_".$arg_hawkVersion."_linux_x86_64.zip";
+  my $baseProdRegex='*'.$arg_installerKeyWord.'_'.$arg_pkgVersion.'_linux*_x86_64.zip';
   my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
   
-  my $baseHawkHfRegex="*oihr_$arg_hawkVersion*$arg_hawkHotfix*zip";
-  my (@baseHawkHf) = glob "$ROOT_FOLDER/$baseHawkHfRegex";
+  my $basePkgHfRegex='*'.$arg_installerKeyWord.'_'.$arg_pkgVersion.'*'.$arg_pkgHotfix.'*zip';
+  my (@basePkgHf) = glob "$ROOT_FOLDER/$basePkgHfRegex";
 
-  my $baseHawkHfPkgVal="na";
-  if(scalar @baseHawkHf == 1){
-    $baseHawkHfPkgVal=$baseHawkHf[0];
+  my $basePkgHfPkgVal="na";
+  if(scalar @basePkgHf == 1){
+    $basePkgHfPkgVal=$basePkgHf[0];
   }
 
-  print "\nINFO:Installing Hawk $arg_hawkVersion...\n";
-  my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_hawkVersion,$baseProd[0],0,$baseHawkHfPkgVal,"hawk_installer","hawk",0,$arg_hawkHotfix);
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $baseProd[0] ...\n";
+  my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_pkgVersion,$baseProd[0],0,$basePkgHfPkgVal,$arg_pkgName.'_installer',$arg_pkgName,0,$arg_pkgHotfix);
   if($beInstallResult == 0){
-    print "\nERROR : Error occurred while installing Hawk. Aborting\n";
+    print "\nERROR : Error occurred while installing $arg_pkgName. Aborting\n";
     exit 0;
   }
-  print "\nINFO:Installing Hawk $arg_hawkVersion...DONE\n\n";
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion...DONE\n\n";
 }
 
-sub install_tea {
+sub install_package_with_universal_installer {
+  my $arg_pkgName           = shift;
+  my $arg_installerKeyWord  = shift;
+  my $arg_pkgVersion       = shift;
+  my $arg_pkgHotfix        = shift;
 
-  my $arg_teaVersion = shift;
-  my $arg_teaHotfix = shift;
-
-  if($arg_teaVersion == "na"){
+  if($arg_pkgVersion == "na"){
     return 1;
   }
 
-  my $baseProdRegex="*tea_".$arg_teaVersion."_linux26gl23_x86_64.zip";
-  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+  my $basePkgHfRegex='*'.$arg_installerKeyWord.'_'.$arg_pkgVersion.'*'.$arg_pkgHotfix.'*zip';
+  my (@basePkgHf) = glob "$ROOT_FOLDER/$basePkgHfRegex";
+
+  my $basePkgHfPkgVal="na";
+  if(scalar @basePkgHf == 1){
+    $basePkgHfPkgVal=$basePkgHf[0];
+  }
+
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $basePkgHf[0] ...\n";
+
+  my $copyToDir=$arg_pkgName.'_installers';
   
-  my $baseTeaHfRegex="*tea_$arg_teaVersion*$arg_teaHotfix*zip";
-  my (@baseTeaHf) = glob "$ROOT_FOLDER/$baseTeaHfRegex";
-
-  my $baseTeaHfPkgVal="na";
-  if(scalar @baseTeaHf == 1){
-    $baseTeaHfPkgVal=$baseTeaHf[0];
-  }
-
-  print "\nINFO:Installing TEA $arg_teaVersion...\n";
-  my $beInstallResult = extractAndInstall($ROOT_FOLDER,$arg_teaVersion,$baseProd[0],0,$baseTeaHfPkgVal,"tea_installer","tea",0,$arg_teaHotfix);
-  if($beInstallResult == 0){
-    print "\nERROR : Error occurred while installing TEA. Aborting\n";
-    exit 0;
-  }
-  print "\nINFO:Installing TEA $arg_teaVersion...DONE\n\n";
-}
-
-sub install_ftl {
-  my $arg_ftlVersion = shift;
-  my $arg_ftlHotfix = shift;
-
-  if($arg_ftlVersion == "na"){
-    return 1;
-  }
-
-  print "\nINFO:Installing FTL $arg_ftlVersion...\n";
-  
-  my $baseProdRegex="*ftl_$arg_ftlVersion*zip";
-  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
-
-  my $result=extractPackages($ROOT_FOLDER,$arg_ftlVersion,$baseProd[0],'ftl_installers');
+  my $result=extractPackage($arg_pkgName,$ROOT_FOLDER,$basePkgHf[0],$copyToDir);
   if($result == 0){
-    print "\nERROR : Error occurred while extracting FTL installer package - $baseProd[0]. Aborting\n";
+    print "\nERROR : Error occurred while extracting $arg_pkgName installer package - $basePkgHf[0]. Aborting\n";
     return 0;
   }
 
-  my $result=installFTLORACTIVESPACESPackages($arg_ftlVersion,'ftl_installers',"TIB_ftl_");
-  if($result == 0){
-    print "\nERROR : Error occurred while installing FTL. Aborting\n";
+  # COPY Universal installer to extracted location
+  print "\nINFO:Copy Universal Installer to $copyToDir ...\n";
+  my $copyInstallerToHf=`cp /opt/tibco/tools/universal_installer/TIBCOUniversalInstaller-lnx-x86-64.bin $copyToDir`;
+  print "\nINFO:Copy Universal Installer to $copyInstallerToHf ... END\n";
+  print "$copyToDir exists!\n" if -e "$copyToDir/TIBCOUniversalInstaller-lnx-x86-64.bin" ;
+
+  $result=installHotfix('','','',$copyToDir);
+  if($result == 0)
+  {
+    print "\nERROR : Error occurred while installing $arg_pkgName installer package - $basePkgHf[0]. Aborting\n";
     return 0;
   }
-  print "\nINFO:Installing FTL $arg_ftlVersion...DONE\n\n";
 
-  if($arg_ftlHotfix ne "na"){
-    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...\n";
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion...DONE\n\n";
+}
+
+sub install_package_withtar {
+  my $arg_pkgName     = shift;
+  my $arg_pkgVersion  = shift;
+  my $arg_pkgHotfix   = shift;
+
+  if($arg_pkgVersion == "na"){
+    return 1;
+  }
+
+  my $baseProdRegex='*'.$arg_pkgName.'_'.$arg_pkgVersion.'*zip';
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion $baseProd[0] ...\n";
   
-    my $baseFtlHfRegex="*ftl_$arg_ftlVersion*$arg_ftlHotfix*zip";
+  my $result=extractPackage($arg_pkgName,$ROOT_FOLDER,$baseProd[0],$arg_pkgName.'_installers');
+  if($result == 0){
+    print "\nERROR : Error occurred while extracting $arg_pkgName installer package - $baseProd[0]. Aborting\n";
+    return 0;
+  }
+
+  my $result=installPackagesUsingTar($arg_pkgVersion,$arg_pkgName.'_installers','TIB_'.$arg_pkgName.'_');
+  if($result == 0){
+    print "\nERROR : Error occurred while installing $arg_pkgName. Aborting\n";
+    return 0;
+  }
+  print "\nINFO:Installing $arg_pkgName $arg_pkgVersion...DONE\n\n";
+
+  if($arg_pkgHotfix ne "na"){
+    print "\nINFO:Installing $arg_pkgName $arg_pkgVersion hf $arg_pkgHotfix ...\n";
+  
+    my $baseFtlHfRegex='*'.$arg_pkgName.'_'.$arg_pkgVersion.'*'.$arg_pkgHotfix.'*zip';
     my (@baseFtlHf) = glob "$ROOT_FOLDER/$baseFtlHfRegex";
 
-    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_ftlVersion,$baseFtlHf[0],'ftl_installers_hf');
+    my $hfResult=extractPackage($arg_pkgName.'-hf',$ROOT_FOLDER,$baseFtlHf[0],$arg_pkgName.'_installers_hf');
     if($hfResult == 0){
-      print "\nERROR : Error occurred while extracting FTL HF installer package - $baseFtlHf[0]. Aborting\n";
+      print "\nERROR : Error occurred while extracting $arg_pkgName hf installer package - $baseFtlHf[0]. Aborting\n";
       return 0;
     }
 
-    my $hfResult=installFTLORACTIVESPACESPackages($arg_ftlVersion,'ftl_installers_hf',"TIB_ftl_");
+    my $hfResult=installPackagesUsingTar($arg_pkgVersion,$arg_pkgName.'_installers_hf','TIB_'.$arg_pkgName.'_');
     if($hfResult == 0){
-      print "\nERROR : Error occurred while installing FTL HF. Aborting\n";
+      print "\nERROR : Error occurred while installing $arg_pkgName hf. Aborting\n";
       return 0;
     }
-    print "\nINFO:Installing FTL $arg_ftlVersion HF $arg_ftlHotfix ...DONE\n\n";
+    print "\nINFO:Installing $arg_pkgName $arg_pkgVersion hf $arg_pkgHotfix ...DONE\n\n";
   }
 
 }
 
-sub install_activespaces {
-  my $arg_activespacesVersion = shift;
-  my $arg_activespacesHotfix  = shift;
-
-  if($arg_activespacesVersion == "na"){
-    return 1;
-  }
-
-  print "\nINFO:Installing Activespaces $arg_activespacesVersion...\n";
-  
-  my $baseProdRegex="*as_$arg_activespacesVersion*zip";
-  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
-
-  my $result=extractPackages($ROOT_FOLDER,$arg_activespacesVersion,$baseProd[0],'activespaces_installers');
-  if($result == 0){
-    print "\nERROR : Error occurred while extracting activespaces installer package - $baseProd[0]. Aborting\n";
-    return 0;
-  }
-
-  my $result=installFTLORACTIVESPACESPackages($arg_activespacesVersion,'activespaces_installers',"TIB_as_");
-  if($result == 0){
-    print "\nERROR : Error occurred while installing activespaces. Aborting\n";
-    return 0;
-  }
-  print "\nINFO:Installing Activespaces $arg_activespacesVersion...DONE\n\n";
-
-  if($arg_activespacesHotfix ne "na"){
-    print "\nINFO:Installing Activespaces $arg_activespacesVersion HF $arg_activespacesHotfix ...\n";
-    
-    my $baseAs3xHfRegex="*as_$arg_activespacesVersion*$arg_activespacesHotfix*zip";
-    my (@baseAs3xHf) = glob "$ROOT_FOLDER/$baseAs3xHfRegex";
-
-    my $hfResult=extractHfPackage($ROOT_FOLDER,$arg_activespacesVersion,$baseAs3xHf[0],'activespaces_installers_hf');
-    if($hfResult == 0){
-      print "\nERROR : Error occurred while extracting activespaces HF installer package - $baseAs3xHf[0]. Aborting\n";
-      return 0;
-    }
-
-    my $hfResult=installFTLORACTIVESPACESPackages($arg_activespacesVersion,'activespaces_installers_hf',"TIB_as_");
-    if($hfResult == 0){
-      print "\nERROR : Error occurred while installing activespaces HF. Aborting\n";
-      return 0;
-    }
-    print "\nINFO:Installing Activespaces $arg_activespacesVersion HF $arg_activespacesHotfix ...DONE\n\n";
-  }
-
-}
 #----------------------------------------------------------------------------------------
 
 sub extractAndInstall{
@@ -372,7 +331,7 @@ sub extractAndInstall{
   
   #PERFORMING EXTRACTION OF PACKAGES --------------------------------------------------
   #Extract packages in the root folder
-  my $result=extractPackages($rootFolder,$version,$pkg,$pkgTargetFolder);
+  my $result=extractPackage($pkg,$rootFolder,$pkg,$pkgTargetFolder);
   if($result == 0){
     #Abort : 0 Signifies error
     return 0;
@@ -381,7 +340,7 @@ sub extractAndInstall{
   #Extract addons in the root folder
   if($addonsRef ne 0){
     my @addonPkgs=@{$addonsRef};
-    $result=extractAddons($rootFolder,$version,\@addonPkgs,$pkgTargetFolder);
+    $result=extractAddons($rootFolder,\@addonPkgs,$pkgTargetFolder);
     if($result == 0){
       #Abort : 0 Signifies error
       return 0;
@@ -418,8 +377,8 @@ sub extractAndInstall{
   
   
   if($hfPkg ne "na"){
-    $result=extractHfPackage($rootFolder,$version,$hfPkg,$pkgTargetFolderHf);
-	my $copyInstallerToHf=`cp $pkgTargetFolder/TIBCOUniversalInstaller-lnx-x86-64.bin $pkgTargetFolderHf`;
+    $result=extractPackage($hfPkg.'-hf',$rootFolder,$hfPkg,$pkgTargetFolderHf);
+	  my $copyInstallerToHf=`cp $pkgTargetFolder/TIBCOUniversalInstaller-lnx-x86-64.bin $pkgTargetFolderHf`;
   }
   
   
@@ -462,7 +421,7 @@ sub installPackages{
   return 1;
 }
 
-sub installFTLORACTIVESPACESPackages{
+sub installPackagesUsingTar{
   
   my $version = shift;
   my $pkgSourceRoot= shift;
@@ -497,23 +456,8 @@ sub installHotfix{
   return 1;
 }
 
-sub extractPackages{
-  my $rootFolder       = shift;
-  my $version          = shift;
-  my $pkg              = shift;
-  my $pkgTargetFolder  = shift;
-
-  $DEBUG_ENABLE==1?print "\nDEBUG: Extracting package='$pkg' to '$pkgTargetFolder'.\n":"";
-  my $Command_1_extract_str="cd $rootFolder;unzip -o $pkg -d $pkgTargetFolder";
-  my $Command_1_extract=`$Command_1_extract_str`;
-  $DEBUG_ENABLE==1?print "\nDEBUG:Result : $Command_1_extract\n":"";
-  $DEBUG_ENABLE==1?print "\nDEBUG:Extraction complete\n":"";
-  return 1;
-}
-
 sub extractAddons{
   my $rootFolder       = shift;
-  my $version          = shift;
   my $addonPkgsRef     = shift;
   my $pkgTargetFolder  = shift;
   
@@ -523,25 +467,20 @@ sub extractAddons{
   
   for my $addonPkg (@addonPkgs)
   {
-    $DEBUG_ENABLE==1?print "\nDEBUG:Extracting addon : $addonPkg in $pkgTargetFolder...\n":"";
-    my $Command_1_extract_str="cd $rootFolder;unzip -o $addonPkg -d $pkgTargetFolder";
-    my $Command_1_extract=`$Command_1_extract_str`;
-    $DEBUG_ENABLE==1?print "\nDEBUG:Result : $Command_1_extract\n":"";
-    $DEBUG_ENABLE==1?print "\nDEBUG:Extraction complete for addon : $addonPkg \n":"";
+    extractPackage('be-addon',$rootFolder,$addonPkg,$pkgTargetFolder);
   }
   
   return 1;
 }
 
-sub extractHfPackage{
+sub extractPackage{
+  my $info              = shift;
+  my $rootFolder        = shift;
+  my $basePkg           = shift;
+  my $pkgTargetFolder   = shift;
 
-  my $rootFolder         = shift;
-  my $version          = shift;
-  my $hfPkg          = shift;
-  my $pkgTargetFolder      = shift;
-
-  $DEBUG_ENABLE==1?print "\nDEBUG:Extracting for HF package : $hfPkg in $pkgTargetFolder...\n":"";
-  my $Command_1_extract_str="cd $rootFolder;unzip -o $hfPkg -d $pkgTargetFolder";
+  $DEBUG_ENABLE==1?print "\nDEBUG:Extracting $info : $basePkg in $pkgTargetFolder...\n":"";
+  my $Command_1_extract_str="cd $rootFolder;unzip -o $basePkg -d $pkgTargetFolder";
   my $Command_1_extract=`$Command_1_extract_str`;
   $DEBUG_ENABLE==1?print "\nDEBUG:Result : $Command_1_extract\n":"";
   $DEBUG_ENABLE==1?print "\nDEBUG:Extraction complete\n":"";
@@ -689,20 +628,6 @@ sub appendTraToken{
     print OUT $line;
   }
   close OUT;
-}
-
-sub isIn{
-  my $arg_versionList =shift;
-  my $arg_asVersion  =shift;
-  
-  my @compatibleVersions  = split(/,/, $arg_versionList);
-  
-  for my $ver (@compatibleVersions){
-  	 if($arg_asVersion eq $ver){
-	   return 1;
-	 }
-  }
-  return 0;
 }
 
 #---------------------------------------------------------------------------------

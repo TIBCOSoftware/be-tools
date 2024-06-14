@@ -63,9 +63,9 @@ ENV TIBCO_HOME=/opt/tibco \
 
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm run
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_hawk('$HAWK_VERSION','$HAWK_PRODUCT_HOTFIX')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_ftl('$FTL_VERSION','$FTL_PRODUCT_HOTFIX')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_activespaces('$ACTIVESPACES_VERSION','$ACTIVESPACES_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_silentfile('hawk','oihr','$HAWK_VERSION','$HAWK_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_withtar('ftl','$FTL_VERSION','$FTL_PRODUCT_HOTFIX')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_withtar('as','$ACTIVESPACES_VERSION','$ACTIVESPACES_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
