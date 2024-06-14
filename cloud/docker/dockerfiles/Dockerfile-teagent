@@ -24,6 +24,8 @@ ARG OPEN_JDK_FILENAME
 ARG TEA_VERSION
 ARG TEA_PRODUCT_HOTFIX
 ARG DEBIAN_FRONTEND=noninteractive
+ARG JRESPLMNT_VERSION
+ARG JRESPLMNT_PRODUCT_HOTFIX
 
 LABEL be-intermediate-image=true
 
@@ -41,10 +43,11 @@ ENV TIBCO_HOME=/opt/tibco \
 WORKDIR /home/tibco/be
 RUN chmod +x *.sh *.pm && chmod +x *.py run
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','na','$BE_PRODUCT_HOTFIX','na','na')"
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_universal_installer('JRESupplement','jresplmnt','$JRESPLMNT_VERSION','$JRESPLMNT_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_silentfile('tea','tea','$TEA_VERSION','$TEA_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
- && rm -rf tea_installer  tea_installer-hf as_installers be_installers *.zip
+ && rm -rf JRESupplement_installers tea_installer  tea_installer-hf as_installers be_installers *.zip
 
 RUN ./prepare_finalimage.sh
 
