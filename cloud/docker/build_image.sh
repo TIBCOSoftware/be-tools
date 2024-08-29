@@ -75,12 +75,12 @@ ARG_JRE_VERSION="na"
 
 BE_PRODUCT="TIB_businessevents"
 INSTALLER_PLATFORM="_linux26gl25_x86_64.zip"
-BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]\.[0-9]\.[0-9]${INSTALLER_PLATFORM}"
+BE_BASE_PKG_REGEX="${BE_PRODUCT}-${ARG_EDITION}_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}${INSTALLER_PLATFORM}"
 VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "11")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "17")
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -124,6 +124,11 @@ OPEN_JDK_VERSION="na"
 OPEN_JDK_FILENAME="na"
 
 JAVA_HOME_DIR_NAME=tibcojre64
+
+# JRE SUPPLEMENT  related args
+ARG_JRESPLMNT_VERSION="na"
+ARG_JRESPLMNT_SHORT_VERSION="na"
+ARG_JRESPLMNT_HOTFIX="na"
 
 # container image size optimize related vars
 OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
@@ -282,7 +287,7 @@ if [ "$MISSING_ARGS" != "" ]; then
 fi
 
 if [ "$ARG_SOURCE" != "na" ]; then
-    bePckgsCnt=$(find $ARG_SOURCE -name "${BE_BASE_PKG_REGEX}" -maxdepth 1 2>/dev/null | wc -l)
+    bePckgsCnt=$(find $ARG_SOURCE -maxdepth 1 | grep -E "${BE_BASE_PKG_REGEX}" 2>/dev/null | wc -l)
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
         ARG_INSTALLER_LOCATION="$ARG_SOURCE"
@@ -339,7 +344,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         BE_HOME=$( readlink -e ../.. )
     fi
 
-    BE_HOME_REGEX="(.*.)\/(be\/[0-9]\.[0-9])$"
+    BE_HOME_REGEX="(.*.)\/(be\/[0-9]{1,}\.[0-9]{1,})$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
         printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location.\n"
         exit 1
@@ -390,7 +395,7 @@ ARG_IMAGE_VERSION="$ARG_TAG"
 
 # get product details for both fromlocal and frominstallers
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
-    VERSION_REGEX=([0-9]\.[0-9]).*
+    VERSION_REGEX=([0-9]{1,}\.[0-9]{1,}).*
 
     ARG_BE_VERSION=$(find $BE_HOME/uninstaller_scripts/post-install.properties -type f | xargs grep  'beVersion=' | cut -d'=' -f2)
     ARG_BE_VERSION=$(echo $ARG_BE_VERSION | sed -e 's/\r//g')
@@ -426,7 +431,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$AS_LEG_HOME] not exist. Ignoring Activespaces(legacy) installation.\n"
                 AS_LEG_HOME="na"
             else
-                AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                AS_LEG_HOME_REGEX="(.*.)\/(as\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $AS_LEG_HOME =~ $AS_LEG_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper Activespaces(legacy) home path: [$AS_LEG_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
@@ -449,7 +454,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$FTL_HOME] not exist. Ignoring FTL installation.\n"
                 FTL_HOME="na"
             else
-                FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]\.[0-9])$"
+                FTL_HOME_REGEX="(.*.)\/(ftl\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $FTL_HOME =~ $FTL_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper FTL home path: [$FTL_HOME] in $TRA_FILE_NAME file (ex: <path-to>/ftl/<ftl-version>).\n"
                     exit 1
@@ -470,7 +475,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$AS_HOME] not exist. Ignoring Activespaces installation.\n"
                 AS_HOME="na"
             else
-                AS_HOME_REGEX="(.*.)\/(as\/[0-9]\.[0-9])$"
+                AS_HOME_REGEX="(.*.)\/(as\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $AS_HOME =~ $AS_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper Activespaces home path: [$AS_HOME] in $TRA_FILE_NAME file (ex: <path-to>/as/<as-version>).\n"
                     exit 1
@@ -493,7 +498,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: The directory: [$HAWK_HOME] not exist. Ignoring HAWK installation.\n"
                 HAWK_HOME="na"
             else
-                HAWK_HOME_REGEX="(.*.)\/(hawk\/[0-9]\.[0-9])$"
+                HAWK_HOME_REGEX="(.*.)\/(hawk\/[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $HAWK_HOME =~ $HAWK_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper HAWK home path: [$HAWK_HOME] in $TRA_FILE_NAME file (ex: <path-to>/hawk/<hawk-version>).\n"
                     exit 1
@@ -517,7 +522,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
                 printf "\nERROR: TEA HOME directory: [$TEA_HOME] not exist.\n"
                 exit 1
             else
-                TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]\.[0-9]\.[0-9])$"
+                TEA_HOME_REGEX="(.*.)\/(tea\/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,})$"
                 if ! [[ $TEA_HOME =~ $TEA_HOME_REGEX ]]; then
                     printf "\nERROR: Update proper TEA home path: [$TEA_HOME] in $TRA_FILE_NAME file (ex: <path-to>/tea/<tea-version>).\n"
                     exit 1
@@ -538,7 +543,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     TRA_JAVA_HOME=$(cat $BE_HOME/$TRA_FILE | grep ^tibco.env.TIB_JAVA_HOME | cut -d'=' -f 2 | sed -e 's/\r$//' )
 else
     #version regex for all products
-    VERSION_REGEX=([0-9]\.[0-9]).[0-9]
+    VERSION_REGEX=([0-9]{1,}\.[0-9]{1,}).[0-9]{1,}
     HF_VERSION_REGEX=([0-9]\{3\})
 
     # file list array to hold all installers
@@ -587,6 +592,9 @@ else
         fi
         ARG_PYTHON_VERSION=python2
     fi
+
+    # check jresplmnt installer
+    source ./scripts/jresplmnt.sh
 fi
 
 #Find JRE Version for given BE Version
@@ -764,6 +772,13 @@ if ! [ "$ARG_TEA_VERSION" = "na" -o -z "${ARG_TEA_VERSION// }" ]; then
     fi
 fi
 
+if ! [ "$ARG_JRESPLMNT_VERSION" = "na" -o -z "${ARG_JRESPLMNT_VERSION// }" ]; then
+    echo "INFO: JRESPLMNT VERSION            : [$ARG_JRESPLMNT_VERSION]"
+    if ! [ "$ARG_JRESPLMNT_HOTFIX" = "na" -o -z "${ARG_JRESPLMNT_HOTFIX// }" ]; then
+        echo "INFO: JRESPLMNT HF                 : [$ARG_JRESPLMNT_HOTFIX]"
+    fi
+fi
+
 if ! [ "$AS_HOME" = "na" -o -z "${AS_HOME// }" ]; then
     echo "INFO: AS HOME                      : [$AS_HOME]"
 fi
@@ -916,7 +931,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     #tar command for be package
     BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar $BE_DIR/lib $BE_DIR/bin "
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/eclipse-platform $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
+        BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
+        [ -d "$BE_DIR/eclipse-platform" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/eclipse-platform "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi
@@ -1135,25 +1151,38 @@ if [ -z "$DOCKER_BUILDKIT" ]; then
     export DOCKER_BUILDKIT=1
 fi
 
+BUILD_ARGS=$(echo  --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" )
+BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME )
+BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRESPLMNT_VERSION="$ARG_JRESPLMNT_VERSION" --build-arg JRESPLMNT_PRODUCT_HOTFIX="$ARG_JRESPLMNT_HOTFIX" )
+
+BUILD_ARGS_CDD_EAR_CONFG=$(echo --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER )
+BUILD_ARGS_AS=$(echo --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" )
+BUILD_ARGS_FTL=$(echo --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" )
+BUILD_ARGS_HAWK=$(echo --build-arg HAWK_VERSION="$ARG_HAWK_VERSION" --build-arg HAWK_SHORT_VERSION="$ARG_HAWK_SHORT_VERSION" --build-arg HAWK_PRODUCT_HOTFIX="$ARG_HAWK_HOTFIX" )
+BUILD_ARGS_ACTIVESPACES=$(echo --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" )
+
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg PYTHON_VERSION="$ARG_PYTHON_VERSION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo $BUILD_ARGS --build-arg PYTHON_VERSION="$ARG_PYTHON_VERSION" )
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER")
+        BUILD_ARGS=$(echo $BUILD_ARGS $BUILD_ARGS_CDD_EAR_CONFG )
     fi
 else
     if [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        BUILD_ARGS=$(echo --build-arg PYTHON_VERSION="$ARG_PYTHON_VERSION" --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION"  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"  --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg TEA_VERSION="$ARG_TEA_VERSION" --build-arg TEA_PRODUCT_HOTFIX="$ARG_TEA_HOTFIX" --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo $BUILD_ARGS --build-arg PYTHON_VERSION="$ARG_PYTHON_VERSION"    --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX"   --build-arg TEA_VERSION="$ARG_TEA_VERSION" --build-arg TEA_PRODUCT_HOTFIX="$ARG_TEA_HOTFIX" )
     else
-        BUILD_ARGS=$(echo --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" --build-arg FTL_VERSION="$ARG_FTL_VERSION" --build-arg FTL_SHORT_VERSION="$ARG_FTL_SHORT_VERSION" --build-arg FTL_PRODUCT_HOTFIX="$ARG_FTL_HOTFIX" --build-arg HAWK_VERSION="$ARG_HAWK_VERSION" --build-arg HAWK_SHORT_VERSION="$ARG_HAWK_SHORT_VERSION" --build-arg HAWK_PRODUCT_HOTFIX="$ARG_HAWK_HOTFIX" --build-arg ACTIVESPACES_VERSION="$ARG_AS_VERSION" --build-arg ACTIVESPACES_SHORT_VERSION="$ARG_AS_SHORT_VERSION" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="$ARG_AS_HOTFIX" --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" -t "$ARG_IMAGE_VERSION" $TEMP_FOLDER)
+        BUILD_ARGS=$(echo $BUILD_ARGS  --build-arg BE_PRODUCT_HOTFIX="$ARG_BE_HOTFIX" --build-arg BE_PRODUCT_ADDONS="$ARG_ADDONS" $BUILD_ARGS_AS $BUILD_ARGS_FTL $BUILD_ARGS_HAWK $BUILD_ARGS_ACTIVESPACES $BUILD_ARGS_CDD_EAR_CONFG )
     fi
 fi
+
+BUILD_ARGS=$(echo $BUILD_ARGS -t "$ARG_IMAGE_VERSION" "$TEMP_FOLDER" )
 
 if [ "$ARG_BUILD_TOOL" = "buildah" ]; then
     SKIP_CONTAINER_TESTS="true"
     buildah bud -f $TEMP_FOLDER/$ARG_DOCKER_FILE $BUILD_ARGS
 else
     docker build --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
+    # docker build --progress=plain --no-cache --force-rm -f $TEMP_FOLDER/${ARG_DOCKER_FILE##*/} $BUILD_ARGS
 fi
 
 if [ "$?" != 0 ]; then

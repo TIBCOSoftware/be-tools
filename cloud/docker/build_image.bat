@@ -77,6 +77,11 @@ set "S2I_DOCKER_FILE_APP=.\dockerfiles\Dockerfile-s2i"
 REM default installation type fromlocal
 set "INSTALLATION_TYPE=fromlocal"
 
+REM JRE SUPPLEMENT  related args
+set "ARG_JRESPLMNT_VERSION=na"
+set "ARG_JRESPLMNT_SHORT_VERSION=na"
+set "ARG_JRESPLMNT_HOTFIX=na"
+
 REM container image size optimize related vars
 perl -e1 2>NUL
 if "!errorlevel!" NEQ "0" (
@@ -549,7 +554,10 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         call .\scripts\ftl.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_FTL_VERSION ARG_FTL_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
 
-        if !ARG_FTL_VERSION! NEQ na set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+        if !ARG_FTL_VERSION! NEQ na (
+            echo !ARG_FTL_VERSION! | findstr /I /r "^[1-9]\.[0-9]\." > NUL && set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,3!
+            echo !ARG_FTL_VERSION! | findstr /I /r "^[1-9]\.[0-9][0-9]\." > NUL && set ARG_FTL_SHORT_VERSION=!ARG_FTL_VERSION:~0,4!
+        )
     )
 
     set /a BE6VAL=!ARG_BE_VERSION:.=!
@@ -576,6 +584,10 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         if !ERROR_VAL! EQU true GOTO END-withError
         echo OPENJDK#!OPEN_JDK_FILENAME! >> !TEMP_FOLDER!/package_files.txt
     )
+
+    REM check for jre suppliment
+    call .\scripts\jresplmnt.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_JRESPLMNT_VERSION ARG_JRESPLMNT_HOTFIX ERROR_VAL
+    if !ERROR_VAL! EQU true GOTO END-withError
 )
 
 if "!ARG_USE_OPEN_JDK!" EQU "true" (
@@ -713,6 +725,13 @@ if !ARG_TEA_VERSION! NEQ na (
     echo INFO: TEA VERSION                  : [!ARG_TEA_VERSION!]
     if !ARG_TEA_HOTFIX! NEQ na (
         echo INFO: TEA HF                       : [!ARG_TEA_HOTFIX!]
+    )
+)
+
+if !ARG_JRESPLMNT_VERSION! NEQ na (
+    echo INFO: JRESPLMNT VERSION            : [!ARG_JRESPLMNT_VERSION!]
+    if !ARG_JRESPLMNT_HOTFIX! NEQ na (
+        echo INFO: JRESPLMNT HF                 : [!ARG_JRESPLMNT_HOTFIX!]
     )
 )
 
@@ -891,7 +910,8 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     powershell -Command "Copy-Item '!TRA_JAVA_HOME!' -Destination '!TEMP_FOLDER!\tibcoHome\!JAVA_HOME_DIR_NAME!' -Recurse | out-null"
     
     if !IMAGE_NAME! EQU !RMS_IMAGE! (
-        powershell -Command "Copy-Item '!BE_HOME!\rms','!BE_HOME!\studio','!BE_HOME!\eclipse-platform','!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
+        if exist "!BE_HOME!\eclipse-platform" powershell -Command "Copy-Item '!BE_HOME!\eclipse-platform' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
+        powershell -Command "Copy-Item '!BE_HOME!\rms','!BE_HOME!\studio','!BE_HOME!\mm' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!' -Recurse | out-null" > NUL
     )
 
     powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace '!TRA_JAVA_HOME!', 'c:/tibco/!JAVA_HOME_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
@@ -911,7 +931,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         powershell -Command "rm -Recurse -Force '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\shared\*' -ErrorAction Ignore | out-null"
 
         :: Replace user TIBCO_HOME path with container's tra files
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
+        if exist "!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform" powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\eclipse-platform\eclipse\dropins\TIBCOBusinessEvents-Studio-plugins.link'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\bin\studio-tools.tra'"
         powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra') -replace @(Select-String -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra' -Pattern '^tibco.env.TIB_HOME').Line.Substring(19), 'c:/tibco' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin\be-rms.tra'"
         
@@ -1030,9 +1050,9 @@ for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!"  -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
     docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!

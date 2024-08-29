@@ -98,7 +98,8 @@ if [ "$COMPONENT" != "tea" ]; then
     cp -r /opt/tibco/be/ext /tibco_home/be    
 
     if [ "$COMPONENT" = "rms" ]; then
-        cp -r ../mm ../rms ../studio ../eclipse-platform /tibco_home/be/${BE_SHORT_VERSION}
+        [ -d "../eclipse-platform" ] && cp -r ../eclipse-platform /tibco_home/be/${BE_SHORT_VERSION}
+        cp -r ../mm ../rms ../studio /tibco_home/be/${BE_SHORT_VERSION}
         rm -f /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/be-rms.tra.1
         rm -f /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/be-rms.tra.2
         mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/examples/standard
