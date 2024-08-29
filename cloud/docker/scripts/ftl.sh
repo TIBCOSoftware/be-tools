@@ -1,6 +1,6 @@
 #supported FTL versions for be version
 FTL_VERSION_MAP_MIN=( "6.0.0:6.4.0" "6.1.0:6.5.0" "6.1.1:6.5.0" "6.1.2:6.7.1" "6.2.0:6.7.1" "6.2.1:6.7.1" "6.2.2:6.7.1" "6.3.0:6.7.1" "6.3.1:6.7.1" )
-FTL_VERSION_MAP_MAX=( "6.0.0:6.4.x" "6.1.0:6.5.0" "6.1.1:6.6.1" "6.1.2:6.7.1" "6.2.0:6.7.1" "6.2.1:6.7.1" "6.2.2:6.7.3" "6.3.0:6.10.0" "6.3.1:6.10.0" )
+FTL_VERSION_MAP_MAX=( "6.0.0:6.4.x" "6.1.0:6.5.0" "6.1.1:6.6.1" "6.1.2:6.7.1" "6.2.0:6.7.1" "6.2.1:6.7.1" "6.2.2:6.7.3" "6.3.0:6.10.0" "6.3.1:7.0.0" )
 
 ftlMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 ftlMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )

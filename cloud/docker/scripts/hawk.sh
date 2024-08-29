@@ -1,6 +1,6 @@
 #supported HAWK versions for be version
 HAWK_VERSION_MAP_MIN=( "6.2.2:7.1.0" "6.3.0:7.1.0" "6.3.1:7.1.0" )
-HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" "6.3.0:7.2.1" "6.3.1:7.2.1" )
+HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" "6.3.0:7.2.1" "6.3.1:7.2.2" )
 
 hawkMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
 hawkMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
