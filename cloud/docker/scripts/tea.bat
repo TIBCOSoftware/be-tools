@@ -21,8 +21,12 @@ SET ERROR_VAL=false
 SET TEA_REG="^.*tea.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET TEA_HF_REG=".*tea.*[0-9]\.[0-9]\.[0-9]_HF-[0-9][0-9][0-9]\.zip$"
 SET DISPLAY_NAME="TIBCO TEA"
-SET /a teaminval=!VALID_TEA_MAP_MIN[%ARG_BE_VERSION%]:.=!
-SET /a teamaxval=!VALID_TEA_MAP_MAX[%ARG_BE_VERSION%]:.=!
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_TEA_MAP_MIN[%ARG_BE_VERSION%]!
+set /a "teaminval=!converted_version!"
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_TEA_MAP_MAX[%ARG_BE_VERSION%]!
+set /a "teamaxval=!converted_version!"
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !TEA_REG! !TEA_HF_REG! !DISPLAY_NAME! !teaminval! !teamaxval! !ARG_TEMP_FOLDER! ARG_TEA_VERSION ARG_TEA_HOTFIX
 if "!ARG_TEA_HOTFIX!" EQU "true" (

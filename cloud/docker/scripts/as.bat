@@ -35,8 +35,12 @@ SET ERROR_VAL=false
 SET AS_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET AS_HF_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO Activespaces"
-SET /a asminval=!VALID_AS_MAP_MIN[%ARG_BE_VERSION%]:.=!
-SET /a asmaxval=!VALID_AS_MAP_MAX[%ARG_BE_VERSION%]:.=!
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_AS_MAP_MIN[%ARG_BE_VERSION%]!
+set /a "asminval=!converted_version!"
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_AS_MAP_MAX[%ARG_BE_VERSION%]!
+set /a "asmaxval=!converted_version!"
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !AS_REG! !AS_HF_REG! !DISPLAY_NAME! !asminval! !asmaxval! !ARG_TEMP_FOLDER! ARG_AS_VERSION ARG_AS_HOTFIX
 if "!ARG_AS_HOTFIX!" EQU "true" (

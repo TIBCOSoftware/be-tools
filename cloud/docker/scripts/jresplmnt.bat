@@ -21,10 +21,12 @@ SET JRESPLMNT_HF_REG="^.*jresplmnt.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLER
 SET DISPLAY_NAME="TIBCO JRESPLMNT"
 
 if "!VALID_JRESPLMNT_MAP_MIN[%ARG_BE_VERSION%]!" NEQ "" (
-    SET /a jresplmntminval=!VALID_JRESPLMNT_MAP_MIN[%ARG_BE_VERSION%]:.=! > NUL
+    call .\scripts\util.bat :getNumberFromVersion !VALID_JRESPLMNT_MAP_MIN[%ARG_BE_VERSION%]!
+    set /a "jresplmntminval=!converted_version!" > NUL
 )
 if "!VALID_JRESPLMNT_MAP_MAX[%ARG_BE_VERSION%]!" NEQ "" (
-    SET /a jresplmntmaxval=!VALID_JRESPLMNT_MAP_MAX[%ARG_BE_VERSION%]:.=! > NUL
+    call .\scripts\util.bat :getNumberFromVersion !VALID_JRESPLMNT_MAP_MAX[%ARG_BE_VERSION%]!
+    set /a "jresplmntmaxval=!converted_version!" > NUL
 )
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !JRESPLMNT_REG! !JRESPLMNT_HF_REG! !DISPLAY_NAME! "!jresplmntminval!" "!jresplmntmaxval!" !ARG_TEMP_FOLDER! ARG_JRESPLMNT_VERSION ARG_JRESPLMNT_HOTFIX
