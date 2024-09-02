@@ -8,7 +8,6 @@ ftlMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${FTL_VERSION_MAP_MAX[@]
 ftlMinVersion=$(getNumberFromVersion $ftlMinVersion)
 ftlMaxVersion=$(getNumberFromVersion $ftlMaxVersion)
 
-echo "ftlMinVersion:$ftlMinVersion  ftlMaxVersion:$ftlMaxVersion"
 ftlPkgRegex="TIB_ftl_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_linux_x86_64.zip"
 ftlPkgHfRegex="TIB_ftl_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}(-|_)HF-[0-9][0-9][0-9]_linux_x86_64.zip"
 

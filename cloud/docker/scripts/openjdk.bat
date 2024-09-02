@@ -24,22 +24,12 @@ for /f %%i in ('dir /b !OPEN_JDK_INSTALLER_LOCATION! ^| findstr /I "!OPEN_JDK_RE
     )
     set MULTIPLE_INSTLRS=true
     set OPEN_JDK_FILENAME=%%i
-    set FILENAME_SPLIT=!OPEN_JDK_FILENAME:-= !
-    for  /f "tokens=2" %%j in ("!FILENAME_SPLIT!") do (
-        set TEMP_VAR=%%j
-        set TEMP_VAR_SPLIT=!TEMP_VAR:_= !
-        set /a index=0
-        for %%k in (!TEMP_VAR_SPLIT!) do (
-            set /a index += 1
-            if !index! EQU 1 (
-                set TEMP_VAR2=%%k
-                set TEMP_VAR_SPLIT2=!TEMP_VAR2:+= !
-                for /f "tokens=1" %%l in ("!TEMP_VAR_SPLIT2!") do (
-                    set OPEN_JDK_VERSION=%%l
-                )
+    
+    for /f "tokens=2 delims=-" %%a in ("!OPEN_JDK_FILENAME!") do
+        for /f "tokens=2 delims=+" %%b in ("%%a") do
+            for /f "tokens=2 delims=." %%c in ("%%b") do (
+                set "OPEN_JDK_VERSION=%%c"
             )
-        )
-    )
 )
 
 if !OPEN_JDK_VERSION! EQU na (
