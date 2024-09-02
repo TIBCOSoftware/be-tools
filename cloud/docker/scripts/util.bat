@@ -184,10 +184,9 @@ GOTO :EOF
 :getNumberFromVersion
     set "version=%~1"
     for /f "tokens=1-3 delims=." %%a in ("%version%") do (
-        set "major=0%%a"
+        set "major=%%a"
         set "minor=0%%b"
         set "patch=0%%c"
-        set "major=!major:~-1!"
         set "minor=!minor:~-2!"
         set "patch=!patch:~-2!"
         set "converted_version=!major!!minor!!patch!"
