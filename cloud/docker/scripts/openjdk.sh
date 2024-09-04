@@ -8,8 +8,8 @@ if [ $openJdkPckgsCnt -gt 0 ]; then
 		exit 1;
 	else
         OPEN_JDK_FILENAME="$(basename ${openJdkPckgs[0]} )"
-		OPEN_JDK_VERSION=$(echo $OPEN_JDK_FILENAME | cut -d'-' -f 2| cut -d'+' -f 1)
-
+		OPEN_JDK_VERSION=$(echo $OPEN_JDK_FILENAME | cut -d'-' -f 2 |  cut -d'+' -f 1 | cut -d'.' -f 1 )
+        
         #add as package to file list and increment index
         FILE_LIST[$FILE_LIST_INDEX]="$ARG_INSTALLER_LOCATION/$OPEN_JDK_FILENAME"
         FILE_LIST_INDEX=`expr $FILE_LIST_INDEX + 1`

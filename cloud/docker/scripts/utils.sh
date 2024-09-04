@@ -115,7 +115,7 @@ validateInstallers()
 
             if [ "$baseMinVersion" != "na" -a "$baseMaxVersion" != "na" ]; then
                 # validate $pkgName version with be base version
-                baseVersion=$(echo "${ARG_BASE_VERSION}" | sed -e "s/${DOT}/${BLANK}/g" )
+                baseVersion=$(getNumberFromVersion $ARG_BASE_VERSION)
                 
                 if ! [[ (( $baseMinVersion -le $baseVersion )) && (( $baseVersion -le $baseMaxVersion )) ]]; then
                     printf "ERROR: BE version: [$ARG_BE_VERSION] not compatible with $pkgName version: [$ARG_BASE_VERSION].\n";
@@ -149,4 +149,27 @@ validateInstallers()
             fi
         fi
     fi
+}
+
+# Function to get version to padded format number
+getNumberFromVersion() {
+    local version="$1"
+    
+    # Save the current IFS and then change it to a dot
+    local oldIFS="$IFS"
+    IFS='.'
+    
+    # Split the version into major, minor, and patch
+    read -r major minor patch <<< "$version"
+    
+    # Reset IFS to its original value
+    IFS="$oldIFS"
+    
+    # Pad the major, minor, and patch versions with leading zeros
+    major=$(printf "%d" "$major")
+    minor=$(printf "%02d" "$minor")
+    patch=$(printf "%02d" "$patch")
+    
+    # Combine them
+    echo "${major}${minor}${patch}"
 }

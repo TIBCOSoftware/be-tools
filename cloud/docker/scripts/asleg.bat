@@ -39,8 +39,12 @@ SET ERROR_VAL=false
 SET AS_LEG_REG="^.*activespaces.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET AS_LEG_HF_REG="^.*activespaces.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO Activespaces legacy"
-SET /a aslegminval=!VALID_AS_LEG_MAP_MIN[%ARG_BE_VERSION%]:.=!
-SET /a aslegmaxval=!VALID_AS_LEG_MAP_MAX[%ARG_BE_VERSION%]:.=!
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_AS_LEG_MAP_MIN[%ARG_BE_VERSION%]!
+set /a "aslegminval=!converted_version!"
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_AS_LEG_MAP_MAX[%ARG_BE_VERSION%]!
+set /a "aslegmaxval=!converted_version!"
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !AS_LEG_REG! !AS_LEG_HF_REG! !DISPLAY_NAME! !aslegminval! !aslegmaxval! !ARG_TEMP_FOLDER! ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX
 if "!ARG_AS_LEG_HOTFIX!" EQU "true" (

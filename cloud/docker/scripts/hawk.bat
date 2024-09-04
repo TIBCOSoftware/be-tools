@@ -23,8 +23,12 @@ SET ERROR_VAL=false
 SET HAWK_REG="^.*oihr.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET HAWK_HF_REG="^.*oihr.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO HAWK"
-SET /a hawkminval=!VALID_HAWK_MAP_MIN[%ARG_BE_VERSION%]:.=!
-SET /a hawkmaxval=!VALID_HAWK_MAP_MAX[%ARG_BE_VERSION%]:.=!
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_HAWK_MAP_MIN[%ARG_BE_VERSION%]!
+set /a "hawkminval=!converted_version!"
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_HAWK_MAP_MAX[%ARG_BE_VERSION%]!
+set /a "hawkmaxval=!converted_version!"
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !HAWK_REG! !HAWK_HF_REG! !DISPLAY_NAME! !hawkminval! !hawkmaxval! !ARG_TEMP_FOLDER! ARG_HAWK_VERSION ARG_HAWK_HOTFIX
 if "!ARG_HAWK_HOTFIX!" EQU "true" (

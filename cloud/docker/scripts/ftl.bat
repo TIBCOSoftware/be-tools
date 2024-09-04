@@ -36,8 +36,12 @@ SET FTL_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*ft
 if "!ARG_INSTALLERS_PLATFORM!" EQU "win" SET FTL_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.exe$ ^.*ftl.*[0-9]\.[0-9][0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.exe$"
 SET FTL_HF_REG="^.*ftl.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*ftl.*[0-9]\.[0-9][0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO FTL"
-SET /a ftlminval=!VALID_FTL_MAP_MIN[%ARG_BE_VERSION%]:.=!
-SET /a ftlmaxval=!VALID_FTL_MAP_MAX[%ARG_BE_VERSION%]:.=!
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_FTL_MAP_MIN[%ARG_BE_VERSION%]!
+set /a "ftlminval=!converted_version!"
+
+call .\scripts\util.bat :getNumberFromVersion !VALID_FTL_MAP_MAX[%ARG_BE_VERSION%]!
+set /a "ftlmaxval=!converted_version!"
 
 call .\scripts\util.bat :CheckInstallerAndHF !ARG_INSTALLER_LOCATION! !FTL_REG! !FTL_HF_REG! !DISPLAY_NAME! !ftlminval! !ftlmaxval! !ARG_TEMP_FOLDER! ARG_FTL_VERSION ARG_FTL_HOTFIX
 if "!ARG_FTL_HOTFIX!" EQU "true" (
