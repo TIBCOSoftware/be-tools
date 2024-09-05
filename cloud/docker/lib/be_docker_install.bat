@@ -169,7 +169,8 @@ if exist "c:\working\%DEL_LIST_FILE_NAME%" (
 
 if "%COMPONENT%" EQU "rms" (
 	mkdir c:\_tibco\be\%BE_SHORT_VERSION%\bin c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard
-	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm','%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
+	if exist "%BE_HOME%\eclipse-platform" powershell -Command "Copy-Item '%BE_HOME%\eclipse-platform' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
+	powershell -Command "Copy-Item '%BE_HOME%\lib','%BE_HOME%\rms','%BE_HOME%\studio','%BE_HOME%\mm' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"
 	powershell -Command "Get-ChildItem -Path 'c:\_tibco\be\%BE_SHORT_VERSION%\lib\ext\tpcl\aws' -exclude guava*.jar | Remove-Item -force"
 	powershell -Command "Copy-Item '%BE_HOME%\examples\standard\WebStudio' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%\examples\standard' -Recurse | out-null"
 	if exist "%BE_HOME%\decisionmanager" powershell -Command "Copy-Item '%BE_HOME%\decisionmanager' -Destination 'c:\_tibco\be\%BE_SHORT_VERSION%' -Recurse | out-null"

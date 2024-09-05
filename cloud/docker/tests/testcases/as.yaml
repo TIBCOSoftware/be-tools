@@ -12,5 +12,5 @@ fileExistenceTests:
     shouldExist: true
 fileContentTests:
   - name: 'BE TRA Updated with ACTIVESPACES home'
-    path: '/opt/tibco/be/BE_SHORT_VERSION/bin/be-engine.tra'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/TRA_FILENAME'
     expectedContents: ['ACTIVESPACES_HOME=/opt/tibco/as/AS_SHORT_VERSION']

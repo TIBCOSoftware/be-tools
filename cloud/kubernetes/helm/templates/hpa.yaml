@@ -3,7 +3,7 @@
 {{- if $agent.hpa }}
 {{- if or $agent.hpa.cpuMetric.enable $agent.hpa.memoryMetric.enable }}
 {{- $ssName := (printf "%s-%s" $.Release.Name $agent.name) }}
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $ssName }}

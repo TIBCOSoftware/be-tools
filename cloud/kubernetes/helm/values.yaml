@@ -109,8 +109,8 @@ agents:
     port: 8090                            # container port to be exposed
     type: NodePort                        # service type. Supported values: NodePort, LoadBalancer or ClusterIP
   resources:                              # Update how much of memory, cpu resource a agent container needs.
-    memoryRequest: 1.2Gi                  # In case of RMS, You may need to update this to 4Gi
-    memoryLimit: 1.5Gi
+    memoryRequest: 1.2G                  # In case of RMS, You may need to update this to 4Gi
+    memoryLimit: 1.5G
     cpuRequest: 1
     cpuLimit: 2
   hpa:                                    # agents[].hpa: (Horizontal Pod Autoscaler).
@@ -154,8 +154,8 @@ agents:
   discoverableReplicas: 0
   expose:
   resources:                  
-    memoryRequest: 1.2Gi
-    memoryLimit: 1.5Gi    
+    memoryRequest: 1.2G
+    memoryLimit: 1.5G    
     cpuRequest: 1
     cpuLimit: 2
   hpa:
