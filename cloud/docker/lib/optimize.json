@@ -68,7 +68,26 @@
             "BE_HOME/lib/ext/tpcl/apache/ignite/optional/ignite-rest-http/jetty-io*jar",
             "BE_HOME/lib/ext/tpcl/apache/ignite/optional/ignite-rest-http/jetty-server*jar",
             "BE_HOME/lib/ext/tpcl/apache/ignite/optional/ignite-rest-http/jetty-util*jar",
-            "BE_HOME/lib/ext/tpcl/apache/ignite/optional/ignite-rest-http/jetty-xml*jar"
+            "BE_HOME/lib/ext/tpcl/apache/ignite/optional/ignite-rest-http/jetty-xml*jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/avatica-core.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/avatica-metrics.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/calcite-core.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/calcite-linq4j.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/commons-compiler.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/commons-dbcp2.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/httpclient5.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/httpcore5-h2.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/httpcore5.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/ignite-calcite.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/j2objc-annotations.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/janino.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/json-path.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/jts-core.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/listenablefuture.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/memory.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/reflections.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/sketches-core.jar",
+            "BE_HOME/lib/ext/tpcl/apache/ignite/ignite-indexing/uzaygezen-core.jar"
         ],
         "influx": [
             "BE_HOME/lib/cep-influxdb.jar",
@@ -240,7 +259,11 @@
             "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar",
             "BE_HOME/lib/ext/tpcl/avro.jar",
             "BE_HOME/lib/ext/tpcl/kafka-avro-serializer.jar",
-            "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar"
+            "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-protobuf-provider.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-protobuf-serializer.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-protobuf-types.jar",
+            "BE_HOME/lib/ext/tpcl/kafka-schema-serializer.jar"
         ],
         "kinesis": [
             "BE_HOME/lib/cep-kinesis-channel.jar",
@@ -303,7 +326,9 @@
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-exporter-common.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-extension-incubator.jar",
             "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-sdk-logs.jar",
-            "BE_HOME/lib/ext/tpcl/opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi.jar"
+            "BE_HOME/lib/ext/tpcl/opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-exporter-sender-okhttp.jar",
+            "BE_HOME/lib/ext/tpcl/opentelemetry/exporters/opentelemetry-api-incubator.jar"
         ],
         "pattern": [
             "BE_HOME/lib/cep-pattern.jar",
@@ -321,7 +346,9 @@
             "BE_HOME/lib/ext/tpcl/apache/pulsar/conscrypt-openjdk-uber.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/pulsar-client-admin-api.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/pulsar-client-admin.jar",
-            "BE_HOME/lib/ext/tpcl/apache/pulsar/pulsar-client-api.jar"
+            "BE_HOME/lib/ext/tpcl/apache/pulsar/pulsar-client-api.jar",
+            "BE_HOME/lib/ext/tpcl/apache/pulsar/opentelemetry-api.jar",
+            "BE_HOME/lib/ext/tpcl/apache/pulsar/opentelemetry-context.jar"
         ],
         "query": [
             "BE_HOME/lib/cep-query.jar"
