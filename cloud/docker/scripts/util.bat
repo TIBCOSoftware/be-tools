@@ -96,7 +96,8 @@ GOTO :EOF
             GOTO END-withError
         )
         
-        SET /a baseval=!BASE_INST_VERSION:.=!
+        call :getNumberFromVersion !BASE_INST_VERSION!
+        set /a "baseval=!converted_version!"
 
         if "!BASE_MIN_VALUE!" EQU "" (
                 echo ERROR: BE version: [!ARG_BE_VERSION!] not compatible with !DISPLAY_NAME! version: [!BASE_INST_VERSION!].
@@ -179,7 +180,19 @@ GOTO :EOF
     )
     SET "%~8=!BASE_INST_VERSION!" & SET "%~9=!INSTLR_HF_VERSION!"
     EXIT /B 0
-    
+
+:getNumberFromVersion
+    set "version=%~1"
+    for /f "tokens=1-3 delims=." %%a in ("%version%") do (
+        set "major=%%a"
+        set "minor=0%%b"
+        set "patch=0%%c"
+        set "minor=!minor:~-2!"
+        set "patch=!patch:~-2!"
+        set "converted_version=!major!!minor!!patch!"
+    )
+    exit /b 0
+
 :END-withError
     SET "%9=true"
     EXIT /B 1

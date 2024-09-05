@@ -2,8 +2,11 @@
 HAWK_VERSION_MAP_MIN=( "6.2.2:7.1.0" "6.3.0:7.1.0" "6.3.1:7.1.0" )
 HAWK_VERSION_MAP_MAX=( "6.2.2:7.1.0" "6.3.0:7.2.1" "6.3.1:7.2.2" )
 
-hawkMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MIN[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" )
-hawkMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MAX[@]}" ) | sed -e "s/${DOT}/${BLANK}/g" | sed -e "s/x/9/g" )
+hawkMinVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MIN[@]}" ) | sed -e "s/x/9/g" )
+hawkMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${HAWK_VERSION_MAP_MAX[@]}" ) | sed -e "s/x/9/g" )
+
+hawkMinVersion=$(getNumberFromVersion $hawkMinVersion)
+hawkMaxVersion=$(getNumberFromVersion $hawkMaxVersion)
 
 hawkPkgRegex="TIB_oihr_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_linux_x86_64.zip"
 hawkPkgHfRegex="TIB_oihr_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_HF-[0-9][0-9][0-9]_linux_x86_64.zip"
