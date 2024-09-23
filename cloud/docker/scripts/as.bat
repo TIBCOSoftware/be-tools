@@ -32,8 +32,8 @@ SET ARG_AS_VERSION=na
 SET ARG_AS_HOTFIX=na
 SET FILE_NAME=na
 SET ERROR_VAL=false
-SET AS_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
-SET AS_HF_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
+SET AS_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*as.*[0-9]\.[0-9][0-9]\.[0-9]_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
+SET AS_HF_REG="^.*as.*[0-9]\.[0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$ ^.*as.*[0-9]\.[0-9][0-9]\.[0-9]_HF-[0-9]*_!ARG_INSTALLERS_PLATFORM!.*\.zip$"
 SET DISPLAY_NAME="TIBCO Activespaces"
 
 call .\scripts\util.bat :getNumberFromVersion !VALID_AS_MAP_MIN[%ARG_BE_VERSION%]!
