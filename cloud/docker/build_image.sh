@@ -933,6 +933,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
         [ -d "$BE_DIR/eclipse-platform" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/eclipse-platform "
+        [ -e "$BE_DIR/pom.xml" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/pom.xml "
+        [ -e "$BE_DIR/examples/pom.xml" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/examples/pom.xml "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi
