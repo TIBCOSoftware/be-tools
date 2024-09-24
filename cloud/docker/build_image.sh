@@ -932,7 +932,9 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     BE_TAR_CMD=" tar -C $BE_HOME_BASE -cf $TEMP_FOLDER/be.tar $BE_DIR/lib $BE_DIR/bin "
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/rms $BE_DIR/studio $BE_DIR/examples/standard/WebStudio $BE_DIR/mm "
-        [ -d "$BE_DIR/eclipse-platform" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/eclipse-platform "
+        [ -d "$BE_HOME/eclipse-platform" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/eclipse-platform "
+        [ -e "$BE_HOME/pom.xml" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/pom.xml "
+        [ -e "$BE_HOME/examples/pom.xml" ] && BE_TAR_CMD="$BE_TAR_CMD  $BE_DIR/examples/pom.xml "
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
         BE_TAR_CMD="$BE_TAR_CMD $BE_DIR/teagent $BE_DIR/mm "
     fi

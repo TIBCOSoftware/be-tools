@@ -105,6 +105,8 @@ if [ "$COMPONENT" != "tea" ]; then
         mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/examples/standard
         cp -r ../examples/standard/WebStudio /tibco_home/be/${BE_SHORT_VERSION}/examples/standard
         mv -f /opt/tibco/be/ext/*.cdd /opt/tibco/be/ext/*.ear /opt/tibco/be/ext/*.war /opt/tibco/be/ext/*.tra /tibco_home/be/${BE_SHORT_VERSION}/rms/bin/ 2>/dev/null
+        mv -f /opt/tibco/be/${BE_SHORT_VERSION}/pom.xml /tibco_home/be/${BE_SHORT_VERSION}/ 2>/dev/null
+        mv -f /opt/tibco/be/${BE_SHORT_VERSION}/examples/pom.xml /tibco_home/be/${BE_SHORT_VERSION}/examples/ 2>/dev/null
     else
         mkdir -p /tibco_home/be/application/ear
         cp /tibco_home/be/ext/${CDD_FILE_NAME} /tibco_home/be/application/
