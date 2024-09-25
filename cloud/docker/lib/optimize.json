@@ -96,11 +96,8 @@
             "BE_HOME/lib/ext/tpcl/gson-fire*.jar",
             "BE_HOME/lib/ext/tpcl/influxdb-client-core*.jar",
             "BE_HOME/lib/ext/tpcl/influxdb-client-java*.jar",
-            "BE_HOME/lib/ext/tpcl/kotlin-stdlib*.jar",
             "BE_HOME/lib/ext/tpcl/kotlin-stdlib-common*.jar",
             "BE_HOME/lib/ext/tpcl/logging-interceptor*.jar",
-            "BE_HOME/lib/ext/tpcl/okhttp*.jar",
-            "BE_HOME/lib/ext/tpcl/okio*.jar",
             "BE_HOME/lib/ext/tpcl/reactive-streams*.jar",
             "BE_HOME/lib/ext/tpcl/retrofit*.jar",
             "BE_HOME/lib/ext/tpcl/rxjava*.jar",
@@ -408,6 +405,18 @@
         "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar": [
             "ftl",
             "kafka"
+        ],
+        "BE_HOME/lib/ext/tpcl/okhttp*.jar": [
+            "influx",
+            "opentelemetry"
+        ],
+        "BE_HOME/lib/ext/tpcl/kotlin-stdlib*.jar": [
+            "influx",
+            "opentelemetry"
+        ],
+        "BE_HOME/lib/ext/tpcl/okio*.jar": [
+            "influx",
+            "opentelemetry"
         ]
     }
 }
