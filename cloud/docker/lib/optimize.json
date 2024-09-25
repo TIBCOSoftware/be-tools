@@ -48,7 +48,6 @@
             "BE_HOME/lib/ext/tpcl/apache/httpcore-nio*.jar",
             "BE_HOME/lib/ext/tpcl/apache/httpmime-*.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-dbcp.jar",
-            "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-core.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-el.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-jasper.jar",
             "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-websocket.jar"
@@ -417,6 +416,10 @@
         "BE_HOME/lib/ext/tpcl/okio*.jar": [
             "influx",
             "opentelemetry"
+        ],
+        "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-core.jar": [
+            "pulsar",
+            "http"
         ]
     }
 }
