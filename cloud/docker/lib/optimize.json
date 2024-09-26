@@ -337,7 +337,6 @@
         "pulsar": [
             "BE_HOME/lib/cep-pulsar-channel.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/aircompressor.jar",
-            "BE_HOME/lib/ext/tpcl/apache/pulsar/bc-fips.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/bouncy-castle-bc-pkg.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/conscrypt-openjdk-uber.jar",
             "BE_HOME/lib/ext/tpcl/apache/pulsar/pulsar-client-admin-api.jar",
