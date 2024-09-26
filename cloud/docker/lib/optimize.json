@@ -421,6 +421,10 @@
             "pulsar",
             "http",
             "kafka"
+        ],
+        "BE_HOME/lib/ext/tpcl/apache/pulsar/bc-fips.jar": [
+            "pulsar",
+            "influx"
         ]
     }
 }
