@@ -419,7 +419,8 @@
         ],
         "BE_HOME/lib/ext/tpcl/apache/tomcat-embed-core.jar": [
             "pulsar",
-            "http"
+            "http",
+            "kafka"
         ]
     }
 }
