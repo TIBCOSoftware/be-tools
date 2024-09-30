@@ -396,14 +396,6 @@
             "as2",
             "ignite"
         ],
-        "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar": [
-            "ftl",
-            "kafka"
-        ],
-        "BE_HOME/lib/ext/tpcl/tibftl-kafka-avro.jar": [
-            "ftl",
-            "kafka"
-        ],
         "BE_HOME/lib/ext/tpcl/okhttp*.jar": [
             "influx",
             "opentelemetry"
