@@ -130,8 +130,28 @@ ARG_JRESPLMNT_VERSION="na"
 ARG_JRESPLMNT_SHORT_VERSION="na"
 ARG_JRESPLMNT_HOTFIX="na"
 
+#Pre check perl existance
+PERL_UTILITY_CHECK="false"
+if command -v perl >/dev/null 2>&1; then
+    PERL_UTILITY_CHECK="true"
+else
+    #install perl utility image
+    DOCKER_PKG=$( which docker )
+    if [ "$DOCKER_PKG" == "" ]; then
+        echo "ERROR: Build tool[docker] not found. Please install docker or perl utility."
+        exit 1
+    fi
+    PERL_UTILITY_IMAGE_NAME="be-perl-utility-$TEMP_FOLDER:v1"
+    docker run --name=mytempcontainer-$TEMP_FOLDER -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > /dev/null 2>&1 && docker commit mytempcontainer-$TEMP_FOLDER $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1 && docker rm mytempcontainer-$TEMP_FOLDER > /dev/null 2>&1
+fi
+
 # container image size optimize related vars
-OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+if [ "$PERL_UTILITY_CHECK" = "true" ]; then
+    OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+else
+    OPTIMIZATION_SUPPORTED_MODULES=$(docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+fi
+
 INCLUDE_MODULES="na"
 
 USAGE="\nUsage: $FILE_NAME"
@@ -691,7 +711,26 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
             CDDFILE="na"
             EARFILE="na"
         fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+
+        if [ "$PERL_UTILITY_CHECK" = "true" ]; then
+            INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+        else
+            if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+                if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+                    docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1
+                fi
+                echo "ERROR: Build tool[buildah] not supported. Please install docker or perl utility."
+                exit 1
+            fi
+            
+            if [ "$CDDFILE" != "na" -a "$EARFILE" != "na" ]; then
+                mkdir -p $TEMP_FOLDER
+                cp $CDDFILE $EARFILE $TEMP_FOLDER
+                CDDFILE="$TEMP_FOLDER/$CDD_FILE_NAME"
+                EARFILE="$TEMP_FOLDER/$EAR_FILE_NAME"
+            fi
+            INCLUDE_MODULES=$(docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+        fi
     fi
 fi
 
@@ -917,7 +956,11 @@ if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
 fi
 
 if ! [ "$INCLUDE_MODULES" = "na" ]; then
-    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    if [ "$PERL_UTILITY_CHECK" = "true" ]; then
+        perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    else
+        docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    fi
 fi
 
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
@@ -1200,6 +1243,14 @@ else
 fi
 
 if [ "$ARG_BUILD_TOOL" = "docker" ]; then
+
+    if [ "$PERL_UTILITY_CHECK" = "false" ]; then
+        if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+            echo "INFO: Deleting temporary utility image."
+            docker rmi -f $PERL_UTILITY_IMAGE_NAME
+        fi
+    fi
+
     if [ "$DOCKER_BUILDKIT" = 1 ]; then
         docker builder prune -f
     fi
