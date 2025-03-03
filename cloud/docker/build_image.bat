@@ -82,11 +82,20 @@ set "ARG_JRESPLMNT_VERSION=na"
 set "ARG_JRESPLMNT_SHORT_VERSION=na"
 set "ARG_JRESPLMNT_HOTFIX=na"
 
+set "IS_PERL_INSTALLED=false"
+
 REM container image size optimize related vars
 perl -e1 2>NUL
 if "!errorlevel!" NEQ "0" (
-    set "OPTIMIZATION_SUPPORTED_MODULES=na"
+    set "PERL_UTILITY_IMAGE_NAME=be-perl-utility-!TEMP_FOLDER!:v1"
+    docker run --name=mytempcontainer-!TEMP_FOLDER! -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > NUL
+    docker commit mytempcontainer-!TEMP_FOLDER! !PERL_UTILITY_IMAGE_NAME! > NUL
+    docker rm mytempcontainer-!TEMP_FOLDER! > NUL
+    for /f "tokens=*" %%i in ('docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; print be_container_optimize::get_all_modules_print_friendly()"') do (
+        set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
+    )
 ) else (
+    set "IS_PERL_INSTALLED=true"
     for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win printfriendly ') do (
         set "OPTIMIZATION_SUPPORTED_MODULES=%%i"
     )
@@ -223,9 +232,11 @@ for %%x in (%*) do (
         )
     ) else if !currentArg! EQU -h (
         call :printUsage
+        call :DEL-dockerimage
         EXIT /B 1
     ) else if !currentArg! EQU --help (
         call :printUsage
+        call :DEL-dockerimage
         EXIT /B 1
     )
 )
@@ -624,15 +635,18 @@ if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
 
 REM checking optimize flag and its validation
 if "!ARG_OPTIMIZE!" NEQ "na" (
-    perl -e1 2>NUL
-    if "!errorlevel!" NEQ "0" (
-        echo ERROR: Please install perl utility.
-        GOTO END-withError
+    if "!ARG_INSTALLER_PLATFORM!" EQU "win" (
+        perl -e1 2>NUL
+        if "!errorlevel!" NEQ "0" (
+            echo ERROR: Please install perl utility.
+            GOTO END-withError
+        )
+        if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
+            echo ERROR: Please install 7-Zip in path C:\\Program Files\\7-Zip\\7z.exe
+            GOTO END-withError
+        )
     )
-    if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
-        echo ERROR: Please install 7-Zip in path C:\\Program Files\\7-Zip\\7z.exe
-        GOTO END-withError
-    )
+    
     if "!BE620P!" EQU "true" (
         if exist "!ARG_APP_LOCATION!\!CDD_FILE_NAME!" (
             if exist "!ARG_APP_LOCATION!\!EAR_FILE_NAME!" (
@@ -646,8 +660,24 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
             set "CDD_FILE_PATH=na"
             set "EAR_FILE_PATH=na"
         )
-        for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
-            set "INCLUDE_MODULES=%%i"
+
+        if "!IS_PERL_INSTALLED!" EQU "true" (
+            for /f "delims=" %%i in ('perl .\lib\be_container_optimize.pl win readcdd "!ARG_OPTIMIZE!" "!CDD_FILE_PATH!" "!EAR_FILE_PATH!" ') do (
+                set "INCLUDE_MODULES=%%i"
+            )
+        ) else (
+            if "!CDD_FILE_PATH!" NEQ "na" (
+                mkdir !TEMP_FOLDER!  > NUL 2>&1
+                xcopy /Q /C /R /Y /E !CDD_FILE_PATH! !TEMP_FOLDER! > NUL 2>&1
+                xcopy /Q /C /R /Y /E !EAR_FILE_PATH! !TEMP_FOLDER! > NUL 2>&1
+                for /f "delims=" %%i in ('docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; print be_container_optimize::parse_optimize_modules(\"!ARG_OPTIMIZE!\",\"!TEMP_FOLDER!/!CDD_FILE_NAME!\",\"!TEMP_FOLDER!/!EAR_FILE_NAME!\")"') do (
+                    set "INCLUDE_MODULES=%%i"
+                )
+            ) else (
+                for /f "delims=" %%i in ('docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; print be_container_optimize::parse_optimize_modules(\"!ARG_OPTIMIZE!\",\"na\",\"na\")"') do (
+                    set "INCLUDE_MODULES=%%i"
+                )
+            )
         )
         if "!INCLUDE_MODULES!" EQU "na" (
             set "INCLUDE_MODULES="
@@ -872,7 +902,11 @@ if "!INCLUDE_MODULES!" NEQ "na" (
             set "INCLUDE_MODULES=!INCLUDE_MODULES!,java"
         )
     )
-    perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!\\lib\\!DEL_LIST_FILE_NAME!" "!INCLUDE_MODULES!"
+    if "!IS_PERL_INSTALLED!" EQU "true" (
+        perl .\lib\be_container_optimize.pl win createfile "!TEMP_FOLDER!\\lib\\!DEL_LIST_FILE_NAME!" "!INCLUDE_MODULES!"
+    ) else (
+        docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; be_container_optimize::prepare_delete_list(\"!INCLUDE_MODULES!\",\"!TEMP_FOLDER!/lib/!DEL_LIST_FILE_NAME!\")"
+    )
 )
 
 if !INSTALLATION_TYPE! EQU frominstallers (
@@ -1077,6 +1111,10 @@ if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
     set "ARG_IMAGE_VERSION=!FINAL_BUILDER_IMAGE_TAG!"
 )
 
+if "!IS_PERL_INSTALLED!" EQU "false" (
+    call :DEL-dockerimage
+)
+
 echo INFO: Deleting folder: [!TEMP_FOLDER!].
 rmdir /S /Q "!TEMP_FOLDER!"
 
@@ -1164,3 +1202,9 @@ EXIT /B 0
     )
 
     EXIT /B 0
+
+:DEL-dockerimage
+    docker image inspect %PERL_UTILITY_IMAGE_NAME% >NUL 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        docker rmi -f %PERL_UTILITY_IMAGE_NAME% >NUL 2>&1
+    )
