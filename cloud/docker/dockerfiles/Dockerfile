@@ -20,7 +20,7 @@ ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 
-FROM docker.io/library/ubuntu:20.04 as intermediate
+FROM docker.io/library/ubuntu:20.04 AS intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
