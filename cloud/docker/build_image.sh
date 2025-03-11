@@ -138,7 +138,7 @@ else
     #install perl utility image
     DOCKER_PKG=$( which docker )
     if [ "$DOCKER_PKG" == "" ]; then
-        echo "ERROR: Build tool[docker] not found. Please install docker or perl utility."
+        echo "ERROR: Build tool[docker] not found. Please install docker or perl."
         exit 1
     fi
     PERL_UTILITY_IMAGE_NAME="be-perl-utility-$TEMP_FOLDER:v1"
@@ -722,7 +722,7 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
                 if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
                     docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1
                 fi
-                echo "ERROR: perl utility not found. Please install perl utility."
+                echo "ERROR: perl not found. Please install perl."
                 exit 1
             fi
             
@@ -1251,7 +1251,6 @@ if [ "$ARG_BUILD_TOOL" = "docker" ]; then
 
     if [ "$IS_PERL_INSTALLED" = "false" ]; then
         if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-            echo "INFO: Deleting temporary utility image."
             docker rmi -f $PERL_UTILITY_IMAGE_NAME
         fi
     fi

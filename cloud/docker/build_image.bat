@@ -642,7 +642,7 @@ if "!ARG_OPTIMIZE!" NEQ "na" (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
         perl -e1 2>NUL
         if "!errorlevel!" NEQ "0" (
-            echo ERROR: Please install perl utility.
+            echo ERROR: Please install perl.
             GOTO END-withError
         )
         if not exist "C:\\Program Files\\7-Zip\\7z.exe" (
