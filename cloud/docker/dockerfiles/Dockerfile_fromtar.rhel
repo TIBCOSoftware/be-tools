@@ -7,7 +7,7 @@
 #
 ARG BASE_IMAGE=<RHEL_IMAGE>
 
-FROM ${BASE_IMAGE} as intermediate
+FROM ${BASE_IMAGE} AS intermediate
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION

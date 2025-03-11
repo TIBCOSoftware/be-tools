@@ -7,7 +7,7 @@
 #
 ARG PYTHON_VERSION
 
-FROM docker.io/library/ubuntu:20.04 as intermediate
+FROM docker.io/library/ubuntu:20.04 AS intermediate
 MAINTAINER Tibco Software Inc tsi@tibco.com
 
 ARG BE_PRODUCT_VERSION

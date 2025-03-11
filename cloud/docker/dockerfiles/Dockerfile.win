@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents Dockerfile For Windows Platform - Dockerfile.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 as intermediate
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 

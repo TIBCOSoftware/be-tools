@@ -130,8 +130,28 @@ ARG_JRESPLMNT_VERSION="na"
 ARG_JRESPLMNT_SHORT_VERSION="na"
 ARG_JRESPLMNT_HOTFIX="na"
 
+#Pre check perl existance
+IS_PERL_INSTALLED="false"
+if command -v perl >/dev/null 2>&1; then
+    IS_PERL_INSTALLED="true"
+else
+    #install perl utility image
+    DOCKER_PKG=$( which docker )
+    if [ "$DOCKER_PKG" == "" ]; then
+        echo "ERROR: Build tool[docker] not found. Please install docker or perl."
+        exit 1
+    fi
+    PERL_UTILITY_IMAGE_NAME="be-perl-utility-$TEMP_FOLDER:v1"
+    docker run --name=mytempcontainer-$TEMP_FOLDER -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > /dev/null 2>&1 && docker commit mytempcontainer-$TEMP_FOLDER $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1 && docker rm mytempcontainer-$TEMP_FOLDER > /dev/null 2>&1
+fi
+
 # container image size optimize related vars
-OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+if [ "$IS_PERL_INSTALLED" = "true" ]; then
+    OPTIMIZATION_SUPPORTED_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+else
+    OPTIMIZATION_SUPPORTED_MODULES=$(docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::get_all_modules_print_friendly()')
+fi
+
 INCLUDE_MODULES="na"
 
 USAGE="\nUsage: $FILE_NAME"
@@ -256,6 +276,9 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
+            if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+                docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1;
+            fi
             exit 0
             ;;
         *)
@@ -691,7 +714,28 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
             CDDFILE="na"
             EARFILE="na"
         fi
-        INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+
+        if [ "$IS_PERL_INSTALLED" = "true" ]; then
+            INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+        else
+            if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+                if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+                    docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1
+                fi
+                echo "ERROR: perl not found. Please install perl."
+                exit 1
+            fi
+            
+            if [ "$CDDFILE" != "na" -a "$EARFILE" != "na" ]; then
+                mkdir -p $TEMP_FOLDER
+                cp $CDDFILE $EARFILE $TEMP_FOLDER
+                CDDFILE="$TEMP_FOLDER/$CDD_FILE_NAME"
+                EARFILE="$TEMP_FOLDER/$EAR_FILE_NAME"
+                INCLUDE_MODULES=$(docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
+            else
+                INCLUDE_MODULES=$(docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","na","na")')
+            fi
+        fi
     fi
 fi
 
@@ -917,7 +961,11 @@ if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
 fi
 
 if ! [ "$INCLUDE_MODULES" = "na" ]; then
-    perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    if [ "$IS_PERL_INSTALLED" = "true" ]; then
+        perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    else
+        docker run --rm -v .:/app -w /app $PERL_UTILITY_IMAGE_NAME perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'$INCLUDE_MODULES'","'$TEMP_FOLDER/lib/$DEL_LIST_FILE_NAME'")'
+    fi
 fi
 
 if [ "$INSTALLATION_TYPE" != "fromlocal" ]; then
@@ -1200,6 +1248,13 @@ else
 fi
 
 if [ "$ARG_BUILD_TOOL" = "docker" ]; then
+
+    if [ "$IS_PERL_INSTALLED" = "false" ]; then
+        if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+            docker rmi -f $PERL_UTILITY_IMAGE_NAME
+        fi
+    fi
+
     if [ "$DOCKER_BUILDKIT" = 1 ]; then
         docker builder prune -f
     fi

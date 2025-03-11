@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 as intermediate
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
