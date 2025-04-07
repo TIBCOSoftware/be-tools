@@ -2,6 +2,11 @@
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
+if "%CDD_FILE%" == "c:/tibco/be/application/base.txt" (
+    echo ERROR: This is base image. No CDD/EAR available.
+    exit /b 1
+)
+
 if "%AS_DISCOVER_URL%" == "self" (
   set AS_DISCOVER_URL=tcp://%COMPUTERNAME%:50000
 )
