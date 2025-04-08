@@ -63,6 +63,12 @@ check_cdd_and_ear() {
     CDD_FILE_NAME="$(basename -- ${cdds[0]})"
 }
 
+deleteTempImage() {
+    if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+        docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1;
+    fi
+}
+
 source ./scripts/utils.sh
 FILE_NAME=$(basename $0)
 
@@ -300,9 +306,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
-            if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-                docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1;
-            fi
+            deleteTempImage
             exit 0
             ;;
         *)
@@ -382,6 +386,9 @@ if [ "$ARG_SOURCE" != "na" ]; then
     # check here if source is docker image
     if [ "$ARG_BUILD_TOOL" = "docker" -a "$IMAGE_NAME" = "$APP_IMAGE" ]; then
         if docker image inspect "$ARG_SOURCE" > /dev/null 2>&1 || docker pull "$ARG_SOURCE" > /dev/null 2>&1; then
+            if [ "$IS_PERL_INSTALLED" = "false" ]; then
+                deleteTempImage
+            fi
             source ./scripts/appfrombaseimage.sh
         fi
     elif [ "$ARG_BUILD_TOOL" = "buildah" -a "$IMAGE_NAME" = "$APP_IMAGE" ]; then
@@ -735,9 +742,7 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
             INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
         else
             if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
-                if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-                    docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1
-                fi
+                deleteTempImage
                 echo "ERROR: perl not found. Please install perl."
                 exit 1
             fi
@@ -1273,9 +1278,7 @@ fi
 if [ "$ARG_BUILD_TOOL" = "docker" ]; then
 
     if [ "$IS_PERL_INSTALLED" = "false" ]; then
-        if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-            docker rmi -f $PERL_UTILITY_IMAGE_NAME
-        fi
+        deleteTempImage
     fi
 
     if [ "$DOCKER_BUILDKIT" = 1 ]; then
