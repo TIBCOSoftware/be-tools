@@ -6,7 +6,7 @@ Validations include:
 2. Integration Tests: Whether `kubernetes` configurations are deployed into a cluster as expected.
 
 ## Setup
-* Install [Go](https://golang.org/doc/install) `v1.19` or above
+* Install [Go](https://golang.org/doc/install) `v1.20` or above
 * Install and set up [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Install [helm](https://helm.sh/docs/intro/install/) version `3.10.2`
 
