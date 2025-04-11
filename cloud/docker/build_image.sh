@@ -191,7 +191,8 @@ USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & o
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
 USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\",\"$BUILDER_IMAGE\" or \"$BASE_IMAGE\" "
-USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
+USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")\n"
+USAGE+="                           Note: Alternatively, use the base docker image name, applicable only if --image-type is $APP_IMAGE"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
 USAGE+="\n\n [--config-provider]  :    Name of Config Provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"cmcncf\"|\"custom\") [optional]\n"
@@ -446,7 +447,11 @@ fi
 # check be-home/installer location
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
-        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home, installers location or valid base image.\n"
+        if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+            printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home, installers location or valid base image.\n"
+        else
+            printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home or installers location.\n"
+        fi
         exit 1
     elif [ "$BE_HOME" = "na" ]; then
         BE_HOME=$( readlink -e ../.. )

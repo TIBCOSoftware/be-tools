@@ -279,7 +279,11 @@ if !ARG_SOURCE! NEQ na (
         )
     )
     if NOT EXIST !ARG_SOURCE! (
-        echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home, installers location or valid base image.
+        if /i "!IMAGE_NAME!"=="!APP_IMAGE!" (
+            echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home, installers location or valid base image.
+        ) else (
+            echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home or installers location.
+        )
         GOTO END-withError
     )
     for /f %%i in ('dir /b !ARG_SOURCE! ^| findstr /I "!BE_REGX!"') do (
@@ -1162,6 +1166,7 @@ EXIT /B 0
     echo                                  Ignored  if --image-type is "!TEA_IMAGE!","!BUILDER_IMAGE!" or "!BASE_IMAGE!"
     echo.
     echo  [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
+    echo                            Note: Alternatively, use the base docker image name, applicable only if --image-type is "!APP_IMAGE!".
     echo.
     echo  [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]
     echo.
