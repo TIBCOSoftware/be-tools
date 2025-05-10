@@ -40,6 +40,35 @@ isCLIKey()
     echo $KEY
 }
 
+check_cdd_and_ear() {
+    #Check App location have ear or not
+    ears=$(find $ARG_APP_LOCATION -name "*.ear")
+    earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
+
+    if [ $earCnt -ne 1 ]; then
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file.\n"
+        exit 1
+    fi
+
+    #Check App location have cdd or not
+    cdds=$(find $ARG_APP_LOCATION -name "*.cdd")
+    cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
+
+    if [ $cddCnt -ne 1 ]; then
+        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file.\n"
+        exit 1
+    fi
+
+    EAR_FILE_NAME="$(basename -- ${ears[0]})"
+    CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+}
+
+deleteTempImage() {
+    if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
+        docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1;
+    fi
+}
+
 source ./scripts/utils.sh
 FILE_NAME=$(basename $0)
 
@@ -49,6 +78,7 @@ APP_IMAGE="app"
 RMS_IMAGE="rms"
 TEA_IMAGE="teagent"
 BUILDER_IMAGE="s2ibuilder"
+BASE_IMAGE="base"
 
 TEMP_FOLDER="tmp_$RANDOM"
 
@@ -156,18 +186,19 @@ INCLUDE_MODULES="na"
 
 USAGE="\nUsage: $FILE_NAME"
 
-USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\") [required]"
+USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\"|\"$BASE_IMAGE\") [required]"
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
-USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\" or \"$BUILDER_IMAGE\""
-USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")"
+USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\",\"$BUILDER_IMAGE\" or \"$BASE_IMAGE\" "
+USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")\n"
+USAGE+="                           Note: Alternatively, use the base docker image name, applicable only if --image-type is $APP_IMAGE"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
 USAGE+="\n\n [-d/--docker-file]   :    Dockerfile to be used for generating image [optional]"
 USAGE+="\n\n [--config-provider]  :    Name of Config Provider to be included in the image (\"gvconsul\"|\"gvhttp\"|\"gvcyberark\"|\"cmcncf\"|\"custom\") [optional]\n"
 USAGE+="                           To add more than one Config Provider use comma separated format ex: \"gvconsul,gvhttp\" \n"
 USAGE+="                           Note: This flag is ignored if --image-type is \"$TEA_IMAGE\""
-USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
+USAGE+="\n\n [--disable-tests]    :    Disables docker unit tests on created image (applicable only for \"$APP_IMAGE\" , \"$BASE_IMAGE\" and \"$BUILDER_IMAGE\" image types) [optional]"
 USAGE+="\n\n [-b/--build-tool]    :    Build tool to be used (\"docker\"|\"buildah\") (default is \"docker\")\n"
 USAGE+="                           Note: $BUILDER_IMAGE image and docker unit tests not supported for buildah."
 USAGE+="\n\n [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]\n"
@@ -276,9 +307,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             shift # past the key and to the value
             printf "$USAGE"
-            if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-                docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1;
-            fi
+            deleteTempImage
             exit 0
             ;;
         *)
@@ -309,7 +338,65 @@ if [ "$MISSING_ARGS" != "" ]; then
     exit 1;
 fi
 
+IMAGE_NAME="$ARG_TYPE"
+
+CHECK_FOR_BUILDAH="false"
+if [ "$ARG_BUILD_TOOL" == "" ]; then
+    ARG_BUILD_TOOL="docker"
+    CHECK_FOR_BUILDAH="true"
+fi
+
+if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
+    echo "ERROR: Build tool[$ARG_BUILD_TOOL] is not valid. Only docker/buildah tool is supported."
+    exit 1
+fi
+
+OS_NAME=$(uname -s)
+if [ "$OS_NAME" = "Darwin" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
+    echo "ERROR: Build tool [$ARG_BUILD_TOOL] is not supported on MAC."
+    exit 1
+fi
+
+# check for build tool existance
+if [ "$ARG_BUILD_TOOL" == "docker" ]; then
+    DOCKER_PKG=$( which docker )
+    if [ "$DOCKER_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[docker] not found. Please install docker."
+            exit 1
+        else
+            echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
+            ARG_BUILD_TOOL="buildah"
+        fi
+    fi
+fi
+
+if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
+    BUILDAH_PKG=$( which buildah )
+    if [ "$BUILDAH_PKG" == "" ]; then
+        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
+            echo "ERROR: Build tool[buildah] not found. Please install buildah."
+        else
+            echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
+        fi
+        exit 1
+    fi
+fi
+
 if [ "$ARG_SOURCE" != "na" ]; then
+    # check here if source is docker image
+    if [ "$ARG_BUILD_TOOL" = "docker" -a "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        if docker image inspect "$ARG_SOURCE" > /dev/null 2>&1 || docker pull "$ARG_SOURCE" > /dev/null 2>&1; then
+            if [ "$IS_PERL_INSTALLED" = "false" ]; then
+                deleteTempImage
+            fi
+            source ./scripts/appfrombaseimage.sh
+        fi
+    elif [ "$ARG_BUILD_TOOL" = "buildah" -a "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        if buildah inspect "$ARG_SOURCE" > /dev/null 2>&1 || buildah pull "$ARG_SOURCE" > /dev/null 2>&1; then
+            source ./scripts/appfrombaseimage.sh
+        fi
+    fi
     bePckgsCnt=$(find $ARG_SOURCE -maxdepth 1 | grep -E "${BE_BASE_PKG_REGEX}" 2>/dev/null | wc -l)
     if [ $bePckgsCnt -gt 0 ]; then
         INSTALLATION_TYPE="frominstallers"
@@ -322,7 +409,6 @@ else
 fi
 
 # assign image type and docker files to variables
-IMAGE_NAME="$ARG_TYPE"
 DOCKER_FILE=""
 case "$ARG_TYPE" in
     "$APP_IMAGE")
@@ -334,11 +420,11 @@ case "$ARG_TYPE" in
     "$TEA_IMAGE")
         DOCKER_FILE="./dockerfiles/Dockerfile-teagent"
         ;;
-    "$BUILDER_IMAGE")
+    "$BUILDER_IMAGE" | "$BASE_IMAGE")
         DOCKER_FILE="./dockerfiles/Dockerfile"
         ;;
     *)
-        printf "\nERROR: Invalid image type provided. Image type must be either of $APP_IMAGE,$RMS_IMAGE,$TEA_IMAGE or $BUILDER_IMAGE.\n"
+        printf "\nERROR: Invalid image type provided. Image type must be either of $APP_IMAGE,$RMS_IMAGE,$TEA_IMAGE,$BUILDER_IMAGE or $BASE_IMAGE.\n"
         exit 1
         ;;
 esac
@@ -361,7 +447,11 @@ fi
 # check be-home/installer location
 if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [[ (( "$BE_HOME" != "na" )) &&  !(( -d "$BE_HOME" )) ]]; then
-        printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home or installers location.\n"
+        if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+            printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home, installers location or valid base image.\n"
+        else
+            printf "\nERROR: The directory: [$BE_HOME] is not a valid directory. Provide proper path to be-home or installers location.\n"
+        fi
         exit 1
     elif [ "$BE_HOME" = "na" ]; then
         BE_HOME=$( readlink -e ../.. )
@@ -378,7 +468,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 fi
 
 # check app location
-if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" -o "$IMAGE_NAME" = "$BASE_IMAGE" ]; then
     # incase of builder/teagent image app location is not needed
     ARG_APP_LOCATION="na"
 elif [ "$IMAGE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
@@ -391,26 +481,7 @@ fi
 
 # count cdd and ear in app location if exist
 if [ "$ARG_APP_LOCATION" != "na" ]; then
-    #Check App location have ear or not
-    ears=$(find $ARG_APP_LOCATION -name "*.ear")
-    earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
-
-    if [ $earCnt -ne 1 ]; then
-        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file.\n"
-        exit 1
-    fi
-
-    #Check App location have cdd or not
-    cdds=$(find $ARG_APP_LOCATION -name "*.cdd")
-    cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
-
-    if [ $cddCnt -ne 1 ]; then
-        printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file.\n"
-        exit 1
-    fi
-
-    EAR_FILE_NAME="$(basename -- ${ears[0]})"
-    CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+    check_cdd_and_ear
 fi
 
 # assign image tag to ARG_IMAGE_VERSION variable
@@ -634,52 +705,9 @@ if [ "$ARG_IMAGE_VERSION" = "na" -o -z "${ARG_IMAGE_VERSION// }" ]; then
     ARG_IMAGE_VERSION="$IMAGE_NAME:$ARG_BE_VERSION";
 fi
 
-OS_NAME=$(uname -s)
 if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
-    echo "ERROR: Building image using local installtion is not supported on MAC."
+    echo "ERROR: Building image using local installation is not supported on MAC."
     exit 1
-fi
-
-CHECK_FOR_BUILDAH="false"
-if [ "$ARG_BUILD_TOOL" == "" ]; then
-    ARG_BUILD_TOOL="docker"
-    CHECK_FOR_BUILDAH="true"
-fi
-
-if ! [[ "$ARG_BUILD_TOOL" = "docker" || "$ARG_BUILD_TOOL" = "buildah" ]]; then
-    echo "ERROR: Build tool[$ARG_BUILD_TOOL] is not valid. Only docker/buildah tool is supported."
-    exit 1
-fi
-
-if [ "$OS_NAME" = "Darwin" -a "$ARG_BUILD_TOOL" = "buildah" ]; then
-    echo "ERROR: Build tool [$ARG_BUILD_TOOL] is not supported on MAC."
-    exit 1
-fi
-
-# check for build tool existance
-if [ "$ARG_BUILD_TOOL" == "docker" ]; then
-    DOCKER_PKG=$( which docker )
-    if [ "$DOCKER_PKG" == "" ]; then
-        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
-            echo "ERROR: Build tool[docker] not found. Please install docker."
-            exit 1
-        else
-            echo "WARN: Build tool[docker] not found. Checking for the build tool[buildah]."
-            ARG_BUILD_TOOL="buildah"
-        fi
-    fi
-fi
-
-if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
-    BUILDAH_PKG=$( which buildah )
-    if [ "$BUILDAH_PKG" == "" ]; then
-        if [ "$CHECK_FOR_BUILDAH" == "false" ]; then
-            echo "ERROR: Build tool[buildah] not found. Please install buildah."
-        else
-            echo "ERROR: Build tool[buildah] also not found. Please install either docker or buildah."
-        fi
-        exit 1
-    fi
 fi
 
 if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
@@ -695,7 +723,7 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
 fi
 
 if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http"
+    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http,query"
     if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
         ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
     else
@@ -719,9 +747,7 @@ if ! [ "$ARG_OPTIMIZE" = "na" ]; then
             INCLUDE_MODULES=$(perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("'$ARG_OPTIMIZE'","'$CDDFILE'","'$EARFILE'")')
         else
             if [ "$ARG_BUILD_TOOL" == "buildah" ]; then
-                if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-                    docker rmi -f $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1
-                fi
+                deleteTempImage
                 echo "ERROR: perl not found. Please install perl."
                 exit 1
             fi
@@ -955,6 +981,13 @@ if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]; then
     cp -a "./s2i" $TEMP_FOLDER/
 fi
 
+# configurations for base image
+if [ "$IMAGE_NAME" = "$BASE_IMAGE" ]; then
+	touch $TEMP_FOLDER/app/base.txt
+    EAR_FILE_NAME="base.txt"
+	CDD_FILE_NAME="base.txt"
+fi
+
 DEL_LIST_FILE_NAME="deletelist.txt"
 if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
     DEL_LIST_FILE_NAME="deletelistrms.txt"
@@ -1126,7 +1159,7 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
         find $TEMP_FOLDER/$RANDM_FOLDER/$BE_DIR/lib/ext/tpcl/aws -type f -not -name 'guava*' -delete 2>/dev/null
     fi
 
-    if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]]; then
+    if [[ "$ARG_APP_LOCATION" != "na" && "$IMAGE_NAME" = "$APP_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BUILDER_IMAGE" ]] || [[ "$IMAGE_NAME" = "$BASE_IMAGE" ]] ; then
         mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/{application/ear,ext}
         cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext
         cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/application
@@ -1250,9 +1283,7 @@ fi
 if [ "$ARG_BUILD_TOOL" = "docker" ]; then
 
     if [ "$IS_PERL_INSTALLED" = "false" ]; then
-        if docker image inspect $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1; then
-            docker rmi -f $PERL_UTILITY_IMAGE_NAME
-        fi
+        deleteTempImage
     fi
 
     if [ "$DOCKER_BUILDKIT" = 1 ]; then

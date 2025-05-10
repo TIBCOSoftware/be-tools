@@ -5,6 +5,11 @@
 # This file is subject to the license terms contained in the license file that is distributed with this file.
 #
 
+if [ "$CDD_FILE" = "/opt/tibco/be/application/base.txt" ]; then
+	echo "ERROR: This is base image. No CDD/EAR available."
+  	exit
+fi
+
 VERSION=%%%BE_VERSION%%%
 
 VERSION_REGEX=([0-9]\.[0-9]).*
