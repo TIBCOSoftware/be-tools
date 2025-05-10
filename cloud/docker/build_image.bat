@@ -643,7 +643,7 @@ if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
 if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
-    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http"
+    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http,query"
     if "!ARG_OPTIMIZE!" NEQ "na" (
         if "!ARG_OPTIMIZE!" NEQ "" (
             set "ARG_OPTIMIZE=!ARG_OPTIMIZE!,!DEFAULT_RMS_MODULES!"

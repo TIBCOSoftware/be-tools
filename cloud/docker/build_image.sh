@@ -723,7 +723,7 @@ if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
 fi
 
 if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http"
+    DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http,query"
     if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
         ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
     else
