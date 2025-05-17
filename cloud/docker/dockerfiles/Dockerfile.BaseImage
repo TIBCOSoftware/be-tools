@@ -1,0 +1,12 @@
+ARG BASE_IMAGE=base:latest
+FROM $BASE_IMAGE
+
+ARG CDD_FILE_NAME
+ARG EAR_FILE_NAME
+
+COPY app/$CDD_FILE_NAME /opt/tibco/be/application
+COPY app/$EAR_FILE_NAME /opt/tibco/be/application/ear
+COPY app/* /opt/tibco/be/ext/
+
+ENV CDD_FILE=/opt/tibco/be/application/$CDD_FILE_NAME
+ENV EAR_FILE=/opt/tibco/be/application/ear/$EAR_FILE_NAME

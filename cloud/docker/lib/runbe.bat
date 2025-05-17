@@ -2,6 +2,11 @@
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
 
+if "%CDD_FILE%" == "c:/tibco/be/application/base.txt" (
+    echo ERROR: This is base image. No CDD/EAR available.
+    exit /b 1
+)
+
 if "%AS_DISCOVER_URL%" == "self" (
   set AS_DISCOVER_URL=tcp://%COMPUTERNAME%:50000
 )
@@ -46,7 +51,7 @@ echo java.property.be.engine.cluster.as.storePath=c:\\mnt\\tibco\\be\\data-store
 echo java.property.be.engine.jmx.connector.port=%%jmx_port%%>> %TRA_FILE%
 
 if %DOCKER_HOST% EQU localhost (
-	for /f "tokens=2 delims=[]" %%f in ('ping -4 -n 1  %ComputerName% ^|find /i "pinging"') do echo echo java.property.java.rmi.server.hostname=%%f>> %TRA_FILE%
+	for /f "tokens=2 delims=[]" %%f in ('ping -4 -n 1  %ComputerName% ^|find /i "pinging"') do echo java.property.java.rmi.server.hostname=%%f>> %TRA_FILE%
 )
 if %DOCKER_HOST% NEQ localhost (
 	echo java.property.java.rmi.server.hostname=%DOCKER_HOST%>> %TRA_FILE%
@@ -71,7 +76,7 @@ type %BE_PROPS_FILE%
 for /r %%f in (*.props) do type %%f>>%BE_PROPS_FILE%
 
 ::Append env variables starting with tra. to the current tra file and others to beprops file. && Update the Cdd File to replace all BE_HOME values with container's BE_HOME; correct the dataStore path.
-powershell -Command "Get-ChildItem Env: | Foreach-Object { if ($_.Name -like 'tra.*') {Add-Content -Path %TRA_FILE% -NoNewLine -Value $_.Name.Substring(1),=,$_.Value,`r`n} else {Add-Content -Path %BE_PROPS_FILE% -NoNewLine -Value tibco.clientVar.,$_.Name,=,$_.Value,`r`n} } ; $prop = @(Select-String -Path '%CDD_FILE%' -Pattern '<property.*value=\""[a-z]\:' | Select-Object -First 1).Line.trim(); $start = $prop.LastIndexOf('value=\""')+7; $end=$prop.LastIndexOf('/be/'); $oldPath = $prop.Substring($start, $end-$start+7); (Get-Content '%CDD_FILE%') -replace $oldPath, '%BE_HOME%' | Set-Content '%CDD_FILE%' ; (Get-Content '%CDD_FILE%') -replace '<data-store-path.*>', '<data-store-path>c:\mnt\tibco\be\data-store</data-store-path>' | Set-Content '%CDD_FILE%' ; (Get-Content '%CDD_FILE%') -replace '<property name=\"data-store-path\" value=.*>', '<property name=\"data-store-path\" value=\"c:\mnt\tibco\be\data-store\"/>' | Set-Content '%CDD_FILE%'; "
+powershell -Command "Get-ChildItem Env: | Foreach-Object { if ($_.Name -like 'tra.*') {Add-Content -Path %TRA_FILE% -NoNewLine -Value $_.Name.Substring(4),=,$_.Value,`r`n} else {Add-Content -Path %BE_PROPS_FILE% -NoNewLine -Value tibco.clientVar.,$_.Name,=,$_.Value,`r`n} } ; $prop = @(Select-String -Path '%CDD_FILE%' -Pattern '<property.*value=\""[a-z]\:' | Select-Object -First 1).Line.trim(); $start = $prop.LastIndexOf('value=\""')+7; $end=$prop.LastIndexOf('/be/'); $oldPath = $prop.Substring($start, $end-$start+7); (Get-Content '%CDD_FILE%') -replace $oldPath, '%BE_HOME%' | Set-Content '%CDD_FILE%' ; (Get-Content '%CDD_FILE%') -replace '<data-store-path.*>', '<data-store-path>c:\mnt\tibco\be\data-store</data-store-path>' | Set-Content '%CDD_FILE%' ; (Get-Content '%CDD_FILE%') -replace '<property name=\"data-store-path\" value=.*>', '<property name=\"data-store-path\" value=\"c:\mnt\tibco\be\data-store\"/>' | Set-Content '%CDD_FILE%'; "
 
 cd /d c:\\tibco\be\application
 echo Starting Application..

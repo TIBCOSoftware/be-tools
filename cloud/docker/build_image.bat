@@ -10,6 +10,7 @@ set "APP_IMAGE=app"
 set "RMS_IMAGE=rms"
 set "TEA_IMAGE=teagent"
 set "BUILDER_IMAGE=s2ibuilder"
+set "BASE_IMAGE=base"
 
 set "TEMP_FOLDER=tmp_%RANDOM%"
 
@@ -265,10 +266,24 @@ if !MISSING_ARGS! NEQ - (
     GOTO END-withError
 )
 
+set "IMAGE_NAME=!ARG_TYPE!"
 if !ARG_SOURCE! NEQ na (
     REM Checking if the specified directory exists or not
+    if /i "!IMAGE_NAME!"=="!APP_IMAGE!" (
+        REM Check if the Docker image exists locally or try pulling it
+        docker image inspect "!ARG_SOURCE!" >nul 2>&1 || docker pull "!ARG_SOURCE!" >nul 2>&1        
+        if "!ERRORLEVEL!"=="0" (
+            call :DEL-dockerimage
+            call scripts\appfrombaseimage.bat !ARG_APP_LOCATION! !ARG_TAG! !ARG_SOURCE! !ARG_DOCKER_FILE! !TEMP_FOLDER!
+            EXIT /B "!ERRORLEVEL!"
+        )
+    )
     if NOT EXIST !ARG_SOURCE! (
-        echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home or installers location.
+        if /i "!IMAGE_NAME!"=="!APP_IMAGE!" (
+            echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home, installers location or valid base image.
+        ) else (
+            echo ERROR: The directory: [!ARG_SOURCE!] is not a valid directory. Provide proper path to be-home or installers location.
+        )
         GOTO END-withError
     )
     for /f %%i in ('dir /b !ARG_SOURCE! ^| findstr /I "!BE_REGX!"') do (
@@ -286,7 +301,6 @@ if !ARG_SOURCE! NEQ na (
 )
 
 REM assign image name and check dockerfile specific to it
-set "IMAGE_NAME=!ARG_TYPE!"
 set "DOCKER_FILE="
 if !ARG_TYPE! EQU !APP_IMAGE! (
     set "DOCKER_FILE=.\dockerfiles\Dockerfile"
@@ -296,8 +310,10 @@ if !ARG_TYPE! EQU !APP_IMAGE! (
     set "DOCKER_FILE=.\dockerfiles\Dockerfile-teagent"
 ) else if !ARG_TYPE! EQU !BUILDER_IMAGE! (
     set "DOCKER_FILE=.\dockerfiles\Dockerfile"
+) else if !ARG_TYPE! EQU !BASE_IMAGE! (
+    set "DOCKER_FILE=.\dockerfiles\Dockerfile"
 ) else (
-    echo ERROR: Invalid image type provided. Image type must be either of !APP_IMAGE!,!RMS_IMAGE!,!TEA_IMAGE! or !BUILDER_IMAGE!.
+    echo ERROR: Invalid image type provided. Image type must be either of !APP_IMAGE!,!RMS_IMAGE!,!TEA_IMAGE!,!BUILDER_IMAGE! or !BASE_IMAGE!.
     GOTO END-withError
 )
 
@@ -367,6 +383,8 @@ if NOT EXIST !ARG_DOCKER_FILE! (
 
 REM check app location
 if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
+    set "ARG_APP_LOCATION=na"
+) else if !IMAGE_NAME! EQU !BASE_IMAGE! (
     set "ARG_APP_LOCATION=na"
 ) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
     set "ARG_APP_LOCATION=na"
@@ -625,7 +643,7 @@ if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
 if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
-    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http"
+    set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http,query"
     if "!ARG_OPTIMIZE!" NEQ "na" (
         if "!ARG_OPTIMIZE!" NEQ "" (
             set "ARG_OPTIMIZE=!ARG_OPTIMIZE!,!DEFAULT_RMS_MODULES!"
@@ -893,6 +911,12 @@ if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
     cd ../..
 )
 
+if !IMAGE_NAME! EQU !BASE_IMAGE! (
+    echo. > "%TEMP_FOLDER%\app\base.txt"
+    set EAR_FILE_NAME=base.txt
+    set CDD_FILE_NAME=base.txt
+)
+
 set DEL_LIST_FILE_NAME=deletelist.txt
 if !IMAGE_NAME! EQU !RMS_IMAGE! (
     set DEL_LIST_FILE_NAME=deletelistrms.txt
@@ -1134,14 +1158,15 @@ EXIT /B 0
     echo.
     echo Usage: build_image.bat
     echo.
-    echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!") [required]
+    echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!"^|"!BASE_IMAGE!") [required]
     echo.
     echo  [-a/--app-location]  :    Path to BE application where cdd, ear ^& optional supporting jars are present
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
     echo                                  Optional if --image-type is "!RMS_IMAGE!"
-    echo                                  Ignored  if --image-type is "!TEA_IMAGE!" or "!BUILDER_IMAGE!"
+    echo                                  Ignored  if --image-type is "!TEA_IMAGE!","!BUILDER_IMAGE!" or "!BASE_IMAGE!"
     echo.
     echo  [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
+    echo                            Note: Alternatively, use the base docker image name, applicable only if --image-type is "!APP_IMAGE!".
     echo.
     echo  [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]
     echo.

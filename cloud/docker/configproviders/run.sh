@@ -23,7 +23,7 @@ do
 
     echo "INFO: Reading GV values from [${CP}]"
 
-    ./configproviders/${CP}/run.sh
+    /home/tibco/be/configproviders/${CP}/run.sh
 
     BE_PROPS_FILE=/home/tibco/be/beprops_all.props
     JSON_FILE=/home/tibco/be/configproviders/output.json

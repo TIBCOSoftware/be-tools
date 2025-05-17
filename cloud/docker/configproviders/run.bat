@@ -32,19 +32,20 @@ for %%v in (!CPS!) do (
       if EXIST !JSON_FILE! (
         del !JSON_FILE!
       )
-      call .\configproviders\!CP!\run.bat
+      call c:\tibco\be\configproviders\!CP!\run.bat
       if %ERRORLEVEL% NEQ 0 (
         exit /b 1
       )
 
       if EXIST !JSON_FILE! (
         type !JSON_FILE! | jq -r "keys | @csv"  > jsonkeys
-        if "!jsonkeys!" EQU "" (
+        set /p tempkeys=<jsonkeys
+        if "!tempkeys!" EQU "" (
           echo WARN: 0[zero] GV values fetched from the Config Provider[!CP!]
           echo.
           exit /b 0
         )
-        set /p tempkeys=<jsonkeys
+        
         set keys=!tempkeys:"=!
         
         echo # >>!BE_PROPS_FILE!
