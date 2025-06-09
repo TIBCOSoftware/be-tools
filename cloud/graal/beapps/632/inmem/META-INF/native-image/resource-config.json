@@ -1,0 +1,226 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\QMETA-INF/log4j-provider.properties\\E"
+  }, {
+    "pattern":"\\QMETA-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/io.opentelemetry.context.ContextStorageProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.net.spi.InetAddressResolverProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.util.spi.ResourceBundleControlProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.datatype.DatatypeFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.parsers.DocumentBuilderFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.stream.XMLInputFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.transform.TransformerFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.commons.logging.LogFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.logging.log4j.core.util.ContextDataProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.logging.log4j.core.util.WatchEventService\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.logging.log4j.spi.Provider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.logging.log4j.util.PropertySource\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.xml.sax.XMLReader\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.xml.sax.driver\\E"
+  }, {
+    "pattern":"\\Qaddon.xml\\E"
+  }, {
+    "pattern":"\\Qaddon_registry.xsd\\E"
+  }, {
+    "pattern":"\\Qcep-modules.xml\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseAdvisoryEvent.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseConcept.concept.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseContainedConcept.concept.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseEntity.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseEvent.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseException.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseSOAPEvent.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseSimpleEvent.event.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/_BaseTimeEvent.time.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/model/envelope.xsd\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/be/util/config/cdd/impl/cdd.ecore\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/addon/providers.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/container/messages.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/container/messages_en.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/designtime/model/properties/model.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/designtime/model/properties/model_en.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/runtime/messages.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/cep/runtime/messages_en.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/rsc/ValidationErrors.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/rsc/ValidationErrors_en.properties\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/rsc/XMLSchema.xsd-CR.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/rsc/XMLSchema.xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/rsc/xml.xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/schema/parse/ae/rsc/AE2XSD.xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/tns/plugins/TnsFlavors.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/tns/plugins/TnsNamespaceKinds.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/http_binding_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/mime_binding_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEncoding_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEncoding_1_2_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEncoding_CR_1_2_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEnvelope_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEnvelope_1_2_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soapEnvelope_CR_1_2_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/soap_binding_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/ws-i_profiles_basic_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcom/tibco/xml/ws/wsdl/helpers/schemas/wsdl_1_1_xsd.property\\E"
+  }, {
+    "pattern":"\\Qcommons-logging.properties\\E"
+  }, {
+    "pattern":"\\Qcomponent.types\\E"
+  }, {
+    "pattern":"\\Qfunctions-help.properties\\E"
+  }, {
+    "pattern":"\\Qfunctions.catalog\\E"
+  }, {
+    "pattern":"\\Qjndi.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.jsn\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.json\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.xml\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.yaml\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test.yml\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.jsn\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.json\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.xml\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.yaml\\E"
+  }, {
+    "pattern":"\\Qlog4j2-test2626b418.yml\\E"
+  }, {
+    "pattern":"\\Qlog4j2.StatusLogger.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2.component.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2.jsn\\E"
+  }, {
+    "pattern":"\\Qlog4j2.json\\E"
+  }, {
+    "pattern":"\\Qlog4j2.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2.system.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j2.xml\\E"
+  }, {
+    "pattern":"\\Qlog4j2.yaml\\E"
+  }, {
+    "pattern":"\\Qlog4j2.yml\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.jsn\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.json\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.properties\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.xml\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.yaml\\E"
+  }, {
+    "pattern":"\\Qlog4j22626b418.yml\\E"
+  }, {
+    "pattern":"\\Qmetrics-store.xml\\E"
+  }, {
+    "pattern":"\\Qpage.templates\\E"
+  }, {
+    "pattern":"\\Qrule.template\\E"
+  }, {
+    "pattern":"\\Qrulefunction.template\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt74b/nfkc.nrm\\E"
+  }, {
+    "pattern":"java.base:\\Qsun/net/www/content-types.properties\\E"
+  }, {
+    "pattern":"java.xml:\\Qjdk/xml/internal/jdkcatalog/JDKCatalog.xml\\E"
+  }]},
+  "bundles":[{
+    "name":"com.tibco.cep.container.messages",
+    "locales":["en"]
+  }, {
+    "name":"com.tibco.cep.designtime.model.properties.model",
+    "locales":["en"]
+  }, {
+    "name":"com.tibco.cep.runtime.messages",
+    "locales":["en"]
+  }, {
+    "name":"com.tibco.xml.rsc.ValidationErrors",
+    "locales":["en"]
+  }, {
+    "name":"sun.text.resources.cldr.FormatData",
+    "locales":["en", "en-US", "und"]
+  }, {
+    "name":"sun.util.resources.cldr.CalendarData",
+    "locales":["und"]
+  }, {
+    "name":"sun.util.resources.cldr.TimeZoneNames",
+    "locales":["en", "en-US", "und"]
+  }]
+}
