@@ -284,7 +284,7 @@ sub get_modules_from_ear{
         my $Command_1_extract=`mkdir -p /tmp/$randnum/channelsdata ; unzip -o $arg_ear_file -d /tmp/$randnum ; unzip -o "/tmp/$randnum/Shared Archive.sar" -d /tmp/$randnum/channelsdata `;
         if (-e "/tmp/$randnum/channelsdata/Channels")
         {
-            @channelfiles=`ls /tmp/$randnum/channelsdata/Channels/*.channel`;
+            @channelfiles=`find /tmp/$randnum/channelsdata/Channels -type f -name '*.channel'`;
         }
     }
 
