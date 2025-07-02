@@ -69,6 +69,10 @@
   }, {
     "pattern":"\\Qcom/flexnet/lm/SharedResources_en.properties\\E"
   }, {
+    "pattern":"\\Qcom/flexnet/lm/signer/SignerResources.properties\\E"
+  }, {
+    "pattern":"\\Qcom/flexnet/lm/signer/SignerResources_en.properties\\E"
+  }, {
     "pattern":"\\Qcom/mbeans-descriptors.xml\\E"
   }, {
     "pattern":"\\Qcom/tibco/be/model/_BaseAdvisoryEvent.event.property\\E"
@@ -195,10 +199,6 @@
   }, {
     "pattern":"\\Qjava/util/mbeans-descriptors.xml\\E"
   }, {
-    "pattern":"\\Qjavax/servlet/LocalStrings.properties\\E"
-  }, {
-    "pattern":"\\Qjavax/servlet/LocalStrings_en.properties\\E"
-  }, {
     "pattern":"\\Qjavax/servlet/http/LocalStrings.properties\\E"
   }, {
     "pattern":"\\Qjavax/servlet/http/LocalStrings_en.properties\\E"
@@ -262,8 +262,6 @@
     "pattern":"\\Qmetrics-store.xml\\E"
   }, {
     "pattern":"\\Qorg/apache/catalina/authenticator/LocalStrings.properties\\E"
-  }, {
-    "pattern":"\\Qorg/apache/catalina/authenticator/jaspic/LocalStrings.properties\\E"
   }, {
     "pattern":"\\Qorg/apache/catalina/authenticator/mbeans-descriptors.xml\\E"
   }, {
@@ -338,8 +336,6 @@
     "pattern":"\\Qorg/apache/coyote/LocalStrings.properties\\E"
   }, {
     "pattern":"\\Qorg/apache/coyote/http11/LocalStrings.properties\\E"
-  }, {
-    "pattern":"\\Qorg/apache/coyote/http11/filters/LocalStrings.properties\\E"
   }, {
     "pattern":"\\Qorg/apache/coyote/http11/mbeans-descriptors.xml\\E"
   }, {
@@ -428,6 +424,9 @@
     "name":"com.flexnet.lm.SharedResources",
     "locales":["en"]
   }, {
+    "name":"com.flexnet.lm.signer.SignerResources",
+    "locales":["en"]
+  }, {
     "name":"com.tibco.cep.container.messages",
     "locales":["en"]
   }, {
@@ -449,16 +448,10 @@
     "name":"com.tibco.xml.rsc.ValidationErrors",
     "locales":["en"]
   }, {
-    "name":"javax.servlet.LocalStrings",
-    "locales":["en"]
-  }, {
     "name":"javax.servlet.http.LocalStrings",
     "locales":["en"]
   }, {
     "name":"org.apache.catalina.authenticator.LocalStrings",
-    "locales":["und"]
-  }, {
-    "name":"org.apache.catalina.authenticator.jaspic.LocalStrings",
     "locales":["und"]
   }, {
     "name":"org.apache.catalina.connector.LocalStrings",
@@ -504,9 +497,6 @@
     "locales":["und"]
   }, {
     "name":"org.apache.coyote.http11.LocalStrings",
-    "locales":["und"]
-  }, {
-    "name":"org.apache.coyote.http11.filters.LocalStrings",
     "locales":["und"]
   }, {
     "name":"org.apache.tomcat.util.LocalStrings",

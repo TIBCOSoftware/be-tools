@@ -1121,14 +1121,9 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.tibco.cep.driver.http.server.impl.servlet.GenericChannelServlet",
-  "queryAllDeclaredMethods":true
-},
-{
   "name":"com.tibco.cep.driver.http.server.impl.servlet.HTTPChannelAsyncServlet",
   "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"com.tibco.cep.driver.http.server.impl.servlet.PageFlowServlet",
@@ -2339,14 +2334,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.apache.coyote.RequestGroupInfo",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.apache.coyote.RequestInfo",
-  "queryAllPublicMethods":true
-},
-{
   "name":"org.apache.coyote.Response",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -3189,10 +3176,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setIs","parameterTypes":["boolean"] }, {"name":"setReadable","parameterTypes":["boolean"] }, {"name":"setWriteable","parameterTypes":["boolean"] }]
 },
 {
-  "name":"org.apache.tomcat.util.modeler.BaseModelMBean",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"org.apache.tomcat.util.modeler.FeatureInfo",
   "methods":[{"name":"setDescription","parameterTypes":["java.lang.String"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setType","parameterTypes":["java.lang.String"] }]
 },
@@ -3422,6 +3405,10 @@
 },
 {
   "name":"sun.security.ssl.SSLContextImpl$DefaultSSLContext",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.SSLContextImpl$TLSContext",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {

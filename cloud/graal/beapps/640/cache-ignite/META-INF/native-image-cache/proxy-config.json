@@ -1,0 +1,8 @@
+[
+  {
+    "interfaces":["java.security.PrivilegedAction"]
+  },
+  {
+    "interfaces":["org.apache.ignite.internal.binary.BinaryRawWriterEx"]
+  }
+]
