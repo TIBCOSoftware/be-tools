@@ -1,6 +1,6 @@
 module github.com/TIBCOSoftware/be-tools/cloud/kubernetes/tests
 
-go 1.20
+go 1.23.0
 
 require (
 	github.com/gruntwork-io/terratest v0.41.11
@@ -48,7 +48,7 @@ require (
 	github.com/urfave/cli v1.22.2 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/net v0.36.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
