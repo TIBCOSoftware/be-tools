@@ -187,7 +187,7 @@ INCLUDE_MODULES="na"
 USAGE="\nUsage: $FILE_NAME"
 
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\"|\"$BASE_IMAGE\") [required]"
-USAGE+="\n\n [-a/--app-location]  :    Path to BE application where cdd, ear & optional supporting jars are present\n"
+USAGE+="\n\n [-a/--app-location]  :    Path to application directory with cdd, ear, and optional JARs/license file\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
 USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
 USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\",\"$BUILDER_IMAGE\" or \"$BASE_IMAGE\" "
