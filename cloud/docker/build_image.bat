@@ -1160,7 +1160,7 @@ EXIT /B 0
     echo.
     echo  [-i/--image-type]    :    Type of the image to build ("!APP_IMAGE!"^|"!RMS_IMAGE!"^|"!TEA_IMAGE!"^|"!BUILDER_IMAGE!"^|"!BASE_IMAGE!") [required]
     echo.
-    echo  [-a/--app-location]  :    Path to application directory with cdd, ear ^& optional JARs/license file
+    echo  [-a/--app-location]  :    Path to BE application directory with cdd, ear ^& optional JARs/license file
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
     echo                                  Optional if --image-type is "!RMS_IMAGE!"
     echo                                  Ignored  if --image-type is "!TEA_IMAGE!","!BUILDER_IMAGE!" or "!BASE_IMAGE!"
