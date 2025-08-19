@@ -69,7 +69,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_withtar(
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_universal_installer('JRESupplement','jresplmnt','$JRESPLMNT_VERSION','$JRESPLMNT_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '${JRE_VERSION}')" \
  && rm -rf JRESupplement_installers as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf hawk_installer hawk_installer-hf activespaces_installers activespaces_installers_hf *.zip
 RUN ./prepare_finalimage.sh
 

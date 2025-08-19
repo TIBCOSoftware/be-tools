@@ -539,13 +539,26 @@ sub replaceRunbeVersionToken{
 }
 
 sub generateAnnotationIndexes{
+  my $BE_HOME     = shift;
+  my $JRE_VERSION = shift;
 
-  my $BE_HOME       = shift;
-  my $JRE_HOME      = shift;
-  my $CLASSPATH     = "$BE_HOME/lib/*:$BE_HOME/lib/ext/tpcl/*:$BE_HOME/lib/ext/tpcl/aws/*:$BE_HOME/lib/ext/tpcl/gwt/*:$BE_HOME/lib/ext/tpcl/apache/*:$BE_HOME/lib/ext/tpcl/emf/*:$BE_HOME/lib/ext/tpcl/tomsawyer/*:$BE_HOME/lib/ext/tibco/*:$BE_HOME/lib/eclipse/plugins/*:$BE_HOME/rms/lib/*:$BE_HOME/mm/lib/*:$BE_HOME/studio/eclipse/plugins/*:$BE_HOME/lib/eclipse/plugins/*:$BE_HOME/rms/lib/*:$BE_HOME/lib/ext/tpcl/opentelemetry/exporters/*:$BE_HOME/lib/ext/tpcl/opentelemetry/*:$JRE_HOME/lib/*:$JRE_HOME/lib/ext/*:$JRE_HOME/lib/security/policy/unlimited/*";
-  
-  print "\nBuilding annotation indexes..";
-  `$JRE_HOME/bin/java -Dtibco.env.BE_HOME=$BE_HOME -cp $CLASSPATH com.tibco.be.model.functions.impl.JavaAnnotationLookup`;
+  my $JRE_HOME = "/opt/tibco/tibcojre64/$JRE_VERSION"; 
+
+  my ($version) = $BE_HOME =~ m|/(\d+\.\d+)$|;
+
+  my $version_num = $version;
+  $version_num =~ s/\.//g;  # "6.4" -> "64"
+  my $min_version_num = 64;
+
+  if ($version_num >= $min_version_num) {
+      print "Version is >= 6.4: $version\n";
+      $JRE_HOME = "/opt/tibco/openjdk/$JRE_VERSION";
+    }
+    
+    my $CLASSPATH     = "$BE_HOME/lib/*:$BE_HOME/lib/ext/tpcl/*:$BE_HOME/lib/ext/tpcl/aws/*:$BE_HOME/lib/ext/tpcl/gwt/*:$BE_HOME/lib/ext/tpcl/apache/*:$BE_HOME/lib/ext/tpcl/emf/*:$BE_HOME/lib/ext/tpcl/tomsawyer/*:$BE_HOME/lib/ext/tibco/*:$BE_HOME/lib/eclipse/plugins/*:$BE_HOME/rms/lib/*:$BE_HOME/mm/lib/*:$BE_HOME/studio/eclipse/plugins/*:$BE_HOME/lib/eclipse/plugins/*:$BE_HOME/rms/lib/*:$BE_HOME/lib/ext/tpcl/opentelemetry/exporters/*:$BE_HOME/lib/ext/tpcl/opentelemetry/*:$JRE_HOME/lib/*:$JRE_HOME/lib/ext/*:$JRE_HOME/lib/security/policy/unlimited/*";
+    
+    print "\nBuilding annotation indexes..";
+    `$JRE_HOME/bin/java -Dtibco.env.BE_HOME=$BE_HOME -cp $CLASSPATH com.tibco.be.model.functions.impl.JavaAnnotationLookup`;
 }
 
 sub allowJmxPortForRms{

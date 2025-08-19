@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
     mkdir -p /opt/tibco/openjdk/$JRE_VERSION
     tar xvf /home/tibco/be/$OPEN_JDK_FILENAME --directory /opt/tibco 1>/dev/null
@@ -80,7 +82,11 @@ rm -rf /home/tibco/be/be_installers-hf
 if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
     cp -r /opt/tibco/openjdk /tibco_home
 else
-    cp -r /opt/tibco/tibcojre64 /tibco_home
+    if [[ "${BE_SHORT_VERSION//.}" -ge 64 ]]; then
+        cp -r /opt/tibco/openjdk /tibco_home
+    else
+        cp -r /opt/tibco/tibcojre64 /tibco_home
+    fi
 fi
 
 if [ "$COMPONENT" != "tea" ]; then
