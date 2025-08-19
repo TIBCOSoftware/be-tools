@@ -1307,6 +1307,9 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
     if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
         if [ $ARG_ENABLE_TESTS = "true" ]; then
             cd ./tests
+            if [[ "${ARG_BE_SHORT_VERSION//.}" -ge 64 ]] && [[ "$JAVA_HOME_DIR_NAME" == "tibcojre64" ]]; then
+                JAVA_HOME_DIR_NAME=openjdk
+            fi
             source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION -ts $ARG_TEA_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
         fi
     fi
