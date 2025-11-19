@@ -11,10 +11,10 @@ By using the scripts provided in the grall folder, you can generate native binar
 
 ## Script
 
-TIBCO BusinessEvents provides the build_graal_image script for building native image for your TIBCO BusinessEvents application.
+TIBCO BusinessEvents provides the build_graal_image script for building native executable binary for your TIBCO BusinessEvents application.
 
 ```sh
-Usage: ./be_graal.sh -s <BE_HOME> -a <APP_HOME> -e <EXTERNAL_JARS_PATH> [-g] [-c] [-r]
+Usage: ./build_graal_image.sh -s <BE_HOME> -a <APP_HOME> -e <EXTERNAL_JARS_PATH> [-g] [-c] [-r]
   -g                       Generate metadata
   -c                       Create native image
   -r                       Run the native image
@@ -25,6 +25,39 @@ Usage: ./be_graal.sh -s <BE_HOME> -a <APP_HOME> -e <EXTERNAL_JARS_PATH> [-g] [-c
   -h                       Display this usage message
 ```
 
-### Generate native iamge
+### Generate meta-data
 
-### Run your application
+Run this step for all processing units and thoroughly test the application to cover all functionality so that the scripts can generate sufficient Graal metadata.
+
+```sh
+./build_graal_image.sh -g \
+-s <BE_HOME> \
+-a <APP_HOME> \
+-u <PU> \
+-e <EXTERNAL_JARS_PATH>
+
+```
+
+### Create native image
+
+Create a native executable binary for your BE application as shown below. Note that the generated binary is specific to the operating system and architecture you are currently using.
+
+```sh
+./build_graal_image.sh -c \
+-s <BE_HOME> \
+-a <APP_HOME> \
+-u <PU> \
+-e <EXTERNAL_JARS_PATH>
+```
+
+### Run the application
+
+You can run the application as shown below.
+
+```sh
+./build_graal_image.sh -r \
+-s <BE_HOME> \
+-a <APP_HOME> \
+-u <PU> \
+-e <EXTERNAL_JARS_PATH>
+```
