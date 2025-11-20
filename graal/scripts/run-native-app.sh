@@ -4,7 +4,7 @@
 usage() {
     echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-e <EXTERNAL_JARS_PATH>]"
     echo "  -s <BE_HOME>            Path to BE Home (mandatory)"
-    echo "  -a <APP_HOME>           Path to Application Home (mandatory)"
+    echo "  -a <APP_HOME>           Path to BE application directory with cdd and ear (mandatory)"
     echo "  -u <PU>                 Processing Unit name (default: default)"
     echo "  -h                      Display this usage message"
     exit 1
@@ -21,9 +21,9 @@ while getopts "s:a:u:h" opt; do
     esac
 done
 
-source init.sh
+source scripts/init.sh
 
-OUTPUT_PATH=$APP_HOME/bin/$(basename "$CDD_FILE" .cdd)
+OUTPUT_PATH=$APP_HOME/.graal/bin/$(basename "$CDD_FILE" .cdd)
 if [ ! -f "$OUTPUT_PATH" ]; then
     echo "Error: File not found at $OUTPUT_PATH"
     exit 1

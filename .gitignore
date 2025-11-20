@@ -5,3 +5,4 @@ cloud/kubernetes/helm/charts/*
 graal/examples
 graal/scripts/extjars
 graal/scripts/logs
+graal/logs

@@ -4,7 +4,7 @@
 usage() {
     echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-u <PU>] [-e <EXTERNAL_JARS_PATH>]"
     echo "  -s <BE_HOME>            Path to BE Home (mandatory)"
-    echo "  -a <APP_HOME>           Path to Application Home (mandatory)"
+    echo "  -a <APP_HOME>           Path to BE application directory with cdd and ear (mandatory)"
     echo "  -u <PU>                 Processing Unit name (default: default)"
     echo "  -e <EXTERNAL_JARS_PATH> Path to external jars (default: ./extjars)"
     echo "  -h                      Display this usage message"
@@ -25,11 +25,11 @@ done
 
 EXTERNAL_JARS_PATH="${EXTERNAL_JARS_PATH:-./extjars}"
 
-source init.sh
+source scripts/init.sh
 
 # Default values for optional parameters
 PU="${PU:-default}"
-OUTPUT_PATH="$APP_HOME/META-INF-$PU"
+OUTPUT_PATH="$APP_HOME/.graal/META-INF-$PU"
 
 # Display the values for verification
 echo "BE_HOME: $BE_HOME"
@@ -50,7 +50,7 @@ if [ ! -d "$APP_HOME" ]; then
     exit 1
 fi
 
-source init.sh
+source scripts/init.sh
 
 echo "Using meta_dir: $OUTPUT_PATH"
 

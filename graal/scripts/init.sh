@@ -82,7 +82,7 @@ extract_and_copy_be_jar() {
     echo "Found be.jar: $BE_JAR"
 
     # Step 6: Create the appjar directory inside APP_HOME if it doesn't exist
-    APPJAR_DIR="$APP_HOME/appjar"
+    APPJAR_DIR="$APP_HOME/.graal/appjar"
     mkdir -p "$APPJAR_DIR"
 
     # Step 7: Copy be.jar to the appjar directory
@@ -106,8 +106,8 @@ else
     exit 1
 fi
 
-if [ ! -f "$APP_HOME/appjar/be.jar" ]; then
-  echo "be.jar not found in $APP_HOME/appjar. Extracting from EAR file..."
+if [ ! -f "$APP_HOME/.graal/appjar/be.jar" ]; then
+  echo "be.jar not found in $APP_HOME/.graal/appjar. Extracting from EAR file..."
   extract_and_copy_be_jar "$EAR_FILE" "$APP_HOME"
 fi
 
@@ -132,7 +132,7 @@ if [ "$CP_EXT_JARS" != "" ]; then
 fi
 
 # add be.jar to classpath
-CP_PATH=$CP_PATH$APP_HOME/appjar/be.jar
+CP_PATH=$CP_PATH$APP_HOME/.graal/appjar/be.jar
 
 # exclude jars from CP_PATH
 EXCLUDE_JARS=(

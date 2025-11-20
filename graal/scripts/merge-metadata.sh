@@ -15,8 +15,8 @@ while getopts "a:" opt; do
   esac
 done
 
-# Output directory set to "$APP_HOME/META-INF"
-OUTPUT_DIR="$APP_HOME/META-INF"
+# Output directory set to "$APP_HOME/.graal/META-INF"
+OUTPUT_DIR="$APP_HOME/.graal/META-INF"
 
 # Validate if output directory exists, create it if not
 if [ ! -d "$OUTPUT_DIR" ]; then
@@ -25,7 +25,7 @@ if [ ! -d "$OUTPUT_DIR" ]; then
 fi
 
 # Find directories named META-INF* inside the application home directory
-INPUTS=$(find "$APP_HOME" -type d -name "META-INF-*" | sed 's/^/--input-dir=/' | tr '\n' ' ')
+INPUTS=$(find "$APP_HOME/.graal" -type d -name "META-INF-*" | sed 's/^/--input-dir=/' | tr '\n' ' ')
 
 # If no META-INF* directories found, exit with an error
 if [ -z "$INPUTS" ]; then

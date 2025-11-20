@@ -4,7 +4,7 @@
 usage() {
     echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-e <EXTERNAL_JARS_PATH>]"
     echo "  -s <BE_HOME>            Path to BE Home (mandatory)"
-    echo "  -a <APP_HOME>           Path to Application Home (mandatory)"
+    echo "  -a <APP_HOME>           Path to BE application directory with cdd and ear (mandatory)"
     echo "  -e <EXTERNAL_JARS_PATH> Path to external jars (default: ./extjars)"
     echo "  -h                      Display this usage message"
     exit 1
@@ -23,20 +23,20 @@ done
 
 EXTERNAL_JARS_PATH="${EXTERNAL_JARS_PATH:-./extjars}"
 
-source init.sh
+source scripts/init.sh
 
 echo "Merging metadata..."
-./merge-metadata.sh -a "$APP_HOME"
+./scripts/merge-metadata.sh -a "$APP_HOME"
 echo ""
 
-OUTPUT_PATH=$APP_HOME/bin/$(basename "$CDD_FILE" .cdd)
+OUTPUT_PATH=$APP_HOME/.graal/bin/$(basename "$CDD_FILE" .cdd)
 # Validate if output directory exists, create it if not
-if [ ! -d "$APP_HOME/bin" ]; then
-  echo "Output directory '$APP_HOME/bin' does not exist. Creating it now."
-  mkdir -p "$APP_HOME/bin"
+if [ ! -d "$APP_HOME/.graal/bin" ]; then
+  echo "Output directory '$APP_HOME/.graal/bin' does not exist. Creating it now."
+  mkdir -p "$APP_HOME/.graal/bin"
 fi
 
-META_DIR="$APP_HOME/META-INF"
+META_DIR="$APP_HOME/.graal/META-INF"
 
 mv $META_DIR/reflect-config.json $META_DIR/reflect-config-bkp.json
 jq 'map(select(.name | test("^jdk\\.internal\\.") | not))'  $META_DIR/reflect-config-bkp.json > $META_DIR/reflect-config.json
