@@ -68,7 +68,7 @@ powershell -Command "Copy-Item 'c:\working\installer\TIBCOUniversalInstaller-x86
 cd /d c:/working
 powershell -Command "Get-ChildItem -Path 'c:\working\installer' -exclude TIBCOUniversalInstaller-x86-64.exe | Remove-Item -Recurse -force"
 powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-.*[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
-if exist c:/working/installer/TIBCOUniversalInstaller.silent (
+if exist c:/working/installer/TIBCOUniversalInstaller*.silent (
 	echo Extracting BusinessEvents HF
 	cd /d c:/working/installer
 	echo Installing BusinessEvents HF ...
