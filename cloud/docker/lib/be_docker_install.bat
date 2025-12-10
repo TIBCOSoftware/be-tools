@@ -1,6 +1,7 @@
 @echo off
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
+setlocal enabledelayedexpansion
 
 if "%AS_VERSION%" EQU "" set AS_VERSION=na
 if "%FTL_VERSION%" EQU "" set FTL_VERSION=na
@@ -221,11 +222,18 @@ REM INSTALLERS SUBROUTINES
   	set VERSION=%~1
 	set SHORT_VERSION=%~2
 	set InstallerType=%~3
+	
+	if "%InstallerType%" EQU "as" (
+		call :getNumberFromVersion "%VERSION%"
+		set /a "asvernum=!converted_version!"
 
-	if %InstallerType% EQU as (
-		echo Extracting Activespaces %VERSION%
-		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
-		cd /d c:/working/installer
+		if !asvernum! LSS 40900 (
+			echo Extracting Activespaces %VERSION%
+			powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+			cd /d c:/working/installer
+		) else (
+			cd /d c:/working
+		)		
 		echo Installing Activespaces %VERSION% ...
 	)
 	if %InstallerType% EQU ftl (
@@ -268,3 +276,15 @@ Exit /B 0
 	cd /d c:/working
 	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
 Exit /B 0
+
+:getNumberFromVersion
+    set "checkversion=%~1"
+    for /f "tokens=1-3 delims=." %%a in ("%checkversion%") do (
+        set "major=%%a"
+        set "minor=0%%b"
+        set "patch=0%%c"
+        set "minor=!minor:~-2!"
+        set "patch=!patch:~-2!"
+        set "converted_version=!major!!minor!!patch!"
+    )
+    exit /b 0
