@@ -223,9 +223,18 @@ REM INSTALLERS SUBROUTINES
 	set InstallerType=%~3
 
 	if %InstallerType% EQU as (
-		echo Extracting Activespaces %VERSION%
-		powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
-		cd /d c:/working/installer
+		call :getNumberFromVersion %VERSION%
+		set /a "asvernum=!converted_version!"
+		call :getNumberFromVersion 4.9.0
+		set /a "asWinVerNum=!converted_version!"
+
+		if %asvernum% LSS %asWinVerNum% (
+			echo Extracting Activespaces %VERSION%
+			powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+			cd /d c:/working/installer
+		) else (
+			cd /d c:/working
+		)		
 		echo Installing Activespaces %VERSION% ...
 	)
 	if %InstallerType% EQU ftl (
@@ -268,3 +277,15 @@ Exit /B 0
 	cd /d c:/working
 	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
 Exit /B 0
+
+:getNumberFromVersion
+    set "version=%~1"
+    for /f "tokens=1-3 delims=." %%a in ("%version%") do (
+        set "major=%%a"
+        set "minor=0%%b"
+        set "patch=0%%c"
+        set "minor=!minor:~-2!"
+        set "patch=!patch:~-2!"
+        set "converted_version=!major!!minor!!patch!"
+    )
+    exit /b 0
