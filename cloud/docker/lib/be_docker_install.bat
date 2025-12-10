@@ -1,6 +1,7 @@
 @echo off
 @rem Copyright (c) 2019-2020. TIBCO Software Inc.
 @rem This file is subject to the license terms contained in the license file that is distributed with this file.
+setlocal enabledelayedexpansion
 
 if "%AS_VERSION%" EQU "" set AS_VERSION=na
 if "%FTL_VERSION%" EQU "" set FTL_VERSION=na
@@ -221,14 +222,12 @@ REM INSTALLERS SUBROUTINES
   	set VERSION=%~1
 	set SHORT_VERSION=%~2
 	set InstallerType=%~3
-
-	if %InstallerType% EQU as (
-		call :getNumberFromVersion %VERSION%
+	
+	if "%InstallerType%" EQU "as" (
+		call :getNumberFromVersion "%VERSION%"
 		set /a "asvernum=!converted_version!"
-		call :getNumberFromVersion 4.9.0
-		set /a "asWinVerNum=!converted_version!"
 
-		if %asvernum% LSS %asWinVerNum% (
+		if !asvernum! LSS 40900 (
 			echo Extracting Activespaces %VERSION%
 			powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_%InstallerType%_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
 			cd /d c:/working/installer
@@ -279,8 +278,8 @@ Exit /B 0
 Exit /B 0
 
 :getNumberFromVersion
-    set "version=%~1"
-    for /f "tokens=1-3 delims=." %%a in ("%version%") do (
+    set "checkversion=%~1"
+    for /f "tokens=1-3 delims=." %%a in ("%checkversion%") do (
         set "major=%%a"
         set "minor=0%%b"
         set "patch=0%%c"
