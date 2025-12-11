@@ -7,7 +7,7 @@ By using the scripts provided in the graal folder, you can generate native binar
 ## Prerequisites
 
 * Install TIBCO BusinessEvents
-* You need to have `GraalVM` CE. Install from [here](https://github.com/graalvm/graalvm-ce-builds/releases/tag/jdk-21.0.2).
+* You need to have `GraalVM` CE. Install from [here](https://github.com/graalvm/graalvm-ce-builds/releases/tag/jdk-25.0.1).
 * Install `GraalVM` related tools for Linux `sudo apt-get install build-essential zlib1g-dev jq`.
 * You need to have jnr posix jar file in external jars path. Get it from [here](https://repo1.maven.org/maven2/com/github/jnr/jnr-posix/3.1.20/jnr-posix-3.1.20.jar).
 
