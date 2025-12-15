@@ -38,9 +38,11 @@ fi
 
 META_DIR="$APP_HOME/.graal/META-INF"
 
-mv $META_DIR/reflect-config.json $META_DIR/reflect-config-bkp.json
-jq 'map(select(.name | test("^jdk\\.internal\\.") | not))'  $META_DIR/reflect-config-bkp.json > $META_DIR/reflect-config.json
-rm $META_DIR/reflect-config-bkp.json
+if [ -f "$META_DIR/reflect-config.json" ]; then
+  mv $META_DIR/reflect-config.json $META_DIR/reflect-config-bkp.json
+  jq 'map(select(.name | test("^jdk\\.internal\\.") | not))'  $META_DIR/reflect-config-bkp.json > $META_DIR/reflect-config.json
+  rm $META_DIR/reflect-config-bkp.json
+fi
 
 echo building native image 
     native-image \
