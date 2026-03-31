@@ -44,11 +44,33 @@ if [ -f "$META_DIR/reflect-config.json" ]; then
   rm $META_DIR/reflect-config-bkp.json
 fi
 
+
+# use this to generate profile data for pgo optimization of native image build and runtime performance
+# Note: remove enable-monitoring option to generate profile data.
+#     --pgo-instrument \
+
+# use this to generate report for in depth analysis of native image build and runtime performance
+# --emit build-report \
+
+# pgo options:
+# --pgo=default.iprof \
+#     --gc=G1 \
+#     -march=native \
+#     --enable-monitoring=all \
+
+# G1 GC related options:
+# -XX:G1HeapRegionSize=32m -XX:MaxRAMPercentage=80 -XX:MaxGCPauseMillis=1000 -XX:ParallelGCThreads=20   -XX:ConcGCThreads=8 -XX:G1HeapWastePercent=25 
+# 
+
 echo building native image 
     native-image \
+    --pgo=default.iprof \
+    --gc=G1 \
+    -march=native \
+    --enable-monitoring=all \
+    -H:-OutlineStringBufferAppends \
     --enable-url-protocols=https \
     --enable-url-protocols=http \
-    --enable-monitoring=all \
     --add-exports=java.base/sun.net.util=ALL-UNNAMED \
     --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED \
     --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED \
