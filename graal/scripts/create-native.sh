@@ -83,6 +83,7 @@ echo building native image
     --no-fallback \
     -H:ConfigurationFileDirectories=$META_DIR \
     -o $OUTPUT_PATH \
+    -H:-OutlineStringBufferAppends \
     --initialize-at-run-time=org.apache.logging.log4j,org.apache.logging.slf4j,io.netty,sun.reflect.misc.Trampoline \
     --initialize-at-build-time=com.datastax.oss.driver.internal.core.util.Dependency,com.sun.xml.xsom.impl.AnnotationImpl\$LocatorImplUnmodifiable,com.datastax.oss.driver.shaded.guava.common.collect.RegularImmutableList,com.datastax.oss.driver.shaded.guava.common.collect.SingletonImmutableList,java.nio,com.tibco.be.functions.file.LowByteCharsetProvider
 
