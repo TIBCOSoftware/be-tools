@@ -23,6 +23,9 @@ set "ARG_DOCKER_FILE=na"
 set "ARG_CONFIGPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
 set "ARG_OPTIMIZE=na"
+set "CDD_FILE_NAME=na"
+set "EAR_FILE_NAME=na"
+set "HAS_LICENSE=false"
 
 REM openjdk related vars
 set "OPEN_JDK_VERSION=na"
@@ -349,30 +352,26 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         GOTO END-withError
     )
 
-    REM image validation
+)
+
+REM image validation: TEA and s2ibuilder are not supported on Windows containers
+REM fromlocal is always Windows; frominstallers only applies when win platform installers are used
+if !INSTALLATION_TYPE! EQU fromlocal (
+    set "CHECK_WIN_IMAGE=true"
+) else if !ARG_INSTALLERS_PLATFORM! EQU win (
+    set "CHECK_WIN_IMAGE=true"
+) else (
+    set "CHECK_WIN_IMAGE=false"
+)
+
+if "!CHECK_WIN_IMAGE!" EQU "true" (
     if !ARG_TYPE! EQU !TEA_IMAGE! (
         echo ERROR: BE TEA agent is not yet supported on Windows containers.
         GOTO END-withError
     )
-
     if !ARG_TYPE! EQU !BUILDER_IMAGE! (
         echo ERROR:  !BUILDER_IMAGE! is not yet supported on Windows containers.
         GOTO END-withError
-    )
-)
-
-REM image validation
-if !INSTALLATION_TYPE! EQU frominstallers (
-    if !ARG_INSTALLERS_PLATFORM! EQU win (
-        if !ARG_TYPE! EQU !TEA_IMAGE! (
-            echo ERROR: BE TEA agent is not yet supported on Windows containers.
-            GOTO END-withError
-        )
-
-        if !ARG_TYPE! EQU !BUILDER_IMAGE! (
-            echo ERROR:  !BUILDER_IMAGE! is not yet supported on Windows containers.
-            GOTO END-withError
-        )
     )
 )
 
@@ -386,8 +385,6 @@ if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
     set "ARG_APP_LOCATION=na"
 ) else if !IMAGE_NAME! EQU !BASE_IMAGE! (
     set "ARG_APP_LOCATION=na"
-) else if !IMAGE_NAME! EQU !TEA_IMAGE! (
-    set "ARG_APP_LOCATION=na"
 ) else if !IMAGE_NAME! EQU !APP_IMAGE! (
     if NOT EXIST !ARG_APP_LOCATION! (
         echo ERROR: The directory: [!ARG_APP_LOCATION!] is not a valid directory. Enter a valid directory and try again.
@@ -400,9 +397,8 @@ if !IMAGE_NAME! EQU !BUILDER_IMAGE! (
     )
 )
 
-REM count cdd and ear
-if !ARG_APP_LOCATION! NEQ na (
-    set CDD_FILE_NAME=na
+REM count cdd and ear (not applicable for teagent image)
+if !ARG_APP_LOCATION! NEQ na if !IMAGE_NAME! NEQ !TEA_IMAGE! (
     for %%f in (!ARG_APP_LOCATION!\*.cdd) do (
         if !CDD_FILE_NAME! NEQ na (
             echo ERROR: The directory: [!ARG_APP_LOCATION!] must have single cdd file.
@@ -411,7 +407,6 @@ if !ARG_APP_LOCATION! NEQ na (
         set CDD_FILE_NAME=%%~nxf
     )
 
-    set EAR_FILE_NAME=na
     for %%f in (!ARG_APP_LOCATION!\*.ear) do (
         if !EAR_FILE_NAME! NEQ na (
             echo ERROR: The directory: [!ARG_APP_LOCATION!] must have single EAR file.
@@ -425,10 +420,20 @@ if !ARG_APP_LOCATION! NEQ na (
             echo ERROR: No cdd file found at the specified location.
             GOTO END-withError
         )
-        
+
         if !EAR_FILE_NAME! EQU na (
             echo ERROR: No ear file found at the specified location.
             GOTO END-withError
+        )
+    )
+
+    if !IMAGE_NAME! EQU !RMS_IMAGE! (
+        if !CDD_FILE_NAME! EQU na (
+            echo WARN: No cdd file found at the specified app location. Ignoring both CDD and EAR files. Using default values.
+            set "EAR_FILE_NAME=na"
+        ) else if !EAR_FILE_NAME! EQU na (
+            echo WARN: No ear file found at the specified app location. Ignoring both CDD and EAR files. Using default values.
+            set "CDD_FILE_NAME=na"
         )
     )
 )
@@ -549,6 +554,9 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         )
     )
 
+    if "!ARG_USE_OPEN_JDK!" EQU "true" (
+        echo WARN: --openjdk is not applicable for fromlocal builds on Windows. Ignoring.
+    )
     set "ARG_USE_OPEN_JDK=false"
 ) else (
     REM Creating an empty file
@@ -798,11 +806,11 @@ if !ARG_AS_VERSION! NEQ na (
     )
 )
 
-if "!CDD_FILE_NAME!" NEQ "" (
+if "!CDD_FILE_NAME!" NEQ "na" (
     echo INFO: CDD FILE NAME                : [!CDD_FILE_NAME!]
 )
 
-if "!EAR_FILE_NAME!" NEQ "" (
+if "!EAR_FILE_NAME!" NEQ "na" (
     echo INFO: EAR FILE NAME                : [!EAR_FILE_NAME!]
 )
 
@@ -903,7 +911,25 @@ if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
 
 if !ARG_APP_LOCATION! NEQ na xcopy /Q /C /R /Y /E !ARG_APP_LOCATION!\* !TEMP_FOLDER!\app > NUL
 
-if !IMAGE_NAME! EQU !RMS_IMAGE! if !ARG_APP_LOCATION! EQU na (
+REM detect and move license (.bin) files for app, rms, teagent image types
+if !IMAGE_NAME! EQU !APP_IMAGE! goto :checklicense
+if !IMAGE_NAME! EQU !RMS_IMAGE! goto :checklicense
+if !IMAGE_NAME! EQU !TEA_IMAGE! goto :checklicense
+goto :skiplicense
+:checklicense
+mkdir !TEMP_FOLDER!\license > NUL 2>&1
+if !ARG_APP_LOCATION! NEQ na (
+    for %%f in (!TEMP_FOLDER!\app\*.bin) do set "HAS_LICENSE=true"
+    if "!HAS_LICENSE!" EQU "true" (
+        move !TEMP_FOLDER!\app\*.bin !TEMP_FOLDER!\license\ > NUL
+        set "LIC_LIST="
+        for %%f in (!TEMP_FOLDER!\license\*) do set "LIC_LIST=!LIC_LIST! %%~nxf"
+        echo INFO: LICENSE FILES                : [!LIC_LIST!]
+    )
+)
+:skiplicense
+
+if !IMAGE_NAME! EQU !RMS_IMAGE! if !CDD_FILE_NAME! EQU na (
     set "EAR_FILE_NAME=RMS.ear"
 	set "CDD_FILE_NAME=RMS.cdd"
     cd !TEMP_FOLDER!\app
@@ -1003,8 +1029,14 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         if !ARG_APP_LOCATION! NEQ na (
             mkdir !TEMP_FOLDER!\tibcoHome\be\ext
             powershell -Command "Copy-Item '!TEMP_FOLDER!\app\*' -Destination '!TEMP_FOLDER!\tibcoHome\be\ext' -Recurse | out-null"
-            powershell -Command "Copy-Item '!TEMP_FOLDER!\app\!CDD_FILE_NAME!','!TEMP_FOLDER!\app\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
-            del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME! !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
+            if exist "!TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME!" (
+                powershell -Command "Copy-Item '!TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+                del !TEMP_FOLDER!\tibcoHome\be\ext\!CDD_FILE_NAME!
+            )
+            if exist "!TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!" (
+                powershell -Command "Copy-Item '!TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!' -Destination '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\bin' -Recurse | out-null"
+                del !TEMP_FOLDER!\tibcoHome\be\ext\!EAR_FILE_NAME!
+            )
         )
     ) else (
         powershell -Command "Get-ChildItem -Path '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer' -exclude xml-*.jar | Remove-Item -force"
@@ -1036,6 +1068,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
         echo java.property.be.engine.cluster.as.remote.listen.url=%%AS_REMOTE_LISTEN_URL%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!
     )
     echo java.property.com.sun.management.jmxremote.rmi.port=%%jmx_port%%>> !TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!
+
+    if "!HAS_LICENSE!" EQU "true" (
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!') -replace 'java.property.TIB_ACTIVATION=.*', 'java.property.TIB_ACTIVATION=C:/license' | Set-Content '!TEMP_FOLDER!\tibcoHome\be\!ARG_BE_SHORT_VERSION!\!TRA_FILE!'"
+    )
 
     if !FTL_HOME! NEQ na (
         echo INFO: Adding [ftl\!ARG_FTL_SHORT_VERSION!] to tibcohome.
@@ -1070,7 +1106,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     echo.
     echo INFO: Generating annotation indexes.
     cd !TEMP_FOLDER!
-    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\ftl\!FTL_VERSION!\lib\*;tibcoHome\as\!ACTIVESPACES_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\exporters\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\*;
+    set CLASSPATH=tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\aws\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\gwt\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\apache\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\emf\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\tomsawyer\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tibco\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\eclipse\plugins\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\rms\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\mm\lib\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\studio\eclipse\plugins\*;tibcoHome\ftl\!ARG_FTL_SHORT_VERSION!\lib\*;tibcoHome\as\!ARG_AS_SHORT_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\ext\*;tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\lib\security\policy\unlimited\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\exporters\*;tibcoHome\be\!ARG_BE_SHORT_VERSION!\lib\ext\tpcl\opentelemetry\*;
     tibcoHome\!JAVA_HOME_DIR_NAME!\!ARG_JRE_VERSION!\bin\java -Dtibco.env.BE_HOME=tibcoHome\be\!ARG_BE_SHORT_VERSION! -cp !CLASSPATH! com.tibco.be.model.functions.impl.JavaAnnotationLookup
     if EXIST tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx (
         powershell -Command "(Get-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx') -replace @((Resolve-Path tibcoHome).Path -replace '\\', '/'), 'c:/tibco' | Set-Content 'tibcoHome\be\!ARG_BE_SHORT_VERSION!\bin\_annotations.idx'"
@@ -1162,8 +1198,8 @@ EXIT /B 0
     echo.
     echo  [-a/--app-location]  :    Path to BE application directory with cdd, ear ^& optional JARs/license file
     echo                            Note: Required if --image-type is "!APP_IMAGE!"
-    echo                                  Optional if --image-type is "!RMS_IMAGE!"
-    echo                                  Ignored  if --image-type is "!TEA_IMAGE!","!BUILDER_IMAGE!" or "!BASE_IMAGE!"
+    echo                                  Optional if --image-type is "!RMS_IMAGE!" or "!TEA_IMAGE!"
+    echo                                  Ignored  if --image-type is "!BUILDER_IMAGE!" or "!BASE_IMAGE!"
     echo.
     echo  [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default "../../")
     echo                            Note: Alternatively, use the base docker image name, applicable only if --image-type is "!APP_IMAGE!".

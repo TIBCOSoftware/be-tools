@@ -13,6 +13,13 @@ mkdir -p /opt/tibco/be/application/ear
 cp -R /tmp/src/*.ear /opt/tibco/be/application/ear
 rm /opt/tibco/be/application/*.ear
 
+# move license files to the license directory
+if ls /tmp/src/*.bin 2>/dev/null | grep -q .; then
+    mkdir -p /home/tibco/be/license
+    mv /opt/tibco/be/application/*.bin /home/tibco/be/license/
+    mv /opt/tibco/be/ext/*.bin /home/tibco/be/license/ 2>/dev/null || true
+fi
+
 if [ -e "/opt/tibco/be/application/dummy.txt" ]; then
     #Check App location have cdd or not
     CDD_LOCATION="/opt/tibco/be/application"
