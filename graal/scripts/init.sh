@@ -145,4 +145,88 @@ done
 
 export LD_LIBRARY_PATH=$BE_HOME/lib:$LD_LIBRARY_PATH:$BE_HOME/lib/ext/tpcl:$BE_HOME/lib/ext/tibco:$BE_HOME/lib/ext/apache
 
+# Apply classpath optimization if --optimize was requested.
+# Reuses cloud/docker/lib/optimize.json and be_container_optimize.pl as single source of truth.
+apply_cp_optimize() {
+    [ -z "$OPTIMIZE_MODULES" ] && return
+
+    # Resolve cloud/docker directory relative to this script's location
+    local INIT_DIR
+    INIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local DOCKER_DIR="$INIT_DIR/../../cloud/docker"
+
+    if [ ! -f "$DOCKER_DIR/lib/optimize.json" ]; then
+        echo "Warning: optimize.json not found at $DOCKER_DIR/lib/optimize.json. Skipping optimization."
+        return
+    fi
+    if [ ! -f "$DOCKER_DIR/lib/be_container_optimize.pl" ]; then
+        echo "Warning: be_container_optimize.pl not found at $DOCKER_DIR/lib/. Skipping optimization."
+        return
+    fi
+    if ! command -v perl >/dev/null 2>&1; then
+        echo "Warning: perl not found. Please install perl to use --optimize. Skipping optimization."
+        return
+    fi
+    if [ -z "$CDD_FILE" ] || [ ! -f "$CDD_FILE" ] || [ -z "$EAR_FILE" ] || [ ! -f "$EAR_FILE" ]; then
+        echo "Warning: CDD/EAR not available yet, skipping optimization."
+        return
+    fi
+
+    # Step A: Auto-detect required modules from CDD/EAR first (base set)
+    # Calls parse_optimize_modules directly via -e 'require' matching Docker's build_image.sh pattern
+    echo "Auto-detecting required modules from CDD/EAR..."
+    local auto_modules
+    auto_modules=$(cd "$DOCKER_DIR" && perl -e 'require "./lib/be_container_optimize.pl"; print be_container_optimize::parse_optimize_modules("","'"$CDD_FILE"'","'"$EAR_FILE"'")')
+    echo "Auto-detected modules: ${auto_modules:-none}"
+
+    # Step B: Append any user-specified modules to the auto-detected base
+    local user_modules="$OPTIMIZE_MODULES"
+    [ "$user_modules" = "auto" ] && user_modules=""
+
+    local final_modules="$auto_modules"
+    if [ -n "$user_modules" ]; then
+        if [ -n "$auto_modules" ]; then
+            final_modules="$auto_modules,$user_modules"
+        else
+            final_modules="$user_modules"
+        fi
+        echo "User-specified modules appended: $user_modules"
+    fi
+
+    if [ -z "$final_modules" ]; then
+        echo "Warning: No modules resolved for optimization. Skipping."
+        return
+    fi
+    echo "Optimizing classpath for modules: $final_modules"
+
+    # Generate the exclude-patterns file using the Perl script
+    local EXCLUDE_FILE="$APP_HOME/.graal/cp-exclude.txt"
+    mkdir -p "$APP_HOME/.graal"
+    > "$EXCLUDE_FILE"
+    (cd "$DOCKER_DIR" && perl -e 'require "./lib/be_container_optimize.pl"; be_container_optimize::prepare_delete_list("'"$final_modules"'","'"$EXCLUDE_FILE"'")')
+
+    if [ ! -s "$EXCLUDE_FILE" ]; then
+        echo "No JARs to exclude for the resolved modules."
+        return
+    fi
+
+    # Filter CP_PATH: substitute BE_HOME placeholder, expand globs, strip matches
+    local excluded_count=0
+    while IFS= read -r pattern; do
+        [ -z "$pattern" ] && continue
+        local actual_pattern="${pattern/BE_HOME/$BE_HOME}"
+        for actual_jar in $actual_pattern; do
+            [ -f "$actual_jar" ] || continue
+            if [[ "$CP_PATH" == *"${actual_jar}${PSP}"* ]]; then
+                CP_PATH="${CP_PATH//${actual_jar}${PSP}/}"
+                ((excluded_count++))
+            fi
+        done
+    done < "$EXCLUDE_FILE"
+
+    echo "Optimization complete: $excluded_count JAR(s) excluded from classpath."
+}
+
+apply_cp_optimize
+
 # echo CP_PATH--$CP_PATH--

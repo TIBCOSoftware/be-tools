@@ -2,20 +2,24 @@
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-e <EXTERNAL_JARS_PATH>]"
+    echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-e <EXTERNAL_JARS_PATH>] [-p <modules>]"
     echo "  -s <BE_HOME>            Path to BE Home (mandatory)"
     echo "  -a <APP_HOME>           Path to BE application directory with cdd and ear (mandatory)"
     echo "  -e <EXTERNAL_JARS_PATH> Path to external jars (default: ./extjars)"
+    echo "  -p <modules>            Enables native image classpath optimization [optional]"
+    echo "                          When CDD/EAR available, most of the modules are identified automatically."
+    echo "                          Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\""
     echo "  -h                      Display this usage message"
     exit 1
 }
 
 # Parse command-line arguments
-while getopts "s:a:e:h" opt; do
+while getopts "s:a:e:p:h" opt; do
     case $opt in
         s) BE_HOME=$OPTARG ;;
         a) APP_HOME=$OPTARG ;;
         e) EXTERNAL_JARS_PATH=$OPTARG ;;
+        p) OPTIMIZE_MODULES=$OPTARG ;;
         h) usage ;;
         *) usage ;;
     esac
@@ -43,6 +47,13 @@ if [ -f "$META_DIR/reflect-config.json" ]; then
   jq 'map(select(.name | test("^jdk\\.internal\\.") | not))'  $META_DIR/reflect-config-bkp.json > $META_DIR/reflect-config.json
   rm $META_DIR/reflect-config-bkp.json
 fi
+
+#--pgo=default.iprof \
+#    --gc=G1 \
+#    -march=native \
+#    -O3 \
+#-H:-OutlineStringBufferAppends \
+#--pgo-instrument \
 
 echo building native image 
     native-image \

@@ -2,22 +2,26 @@
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-u <PU>] [-e <EXTERNAL_JARS_PATH>]"
+    echo "Usage: $0 -s <BE_HOME> -a <APP_HOME> [-u <PU>] [-e <EXTERNAL_JARS_PATH>] [-p <modules>]"
     echo "  -s <BE_HOME>            Path to BE Home (mandatory)"
     echo "  -a <APP_HOME>           Path to BE application directory with cdd and ear (mandatory)"
     echo "  -u <PU>                 Processing Unit name (default: default)"
     echo "  -e <EXTERNAL_JARS_PATH> Path to external jars (default: ./extjars)"
+    echo "  -p <modules>            Enables native image classpath optimization [optional]"
+    echo "                          When CDD/EAR available, most of the modules are identified automatically."
+    echo "                          Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\""
     echo "  -h                      Display this usage message"
     exit 1
 }
 
 # Parse command-line arguments
-while getopts "s:a:u:e:h" opt; do
+while getopts "s:a:u:e:p:h" opt; do
     case $opt in
         s) BE_HOME=$OPTARG ;;
         a) APP_HOME=$OPTARG ;;
         u) PU=$OPTARG ;;
         e) EXTERNAL_JARS_PATH=$OPTARG ;;
+        p) OPTIMIZE_MODULES=$OPTARG ;;
         h) usage ;;
         *) usage ;;
     esac
