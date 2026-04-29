@@ -78,18 +78,19 @@ ls scripts/docker/context/lib/
 # License path is set in be-engine.tra above — no -DTIB_ACTIVATION needed here.
 cat > scripts/docker/context/entrypoint.sh << 'ENTRYPOINT_EOF'
 #!/bin/sh
-# Mirror the JVM launcher: inject all container env vars as tibco.clientVar.* into a runtime TRA copy
-_tra=$(mktemp /tmp/be-engine-XXXXXX.tra)
-cp /be-engine.tra "$_tra"
+# Mirror the JVM launcher: write all container env vars as tibco.clientVar.* to a beprops file
+# and pass it via -p (tibco.clientVar.* is only read from the beprops file, not the TRA file)
+_props=$(mktemp /tmp/beprops-XXXXXX.props)
 env | while IFS='=' read -r _k _v; do
     [ -n "$_k" ] && printf 'tibco.clientVar.%s=%s\n' "$_k" "$_v"
-done >> "$_tra"
+done > "$_props"
 
 exec /app \
   -DLD_LIBRARY_PATH=/usr/lib \
   -DTIB_ACTIVATION=/license \
   -Dextended.properties="--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens=java.base/sun.security.ssl=ALL-UNNAMED --add-opens=java.base/sun.net.util=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED --add-opens=java.xml/com.sun.xml.internal.stream=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.base/sun.net=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED" \
-  --propFile "$_tra" \
+  --propFile /be-engine.tra \
+  -p "$_props" \
   -u "${PU:-default}" \
   -c "/__CDD_NAME__" "/__EAR_NAME__"
 ENTRYPOINT_EOF
