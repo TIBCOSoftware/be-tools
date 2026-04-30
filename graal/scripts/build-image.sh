@@ -93,9 +93,6 @@ while IFS='=' read -r _k _v; do
 done < "$_rawenv" > "$_props"
 rm -f "$_rawenv"
 
-echo "=== beprops ===" >&2
-cat "$_props" >&2
-echo "=== end beprops ===" >&2
 
 exec /app \
   -DLD_LIBRARY_PATH=/usr/lib \
