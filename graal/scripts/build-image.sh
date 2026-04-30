@@ -86,9 +86,12 @@ ls scripts/docker/context/lib/
 cat > scripts/docker/context/entrypoint.sh << 'ENTRYPOINT_EOF'
 #!/bin/sh
 _props=$(mktemp /tmp/beprops-XXXXXX.props)
-tr '\0' '\n' < /proc/self/environ | while IFS='=' read -r _k _v; do
+_rawenv=$(mktemp /tmp/rawenv-XXXXXX.txt)
+tr '\0' '\n' < /proc/self/environ > "$_rawenv"
+while IFS='=' read -r _k _v; do
     [ -n "$_k" ] && printf 'tibco.clientVar.%s=%s\n' "$_k" "$_v"
-done > "$_props"
+done < "$_rawenv" > "$_props"
+rm -f "$_rawenv"
 
 echo "=== beprops ===" >&2
 cat "$_props" >&2
