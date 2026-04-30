@@ -49,6 +49,13 @@ cp "$CDD_FILE" scripts/docker/context/
 cp "$EAR_FILE" scripts/docker/context/
 cp "$BE_HOME/bin/be-engine.tra" scripts/docker/context/
 
+# Fix license path in TRA to container path — original TRA has dev machine path which doesn't exist in the image
+if grep -q 'java\.property\.TIB_ACTIVATION=' scripts/docker/context/be-engine.tra; then
+    sed -i 's|^java\.property\.TIB_ACTIVATION=.*|java.property.TIB_ACTIVATION=/license|' scripts/docker/context/be-engine.tra
+else
+    echo 'java.property.TIB_ACTIVATION=/license' >> scripts/docker/context/be-engine.tra
+fi
+
 # License: look for a .bin file alongside CDD/EAR in APP_HOME.
 # The native image reads from /root/license (TRA default ~/license), so we copy the file there.
 # If not found, /root/license is left as an empty directory to be mounted at runtime.
@@ -79,7 +86,7 @@ ls scripts/docker/context/lib/
 cat > scripts/docker/context/entrypoint.sh << 'ENTRYPOINT_EOF'
 #!/bin/sh
 _props=$(mktemp /tmp/beprops-XXXXXX.props)
-env | while IFS='=' read -r _k _v; do
+tr '\0' '\n' < /proc/self/environ | while IFS='=' read -r _k _v; do
     [ -n "$_k" ] && printf 'tibco.clientVar.%s=%s\n' "$_k" "$_v"
 done > "$_props"
 
