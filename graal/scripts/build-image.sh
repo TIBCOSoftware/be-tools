@@ -78,12 +78,14 @@ ls scripts/docker/context/lib/
 # License path is set in be-engine.tra above — no -DTIB_ACTIVATION needed here.
 cat > scripts/docker/context/entrypoint.sh << 'ENTRYPOINT_EOF'
 #!/bin/sh
-# Mirror the JVM launcher: write all container env vars as tibco.clientVar.* to a beprops file
-# and pass it via -p (tibco.clientVar.* is only read from the beprops file, not the TRA file)
 _props=$(mktemp /tmp/beprops-XXXXXX.props)
 env | while IFS='=' read -r _k _v; do
     [ -n "$_k" ] && printf 'tibco.clientVar.%s=%s\n' "$_k" "$_v"
 done > "$_props"
+
+echo "=== beprops ===" >&2
+cat "$_props" >&2
+echo "=== end beprops ===" >&2
 
 exec /app \
   -DLD_LIBRARY_PATH=/usr/lib \
