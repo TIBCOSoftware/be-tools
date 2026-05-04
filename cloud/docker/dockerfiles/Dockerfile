@@ -20,7 +20,7 @@ ARG FTL_SHORT_VERSION
 ARG ACTIVESPACES_VERSION
 ARG ACTIVESPACES_SHORT_VERSION
 
-FROM docker.io/library/ubuntu:20.04 AS intermediate
+FROM docker.io/library/ubuntu:24.04 AS intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -83,7 +83,7 @@ RUN mkdir -p /mnt/tibco/be/logs \
  && chmod -R g=u /mnt/tibco/
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM docker.io/library/ubuntu:20.04
+FROM docker.io/library/ubuntu:24.04
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
