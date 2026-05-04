@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2019-2020. TIBCO Software Inc.
+# This file is subject to the license terms contained in the license file that is distributed with this file.
+#
+schemaVersion: '2.0.0'
+fileExistenceTests:
+  - name: 'License folder'
+    path: '/home/tibco/be/license/'
+    shouldExist: true
+fileContentTests:
+  - name: 'TIB_ACTIVATION set in TRA file'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/TRA_FILENAME'
+    expectedContents: ['java.property.TIB_ACTIVATION=/home/tibco/be/license']

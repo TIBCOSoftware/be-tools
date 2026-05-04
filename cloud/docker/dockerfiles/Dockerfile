@@ -54,6 +54,7 @@ RUN apt-get update \
 COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run lib/deletelist.txt /home/tibco/be/
 COPY configproviders /home/tibco/be/configproviders
 COPY app/* /opt/tibco/be/ext/
+COPY license/ /home/tibco/be/license/
 
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \

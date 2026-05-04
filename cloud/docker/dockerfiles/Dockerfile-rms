@@ -68,6 +68,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexe
  && rm -rf JRESupplement_installers as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip
 
 COPY app/* /opt/tibco/be/ext/
+COPY license/ /home/tibco/be/license/
 
 RUN ./prepare_finalimage.sh
 

@@ -41,26 +41,50 @@ isCLIKey()
 }
 
 check_cdd_and_ear() {
-    #Check App location have ear or not
-    ears=$(find $ARG_APP_LOCATION -name "*.ear")
-    earCnt=$(find $ARG_APP_LOCATION -name "*.ear" | wc -l)
+    ears=( $(find $ARG_APP_LOCATION -name "*.ear") )
+    earCnt=${#ears[@]}
+    cdds=( $(find $ARG_APP_LOCATION -name "*.cdd") )
+    cddCnt=${#cdds[@]}
 
-    if [ $earCnt -ne 1 ]; then
+    # Multiple files of the same type is always an error
+    if [ $earCnt -gt 1 ]; then
         printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file.\n"
         exit 1
     fi
-
-    #Check App location have cdd or not
-    cdds=$(find $ARG_APP_LOCATION -name "*.cdd")
-    cddCnt=$(find $ARG_APP_LOCATION -name "*.cdd" | wc -l)
-
-    if [ $cddCnt -ne 1 ]; then
+    if [ $cddCnt -gt 1 ]; then
         printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file.\n"
         exit 1
     fi
 
-    EAR_FILE_NAME="$(basename -- ${ears[0]})"
-    CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+    if [ "$IMAGE_NAME" = "$APP_IMAGE" ]; then
+        # Both files are required for app image
+        if [ $earCnt -eq 0 ]; then
+            printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single EAR file.\n"
+            exit 1
+        fi
+        if [ $cddCnt -eq 0 ]; then
+            printf "ERROR: The directory: [$ARG_APP_LOCATION] must have single CDD file.\n"
+            exit 1
+        fi
+        EAR_FILE_NAME="$(basename -- ${ears[0]})"
+        CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+    elif [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        # For rms image: both must be present together.
+        # If either is missing, ignore both and fall back to defaults.
+        if [ $earCnt -eq 1 -a $cddCnt -eq 1 ]; then
+            EAR_FILE_NAME="$(basename -- ${ears[0]})"
+            CDD_FILE_NAME="$(basename -- ${cdds[0]})"
+        else
+            if [ $earCnt -eq 0 ]; then
+                printf "WARN: No EAR file found at [$ARG_APP_LOCATION]. Ignoring both CDD and EAR files. Using default values.\n"
+            fi
+            if [ $cddCnt -eq 0 ]; then
+                printf "WARN: No CDD file found at [$ARG_APP_LOCATION]. Ignoring both CDD and EAR files. Using default values.\n"
+            fi
+            CDD_FILE_NAME=""
+            EAR_FILE_NAME=""
+        fi
+    fi
 }
 
 deleteTempImage() {
@@ -93,6 +117,9 @@ ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="na"
+CDD_FILE_NAME=""
+EAR_FILE_NAME=""
+HAS_LICENSE="false"
 
 # be related args
 BE_HOME="na"
@@ -189,8 +216,8 @@ USAGE="\nUsage: $FILE_NAME"
 USAGE+="\n\n [-i/--image-type]    :    Type of the image to build (\"$APP_IMAGE\"|\"$RMS_IMAGE\"|\"$TEA_IMAGE\"|\"$BUILDER_IMAGE\"|\"$BASE_IMAGE\") [required]"
 USAGE+="\n\n [-a/--app-location]  :    Path to BE application directory with cdd, ear and optional JARs/license file\n"
 USAGE+="                           Note: Required if --image-type is \"$APP_IMAGE\"\n"
-USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\"\n"
-USAGE+="                                 Ignored  if --image-type is \"$TEA_IMAGE\",\"$BUILDER_IMAGE\" or \"$BASE_IMAGE\" "
+USAGE+="                                 Optional if --image-type is \"$RMS_IMAGE\" or \"$TEA_IMAGE\"\n"
+USAGE+="                                 Ignored  if --image-type is \"$BUILDER_IMAGE\" or \"$BASE_IMAGE\" "
 USAGE+="\n\n [-s/--source]        :    Path to BE_HOME or TIBCO installers (BusinessEvents, Activespaces or FTL) are present (default \"../../\")\n"
 USAGE+="                           Note: Alternatively, use the base docker image name, applicable only if --image-type is $APP_IMAGE"
 USAGE+="\n\n [-t/--tag]           :    Name and optionally a tag in the 'name:tag' format [optional]"
@@ -468,8 +495,8 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 fi
 
 # check app location
-if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" -o "$IMAGE_NAME" = "$BASE_IMAGE" ]; then
-    # incase of builder/teagent image app location is not needed
+if [ "$IMAGE_NAME" = "$BUILDER_IMAGE" -o "$IMAGE_NAME" = "$BASE_IMAGE" ]; then
+    # incase of builder/base image app location is not needed
     ARG_APP_LOCATION="na"
 elif [ "$IMAGE_NAME" = "$APP_IMAGE" -a ! -d "$ARG_APP_LOCATION" ]; then
     printf "ERROR: The directory: [$ARG_APP_LOCATION] is not a valid directory. Enter a valid directory and try again.\n"
@@ -479,8 +506,8 @@ elif [ "$ARG_APP_LOCATION" != "na" -a ! -d "$ARG_APP_LOCATION" ]; then
     ARG_APP_LOCATION="na"
 fi
 
-# count cdd and ear in app location if exist
-if [ "$ARG_APP_LOCATION" != "na" ]; then
+# count cdd and ear in app location if exist (not applicable for teagent image)
+if [ "$ARG_APP_LOCATION" != "na" -a "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     check_cdd_and_ear
 fi
 
@@ -693,7 +720,7 @@ fi
 
 #Find JRE Version for given BE Version
 length=${#BE_VERSION_AND_JRE_MAP[@]}
-for (( i = 0; i < length; i++ )); do
+for (( i = 0; i < length; i+=2 )); do
     if [ "$ARG_BE_VERSION" = "${BE_VERSION_AND_JRE_MAP[i]}" ];then
         ARG_JRE_VERSION=${BE_VERSION_AND_JRE_MAP[i+1]};
         break;
@@ -931,6 +958,16 @@ if [ "$ARG_APP_LOCATION" != "na" ]; then
     cp $ARG_APP_LOCATION/* $TEMP_FOLDER/app
 fi
 
+# always create license folder so Docker COPY never fails
+mkdir -p $TEMP_FOLDER/license
+if [ "$IMAGE_NAME" = "$APP_IMAGE" -o "$IMAGE_NAME" = "$RMS_IMAGE" -o "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
+    if [ "$ARG_APP_LOCATION" != "na" ] && ls $TEMP_FOLDER/app/*.bin 2>/dev/null | grep -q .; then
+        HAS_LICENSE="true"
+        mv $TEMP_FOLDER/app/*.bin $TEMP_FOLDER/license/
+        echo "INFO: LICENSE FILES                : [$(ls $TEMP_FOLDER/license/ | tr '\n' ' ' | sed 's/ $//' )]"
+    fi
+fi
+
 if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     mkdir -p $TEMP_FOLDER/configproviders
     cp ./configproviders/*.sh $TEMP_FOLDER/configproviders
@@ -965,9 +1002,9 @@ if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
     fi
 fi
 
-if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" = "na" ]; then
+if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a -z "$CDD_FILE_NAME" ]; then
     EAR_FILE_NAME="RMS.ear"
-	CDD_FILE_NAME="RMS.cdd"
+    CDD_FILE_NAME="RMS.cdd"
     touch $TEMP_FOLDER/app/dummyrms.txt
 fi
 
@@ -1130,11 +1167,17 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     ls | grep -v "be-engine*" | xargs rm 2>/dev/null
     
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
-        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../rms/bin/be-rms.tra
+        LOCAL_TRA_FILE="../rms/bin/be-rms.tra"
     elif [ "$IMAGE_NAME" = "$TEA_IMAGE" ]; then
-        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> ../teagent/bin/be-teagent.tra
+        LOCAL_TRA_FILE="../teagent/bin/be-teagent.tra"
     else
-        echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> be-engine.tra
+        LOCAL_TRA_FILE="be-engine.tra"
+    fi
+
+    echo "java.property.be.engine.jmx.connector.port=%jmx_port%" >> $LOCAL_TRA_FILE
+
+    if [ "$HAS_LICENSE" = "true" ]; then
+        sed -i "s~java.property.TIB_ACTIVATION=.*~java.property.TIB_ACTIVATION=/home/tibco/be/license~" $LOCAL_TRA_FILE
     fi
 
     if [ -e $BE_HOME/bin/dbkeywordmap.xml ]; then
@@ -1170,8 +1213,14 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
     if [ "$IMAGE_NAME" = "$RMS_IMAGE" -a "$ARG_APP_LOCATION" != "na" ]; then
         mkdir -p $TEMP_FOLDER/$RANDM_FOLDER/be/ext
         cp $TEMP_FOLDER/app/* $TEMP_FOLDER/$RANDM_FOLDER/be/ext/
-        cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin
-        rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME} $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
+        if [ -f "$TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME" ]; then
+            cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$CDD_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin
+            rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${CDD_FILE_NAME}
+        fi
+        if [ -f "$TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME" ]; then
+            cp $TEMP_FOLDER/$RANDM_FOLDER/be/ext/$EAR_FILE_NAME $TEMP_FOLDER/$RANDM_FOLDER/be/${ARG_BE_SHORT_VERSION}/rms/bin
+            rm -f $TEMP_FOLDER/$RANDM_FOLDER/be/ext/${EAR_FILE_NAME}
+        fi
     fi
 
     # setting java home directory name to java in case of local installation
@@ -1307,7 +1356,7 @@ if [ "$BUILD_SUCCESS" = "true" ]; then
     if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
         if [ $ARG_ENABLE_TESTS = "true" ]; then
             cd ./tests
-            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION -ts $ARG_TEA_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION -ts $ARG_TEA_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME --has-license $HAS_LICENSE
         fi
     fi
 fi

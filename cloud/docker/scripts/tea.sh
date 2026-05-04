@@ -8,7 +8,7 @@ teaMaxVersion=$(echo $( getFromArray "$ARG_BE_VERSION" "${TEA_VERSION_MAP_MAX[@]
 teaMinVersion=$(getNumberFromVersion $teaMinVersion)
 teaMaxVersion=$(getNumberFromVersion $teaMaxVersion)
 
-teaPkgRegex="TIB_tea_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_linux26gl23_x86_64.zip"
+teaPkgRegex="TIB_tea_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_linu.*_x86_64.zip"
 teaPkgHfRegex="TIB_tea_[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}_HF-[0-9][0-9][0-9].zip"
 
 validateInstallers "TEA" "$teaPkgRegex" "$teaPkgHfRegex" "$teaMinVersion" "$teaMaxVersion"

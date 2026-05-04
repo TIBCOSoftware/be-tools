@@ -19,10 +19,11 @@ ARG_CP_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
 ARG_TRA_FILENAME=bin\\/be-engine.tra
+ARG_HAS_LICENSE=false
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,tea.yaml,consulgv.yaml,httpgv.yaml"
+FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,tea.yaml,consulgv.yaml,httpgv.yaml,license.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -40,6 +41,7 @@ USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml f
 USAGE+="\n\n [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
 USAGE+="\n\n [--java-dir-name]            : Java home directory name (default is \"tibcojre64\") [optional]"
+USAGE+="\n\n [--has-license]              : Whether a license (.bin) file was provided (\"true\"|\"false\") [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
 
@@ -117,6 +119,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         --java-dir-name=*)
         ARG_JAVA_HOME_DIR_NAME="${key#*=}"
+        ;;
+        --has-license)
+        shift
+        ARG_HAS_LICENSE="$1"
+        ;;
+        --has-license=*)
+        ARG_HAS_LICENSE="${key#*=}"
         ;;
         -kv|--key-value-pair)
         shift # past the key and to the value
@@ -231,6 +240,12 @@ if [ $ARG_CP_PROVIDER != na ]; then
   elif [ "$ARG_CP_PROVIDER" = "gvhttp" ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/httpgv.yaml "
   fi
+fi
+
+## license validation
+if [ $ARG_HAS_LICENSE = true ]; then
+  echo "INFO: license:             [provided]"
+  CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/license.yaml "
 fi
 
 ## key value pairs validation

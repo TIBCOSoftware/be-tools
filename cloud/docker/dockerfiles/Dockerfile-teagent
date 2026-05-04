@@ -49,6 +49,8 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
  && rm -rf JRESupplement_installers tea_installer  tea_installer-hf as_installers be_installers *.zip
 
+COPY license/ /home/tibco/be/license/
+
 RUN ./prepare_finalimage.sh
 
 RUN chgrp -R 0 /tibco_home && chmod -R g=u /tibco_home \

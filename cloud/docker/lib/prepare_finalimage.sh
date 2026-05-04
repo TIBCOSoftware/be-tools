@@ -33,6 +33,10 @@ fi
 
 echo "java.property.com.sun.management.jmxremote.rmi.port=%jmx_port%" >> $TRA_FILE
 
+if ls /home/tibco/be/license/*.bin 2>/dev/null | grep -q .; then
+    sed -i "s~java.property.TIB_ACTIVATION=.*~java.property.TIB_ACTIVATION=/home/tibco/be/license~" $TRA_FILE
+fi
+
 mkdir -p /tibco_home/be/${BE_SHORT_VERSION}/bin
 
 if [ "$AS_SHORT_VERSION" != "" -a "$AS_SHORT_VERSION" != "na" ]; then 
