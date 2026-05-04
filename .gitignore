@@ -6,3 +6,4 @@ graal/examples
 graal/scripts/extjars
 graal/scripts/logs
 graal/logs
+.claude/settings.json

@@ -78,11 +78,6 @@ check_graalvm() {
   echo "GraalVM Java is available: $java_version"
 }
 
-# Call GraalVM check function
-check_graalvm
-echo "GraalVM check passed."
-echo ""
-
 # Count the number of operations set
 OPERATION_COUNT=0
 [ "$GENERATE_METADATA" == true ] && ((OPERATION_COUNT++))
@@ -99,10 +94,16 @@ fi
 
 # Validate mandatory options based on the selected operation
 if [ "$GENERATE_METADATA" == true ]; then
+  check_graalvm
+  echo "GraalVM check passed."
+  echo ""
   echo "Generating metadata..."
   ./scripts/gen-metadata.sh -s "$BE_HOME" -a "$APP_HOME" -u "$PU" -e "$EXTERNAL_JARS_PATH" -p "$OPTIMIZE_MODULES"
 
 elif [ "$CREATE_NATIVE" == true ]; then
+  check_graalvm
+  echo "GraalVM check passed."
+  echo ""
   echo "Creating native image..."
   ./scripts/create-native.sh -s "$BE_HOME" -a "$APP_HOME" -e "$EXTERNAL_JARS_PATH" -p "$OPTIMIZE_MODULES"
 

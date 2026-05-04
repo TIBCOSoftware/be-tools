@@ -37,6 +37,13 @@ if [ ! -f "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
+# Verify cloud/docker/lib files are available
+BE_DOCKER_RUN_DIR="../cloud/docker/lib"
+if [ ! -f "$BE_DOCKER_RUN_DIR/be_docker_run.pm" ] || [ ! -f "$BE_DOCKER_RUN_DIR/run" ]; then
+    echo "Error: cloud/docker/lib/be_docker_run.pm or run not found. Ensure cloud/docker is present alongside graal/."
+    exit 1
+fi
+
 # Clean and recreate staging area
 rm -rf scripts/docker/context
 mkdir -p scripts/docker/context/bin
@@ -48,6 +55,7 @@ cp "$OUTPUT_PATH" scripts/docker/context/bin/
 cp "$CDD_FILE" scripts/docker/context/
 cp "$EAR_FILE" scripts/docker/context/
 cp "$BE_HOME/bin/be-engine.tra" scripts/docker/context/
+cp "$BE_DOCKER_RUN_DIR/be_docker_run.pm" scripts/docker/context/
 
 # Fix license path in TRA to container path — original TRA has dev machine path which doesn't exist in the image
 if grep -q 'java\.property\.TIB_ACTIVATION=' scripts/docker/context/be-engine.tra; then
@@ -81,34 +89,23 @@ done
 echo "Collected $lib_count shared library file(s):"
 ls scripts/docker/context/lib/
 
-# Generate entrypoint.sh with CDD/EAR paths baked in; PU is supplied at runtime via -e PU=<name>
-# License path is set in be-engine.tra above — no -DTIB_ACTIVATION needed here.
-cat > scripts/docker/context/entrypoint.sh << 'ENTRYPOINT_EOF'
-#!/bin/sh
-_props=$(mktemp /tmp/beprops-XXXXXX.props)
-_rawenv=$(mktemp /tmp/rawenv-XXXXXX.txt)
-tr '\0' '\n' < /proc/self/environ > "$_rawenv"
-while IFS='=' read -r _k _v; do
-    [ -n "$_k" ] && printf 'tibco.clientVar.%s=%s\n' "$_k" "$_v"
-done < "$_rawenv" > "$_props"
-rm -f "$_rawenv"
-
-
-exec /app \
-  -DLD_LIBRARY_PATH=/usr/lib \
-  -DTIB_ACTIVATION=/license \
-  -Dextended.properties="--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens=java.base/sun.security.ssl=ALL-UNNAMED --add-opens=java.base/sun.net.util=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED --add-opens=java.xml/com.sun.xml.internal.stream=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.base/sun.net=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED" \
-  --propFile /be-engine.tra \
-  -p "$_props" \
-  -u "${PU:-default}" \
-  -c "/__CDD_NAME__" "/__EAR_NAME__"
-ENTRYPOINT_EOF
-
-sed -i \
-    -e "s|__CDD_NAME__|${CDD_NAME}|g" \
-    -e "s|__EAR_NAME__|${EAR_NAME}|g" \
-    scripts/docker/context/entrypoint.sh
-chmod +x scripts/docker/context/entrypoint.sh
+# Patch cloud/docker/lib/run for GraalVM: replace be-engine binary with native /app
+# and fix the TRA file path and VERSION placeholder. Everything else (makeBeProps,
+# LOG_LEVEL, AS URLs, JMX, config providers) is reused as-is.
+sed \
+    -e 's|VERSION=%%%BE_VERSION%%%|VERSION=6.0|' \
+    -e 's|TRA_FILE=\$BE_HOME/bin/be-engine\.tra|TRA_FILE=/be-engine.tra|' \
+    -e 's|\$BE_HOME/bin/be-engine |/app -DTIB_ACTIVATION=/license |g' \
+    -e 's| --propVar [^ "]*||g' \
+    -e '/"\$AS_LISTEN_PORT" = ""/,/fi/d' \
+    -e '/"\$AS_REMOTE_LISTEN_PORT" = ""/,/fi/d' \
+    -e '/^[[:space:]]*AS_LISTEN_URL=/d' \
+    -e '/^[[:space:]]*AS_REMOTE_LISTEN_URL=/d' \
+    -e '/"\$AS_DISCOVER_URL" = "self"/,/fi/d' \
+    -e '/echo.*AS Discover URL/d' \
+    -e '/echo.*AS Listen URL/d' \
+    "$BE_DOCKER_RUN_DIR/run" > scripts/docker/context/run
+chmod +x scripts/docker/context/run
 
 # Build Docker image
 docker build \
