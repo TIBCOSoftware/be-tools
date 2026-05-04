@@ -249,7 +249,6 @@
             "BE_HOME/lib/ext/tpcl/kafka-clients*.jar",
             "BE_HOME/lib/ext/tpcl/kafka-streams-*.jar",
             "BE_HOME/lib/ext/tpcl/rocksdbjni*.jar",
-            "BE_HOME/lib/ext/tpcl/snappy-java*.jar",
             "BE_HOME/lib/ext/tibco/tibftl-kafka-avro.jar",
             "BE_HOME/lib/ext/tpcl/avro.jar",
             "BE_HOME/lib/ext/tpcl/kafka-avro-serializer.jar",
@@ -407,6 +406,10 @@
             "kafka"
         ],
         "BE_HOME/lib/ext/tpcl/lz4-java*.jar": [
+            "ignite",
+            "kafka"
+        ],
+        "BE_HOME/lib/ext/tpcl/snappy-java*.jar": [
             "ignite",
             "kafka"
         ]
