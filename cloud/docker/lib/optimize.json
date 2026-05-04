@@ -348,7 +348,6 @@
             "BE_HOME/lib/ext/tpcl/apache/pulsar/opentelemetry-context.jar"
         ],
         "query": [
-            "BE_HOME/lib/cep-query.jar"
         ],
         "soap": [
             "BE_HOME/lib/ext/tpcl/jakarta.xml.soap-api.jar",
@@ -399,7 +398,8 @@
             "ignite"
         ],
         "BE_HOME/lib/cep-query.jar": [
-            "ignite"
+            "ignite",
+            "query"
         ],
         "BE_HOME/lib/ext/tpcl/zstd-jni*.jar": [
             "ignite",
