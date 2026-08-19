@@ -68,10 +68,10 @@ For Claude Code / any MCP client (stdio):
 Builds take minutes, so `build_be_image` / `run_image_tests` are asynchronous: they start a
 job and return a `job_id` you poll with `get_job_status` / `get_job_logs`.
 
-## Not in v1
+## Planned for later versions
 
 GraalVM native flow, Helm render/lint/deploy, remote (HTTP) transport, and image push are
-deferred — see [`PLAN.md`](PLAN.md).
+on the roadmap.
 
 ## Tests
 
