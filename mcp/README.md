@@ -22,26 +22,71 @@ The host must already be able to run the be-tools scripts by hand:
 - The be-tools `cloud/` tree. The server locates it via **`BE_TOOLS_HOME`** (defaults to
   the repo root two levels above this package).
 
-Call the `preflight` tool to check all of this at runtime.
+Also required to run the server itself:
 
-## Install
+- **Python 3.10+**.
+- Optionally [`uv`](https://docs.astral.sh/uv/) — the repo ships a `uv.lock` for
+  reproducible installs. Plain `pip` works too.
+
+Call the `preflight` tool once the server is running to check all of the above at runtime.
+
+## Setup
+
+### Step 1 — Get the be-tools tree
+
+Clone (or copy) the [`be-tools`](https://github.com/TIBCOSoftware/be-tools) repository so
+the `cloud/` tree is on the host that will run the builds:
 
 ```sh
-cd mcp
-pip install -e ".[dev]"
+git clone https://github.com/TIBCOSoftware/be-tools.git
+cd be-tools/mcp
 ```
 
-## Run
+The MCP server lives in `be-tools/mcp` and drives the sibling `cloud/` scripts.
+
+### Step 2 — Install the server
+
+Using **uv** (recommended — installs from the pinned `uv.lock`):
 
 ```sh
-be-tools-mcp          # console script (stdio transport)
-# or
-python -m be_tools_mcp
+uv sync                       # create .venv and install deps (add --extra dev for tests)
 ```
 
-## MCP client config
+Or using **pip** (into a virtualenv):
 
-For Claude Code / any MCP client (stdio):
+```sh
+python -m venv .venv
+# Linux/Mac:   source .venv/bin/activate
+# Windows:     .venv\Scripts\activate
+pip install -e ".[dev]"       # drop [dev] if you don't need the test deps
+```
+
+This provides the `be-tools-mcp` console script (stdio transport).
+
+### Step 3 — Point the server at be-tools
+
+The server locates the `cloud/` scripts and Helm chart via the **`BE_TOOLS_HOME`** env var.
+It defaults to the repo root two levels above this package, so if you installed from inside
+`be-tools/mcp` you can skip this. Otherwise set it to your be-tools checkout:
+
+```sh
+# Linux/Mac
+export BE_TOOLS_HOME=/path/to/be-tools
+# Windows (PowerShell)
+$env:BE_TOOLS_HOME = "C:\path\to\be-tools"
+```
+
+### Step 4 — Register the server with your MCP client
+
+**Claude Code (CLI):**
+
+```sh
+# from be-tools/mcp, so BE_TOOLS_HOME resolves to the checkout
+claude mcp add be-tools --env BE_TOOLS_HOME=/path/to/be-tools -- be-tools-mcp
+```
+
+**Any MCP client (JSON config)** — add a stdio server entry. Use `uv run` if you installed
+with uv and want it to run inside the project's virtualenv without activating it:
 
 ```json
 {
@@ -53,6 +98,38 @@ For Claude Code / any MCP client (stdio):
   }
 }
 ```
+
+```jsonc
+// uv variant (runs in the project venv):
+{
+  "mcpServers": {
+    "be-tools": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/be-tools/mcp", "be-tools-mcp"],
+      "env": { "BE_TOOLS_HOME": "/path/to/be-tools" }
+    }
+  }
+}
+```
+
+To run the server directly (e.g. for debugging), invoke it by hand:
+
+```sh
+be-tools-mcp            # console script
+# or
+python -m be_tools_mcp
+```
+
+### Step 5 — Verify
+
+Restart/reload your MCP client so it picks up the new server, then call the **`preflight`**
+tool. It reports whether `docker`/`buildah`, `helm`, `go`, the build scripts, the Helm
+chart, and your `BE_HOME`/source are present and usable, and returns `ready` (build) and
+`deploy_ready` (helm) flags. A `ready: true` result means you can call `build_be_image`.
+
+> **Windows note:** to build **Windows** container images, switch Docker Desktop to
+> *Windows containers* mode first. Paths may be passed with either `/` or `\`; the server
+> normalizes them for the underlying `build_image.bat`.
 
 ## Capabilities (v1)
 
@@ -93,6 +170,8 @@ GraalVM native flow, remote (HTTP) transport, and image push are on the roadmap.
 
 ```sh
 cd mcp
-pytest                              # unit + validation tests (no Docker needed)
-BE_TOOLS_MCP_INTEGRATION=1 pytest   # + gated integration smoke test (needs Docker + a BE app)
+uv run pytest                              # unit + validation tests (no Docker needed)
+BE_TOOLS_MCP_INTEGRATION=1 uv run pytest   # + gated integration smoke test (needs Docker + a BE app)
 ```
+
+(Drop the `uv run` prefix if you installed with pip into an activated virtualenv.)
