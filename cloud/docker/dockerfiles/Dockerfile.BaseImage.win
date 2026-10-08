@@ -10,3 +10,4 @@ COPY app/* c:/tibco/be/ext/
 
 ENV CDD_FILE=c:/tibco/be/application/$CDD_FILE_NAME
 ENV EAR_FILE=c:/tibco/be/application/ear/$EAR_FILE_NAME
+ENV tra.java.property.TIB_ACTIVATION=c:/tibco/be/ext
