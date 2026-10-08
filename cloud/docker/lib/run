@@ -245,30 +245,30 @@ if [[ -n "$STACK_SIZE" ]]; then
 fi
 
 #add properties prefixed with tra
-args="$(grep '^tra' $BE_PROPS_FILE)";
-for arg in $args
-do
+# Use while-read to process one line at a time; for-in word-splits on spaces,
+# silently truncating values that contain spaces (e.g. multi-category trace roles).
+while IFS= read -r arg; do
 	props="";
 	if [[ $arg == tra* ]]; then
-    		 if [[ ! ("$arg" == tra.java.stack.size=* || "$arg" == tra.java.heap.size.max=* || "$arg" == tra.java.heap.size.initial=* || "$arg" == tra.java.extended.properties=* ) ]]; then
- 	 			props="${arg/tra./$blank}"
-         		echo $props >> $TRA_FILE
-             	fi
-  	fi
-done
+		if [[ ! ("$arg" == tra.java.stack.size=* || "$arg" == tra.java.heap.size.max=* || "$arg" == tra.java.heap.size.initial=* || "$arg" == tra.java.extended.properties=* ) ]]; then
+			props="${arg/tra./$blank}"
+			echo "$props" >> $TRA_FILE
+		fi
+	fi
+done < <(grep '^tra' "$BE_PROPS_FILE")
 
-echo $val >> $TRA_FILE
+echo "$val" >> $TRA_FILE
 
 #Intial Heap size
 if [[  -n "$INITIAL_HEAP_SIZE" ]]; then
-    	INITIAL_HEAP_SIZE="${INITIAL_HEAP_SIZE/tra./$blank}"
-    	echo $INITIAL_HEAP_SIZE >> $TRA_FILE
+	INITIAL_HEAP_SIZE="${INITIAL_HEAP_SIZE/tra./$blank}"
+	echo "$INITIAL_HEAP_SIZE" >> $TRA_FILE
 fi
 
 #Max heap size
 if [[  -n "$MAX_HEAP_SIZE" ]]; then
-    	MAX_HEAP_SIZE="${MAX_HEAP_SIZE/tra./$blank}"
-    	echo $MAX_HEAP_SIZE >> $TRA_FILE
+	MAX_HEAP_SIZE="${MAX_HEAP_SIZE/tra./$blank}"
+	echo "$MAX_HEAP_SIZE" >> $TRA_FILE
 fi
 
 echo "$RUNCMD"
