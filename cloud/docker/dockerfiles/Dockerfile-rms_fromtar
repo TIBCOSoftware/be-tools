@@ -72,7 +72,8 @@ ENV PU=default \
  CDD_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${CDD_FILE_NAME} \
  EAR_FILE=/opt/tibco/be/${BE_SHORT_VERSION}/rms/bin/${EAR_FILE_NAME} \
  COMPONENT=rms \
- JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
+ JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8" \
+ tra.java.property.TIB_ACTIVATION=/opt/tibco/be/ext
 
 
 # Setup Config Providers
