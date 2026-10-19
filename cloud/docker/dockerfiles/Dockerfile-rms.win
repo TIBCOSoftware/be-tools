@@ -31,6 +31,7 @@ ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
 
 ENV \
     TIBCO_HOME=c:/tibco \

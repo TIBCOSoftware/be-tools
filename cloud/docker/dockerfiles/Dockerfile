@@ -47,6 +47,8 @@ ARG JRESPLMNT_VERSION
 ARG JRESPLMNT_PRODUCT_HOTFIX
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
+ARG JAVA_HOME_DIR_NAME=tibcojre64
 
 RUN apt-get update \
  && apt-get install -y unzip procps findutils tar
@@ -58,6 +60,7 @@ COPY app/* /opt/tibco/be/ext/
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
+ INSTALLER_TYPE=${INSTALLER_TYPE} \
  AS_VERSION=${AS_VERSION} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION}
 
@@ -69,7 +72,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_withtar(
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_universal_installer('JRESupplement','jresplmnt','$JRESPLMNT_VERSION','$JRESPLMNT_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/${JAVA_HOME_DIR_NAME}/${JRE_VERSION}')" \
  && rm -rf JRESupplement_installers as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf hawk_installer hawk_installer-hf activespaces_installers activespaces_installers_hf *.zip
 RUN ./prepare_finalimage.sh
 

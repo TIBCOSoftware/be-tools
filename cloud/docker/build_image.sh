@@ -35,6 +35,9 @@ isCLIKey()
         --optimize)
             KEY="true"
             ;;
+        --installer-type)
+            KEY="true"
+            ;;
     esac
 
     echo $KEY
@@ -93,6 +96,8 @@ ARG_ENABLE_TESTS="true"
 ARG_BUILD_TOOL=""
 ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="na"
+ARG_INSTALLER_TYPE="auto"
+INSTALLER_TYPE="universal"
 
 # be related args
 BE_HOME="na"
@@ -110,7 +115,7 @@ VALIDATE_FTL_AS="false"
 
 #Map used to store the BE and it's comapatible JRE version
 declare -a BE_VERSION_AND_JRE_MAP
-BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "17" "6.3.2" "17" "6.4.0" "25")
+BE_VERSION_AND_JRE_MAP=("5.6.0" "1.8.0" "5.6.1" "11" "6.0.0" "11" "6.1.0" "11" "6.1.1" "11" "6.1.2" "11" "6.2.0" "11" "6.2.1" "11" "6.2.2" "11" "6.3.0" "11" "6.3.1" "17" "6.3.2" "17" "6.4.0" "25" "7.0.0" "25")
 
 # as legacy related args
 AS_LEG_HOME="na"
@@ -204,6 +209,8 @@ USAGE+="                           Note: $BUILDER_IMAGE image and docker unit te
 USAGE+="\n\n [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]\n"
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
+USAGE+="\n\n [--installer-type]    :    Installer used to install BE (\"native\"|\"universal\") (default is \"native\" for BE 7.0.0 and above, otherwise \"universal\") [optional]\n"
+USAGE+="                           Note: native installs all packs and bundles its own JRE, so -o/--openjdk is not used."
 USAGE+="\n\n [--optimize]         :    Enables container image size optimization [optional]\n"
 USAGE+="                           When CDD/EAR available, most of the modules are identified automatically.\n"
 USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\" \n"
@@ -291,6 +298,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         -o|--openjdk)
             ARG_USE_OPEN_JDK="true"
+            ;;
+        --installer-type)
+            shift # past the key and to the value
+            FLAG_CLIKEY=$(isCLIKey $1 )
+            if [ "$FLAG_CLIKEY" = "false" ]; then
+                ARG_INSTALLER_TYPE="$1"
+            fi
+            ;;
+        --installer-type=*)
+            ARG_INSTALLER_TYPE="${key#*=}"
             ;;
         --optimize)
             shift # past the key and to the value
@@ -653,12 +670,35 @@ else
         exit 1
     fi
 
+    # identify the installer used to install BE
+    case "$ARG_INSTALLER_TYPE" in
+        auto)
+            if [ $(echo "${ARG_BE_VERSION//.}") -ge 700 ]; then
+                INSTALLER_TYPE="native"
+            fi
+            ;;
+        native|universal)
+            INSTALLER_TYPE="$ARG_INSTALLER_TYPE"
+            ;;
+        *)
+            echo "ERROR: Invalid installer type: [$ARG_INSTALLER_TYPE]. Supported values are \"native\" and \"universal\"."
+            exit 1
+            ;;
+    esac
+    if [ "$INSTALLER_TYPE" = "native" -a $(echo "${ARG_BE_VERSION//.}") -lt 700 ]; then
+        echo "ERROR: Native installer is supported only for BE versions 7.0.0 and above. BE version: [$ARG_BE_VERSION]."
+        exit 1
+    fi
+
     if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
         # check as legacy and its hot fixes
         source ./scripts/asleg.sh
 
-        # check be addons
-        source ./scripts/beaddons.sh
+        # native installer installs all packs, there are no separate addon installers
+        if [ "$INSTALLER_TYPE" != "native" ]; then
+            # check be addons
+            source ./scripts/beaddons.sh
+        fi
 
         VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
     fi
@@ -687,8 +727,10 @@ else
         ARG_PYTHON_VERSION=python2
     fi
 
-    # check jresplmnt installer
-    source ./scripts/jresplmnt.sh
+    # check jresplmnt installer, native installer bundles its own JRE
+    if [ "$INSTALLER_TYPE" != "native" ]; then
+        source ./scripts/jresplmnt.sh
+    fi
 fi
 
 #Find JRE Version for given BE Version
@@ -710,7 +752,13 @@ if [ "$OS_NAME" = "Darwin" -a "$INSTALLATION_TYPE" = "fromlocal" ]; then
     exit 1
 fi
 
-if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
+if [ "$INSTALLER_TYPE" = "native" ]; then
+    if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
+        printf "\nWARN: -o/--openjdk is ignored. The native installer bundles its own JRE.\n\n"
+    fi
+    #native installer places the JRE in openjdk/<java major version>
+    JAVA_HOME_DIR_NAME=openjdk
+elif [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
         source ./scripts/openjdk.sh
         if [ "$ARG_JRE_VERSION" != "$OPEN_JDK_VERSION" ]; then
@@ -789,6 +837,9 @@ if ! [ "$BE_HOME" = "na" -o -z "${BE_HOME// }" ]; then
 fi
 
 echo "INFO: BE VERSION                   : [$ARG_BE_VERSION]"
+if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
+    echo "INFO: INSTALLER TYPE               : [$INSTALLER_TYPE]"
+fi
 
 if ! [ "$ARG_BE_HOTFIX" = "na" -o -z "${ARG_BE_HOTFIX// }" ]; then
     echo "INFO: BE HF                        : [$ARG_BE_HOTFIX]"
@@ -1237,6 +1288,9 @@ fi
 BUILD_ARGS=$(echo  --build-arg BE_PRODUCT_VERSION="$ARG_BE_VERSION" --build-arg BE_SHORT_VERSION="$ARG_BE_SHORT_VERSION" --build-arg BE_PRODUCT_IMAGE_VERSION="$ARG_IMAGE_VERSION" )
 BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-arg OPEN_JDK_FILENAME=$OPEN_JDK_FILENAME )
 BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRESPLMNT_VERSION="$ARG_JRESPLMNT_VERSION" --build-arg JRESPLMNT_PRODUCT_HOTFIX="$ARG_JRESPLMNT_HOTFIX" )
+if [ "$INSTALLER_TYPE" = "native" ]; then
+    BUILD_ARGS=$(echo $BUILD_ARGS --build-arg INSTALLER_TYPE=native --build-arg JAVA_HOME_DIR_NAME=$JAVA_HOME_DIR_NAME )
+fi
 
 BUILD_ARGS_CDD_EAR_CONFG=$(echo --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER )
 BUILD_ARGS_AS=$(echo --build-arg AS_VERSION="$ARG_AS_LEG_VERSION" --build-arg AS_SHORT_VERSION="$ARG_AS_LEG_SHORT_VERSION" --build-arg AS_PRODUCT_HOTFIX="$ARG_AS_LEG_HOTFIX" )
