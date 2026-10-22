@@ -34,6 +34,7 @@ ARG EAR_FILE_NAME
 ARG CONFIGPROVIDER
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
 
 ENV \
     TIBCO_HOME=c:/tibco \

@@ -48,6 +48,12 @@ if "%AS_VERSION%" NEQ "na" (
 cd /d c:/working
 powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
 
+:: Native installer installs BE with all packs and bundles its own JRE, no Universal Installer or addons.
+if "%INSTALLER_TYPE%" EQU "native" (
+	call :InstallBENative
+	goto :BEInstalled
+)
+
 :: Extract and install BE and addons (if any)
 echo Extracting BusinessEvents %BE_PRODUCT_VERSION%
 powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-.*_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
@@ -77,6 +83,7 @@ if exist c:/working/installer/TIBCOUniversalInstaller*.silent (
 	powershell -Command "while (Get-Process TIBCOUniversalInstaller-x86-64 -ErrorAction SilentlyContinue) { Start-Sleep 2 }"
 )
 
+:BEInstalled
 if "%HAWK_VERSION%" NEQ "na" (
 	cd /d c:/working
 	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
@@ -208,11 +215,49 @@ if "%OPEN_JDK_FILENAME%" NEQ "na" (
 	mkdir c:\_tibco\openjdk\%JRE_VERSION%
 	powershell -Command "Move-Item -Path c:\working\jdk*\* -Destination  c:\_tibco\openjdk\%JRE_VERSION%"
 	powershell -Command "(Get-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%') -replace 'tibcojre64', 'openjdk' | Set-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%'"
+) else if "%INSTALLER_TYPE%" EQU "native" (
+	REM the native installer bundles the JRE as openjdk/^<java major version^>
+	powershell -Command "Copy-Item 'c:\tibco\openjdk' -Destination 'c:\_tibco' -Recurse | out-null"
 ) else (
 	powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
 )
 
 EXIT /B 0
+
+::----------------------------------------------------------------------------------------------------
+REM NATIVE INSTALLER SUBROUTINES
+::----------------------------------------------------------------------------------------------------
+:InstallBENative
+	SETLOCAL
+	cd /d c:/working
+	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
+
+	echo Extracting BusinessEvents %BE_PRODUCT_VERSION%
+	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-enterprise_[0-9]\.[0-9]\.[0-9]_win.*'} | expand-archive -DestinationPath c:/working/installer -force"
+	call :RunNativeInstaller "c:\working\installer"
+
+	:: Install BE HF, installed the same way on top of the base installation.
+	cd /d c:/working
+	powershell -Command "Get-ChildItem c:/working | Where{$_.Name -Match '^TIB_businessevents-hf_.*[0-9]\.[0-9]\.[0-9]_HF.*_win.*'} | expand-archive -DestinationPath c:/working/installer-hf -force"
+	if exist c:/working/installer-hf/silent.xml (
+		echo Extracting BusinessEvents HF
+		call :RunNativeInstaller "c:\working\installer-hf"
+	)
+	cd /d c:/working
+Exit /B 0
+
+:RunNativeInstaller
+	SETLOCAL
+	cd /d %~1
+	:: Install under c:\tibco with every pack selected.
+	powershell -Command "(Get-Content 'silent.xml') -replace '<installpath>.*</installpath>', '<installpath>c:\tibco</installpath>' -replace '(<pack [^>]*selected=\")false(\")', '$1true$2' | Set-Content 'silent.xml'"
+	echo Installing BusinessEvents ...
+	call installer.bat -auto silent.xml
+	if %ERRORLEVEL% NEQ 0 (
+		echo ERROR: Native installer failed with exit code %ERRORLEVEL%
+		exit 1
+	)
+Exit /B 0
 
 ::----------------------------------------------------------------------------------------------------
 REM INSTALLERS SUBROUTINES
@@ -287,4 +332,4 @@ Exit /B 0
         set "patch=!patch:~-2!"
         set "converted_version=!major!!minor!!patch!"
     )
-    exit /b 0
+    exit /b 0

@@ -69,7 +69,11 @@ sub install_be {
   my $arg_beHotfix  = shift;
   my $arg_asHotfix  = shift;
   my $asVersion     = shift;
-  
+
+  if ($ENV{'INSTALLER_TYPE'} eq 'native') {
+    return install_be_native($arg_beVersion, $arg_beHotfix);
+  }
+
   my $baseProdRegex="*$CONSTANTS_MAP{$arg_beEdition}_$arg_beVersion*zip";
   
   my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
@@ -190,6 +194,105 @@ sub install_be {
   print "\n\nINFO:Product Installation Complete\n\n";
   print "----------------------------------------------\n\n";
 
+}
+
+# Installs BE (all packs) from the native installer zip: TIB_businessevents-enterprise_<ver>_linux26gl25_x86_64.zip.
+# The zip holds installer.sh, the installer jar, silent.xml and a bundled jre/, so the
+# Universal Installer is not used. A hotfix zip is installed the same way, on top of the base install.
+sub install_be_native {
+  my $arg_beVersion = shift;
+  my $arg_beHotfix  = shift;
+
+  my $baseProdRegex = "*$CONSTANTS_MAP{'enterprise'}_$arg_beVersion*zip";
+  my (@baseProd) = glob "$ROOT_FOLDER/$baseProdRegex";
+
+  my @beHfPkg = ();
+  if ($arg_beHotfix ne "na") {
+    my $regex = "*$CONSTANTS_MAP{'hf'}_" . $arg_beVersion . "_HF-*$arg_beHotfix*zip";
+    @beHfPkg = glob "$ROOT_FOLDER/$regex";
+  }
+
+  print "\nINFO:Installing BusinessEvents $arg_beVersion using the native installer...\n";
+  if (!installNativePackage($ROOT_FOLDER, $baseProd[0], $FOLDER_BE_INSTALLER)) {
+    print "\nERROR : Error occurred while installing BE. Aborting\n";
+    exit 0;
+  }
+
+  if (scalar @beHfPkg == 1) {
+    print "\nINFO:Installing BusinessEvents hotfix $arg_beHotfix using the native installer...\n";
+    if (!installNativePackage($ROOT_FOLDER, $beHfPkg[0], $FOLDER_BE_INSTALLER . "-hf")) {
+      print "\nERROR : Error occurred while installing BE hotfix. Aborting\n";
+      exit 0;
+    }
+  }
+
+  my $parsedTraLoc    = getTraLoc($arg_beVersion, $TRA_LOC);
+  my $parsedRMSTraLoc = getTraLoc($arg_beVersion, $RMS_TRA_LOC);
+
+  if (-e $parsedTraLoc) {
+    replaceTraToken($parsedTraLoc, $VALUE_CUSTOM_CP, $REGEX_CUSTOM_CP);
+    replaceTraToken($parsedTraLoc, $VALUE_JMX_PORT, $REGEX_JMX_PORT);
+    appendTraToken($parsedTraLoc, $VALUE_LD_LIB_PATH, $REGEX_LD_LIB_PATH);
+  } else {
+    print "\nWARN:$parsedTraLoc not found. Skipping BE engine tra updates\n";
+  }
+
+  if (-e $parsedRMSTraLoc) {
+    replaceTraToken($parsedRMSTraLoc, $VALUE_CUSTOM_CP, $REGEX_CUSTOM_CP);
+    allowJmxPortForRms($parsedRMSTraLoc, $VALUE_JMX_PORT, $REGEX_JMX_PORT);
+    appendTraToken($parsedRMSTraLoc, $VALUE_LD_LIB_PATH, $REGEX_LD_LIB_PATH);
+  } else {
+    print "\nWARN:$parsedRMSTraLoc not found. Skipping RMS tra updates\n";
+  }
+
+  print "\nINFO:Installing BusinessEvents $arg_beVersion...DONE\n\n";
+
+  print "\nINFO:Performing cleanup...\n";
+  my $beShortVersion = getShortVersion($arg_beVersion);
+  `rm -rf /opt/tibco/be/$beShortVersion/admin-plugins`;
+  `rm -rf /opt/tibco/be/$beShortVersion/api`;
+  `rm -rf /opt/tibco/be/$beShortVersion/uninstaller_scripts`;
+
+  print "\n\nINFO:Product Installation Complete\n\n";
+  print "----------------------------------------------\n\n";
+}
+
+# Extracts a native installer zip and runs it unattended with every pack selected.
+# Returns 1 on success, 0 on failure.
+sub installNativePackage {
+  my $rootFolder       = shift;
+  my $pkg              = shift;
+  my $pkgTargetFolder  = shift;
+
+  if (!defined $pkg || !-e "$rootFolder/$pkg") {
+    print "\nERROR : Native installer package not found\n";
+    return 0;
+  }
+
+  extractPackage($pkg, $rootFolder, $pkg, $pkgTargetFolder);
+
+  my $silentFile = "$pkgTargetFolder/silent.xml";
+  if (!-e $silentFile) {
+    print "\nERROR : $silentFile not found in $pkg\n";
+    return 0;
+  }
+
+  my %nativeTokens = (
+    '(<installpath>)([\s\S]*?)(<\/installpath>)' => $TIBCO_HOME_LOC,
+    '(<pack [^>]*selected=")(false)(")'          => "true"
+  );
+  replaceToken($silentFile, \%nativeTokens);
+
+  my $cmd = "cd $pkgTargetFolder;chmod +x installer.sh jre/bin/*;./installer.sh -auto silent.xml 2>&1";
+  $DEBUG_ENABLE==1?print "\nDEBUG:Performing installation with Silent file : $silentFile\n":"";
+  my $result = `$cmd`;
+  my $exitCode = $? >> 8;
+  $DEBUG_ENABLE==1?print "\nDEBUG:$result\n":"";
+  if ($exitCode != 0) {
+    print "\nERROR : Native installer exited with code $exitCode\n";
+    return 0;
+  }
+  return 1;
 }
 
 sub install_package_with_silentfile {
