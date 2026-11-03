@@ -80,8 +80,8 @@ rm -rf /home/tibco/be/be_installers-hf
 if [ "$OPEN_JDK_FILENAME" != "na" -a "$OPEN_JDK_FILENAME" != "" ]; then
     cp -r /opt/tibco/openjdk /tibco_home
 elif [ "$INSTALLER_TYPE" = "native" ]; then
-    # the native installer bundles the JRE as openjdk/<java major version>
-    cp -r /opt/tibco/openjdk /tibco_home
+    # the native installer bundles the JRE as jrehome/<java major version>
+    cp -r /opt/tibco/jrehome /tibco_home
 else
     cp -r /opt/tibco/tibcojre64 /tibco_home
 fi

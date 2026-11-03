@@ -67,12 +67,16 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_withtar(
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_VERSION','enterprise','$BE_PRODUCT_ADDONS','$BE_PRODUCT_HOTFIX','$AS_PRODUCT_HOTFIX','$AS_VERSION')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_universal_installer('JRESupplement','jresplmnt','$JRESPLMNT_VERSION','$JRESPLMNT_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/${JAVA_HOME_DIR_NAME}/${JRE_VERSION}')" \
+# The native installer lays down the Quarkus RMS (rms-server/), which has no annotation indexes to generate
+RUN if [ "$INSTALLER_TYPE" != "native" ]; then \
+      perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/${JAVA_HOME_DIR_NAME}/${JRE_VERSION}')"; \
+    fi \
  && rm -rf JRESupplement_installers as_installers as_installers-hf be_installers ftl_installers ftl_installers_hf activespaces_installers activespaces_installers_hf *.zip
 
 COPY app/* /opt/tibco/be/ext/
 
-RUN ./prepare_finalimage.sh
+# native: assemble the Quarkus RMS tree and a first-run seed of its instance directory; otherwise the legacy BE-engine RMS
+RUN if [ "$INSTALLER_TYPE" = "native" ]; then ./prepare_finalimage_rms.sh; else ./prepare_finalimage.sh; fi
 
 RUN chgrp -R 0 /tibco_home && chmod -R g=u /tibco_home \
     && chgrp -R 0 /home/tibco && chmod -R g=u /home/tibco
@@ -82,8 +86,60 @@ RUN mkdir -p /mnt/tibco/be/logs \
  && chgrp -R 0 /mnt/tibco/ \
  && chmod -R g=u /mnt/tibco/
 
+# Quarkus RMS image (native installer, BE 7.0.0 and above). Built with --target final-native.
+# RMS needs an external PostgreSQL; see lib/run-rms.sh for the environment variables it reads.
+FROM docker.io/library/ubuntu:20.04 AS final-native
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG MAVEN_VERSION=3.9.11
+ARG DEBIAN_FRONTEND=noninteractive
+
+# RMS forks Maven for EAR builds and deploy, so Maven must be on PATH (rms.deploy.build.maven-cmd).
+# curl and ca-certificates are only needed to fetch it, procps is used by RMS's forked builds.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates procps \
+ && curl -fsSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+      | tar -xz -C /opt \
+ && ln -s /opt/apache-maven-${MAVEN_VERSION} /opt/maven \
+ && apt-get purge -y curl \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=intermediate /home/tibco /home/tibco
+
+COPY --from=intermediate /tibco_home /opt/tibco
+
+COPY --from=intermediate /mnt/tibco /mnt/tibco
+
+LABEL "TIBCO BusinessEvents Version"=$BE_PRODUCT_VERSION \
+      "TIBCO BusinessEvents Docker Image Version"=$BE_PRODUCT_IMAGE_VERSION
+
+# RMS_INSTANCE_DIR is the operator-owned instance directory (config/, logs/, data/). Mount a volume on it to keep
+# the Git repositories and the generated secrets across restarts. The entrypoint seeds it on first start.
+ENV TIBCO_HOME=/opt/tibco \
+ BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
+ BE_SHORT_VERSION=${BE_SHORT_VERSION} \
+ BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+ RMS_INSTANCE_DIR=/opt/tibco/rms-instance/be/${BE_SHORT_VERSION} \
+ RMS_INSTANCE_SEED_DIR=/opt/tibco/rms-instance-seed \
+ COMPONENT=rms \
+ PATH=/opt/maven/bin:${PATH} \
+ JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
+
+RUN ln -s /opt/tibco/be/${BE_SHORT_VERSION} /opt/tibco/be/latest
+
+VOLUME /opt/tibco/rms-instance/be/${BE_SHORT_VERSION}
+
+# RMS HTTP port
+EXPOSE 8081
+
+WORKDIR /home/tibco/be
+CMD ["./run-rms.sh"]
+
 #Discard intermediate image and just copy the installation to a new image.
-FROM docker.io/library/ubuntu:20.04
+FROM docker.io/library/ubuntu:20.04 AS final-universal
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION

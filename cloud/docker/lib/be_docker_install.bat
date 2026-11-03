@@ -84,6 +84,11 @@ if exist c:/working/installer/TIBCOUniversalInstaller*.silent (
 )
 
 :BEInstalled
+REM Quarkus RMS: nothing else of the BE engine flow below applies
+if "%INSTALLER_TYPE%" EQU "native" if "%COMPONENT%" EQU "rms" (
+	call :PrepareRmsNative
+	EXIT /B 0
+)
 if "%HAWK_VERSION%" NEQ "na" (
 	cd /d c:/working
 	powershell -Command "rm -Recurse -Force 'c:/working/installer' -ErrorAction Ignore | out-null"
@@ -216,13 +221,52 @@ if "%OPEN_JDK_FILENAME%" NEQ "na" (
 	powershell -Command "Move-Item -Path c:\working\jdk*\* -Destination  c:\_tibco\openjdk\%JRE_VERSION%"
 	powershell -Command "(Get-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%') -replace 'tibcojre64', 'openjdk' | Set-Content 'c:\_tibco\be\%BE_SHORT_VERSION%\%TRA_FILE%'"
 ) else if "%INSTALLER_TYPE%" EQU "native" (
-	REM the native installer bundles the JRE as openjdk/^<java major version^>
-	powershell -Command "Copy-Item 'c:\tibco\openjdk' -Destination 'c:\_tibco' -Recurse | out-null"
+	REM the native installer bundles the JRE as jrehome/^<java major version^>
+	powershell -Command "Copy-Item 'c:\tibco\jrehome' -Destination 'c:\_tibco' -Recurse | out-null"
 ) else (
 	powershell -Command "Copy-Item 'c:\tibco\tibcojre64' -Destination 'c:\_tibco' -Recurse | out-null"
 )
 
 EXIT /B 0
+
+::----------------------------------------------------------------------------------------------------
+REM QUARKUS RMS (native installer, BE 7.0.0 and above)
+::----------------------------------------------------------------------------------------------------
+:: Assembles c:\_tibco for the Quarkus RMS image. The native installer has already laid down, under c:\tibco:
+::   jrehome\<java major version>      bundled JRE (RMS needs Java 25)
+::   be\<short version>                BE libraries, studio plugins, maven repository and rms-server
+::   rms-instance\be\<short version>   instance directory written by the RMS post-install hook
+:PrepareRmsNative
+	SETLOCAL
+	set "RMS_SRC=c:\tibco\be\%BE_SHORT_VERSION%"
+	set "RMS_INSTANCE=c:\tibco\rms-instance\be\%BE_SHORT_VERSION%"
+
+	if not exist "%RMS_SRC%\rms-server" (
+		echo ERROR: %RMS_SRC%\rms-server not found. The native installer did not install the RMS pack.
+		exit 1
+	)
+	if not exist "c:\tibco\jrehome" (
+		echo ERROR: c:\tibco\jrehome not found. The native installer did not install its bundled JRE.
+		exit 1
+	)
+	if not exist "%RMS_INSTANCE%\config" (
+		echo ERROR: RMS instance directory %RMS_INSTANCE%\config not found. The RMS post-install hook did not run.
+		exit 1
+	)
+
+	powershell -Command "Copy-Item 'c:\tibco\jrehome' -Destination 'c:\_tibco' -Recurse | out-null"
+	powershell -Command "Copy-Item '%RMS_SRC%' -Destination 'c:\_tibco\be' -Recurse | out-null"
+	:: Install bookkeeping and content a running RMS never reads
+	powershell -Command "Remove-Item 'c:\_tibco\be\%BE_SHORT_VERSION%\examples','c:\_tibco\be\%BE_SHORT_VERSION%\.history','c:\_tibco\be\%BE_SHORT_VERSION%\.installer','c:\_tibco\be\%BE_SHORT_VERSION%\Uninstaller' -Recurse -Force -ErrorAction Ignore"
+
+	:: The instance directory is operator-owned and is a volume at run time. Keep the installer's output as the seed that
+	:: run-rms.bat copies into an empty instance directory on first start.
+	powershell -Command "Copy-Item '%RMS_INSTANCE%' -Destination 'c:\_tibco\rms-instance-seed' -Recurse | out-null"
+	powershell -Command "Remove-Item 'c:\_tibco\rms-instance-seed\logs\*' -Recurse -Force -ErrorAction Ignore"
+	:: The post-install hook ran 'be-rms-server init', so the seed holds keys generated here, at image build time. Put the
+	:: key-less template back so that every container generates its own keys on first start (run-rms.bat runs init).
+	copy /Y "%RMS_SRC%\rms-server\config\rms-secrets.properties" "c:\_tibco\rms-instance-seed\config\rms-secrets.properties" > NUL
+Exit /B 0
 
 ::----------------------------------------------------------------------------------------------------
 REM NATIVE INSTALLER SUBROUTINES

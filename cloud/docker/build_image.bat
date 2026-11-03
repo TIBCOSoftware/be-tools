@@ -25,6 +25,8 @@ set "ARG_USE_OPEN_JDK=false"
 set "ARG_OPTIMIZE=na"
 set "ARG_INSTALLER_TYPE=auto"
 set "INSTALLER_TYPE=universal"
+set "QUARKUS_RMS=false"
+set "BUILD_TARGET_ARG="
 set "JRE_DIR_NAME=tibcojre64"
 
 REM openjdk related vars
@@ -594,10 +596,17 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         echo ERROR: Native installer is supported only for BE versions 7.0.0 and above. BE version: [!ARG_BE_VERSION!].
         GOTO END-withError
     )
-    REM native installer places the JRE in openjdk/^<java major version^>
-    if "!INSTALLER_TYPE!" EQU "native" set "JRE_DIR_NAME=openjdk"
+    REM native installer places the JRE in jrehome/^<java major version^>
+    if "!INSTALLER_TYPE!" EQU "native" set "JRE_DIR_NAME=jrehome"
+    REM BE 7.0.0 and above installed with the native installer ships the Quarkus RMS: it is not a BE engine, so it needs
+    REM no ActiveSpaces, FTL, CDD/EAR or container optimization, but needs an external PostgreSQL
+    if "!INSTALLER_TYPE!" EQU "native" if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+        set "QUARKUS_RMS=true"
+        REM Dockerfile-rms.win holds the legacy and the Quarkus RMS images as separate final stages
+        set "BUILD_TARGET_ARG=--target final-native"
+    )
 
-    if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
+    if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" if "!QUARKUS_RMS!" NEQ "true" (
         call .\scripts\asleg.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
 
@@ -605,6 +614,8 @@ if !INSTALLATION_TYPE! EQU fromlocal (
 
         call .\scripts\util.bat :ValidateFTLAndAS !ARG_BE_VERSION! !IMAGE_NAME! !RMS_IMAGE! !VALIDATE_FTL_AS!
     )
+
+    if "!QUARKUS_RMS!" EQU "true" set "VALIDATE_FTL_AS=false"
 
     if "!VALIDATE_FTL_AS!" EQU "true" (
         REM native installer installs all packs, there are no separate addon installers
@@ -684,7 +695,7 @@ if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
-if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" if "!QUARKUS_RMS!" NEQ "true" (
     set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http,query"
     if "!ARG_OPTIMIZE!" NEQ "na" (
         if "!ARG_OPTIMIZE!" NEQ "" (
@@ -695,6 +706,11 @@ if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
     ) else (
         set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
     ) 
+)
+
+if "!QUARKUS_RMS!" EQU "true" (
+    if "!ARG_OPTIMIZE!" NEQ "na" if "!ARG_OPTIMIZE!" NEQ "" echo WARN: --optimize is ignored for the Quarkus RMS image ^(BE 7.0.0 and above, native installer^).
+    set "ARG_OPTIMIZE=na"
 )
 
 REM checking optimize flag and its validation
@@ -774,6 +790,7 @@ if !BE_HOME! NEQ na (
 
 echo INFO: BE VERSION                   : [!ARG_BE_VERSION!]
 if !INSTALLATION_TYPE! EQU frominstallers echo INFO: INSTALLER TYPE               : [!INSTALLER_TYPE!]
+if "!QUARKUS_RMS!" EQU "true" echo INFO: RMS                          : [Quarkus RMS, requires an external PostgreSQL. See lib/run-rms.bat]
 
 if !ARG_BE_HOTFIX! NEQ na (
     echo INFO: BE HF                        : [!ARG_BE_HOTFIX!]
@@ -1159,7 +1176,7 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
         docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg INSTALLER_TYPE=!INSTALLER_TYPE! --build-arg JAVA_HOME_DIR_NAME=!JRE_DIR_NAME! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg INSTALLER_TYPE=!INSTALLER_TYPE! --build-arg JAVA_HOME_DIR_NAME=!JRE_DIR_NAME! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build !BUILD_TARGET_ARG! -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg INSTALLER_TYPE=!INSTALLER_TYPE! --build-arg JAVA_HOME_DIR_NAME=!JRE_DIR_NAME! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
     docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!

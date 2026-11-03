@@ -98,6 +98,7 @@ ARG_USE_OPEN_JDK="false"
 ARG_OPTIMIZE="na"
 ARG_INSTALLER_TYPE="auto"
 INSTALLER_TYPE="universal"
+QUARKUS_RMS="false"
 
 # be related args
 BE_HOME="na"
@@ -210,7 +211,8 @@ USAGE+="\n\n [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optiona
 USAGE+="                           Note: Place OpenJDK installer archive along with TIBCO installers.\n"
 USAGE+="                                 OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11."
 USAGE+="\n\n [--installer-type]    :    Installer used to install BE (\"native\"|\"universal\") (default is \"native\" for BE 7.0.0 and above, otherwise \"universal\") [optional]\n"
-USAGE+="                           Note: native installs all packs and bundles its own JRE, so -o/--openjdk is not used."
+USAGE+="                           Note: native installs all packs and bundles its own JRE, so -o/--openjdk is not used.\n"
+USAGE+="                                 With native, --image-type \"$RMS_IMAGE\" builds the Quarkus RMS image: no Activespaces/FTL/CDD/EAR, --optimize is ignored."
 USAGE+="\n\n [--optimize]         :    Enables container image size optimization [optional]\n"
 USAGE+="                           When CDD/EAR available, most of the modules are identified automatically.\n"
 USAGE+="                           Additional module names can be passed as comma separated string. Ex: \"process,query,pattern,analytics\" \n"
@@ -690,7 +692,14 @@ else
         exit 1
     fi
 
-    if [ "$IMAGE_NAME" != "$TEA_IMAGE" ]; then
+    # BE 7.0.0 and above installed with the native installer ships the Quarkus RMS: it is not a BE engine, so it needs
+    # no ActiveSpaces, FTL, CDD/EAR or container optimization, but needs an external PostgreSQL
+    QUARKUS_RMS="false"
+    if [ "$INSTALLER_TYPE" = "native" -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+        QUARKUS_RMS="true"
+    fi
+
+    if [ "$IMAGE_NAME" != "$TEA_IMAGE" -a "$QUARKUS_RMS" != "true" ]; then
         # check as legacy and its hot fixes
         source ./scripts/asleg.sh
 
@@ -701,6 +710,10 @@ else
         fi
 
         VALIDATE_FTL_AS=$(validateFTLandAS $ARG_BE_VERSION $IMAGE_NAME $RMS_IMAGE )
+    fi
+
+    if [ "$QUARKUS_RMS" = "true" ]; then
+        VALIDATE_FTL_AS="false"
     fi
 
     # check for FTL and AS4 only when VALIDATE_FTL_AS is true
@@ -756,8 +769,8 @@ if [ "$INSTALLER_TYPE" = "native" ]; then
     if [ "$ARG_USE_OPEN_JDK" == "true" ]; then
         printf "\nWARN: -o/--openjdk is ignored. The native installer bundles its own JRE.\n\n"
     fi
-    #native installer places the JRE in openjdk/<java major version>
-    JAVA_HOME_DIR_NAME=openjdk
+    #native installer places the JRE in jrehome/<java major version>
+    JAVA_HOME_DIR_NAME=jrehome
 elif [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
         source ./scripts/openjdk.sh
@@ -770,7 +783,12 @@ elif [ "$ARG_USE_OPEN_JDK" == "true" ]; then
     fi
 fi
 
-if [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
+if [ "$QUARKUS_RMS" = "true" ]; then
+    if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
+        printf "\nWARN: --optimize is ignored for the Quarkus RMS image (BE 7.0.0 and above, native installer).\n\n"
+    fi
+    ARG_OPTIMIZE="na"
+elif [ $(echo "${ARG_BE_VERSION//.}") -ge 620 -a "$IMAGE_NAME" = "$RMS_IMAGE" ]; then
     DEFAULT_RMS_MODULES="as2,as4,ftl,store,ignite,http,query"
     if [ "$ARG_OPTIMIZE" != "" -a "$ARG_OPTIMIZE" != "na" ]; then
         ARG_OPTIMIZE="$ARG_OPTIMIZE,$DEFAULT_RMS_MODULES"
@@ -839,6 +857,9 @@ fi
 echo "INFO: BE VERSION                   : [$ARG_BE_VERSION]"
 if [ "$INSTALLATION_TYPE" = "frominstallers" ]; then
     echo "INFO: INSTALLER TYPE               : [$INSTALLER_TYPE]"
+fi
+if [ "$QUARKUS_RMS" = "true" ]; then
+    echo "INFO: RMS                          : [Quarkus RMS, requires an external PostgreSQL. See lib/run-rms.sh]"
 fi
 
 if ! [ "$ARG_BE_HOTFIX" = "na" -o -z "${ARG_BE_HOTFIX// }" ]; then
@@ -1290,6 +1311,11 @@ BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRE_VERSION=$ARG_JRE_VERSION --build-a
 BUILD_ARGS=$(echo $BUILD_ARGS --build-arg JRESPLMNT_VERSION="$ARG_JRESPLMNT_VERSION" --build-arg JRESPLMNT_PRODUCT_HOTFIX="$ARG_JRESPLMNT_HOTFIX" )
 if [ "$INSTALLER_TYPE" = "native" ]; then
     BUILD_ARGS=$(echo $BUILD_ARGS --build-arg INSTALLER_TYPE=native --build-arg JAVA_HOME_DIR_NAME=$JAVA_HOME_DIR_NAME )
+    if [ "$QUARKUS_RMS" = "true" ]; then
+        # Dockerfile-rms holds the legacy and the Quarkus RMS images as separate final stages
+        BUILD_ARGS=$(echo $BUILD_ARGS --target final-native )
+        SKIP_CONTAINER_TESTS="true"
+    fi
 fi
 
 BUILD_ARGS_CDD_EAR_CONFG=$(echo --build-arg CDD_FILE_NAME=$CDD_FILE_NAME --build-arg EAR_FILE_NAME=$EAR_FILE_NAME --build-arg CONFIGPROVIDER=$ARG_CONFIGPROVIDER )
