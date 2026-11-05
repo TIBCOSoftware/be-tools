@@ -45,6 +45,11 @@ Parameters (map directly to script flags):
   disable_tests         --disable-tests   app/base/s2ibuilder only.
   build_tool            -b/--build-tool   docker (default) | buildah. buildah cannot build
                                           s2ibuilder and skips tests.
+  be_version            (server-side)     Optional x.x.x; validates native (>=7.0.0), warns on ignored
+                                          options (returned as "warnings").
+  installer_type        --installer-type  native | universal. Default native for BE>=7.0.0.
+                                          native: bundled JRE (openjdk ignored); rms = Quarkus RMS
+                                          image (no AS/FTL/CDD/EAR, optimize ignored).
   openjdk               -o/--openjdk      Use OpenJDK instead of tibcojre.
   optimize/modules      --optimize        Image size optimization; extra modules as a list.
 

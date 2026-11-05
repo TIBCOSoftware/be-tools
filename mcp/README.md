@@ -136,6 +136,7 @@ chart, and your `BE_HOME`/source are present and usable, and returns `ready` (bu
 **Tools — build/test**
 - `preflight` — check build tools, `helm`/`go`, scripts, chart, and source readiness.
 - `build_be_image` — start a BE image build (`app` | `rms` | `teagent` | `s2ibuilder` | `base`). Returns a `job_id`.
+  - `installer_type` (`native`|`universal`) and optional `be_version` are supported; native is the default for BE 7.0.0+ (bundled JRE; `rms` builds the Quarkus RMS image). Ignored options are reported in a `warnings` field.
 - `run_image_tests` — start container-structure tests on an image. Returns a `job_id`.
 - `get_job_status` / `get_job_logs` / `cancel_job` — manage long-running jobs.
 

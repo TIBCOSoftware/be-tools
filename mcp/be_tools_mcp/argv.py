@@ -17,6 +17,7 @@ from .constants import (
     BUILD_TOOLS,
     CONFIG_PROVIDERS,
     DISABLE_TESTS_IMAGE_TYPES,
+    INSTALLER_TYPES,
     IMAGE_TYPES,
     TEST_IMAGE_TYPES,
     optimize_modules,
@@ -77,6 +78,7 @@ def build_image_argv(
     openjdk: bool = False,
     optimize: bool = False,
     optimize_modules_extra: list[str] | None = None,
+    installer_type: str | None = None,
     check_paths: bool = True,
     docker_lib_dir: str | None = None,
 ) -> list[str]:
@@ -94,6 +96,12 @@ def build_image_argv(
     if build_tool not in BUILD_TOOLS:
         raise ValidationError(
             f"Invalid build_tool [{build_tool}]. Must be one of {', '.join(BUILD_TOOLS)}."
+        )
+
+    if installer_type is not None and installer_type not in INSTALLER_TYPES:
+        raise ValidationError(
+            f"Invalid installer_type [{installer_type}]. Must be one of "
+            f"{', '.join(INSTALLER_TYPES)}."
         )
 
     # --- buildah restrictions ---------------------------------------------
@@ -158,6 +166,8 @@ def build_image_argv(
     if config_provider:
         argv.append(f"--config-provider={','.join(config_provider)}")
     argv.append(f"--build-tool={build_tool}")
+    if installer_type:
+        argv.append(f"--installer-type={installer_type}")
     if openjdk:
         argv.append("--openjdk")
     # --disable-tests is only meaningful for app/base/s2ibuilder.
@@ -227,3 +237,57 @@ def run_tests_argv(
         argv.append(f"--key-value-pair={kv}")
 
     return argv
+
+
+def _version_tuple(version: str) -> tuple[int, ...]:
+    try:
+        return tuple(int(p) for p in version.strip().split(".") if p != "")
+    except ValueError:
+        raise ValidationError(f"Invalid be_version [{version}]; expected x.x or x.x.x.") from None
+
+
+def resolve_installer_type(installer_type: str | None, be_version: str | None) -> str | None:
+    """Effective installer type, mirroring build_image.sh defaulting.
+
+    The script defaults to ``native`` for BE >= 7.0.0 and ``universal`` below, and
+    rejects ``native`` below 7.0.0. Without ``be_version`` an unset type is unknown
+    (``None``) because the script derives the version from the installers.
+    """
+    if installer_type is not None and installer_type not in INSTALLER_TYPES:
+        raise ValidationError(
+            f"Invalid installer_type [{installer_type}]. Must be one of "
+            f"{', '.join(INSTALLER_TYPES)}."
+        )
+    if be_version is None:
+        return installer_type
+    is_native_capable = _version_tuple(be_version) >= (7, 0)
+    if installer_type == "native" and not is_native_capable:
+        raise ValidationError(
+            f"installer_type 'native' requires BE 7.0.0 or above (be_version [{be_version}])."
+        )
+    return installer_type or ("native" if is_native_capable else "universal")
+
+
+def build_image_warnings(
+    *,
+    image_type: str,
+    installer_type: str | None,
+    openjdk: bool = False,
+    optimize: bool = False,
+    optimize_modules_extra: list[str] | None = None,
+) -> list[str]:
+    """Options the script will silently ignore for the effective installer type."""
+    warnings: list[str] = []
+    if installer_type == "native":
+        if openjdk:
+            warnings.append("openjdk is ignored: the native installer bundles its own JRE.")
+        if image_type == "rms" and (optimize or optimize_modules_extra):
+            warnings.append(
+                "optimize is ignored for the Quarkus RMS image (native installer)."
+            )
+        if image_type == "rms":
+            warnings.append(
+                "The native Quarkus RMS image skips post-build tests; run_image_tests "
+                "does not apply to it."
+            )
+    return warnings

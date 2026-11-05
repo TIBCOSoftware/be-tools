@@ -20,6 +20,9 @@ TEST_IMAGE_TYPES: tuple[str, ...] = ("app", "s2ibuilder", "rms", "teagent")
 # build_image.sh: --config-provider
 CONFIG_PROVIDERS: tuple[str, ...] = ("gvconsul", "gvhttp", "gvcyberark", "cmcncf", "custom")
 
+# build_image.sh: --installer-type (native default for BE >= 7.0.0, else universal)
+INSTALLER_TYPES: tuple[str, ...] = ("native", "universal")
+
 # build_image.sh: -b/--build-tool
 BUILD_TOOLS: tuple[str, ...] = ("docker", "buildah")
 

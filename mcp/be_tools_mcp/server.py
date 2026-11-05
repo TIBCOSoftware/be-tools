@@ -13,7 +13,13 @@ from mcp.server.mcpserver import MCPServer
 from pydantic import Field
 
 from . import invoker, prompts, resources
-from .argv import ValidationError, build_image_argv, run_tests_argv
+from .argv import (
+    ValidationError,
+    build_image_argv,
+    build_image_warnings,
+    resolve_installer_type,
+    run_tests_argv,
+)
 from .helm_argv import (
     helm_dep_update_argv,
     helm_deploy_argv,
@@ -98,9 +104,31 @@ async def build_be_image(
         list[str] | None,
         Field(description="Extra modules to strip; implies optimize=True."),
     ] = None,
+    installer_type: Annotated[
+        str | None,
+        Field(
+            description="native | universal. Default: native for BE>=7.0.0 (bundles its "
+            "own JRE; rms builds the Quarkus RMS image), else universal."
+        ),
+    ] = None,
+    be_version: Annotated[
+        str | None,
+        Field(
+            description="Optional BE version (e.g. 7.0.0). Lets the server validate "
+            "installer_type=native (needs >=7.0.0) and warn about ignored options."
+        ),
+    ] = None,
 ) -> dict:
     """Start an asynchronous BE container image build. Returns a job_id to poll."""
     try:
+        effective_installer = resolve_installer_type(installer_type, be_version)
+        warnings = build_image_warnings(
+            image_type=image_type,
+            installer_type=effective_installer,
+            openjdk=openjdk,
+            optimize=optimize,
+            optimize_modules_extra=optimize_modules,
+        )
         argv = build_image_argv(
             image_type=image_type,
             app_location=app_location,
@@ -113,6 +141,7 @@ async def build_be_image(
             openjdk=openjdk,
             optimize=optimize,
             optimize_modules_extra=optimize_modules,
+            installer_type=installer_type,
             docker_lib_dir=str(invoker.docker_dir() / "lib"),
         )
     except ValidationError as exc:
@@ -124,7 +153,10 @@ async def build_be_image(
 
     command = invoker.launch_command(script, argv)
     job = await _jobs.start("build", command, invoker.docker_dir())
-    return {"job_id": job.id, "argv": argv, "command": command, "status": job.status}
+    result = {"job_id": job.id, "argv": argv, "command": command, "status": job.status}
+    if warnings:
+        result["warnings"] = warnings
+    return result
 
 
 @mcp.tool()
@@ -143,7 +175,11 @@ async def run_image_tests(
         list[str] | None, Field(description="KEY=VALUE overrides for the yaml tests.")
     ] = None,
 ) -> dict:
-    """Start an asynchronous container-structure test run. Returns a job_id to poll."""
+    """Start an asynchronous container-structure test run. Returns a job_id to poll.
+
+    Not applicable to the native (BE>=7.0.0) Quarkus RMS image: build_image skips
+    tests for it. For native app images pass java_dir_name (e.g. jrehome/21).
+    """
     try:
         argv = run_tests_argv(
             image_name=image_name,

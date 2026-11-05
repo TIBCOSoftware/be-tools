@@ -122,3 +122,101 @@ def test_run_tests_argv_full():
     assert "--image-type=rms" in argv
     assert argv.count("--key-value-pair=JRE_VERSION=11") == 1
     assert "--key-value-pair=FOO=bar" in argv
+
+
+# --- per-image-type coverage -------------------------------------------------
+
+from be_tools_mcp.argv import ValidationError  # noqa: E402
+
+
+@pytest.mark.parametrize("image_type", ["rms", "teagent", "s2ibuilder", "base"])
+def test_types_without_required_app_location(image_type):
+    argv = build_image_argv(image_type=image_type)
+    assert argv[0] == f"--image-type={image_type}"
+    assert not any(a.startswith("--app-location") for a in argv)
+
+
+@pytest.mark.parametrize("image_type", ["teagent", "s2ibuilder", "base"])
+def test_app_location_ignored_for_non_app_types(image_type, tmp_path):
+    argv = build_image_argv(image_type=image_type, app_location=str(tmp_path))
+    assert not any(a.startswith("--app-location") for a in argv)
+
+
+def test_rms_accepts_optional_app_location(tmp_path):
+    (tmp_path / "a.cdd").write_text("")
+    (tmp_path / "a.ear").write_text("")
+    argv = build_image_argv(image_type="rms", app_location=str(tmp_path))
+    assert any(a.startswith("--app-location=") for a in argv)
+
+
+@pytest.mark.parametrize("image_type", ["app", "base", "s2ibuilder"])
+def test_disable_tests_honoured(image_type, tmp_path):
+    (tmp_path / "a.cdd").write_text("")
+    (tmp_path / "a.ear").write_text("")
+    argv = build_image_argv(
+        image_type=image_type, app_location=str(tmp_path), disable_tests=True
+    )
+    assert "--disable-tests" in argv
+
+
+def test_disable_tests_ignored_for_teagent():
+    assert "--disable-tests" not in build_image_argv(image_type="teagent", disable_tests=True)
+
+
+@pytest.mark.parametrize("image_type", ["app", "rms", "teagent", "base"])
+def test_buildah_allowed_except_s2i(image_type, tmp_path):
+    (tmp_path / "a.cdd").write_text("")
+    (tmp_path / "a.ear").write_text("")
+    argv = build_image_argv(image_type=image_type, app_location=str(tmp_path), build_tool="buildah")
+    assert "--build-tool=buildah" in argv
+
+
+@pytest.mark.parametrize("installer", ["native", "universal"])
+def test_installer_type(installer):
+    argv = build_image_argv(image_type="rms", installer_type=installer)
+    assert f"--installer-type={installer}" in argv
+
+
+def test_installer_type_omitted_by_default():
+    assert not any(a.startswith("--installer-type") for a in build_image_argv(image_type="base"))
+
+
+def test_invalid_installer_type():
+    with pytest.raises(ValidationError):
+        build_image_argv(image_type="base", installer_type="msi")
+
+
+@pytest.mark.parametrize("image_type", ["app", "s2ibuilder", "rms", "teagent"])
+def test_run_tests_all_supported_types(image_type):
+    argv = run_tests_argv(image_name="x:1", be_version="7.0", image_type=image_type)
+    assert f"--image-type={image_type}" in argv
+
+
+from be_tools_mcp.argv import build_image_warnings, resolve_installer_type  # noqa: E402
+
+
+def test_resolve_installer_defaults_by_version():
+    assert resolve_installer_type(None, "7.0.0") == "native"
+    assert resolve_installer_type(None, "6.3.0") == "universal"
+    assert resolve_installer_type(None, None) is None
+    assert resolve_installer_type("universal", "7.0.0") == "universal"
+
+
+def test_native_rejected_below_7():
+    with pytest.raises(ValidationError):
+        resolve_installer_type("native", "6.3.0")
+
+
+def test_bad_be_version():
+    with pytest.raises(ValidationError):
+        resolve_installer_type(None, "abc")
+
+
+def test_warnings_native_rms():
+    w = build_image_warnings(image_type="rms", installer_type="native", openjdk=True, optimize=True)
+    assert len(w) == 3
+
+
+def test_no_warnings_for_universal_or_unknown():
+    assert build_image_warnings(image_type="rms", installer_type="universal", openjdk=True) == []
+    assert build_image_warnings(image_type="rms", installer_type=None, openjdk=True) == []
