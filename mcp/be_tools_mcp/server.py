@@ -128,6 +128,7 @@ async def build_be_image(
             openjdk=openjdk,
             optimize=optimize,
             optimize_modules_extra=optimize_modules,
+            docker_file=docker_file,
         )
         argv = build_image_argv(
             image_type=image_type,

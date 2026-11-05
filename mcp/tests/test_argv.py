@@ -214,9 +214,14 @@ def test_bad_be_version():
 
 def test_warnings_native_rms():
     w = build_image_warnings(image_type="rms", installer_type="native", openjdk=True, optimize=True)
-    assert len(w) == 3
+    assert len(w) == 4
 
 
 def test_no_warnings_for_universal_or_unknown():
     assert build_image_warnings(image_type="rms", installer_type="universal", openjdk=True) == []
     assert build_image_warnings(image_type="rms", installer_type=None, openjdk=True) == []
+
+
+def test_warning_custom_dockerfile_for_native_rms():
+    w = build_image_warnings(image_type="rms", installer_type="native", docker_file="D")
+    assert any("final-native" in m for m in w)

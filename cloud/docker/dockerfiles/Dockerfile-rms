@@ -19,7 +19,7 @@ ARG ACTIVESPACES_SHORT_VERSION
 ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
-FROM docker.io/library/ubuntu:20.04 AS intermediate
+FROM docker.io/library/ubuntu:24.04 AS intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -88,7 +88,7 @@ RUN mkdir -p /mnt/tibco/be/logs \
 
 # Quarkus RMS image (native installer, BE 7.0.0 and above). Built with --target final-native.
 # RMS needs an external PostgreSQL; see lib/run-rms.sh for the environment variables it reads.
-FROM docker.io/library/ubuntu:20.04 AS final-native
+FROM docker.io/library/ubuntu:24.04 AS final-native
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -139,7 +139,7 @@ WORKDIR /home/tibco/be
 CMD ["./run-rms.sh"]
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM docker.io/library/ubuntu:20.04 AS final-universal
+FROM docker.io/library/ubuntu:24.04 AS final-universal
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION

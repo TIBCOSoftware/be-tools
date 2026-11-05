@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS intermediate
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
@@ -67,7 +67,7 @@ RUN "c:\working\be_docker_install.bat"
 
 # Quarkus RMS image (native installer, BE 7.0.0 and above). Built with --target final-native.
 # RMS needs an external PostgreSQL; see lib/run-rms.bat for the environment variables it reads.
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS final-native
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS final-native
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
@@ -108,7 +108,7 @@ EXPOSE 8081
 WORKDIR "c:\tibco\be"
 CMD ["run-rms.bat"]
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS final-universal
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS final-universal
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 

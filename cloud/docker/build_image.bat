@@ -96,7 +96,7 @@ if "!errorlevel!" NEQ "0" (
     for /f "delims=" %%i in ('docker info --format {{.OSType}}') do (
         if "%%i" EQU "linux" (
             set "PERL_UTILITY_IMAGE_NAME=be-perl-utility-!TEMP_FOLDER!:v1"
-            docker run --name=mytempcontainer-!TEMP_FOLDER! -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > NUL
+            docker run --name=mytempcontainer-!TEMP_FOLDER! -it docker.io/library/ubuntu:24.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > NUL
             docker commit mytempcontainer-!TEMP_FOLDER! !PERL_UTILITY_IMAGE_NAME! > NUL
             docker rm mytempcontainer-!TEMP_FOLDER! > NUL
             for /f "tokens=*" %%i in ('docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; print be_container_optimize::get_all_modules_print_friendly()"') do (

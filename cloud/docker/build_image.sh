@@ -178,7 +178,7 @@ else
         exit 1
     fi
     PERL_UTILITY_IMAGE_NAME="be-perl-utility-$TEMP_FOLDER:v1"
-    docker run --name=mytempcontainer-$TEMP_FOLDER -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > /dev/null 2>&1 && docker commit mytempcontainer-$TEMP_FOLDER $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1 && docker rm mytempcontainer-$TEMP_FOLDER > /dev/null 2>&1
+    docker run --name=mytempcontainer-$TEMP_FOLDER -it docker.io/library/ubuntu:24.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > /dev/null 2>&1 && docker commit mytempcontainer-$TEMP_FOLDER $PERL_UTILITY_IMAGE_NAME > /dev/null 2>&1 && docker rm mytempcontainer-$TEMP_FOLDER > /dev/null 2>&1
 fi
 
 # container image size optimize related vars

@@ -275,6 +275,7 @@ def build_image_warnings(
     openjdk: bool = False,
     optimize: bool = False,
     optimize_modules_extra: list[str] | None = None,
+    docker_file: str | None = None,
 ) -> list[str]:
     """Options the script will silently ignore for the effective installer type."""
     warnings: list[str] = []
@@ -290,4 +291,15 @@ def build_image_warnings(
                 "The native Quarkus RMS image skips post-build tests; run_image_tests "
                 "does not apply to it."
             )
+            warnings.append(
+                "The Quarkus RMS image is not a BE engine and needs an external PostgreSQL; "
+                "configure it with RMS_DB_HOST/RMS_DB_PORT/RMS_DB_NAME, RMS_DB_USER/"
+                "RMS_DB_PASSWORD and RMS_BOOTSTRAP_ADMIN_* env vars, and mount a volume on "
+                "the instance directory."
+            )
+            if docker_file:
+                warnings.append(
+                    "build_image passes --target final-native for native rms; the custom "
+                    "docker_file must define a 'final-native' stage."
+                )
     return warnings
