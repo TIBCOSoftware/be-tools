@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS intermediate
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
@@ -31,6 +31,7 @@ ARG CDD_FILE_NAME
 ARG EAR_FILE_NAME
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
 
 ENV \
     TIBCO_HOME=c:/tibco \
@@ -58,13 +59,56 @@ RUN mkdir "c:\working\installer" "c:\tibco\be" "c:\_tibco\be"
 
 # Copy required files to _tibco folder which will be used in final image
 COPY lib/be_docker_install.bat installers/* lib/deletelistrms.txt c:\\working/
-COPY lib/runbe.bat lib/vcredist_install.bat c:\\_tibco\\be/
+COPY lib/runbe.bat lib/run-rms.bat lib/vcredist_install.bat c:\\_tibco\\be/
 COPY configproviders "c:\_tibco\be\configproviders"
 COPY app/* "c:\_tibco\be\ext/"
 
 RUN "c:\working\be_docker_install.bat"
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+# Quarkus RMS image (native installer, BE 7.0.0 and above). Built with --target final-native.
+# RMS needs an external PostgreSQL; see lib/run-rms.bat for the environment variables it reads.
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS final-native
+
+MAINTAINER Tibco BusinessEvents Engineering Team
+
+ARG BE_PRODUCT_VERSION
+ARG BE_SHORT_VERSION
+ARG BE_PRODUCT_IMAGE_VERSION
+ARG MAVEN_VERSION=3.9.11
+
+LABEL \
+    TIBCO BusinessEvents Version ${BE_PRODUCT_VERSION} \
+    TIBCO BusinessEvents Docker Image Version ${BE_PRODUCT_IMAGE_VERSION} 
+
+# RMS_INSTANCE_DIR is the operator-owned instance directory (config, logs, data). Mount a volume on it to keep
+# the Git repositories and the generated secrets across restarts. The entrypoint seeds it on first start.
+ENV \
+    TIBCO_HOME=c:/tibco \
+    BE_HOME=c:/tibco/be/${BE_SHORT_VERSION} \
+    BE_SHORT_VERSION=${BE_SHORT_VERSION} \
+    BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
+    RMS_INSTANCE_DIR=c:/tibco/rms-instance/be/${BE_SHORT_VERSION} \
+    RMS_INSTANCE_SEED_DIR=c:/tibco/rms-instance-seed \
+    COMPONENT=rms \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8" \
+    chocolateyVersion=1.4.0
+
+COPY --from=intermediate c:\_tibco c:\tibco
+
+RUN c:\tibco\be\vcredist_install.bat
+
+# RMS forks Maven for EAR builds and deploy; run-rms.bat puts c:\maven\bin on PATH.
+RUN powershell -Command "$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri https://archive.apache.org/dist/maven/maven-3/$env:MAVEN_VERSION/binaries/apache-maven-$env:MAVEN_VERSION-bin.zip -OutFile c:\maven.zip; Expand-Archive c:\maven.zip c:\; Rename-Item c:\apache-maven-$env:MAVEN_VERSION c:\maven; Remove-Item c:\maven.zip"
+
+VOLUME "c:\tibco\rms-instance"
+
+# RMS HTTP port
+EXPOSE 8081
+
+WORKDIR "c:\tibco\be"
+CMD ["run-rms.bat"]
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS final-universal
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 

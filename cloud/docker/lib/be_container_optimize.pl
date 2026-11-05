@@ -275,7 +275,7 @@ sub get_modules_from_ear{
     my @channelfiles = ();
 
     if ("$INPUT_VAR1" eq "win"){
-        my $wincmd1=`mkdir C:\\tmp\\$randnum\\channelsdata && "C:\\Program Files\\7-Zip\\7z.exe"  e $arg_ear_file -oC:\\tmp\\$randnum &&  "C:\\Program Files\\7-Zip\\7z.exe"  e "C:\\tmp\\$randnum\\Shared Archive.sar" -oC:\\tmp\\$randnum\\channelsdata `;
+        my $wincmd1=`mkdir C:\\tmp\\$randnum\\channelsdata && "C:\\Program Files\\7-Zip\\7z.exe"  e -y -aoa $arg_ear_file -oC:\\tmp\\$randnum &&  "C:\\Program Files\\7-Zip\\7z.exe"  e -y -aoa "C:\\tmp\\$randnum\\Shared Archive.sar" -oC:\\tmp\\$randnum\\channelsdata `;
         my @checkFile =split "\n", `if exist  C:\\tmp\\$randnum\\channelsdata\\*.channel  echo exists`;
         if (@checkFile[0] eq "exists"){
             @channelfiles=split "\n", `dir  C:\\tmp\\$randnum\\channelsdata\\*.channel /s /b /o`;

@@ -23,6 +23,11 @@ set "ARG_DOCKER_FILE=na"
 set "ARG_CONFIGPROVIDER=na"
 set "ARG_USE_OPEN_JDK=false"
 set "ARG_OPTIMIZE=na"
+set "ARG_INSTALLER_TYPE=auto"
+set "INSTALLER_TYPE=universal"
+set "QUARKUS_RMS=false"
+set "BUILD_TARGET_ARG="
+set "JRE_DIR_NAME=tibcojre64"
 
 REM openjdk related vars
 set "OPEN_JDK_VERSION=na"
@@ -91,7 +96,7 @@ if "!errorlevel!" NEQ "0" (
     for /f "delims=" %%i in ('docker info --format {{.OSType}}') do (
         if "%%i" EQU "linux" (
             set "PERL_UTILITY_IMAGE_NAME=be-perl-utility-!TEMP_FOLDER!:v1"
-            docker run --name=mytempcontainer-!TEMP_FOLDER! -it docker.io/library/ubuntu:20.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > NUL
+            docker run --name=mytempcontainer-!TEMP_FOLDER! -it docker.io/library/ubuntu:24.04 /bin/bash -c "apt-get update > /dev/null 2>&1 && apt-get install -y unzip > /dev/null 2>&1 && exit" > NUL
             docker commit mytempcontainer-!TEMP_FOLDER! !PERL_UTILITY_IMAGE_NAME! > NUL
             docker rm mytempcontainer-!TEMP_FOLDER! > NUL
             for /f "tokens=*" %%i in ('docker run --rm -v .:/app -w /app !PERL_UTILITY_IMAGE_NAME! perl -e "require \"./lib/be_container_optimize.pl\"; print be_container_optimize::get_all_modules_print_friendly()"') do (
@@ -201,6 +206,15 @@ for %%x in (%*) do (
         if !FLAG_CLIKEY! EQU false (
             call set "ARG_DOCKER_FILE=%%!counter!"
             set "ARG_DOCKER_FILE=!ARG_DOCKER_FILE:"=!"
+        ) else (
+            set /A counter=!counter!-1
+        )
+    ) else if !currentArg! EQU --installer-type (
+        shift
+        call :isCLIKey  %%!counter!  !FLAG_CLIKEY!
+        if !FLAG_CLIKEY! EQU false (
+            call set "ARG_INSTALLER_TYPE=%%!counter!"
+            set "ARG_INSTALLER_TYPE=!ARG_INSTALLER_TYPE:"=!"
         ) else (
             set /A counter=!counter!-1
         )
@@ -566,7 +580,33 @@ if !INSTALLATION_TYPE! EQU fromlocal (
     
     SET ARG_BE_SHORT_VERSION=!ARG_BE_VERSION:~0,3!
 
-    if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" (
+    REM identify the installer used to install BE
+    set /a BE_VERNUM=!ARG_BE_VERSION:.=!
+    if /I "!ARG_INSTALLER_TYPE!" EQU "auto" (
+        if !BE_VERNUM! GEQ 700 set "INSTALLER_TYPE=native"
+    ) else if /I "!ARG_INSTALLER_TYPE!" EQU "native" (
+        set "INSTALLER_TYPE=native"
+    ) else if /I "!ARG_INSTALLER_TYPE!" EQU "universal" (
+        set "INSTALLER_TYPE=universal"
+    ) else (
+        echo ERROR: Invalid installer type: [!ARG_INSTALLER_TYPE!]. Supported values are "native" and "universal".
+        GOTO END-withError
+    )
+    if "!INSTALLER_TYPE!" EQU "native" if !BE_VERNUM! LSS 700 (
+        echo ERROR: Native installer is supported only for BE versions 7.0.0 and above. BE version: [!ARG_BE_VERSION!].
+        GOTO END-withError
+    )
+    REM native installer places the JRE in jrehome/^<java major version^>
+    if "!INSTALLER_TYPE!" EQU "native" set "JRE_DIR_NAME=jrehome"
+    REM BE 7.0.0 and above installed with the native installer ships the Quarkus RMS: it is not a BE engine, so it needs
+    REM no ActiveSpaces, FTL, CDD/EAR or container optimization, but needs an external PostgreSQL
+    if "!INSTALLER_TYPE!" EQU "native" if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+        set "QUARKUS_RMS=true"
+        REM Dockerfile-rms.win holds the legacy and the Quarkus RMS images as separate final stages
+        set "BUILD_TARGET_ARG=--target final-native"
+    )
+
+    if "!IMAGE_NAME!" NEQ "!TEA_IMAGE!" if "!QUARKUS_RMS!" NEQ "true" (
         call .\scripts\asleg.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_AS_LEG_VERSION ARG_AS_LEG_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
 
@@ -575,10 +615,15 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         call .\scripts\util.bat :ValidateFTLAndAS !ARG_BE_VERSION! !IMAGE_NAME! !RMS_IMAGE! !VALIDATE_FTL_AS!
     )
 
+    if "!QUARKUS_RMS!" EQU "true" set "VALIDATE_FTL_AS=false"
+
     if "!VALIDATE_FTL_AS!" EQU "true" (
-        call .\scripts\beaddons.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_ADDONS ERROR_VAL
-        if !ERROR_VAL! EQU true GOTO END-withError
-        
+        REM native installer installs all packs, there are no separate addon installers
+        if "!INSTALLER_TYPE!" NEQ "native" (
+            call .\scripts\beaddons.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_ADDONS ERROR_VAL
+            if !ERROR_VAL! EQU true GOTO END-withError
+        )
+
         call .\scripts\as.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_AS_VERSION ARG_AS_HOTFIX ERROR_VAL
         if !ERROR_VAL! EQU true GOTO END-withError
 
@@ -611,16 +656,24 @@ if !INSTALLATION_TYPE! EQU fromlocal (
         set "ARG_PYTHON_VERSION=python2"
     )
 
-    REM check openjdk details
-    if "!ARG_USE_OPEN_JDK!" EQU "true" (
-        call .\scripts\openjdk.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_JRE_VERSION! OPEN_JDK_VERSION OPEN_JDK_FILENAME ERROR_VAL
-        if !ERROR_VAL! EQU true GOTO END-withError
-        echo OPENJDK#!OPEN_JDK_FILENAME! >> !TEMP_FOLDER!/package_files.txt
-    )
+    REM native installer bundles its own JRE
+    if "!INSTALLER_TYPE!" EQU "native" (
+        if "!ARG_USE_OPEN_JDK!" EQU "true" (
+            echo WARN: -o/--openjdk is ignored. The native installer bundles its own JRE.
+            set "ARG_USE_OPEN_JDK=false"
+        )
+    ) else (
+        REM check openjdk details
+        if "!ARG_USE_OPEN_JDK!" EQU "true" (
+            call .\scripts\openjdk.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_JRE_VERSION! OPEN_JDK_VERSION OPEN_JDK_FILENAME ERROR_VAL
+            if !ERROR_VAL! EQU true GOTO END-withError
+            echo OPENJDK#!OPEN_JDK_FILENAME! >> !TEMP_FOLDER!/package_files.txt
+        )
 
-    REM check for jre suppliment
-    call .\scripts\jresplmnt.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_JRESPLMNT_VERSION ARG_JRESPLMNT_HOTFIX ERROR_VAL
-    if !ERROR_VAL! EQU true GOTO END-withError
+        REM check for jre suppliment
+        call .\scripts\jresplmnt.bat !ARG_INSTALLER_LOCATION! !ARG_INSTALLERS_PLATFORM! !TEMP_FOLDER! !ARG_BE_VERSION! ARG_JRESPLMNT_VERSION ARG_JRESPLMNT_HOTFIX ERROR_VAL
+        if !ERROR_VAL! EQU true GOTO END-withError
+    )
 )
 
 if "!ARG_USE_OPEN_JDK!" EQU "true" (
@@ -642,7 +695,7 @@ if !BE6VAL! GEQ 600 set "BE6=true"
 if !BE6VAL! LSS 611 set "LESSTHANBE611=true"
 if !BE6VAL! GEQ 620 set "BE620P=true"
 
-if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
+if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" if "!QUARKUS_RMS!" NEQ "true" (
     set "DEFAULT_RMS_MODULES=as2,as4,ftl,store,ignite,http,query"
     if "!ARG_OPTIMIZE!" NEQ "na" (
         if "!ARG_OPTIMIZE!" NEQ "" (
@@ -653,6 +706,11 @@ if "!BE620P!" EQU "true"  if "!IMAGE_NAME!" EQU "!RMS_IMAGE!" (
     ) else (
         set "ARG_OPTIMIZE=!DEFAULT_RMS_MODULES!"
     ) 
+)
+
+if "!QUARKUS_RMS!" EQU "true" (
+    if "!ARG_OPTIMIZE!" NEQ "na" if "!ARG_OPTIMIZE!" NEQ "" echo WARN: --optimize is ignored for the Quarkus RMS image ^(BE 7.0.0 and above, native installer^).
+    set "ARG_OPTIMIZE=na"
 )
 
 REM checking optimize flag and its validation
@@ -731,6 +789,8 @@ if !BE_HOME! NEQ na (
 )
 
 echo INFO: BE VERSION                   : [!ARG_BE_VERSION!]
+if !INSTALLATION_TYPE! EQU frominstallers echo INFO: INSTALLER TYPE               : [!INSTALLER_TYPE!]
+if "!QUARKUS_RMS!" EQU "true" echo INFO: RMS                          : [Quarkus RMS, requires an external PostgreSQL. See lib/run-rms.bat]
 
 if !ARG_BE_HOTFIX! NEQ na (
     echo INFO: BE HF                        : [!ARG_BE_HOTFIX!]
@@ -941,10 +1001,10 @@ if !INSTALLATION_TYPE! EQU frominstallers (
     if "!ARG_INSTALLERS_PLATFORM!" EQU "win" (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace '/', '\' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
         powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', 'c:\tibco\be\!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', 'c:\tibco\tibcojre64\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', 'c:\tibco\!JRE_DIR_NAME!\!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     ) else (
         powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'BE_HOME', '/opt/tibco/be/!ARG_BE_SHORT_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
-        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '/opt/tibco/tibcojre64/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
+        powershell -Command "(Get-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!') -replace 'JAVA_HOME', '/opt/tibco/!JRE_DIR_NAME!/!ARG_JRE_VERSION!' | Set-Content '!TEMP_FOLDER!\lib\!DEL_LIST_FILE_NAME!'" > NUL
     )
     echo.
     for /F "tokens=*" %%f in (!TEMP_FOLDER!\package_files.txt) do (
@@ -1114,9 +1174,9 @@ for %%f in (!ARG_DOCKER_FILE!) do set ARG_DOCKER_FILE=%%~nxf
 
 if !INSTALLATION_TYPE! EQU frominstallers (
     if !IMAGE_NAME! EQU !TEA_IMAGE! (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg INSTALLER_TYPE=!INSTALLER_TYPE! --build-arg JAVA_HOME_DIR_NAME=!JRE_DIR_NAME! --build-arg PYTHON_VERSION="!ARG_PYTHON_VERSION!" --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!"   --build-arg TEA_VERSION="!ARG_TEA_VERSION!" --build-arg TEA_PRODUCT_HOTFIX="!ARG_TEA_HOTFIX!"  --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     ) else (
-        docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
+        docker build !BUILD_TARGET_ARG! -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg INSTALLER_TYPE=!INSTALLER_TYPE! --build-arg JAVA_HOME_DIR_NAME=!JRE_DIR_NAME! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg BE_PRODUCT_ADDONS="!ARG_ADDONS!" --build-arg BE_PRODUCT_HOTFIX="!ARG_BE_HOTFIX!" --build-arg AS_PRODUCT_HOTFIX="!ARG_AS_LEG_HOTFIX!" --build-arg OPEN_JDK_FILENAME=!OPEN_JDK_FILENAME! --build-arg AS_VERSION="!ARG_AS_LEG_VERSION!" --build-arg AS_SHORT_VERSION="!ARG_AS_LEG_SHORT_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!"  --build-arg FTL_VERSION="!ARG_FTL_VERSION!" --build-arg FTL_SHORT_VERSION="!ARG_FTL_SHORT_VERSION!" --build-arg FTL_PRODUCT_HOTFIX="!ARG_FTL_HOTFIX!"  --build-arg HAWK_VERSION="!ARG_HAWK_VERSION!" --build-arg HAWK_SHORT_VERSION="!ARG_HAWK_SHORT_VERSION!" --build-arg HAWK_PRODUCT_HOTFIX="!ARG_HAWK_HOTFIX!"  --build-arg ACTIVESPACES_VERSION="!ARG_AS_VERSION!" --build-arg ACTIVESPACES_SHORT_VERSION="!ARG_AS_SHORT_VERSION!" --build-arg ACTIVESPACES_PRODUCT_HOTFIX="!ARG_AS_HOTFIX!" --build-arg JRESPLMNT_VERSION="!ARG_JRESPLMNT_VERSION!" --build-arg JRESPLMNT_PRODUCT_HOTFIX="!ARG_JRESPLMNT_HOTFIX!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
     )
 ) else (
     docker build -f !TEMP_FOLDER!\!ARG_DOCKER_FILE! --build-arg BE_PRODUCT_VERSION="!ARG_BE_VERSION!" --build-arg BE_SHORT_VERSION="!ARG_BE_SHORT_VERSION!" --build-arg BE_PRODUCT_IMAGE_VERSION="!ARG_IMAGE_VERSION!" --build-arg JRE_VERSION=!ARG_JRE_VERSION! --build-arg CDD_FILE_NAME=!CDD_FILE_NAME! --build-arg EAR_FILE_NAME=!EAR_FILE_NAME! --build-arg CONFIGPROVIDER="!ARG_CONFIGPROVIDER!" -t "!ARG_IMAGE_VERSION!" !TEMP_FOLDER!
@@ -1176,6 +1236,9 @@ EXIT /B 0
     echo                            To add more than one Config Provider use comma separated format ex: "gvconsul,gvhttp"
     echo                            Note: This flag is ignored if --image-type is "!TEA_IMAGE!"
     echo.
+    echo  [--installer-type]    :    Installer used to install BE ("native"^|"universal") (default is "native" for BE 7.0.0 and above, otherwise "universal") [optional]
+    echo                            Note: native installs all packs and bundles its own JRE, so -o/--openjdk is not used.
+    echo.
     echo  [-o/--openjdk]       :    Uses OpenJDK instead of tibcojre [optional]
     echo                            Note: Place OpenJDK installer archive along with TIBCO installers.
     echo                                  OpenJDK can be downloaded from https://jdk.java.net/java-se-ri/11.
@@ -1225,6 +1288,8 @@ EXIT /B 0
     ) else if "!KEY_NAME!" EQU "--optimize" (
         set "FLAG_CLIKEY=true"
     ) else if "!KEY_NAME!" EQU "--config-provider" (
+        set "FLAG_CLIKEY=true"
+    ) else if "!KEY_NAME!" EQU "--installer-type" (
         set "FLAG_CLIKEY=true"
     ) else (
         set "FLAG_CLIKEY=false"

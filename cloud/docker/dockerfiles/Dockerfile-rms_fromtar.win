@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents RMS Dockerfile For Windows Platform - Dockerfile-rms_fromtar.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 

@@ -6,7 +6,7 @@
 # TIBCO BusinessEvents Dockerfile For Windows Platform - Dockerfile.win
 #
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS intermediate
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS intermediate
 
 MAINTAINER Tibco BusinessEvents Engineering Team
 
@@ -34,6 +34,7 @@ ARG EAR_FILE_NAME
 ARG CONFIGPROVIDER
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
 
 ENV \
     TIBCO_HOME=c:/tibco \
@@ -69,7 +70,7 @@ COPY app/${EAR_FILE_NAME} "c:\_tibco\be\application\ear/"
 # Copy required files to _tibco folder which will be used in final image
 RUN c:\working\be_docker_install.bat
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
