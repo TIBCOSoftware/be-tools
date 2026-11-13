@@ -22,11 +22,18 @@ my $INPUT_VAR3 = shift;
 my $INPUT_VAR4 = shift;
 my $INPUT_VAR5 = shift;
 
-if ("$INPUT_VAR1" eq "win"){
-    $OPTIMIZE_DATA = `type .\\lib\\optimize.json`;
-}else{
-    $OPTIMIZE_DATA = `cat ./lib/optimize.json`;
+# Read files with perl itself instead of `type`/`cat`: the shell perl starts differs per platform
+# (for example the perl bundled with Git for Windows runs `sh`, which has no `type`).
+sub read_file {
+    my $path = shift;
+    open(my $fh, '<', $path) or die "Cannot read $path: $!";
+    local $/;
+    my $data = <$fh>;
+    close($fh);
+    return $data;
 }
+
+$OPTIMIZE_DATA = read_file("./lib/optimize.json");
 
 if ("$INPUT_VAR2" eq "printfriendly"){
     print get_all_modules_print_friendly();
@@ -168,11 +175,7 @@ sub parse_optimize_modules{
 sub get_modules_from_cdd{
     my $arg_cdd_file = shift;
 
-    if ("$INPUT_VAR1" eq "win"){
-        $CDD_DATA = `type $arg_cdd_file`;
-    } else {
-        $CDD_DATA = `cat $arg_cdd_file`;
-    }
+    $CDD_DATA = read_file($arg_cdd_file);
     my @modules = ();
     
     # XPATH="provider/type"
@@ -240,11 +243,7 @@ sub get_modules_from_ear{
     my $arg_cdd_file = shift;
     my @cnuris = ();
     
-    if ("$INPUT_VAR1" eq "win"){
-        $CDD_DATA = `type $arg_cdd_file`;
-    } else {
-        $CDD_DATA = `cat $arg_cdd_file`;
-    }
+    $CDD_DATA = read_file($arg_cdd_file);
 
     my @agentClassesData = $CDD_DATA =~ /<agent-classes>[\s\S](.*?)[\s\S]<\/agent-classes>/s;
     my @destinationtags = @agentClassesData[0] =~ /<destinations>(.*?)<\/destinations>/sg;
@@ -289,11 +288,7 @@ sub get_modules_from_ear{
     }
 
     foreach my $cf (@channelfiles) {
-        if ("$INPUT_VAR1" eq "win"){
-            $CHANNEL_DATA = `type $cf`;
-        } else {
-            $CHANNEL_DATA = `cat $cf`;
-        }
+        $CHANNEL_DATA = read_file($cf);
         my @channelName = $CHANNEL_DATA =~ /driverTypeName="(.*?)"/;
         if ((@channelName[0] ne "")) {
             my @channelUriNames = $CHANNEL_DATA =~ /destinations.*name="(.*?)".*\>/g;

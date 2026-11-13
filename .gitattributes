@@ -1,4 +1,17 @@
-# Ensure correct EOL
-*.sh text=auto eol=lf
-*.bat text=auto eol=crlf
+# Everything not listed below is left untouched (no EOL conversion, no text diff)
 * binary
+
+# Ensure correct EOL. These come after "* binary" so they override it: batch files need CRLF
+# (cmd.exe cannot find GOTO labels in LF-only files), shell scripts need LF.
+# "diff" turns the text diff back on ("binary" disables it), so changes to these files can be reviewed.
+*.sh text=auto eol=lf diff
+*.bat text=auto eol=crlf diff
+
+# Other text sources: keep the "no EOL conversion" behaviour of "* binary", but show real diffs.
+*.pl diff
+*.pm diff
+*.py diff
+*.yaml diff
+*.yml diff
+*.md diff
+Dockerfile* diff

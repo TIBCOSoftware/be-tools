@@ -338,6 +338,16 @@ while [[ $# -gt 0 ]]; do
     fi
 done
 
+# Under Git Bash/MSYS on Windows, accept Windows-style paths (C:\dir or C:/dir) for -s and -a:
+# the rest of this script and the docker build context use POSIX paths.
+if command -v cygpath > /dev/null 2>&1; then
+    for _path_var in ARG_SOURCE ARG_APP_LOCATION; do
+        if [[ "${!_path_var}" =~ ^[A-Za-z]:[\\/] ]]; then
+            printf -v "$_path_var" '%s' "$(cygpath -u "${!_path_var}")"
+        fi
+    done
+fi
+
 # missing arguments check
 MISSING_ARGS=""
 
@@ -478,6 +488,10 @@ if [ "$INSTALLATION_TYPE" = "fromlocal" ]; then
 
     BE_HOME_REGEX="(.*.)\/(be\/[0-9]{1,}\.[0-9]{1,})$"
     if ! [[ $BE_HOME =~ $BE_HOME_REGEX ]]; then
+        if compgen -G "$BE_HOME/*_win_*.zip" > /dev/null && ! compgen -G "$BE_HOME/*linux*.zip" > /dev/null; then
+            printf "\nERROR: Windows installers found at [$BE_HOME]. $FILE_NAME builds Linux images only. Use build_image.bat with Windows containers for Windows installers, or provide Linux installers.\n"
+            exit 1
+        fi
         printf "\nERROR: Provide proper be home [be/<be-version>] (ex: <path to>/be/6.0). OR Path to installers location.\n"
         exit 1
     else
@@ -1381,13 +1395,18 @@ fi
 echo "INFO: Deleting folder: [$TEMP_FOLDER]."
 rm -rf $TEMP_FOLDER
 
+# a failed build must not look like a success to callers and CI
+if [ "$BUILD_SUCCESS" != "true" ]; then
+    exit 1
+fi
+
 if [ "$BUILD_SUCCESS" = "true" ]; then
     echo "INFO: Container build successfull using the build tool[$ARG_BUILD_TOOL]. Image Name: [$ARG_IMAGE_VERSION]"
     # docker unit tests
     if [ "$SKIP_CONTAINER_TESTS" != "true" ]; then
         if [ $ARG_ENABLE_TESTS = "true" ]; then
             cd ./tests
-            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION -ts $ARG_TEA_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME
+            source run_tests.sh -i $ARG_IMAGE_VERSION  -b $ARG_BE_SHORT_VERSION -al $ARG_AS_LEG_SHORT_VERSION -as $ARG_AS_SHORT_VERSION -f $ARG_FTL_SHORT_VERSION -hk $ARG_HAWK_SHORT_VERSION -ts $ARG_TEA_VERSION --image-type $IMAGE_NAME --java-dir-name $JAVA_HOME_DIR_NAME $([ "$QUARKUS_RMS" = "true" ] && echo "--native-rms")
         fi
     fi
 fi

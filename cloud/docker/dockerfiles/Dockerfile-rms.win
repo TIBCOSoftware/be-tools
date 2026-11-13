@@ -93,7 +93,7 @@ ENV \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8" \
     chocolateyVersion=1.4.0
 
-COPY --from=intermediate c:\_tibco c:\tibco
+COPY --from=intermediate c:\\_tibco c:\\tibco
 
 RUN c:\tibco\be\vcredist_install.bat
 
