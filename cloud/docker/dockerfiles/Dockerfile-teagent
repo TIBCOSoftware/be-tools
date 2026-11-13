@@ -12,7 +12,7 @@ ARG JRE_VERSION
 ARG OPEN_JDK_FILENAME
 ARG PYTHON_VERSION
 
-FROM docker.io/library/ubuntu:20.04 AS intermediate
+FROM docker.io/library/ubuntu:24.04 AS intermediate
 
 ARG BE_PRODUCT_VERSION
 ARG BE_SHORT_VERSION
@@ -28,6 +28,8 @@ ARG JRESPLMNT_VERSION
 ARG JRESPLMNT_PRODUCT_HOTFIX
 
 LABEL be-intermediate-image=true
+ARG INSTALLER_TYPE=universal
+ARG JAVA_HOME_DIR_NAME=tibcojre64
 
 RUN apt-get update \
  && apt-get install -y unzip procps findutils hostname tar
@@ -37,6 +39,7 @@ COPY lib/*.pm lib/*.py lib/*.sh installers/* lib/run lib/deletelist.txt  /home/t
 ENV TIBCO_HOME=/opt/tibco \
  BE_HOME=/opt/tibco/be/${BE_SHORT_VERSION} \
  JRE_VERSION=${JRE_VERSION} \
+ INSTALLER_TYPE=${INSTALLER_TYPE} \
  BE_PRODUCT_VERSION=${BE_PRODUCT_VERSION} \
  COMPONENT=tea
 
@@ -46,7 +49,7 @@ RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_be('$BE_PRODUCT_
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_universal_installer('JRESupplement','jresplmnt','$JRESPLMNT_VERSION','$JRESPLMNT_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::install_package_with_silentfile('tea','tea','$TEA_VERSION','$TEA_PRODUCT_HOTFIX')"
 RUN perl -I. -Mbe_docker_install -e "be_docker_install::replaceRunbeVersionToken('$BE_PRODUCT_VERSION','./run')"
-RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/tibcojre64/${JRE_VERSION}')" \
+RUN perl -I. -Mbe_docker_install -e "be_docker_install::generateAnnotationIndexes('/opt/tibco/be/${BE_SHORT_VERSION}', '/opt/tibco/${JAVA_HOME_DIR_NAME}/${JRE_VERSION}')" \
  && rm -rf JRESupplement_installers tea_installer  tea_installer-hf as_installers be_installers *.zip
 
 RUN ./prepare_finalimage.sh
@@ -60,13 +63,13 @@ RUN mkdir -p /mnt/tibco/be/logs \
  && chmod -R g=u /mnt/tibco/
 
 #Discard intermediate image and just copy the installation to a new image.
-FROM ubuntu:20.04 AS image_with_python3
+FROM ubuntu:24.04 AS image_with_python3
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y \
  && apt-get upgrade python3-setuptools -y &&  apt-get install --no-install-recommends apt-transport-https curl software-properties-common gnupg-agent ca-certificates python3 python3-pip -y \
- && pip3 install jsonpickle requests awscli boto boto3 botocore \
+ && pip3 install --break-system-packages jsonpickle requests awscli boto boto3 botocore \
  && apt-get install --install-suggests jq -y \
  && update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
  && rm -rf /var/lib/apt/lists/* 

@@ -1,0 +1,46 @@
+#
+# Structure tests for the Quarkus-based RMS image (BE 7.0.0 and above, native installer).
+# Not a BE engine: there is no be-rms.tra, PU, ENGINE_NAME, CDD or EAR. See dockerfiles/Dockerfile-rms (final-native).
+#
+schemaVersion: '2.0.0'
+metadataTest:
+  env:
+    - key: TIBCO_HOME
+      value: /opt/tibco
+    - key: BE_HOME
+      value: /opt/tibco/be/BE_SHORT_VERSION
+    - key: COMPONENT
+      value: rms
+    - key: RMS_INSTANCE_DIR
+      value: /opt/tibco/rms-instance/be/BE_SHORT_VERSION
+    - key: RMS_INSTANCE_SEED_DIR
+      value: /opt/tibco/rms-instance-seed
+  exposedPorts: ["8081"]
+  volumes: ["/opt/tibco/rms-instance/be/BE_SHORT_VERSION"]
+  workdir: "/home/tibco/be"
+  cmd: ["./run-rms.sh"]
+fileExistenceTests:
+  - name: 'BE Path'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/'
+    shouldExist: true
+  - name: 'Quarkus RMS Server'
+    path: '/opt/tibco/be/BE_SHORT_VERSION/rms-server/'
+    shouldExist: true
+  - name: 'RMS Run File'
+    path: '/home/tibco/be/run-rms.sh'
+    shouldExist: true
+  - name: 'RMS Instance Seed'
+    path: '/opt/tibco/rms-instance-seed/'
+    shouldExist: true
+  - name: 'Config Providers Path'
+    path: '/home/tibco/be/configproviders/'
+    shouldExist: true
+  - name: 'Config Providers File'
+    path: '/home/tibco/be/configproviders/setup.sh'
+    shouldExist: true
+  - name: 'Logs Folder'
+    path: '/mnt/tibco/be/logs'
+    shouldExist: true
+  - name: 'JAVA Home'
+    path: '/opt/tibco/JAVA_HOME_DIR_NAME/$JRE_VERSION'
+    shouldExist: true

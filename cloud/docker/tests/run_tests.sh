@@ -18,11 +18,12 @@ ARG_TEA_VERSION=na
 ARG_CP_PROVIDER=na
 ARG_IMAGE_TYPE=app
 ARG_KEY_VALUE_PAIRS=''
+ARG_NATIVE_RMS=false
 ARG_TRA_FILENAME=bin\\/be-engine.tra
 
 ## local variables
 TEMP_FOLDER="tmp_$RANDOM"
-FIXED_TESTCASES="be.yaml,be-rms.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,tea.yaml,consulgv.yaml,httpgv.yaml"
+FIXED_TESTCASES="be.yaml,be-rms.yaml,be-rms-native.yaml,be-teagent.yaml,as.yaml,aslegacy.yaml,ftl.yaml,hawk.yaml,tea.yaml,consulgv.yaml,httpgv.yaml"
 
 ## usage
 if [ -z "${USAGE}" ]; then
@@ -39,6 +40,7 @@ USAGE+="\n\n [-ts|--tea-version]          : TEA version in x.x.x format ex(2.4.1
 USAGE+="\n\n [-kv|--key-value-pair]       : Key value pairs to replace in yaml files ex(JRE_VERSION=11) can be multiple [optional]"
 USAGE+="\n\n [-cp|--config-provider]      : Config Provider value ex(gvconsul) [optional]"
 USAGE+="\n\n [--image-type]               : BE Image type use (\"app\"|\"s2ibuilder\"|\"rms\"|\"teagent\") (default is \"app\") [optional]"
+USAGE+="\n\n [--native-rms]                : The rms image is the Quarkus RMS of the native installer (BE 7.0.0 and above) [optional]"
 USAGE+="\n\n [--java-dir-name]            : Java home directory name (default is \"tibcojre64\") [optional]"
 USAGE+="\n\n [ -h|--help]                 : Print the usage of script [optional]"
 USAGE+="\n\n NOTE : supply long options with '=' \n\n"
@@ -111,6 +113,9 @@ while [[ $# -gt 0 ]]; do
         --image-type=*)
         ARG_IMAGE_TYPE="${key#*=}"
         ;;
+        --native-rms)
+        ARG_NATIVE_RMS=true
+        ;;
         --java-dir-name)
         shift # past the key and to the value
         ARG_JAVA_HOME_DIR_NAME="$1"
@@ -171,8 +176,12 @@ SED_EXP=''
 if [ $ARG_BE_SHORT_VERSION != na ]; then
   echo "INFO: be version:          [${ARG_BE_SHORT_VERSION}]"
   if [ $ARG_IMAGE_TYPE = rms ]; then
-    CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-rms.yaml "
-    ARG_TRA_FILENAME=rms\\/bin\\/be-rms.tra
+    if [ "$ARG_NATIVE_RMS" = "true" ]; then
+      CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-rms-native.yaml "
+    else
+      CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-rms.yaml "
+      ARG_TRA_FILENAME=rms\\/bin\\/be-rms.tra
+    fi
   elif [ $ARG_IMAGE_TYPE = teagent ]; then
     CONFIG_FILE_ARGS+=" --config /test/${TEMP_FOLDER}/be-teagent.yaml "
     ARG_TRA_FILENAME=teagent\\/bin\\/be-teagent.tra
@@ -269,7 +278,9 @@ for f in $FILES ; do
 done
 
 ## docker test command
-docker run -i --rm \
+# MSYS_NO_PATHCONV stops Git Bash on Windows from rewriting the /var/run/docker.sock mount into a Windows path
+# (docker: "mkdir C:\Program Files\Git\var: Access is denied"); it has no effect elsewhere.
+MSYS_NO_PATHCONV=1 docker run -i --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v ${PWD}:/test gcr.io/gcp-runtimes/container-structure-test:v1.9.1 \
     test \

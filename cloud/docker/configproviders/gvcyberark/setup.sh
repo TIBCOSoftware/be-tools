@@ -24,9 +24,16 @@ if [ "$INSTALL_PKGS_LIST" != "" ]; then
     package-manager update -y && package-manager install -y $INSTALL_PKGS_LIST
 fi
 
-wget -nv https://bootstrap.pypa.io/pip/$PYTHON_VERSION/get-pip.py
-python3 get-pip.py
-pip3 install conjur==$CONJUR_VERSION
+# pip/3.6/get-pip.py only supports Python 3.6; newer interpreters (e.g. Ubuntu 24.04, Python 3.12) use the distro pip.
+PY_MINOR=$(python3 -c 'import sys; print(sys.version_info[1])')
+if [ "$PY_MINOR" -le 6 ]; then
+    wget -nv https://bootstrap.pypa.io/pip/$PYTHON_VERSION/get-pip.py
+    python3 get-pip.py
+else
+    python3 -m pip --version > /dev/null 2>&1 || package-manager install -y python3-pip
+fi
+# PEP 668 (Ubuntu 24.04+) blocks system-wide pip installs; older pip ignores this variable.
+PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install conjur==$CONJUR_VERSION
 
 # install conjur cli
 conjur --version
